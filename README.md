@@ -13,11 +13,11 @@ Note : This First draft delivery implement only the backbone of the future minim
 ------------------------------------------
 Add Description
 
-2. LoRaWan Mc Level : MAcLayer.cpp
+2. LoRaWan Mac Level : MAcLayer.cpp
 ------------------------------------------
 Add Description
 
-3. LoRaWan Mc Level : PhyLayer.cpp
+3. LoRaWan Phy Level : PhyLayer.cpp
 ------------------------------------------
 Add Description
 

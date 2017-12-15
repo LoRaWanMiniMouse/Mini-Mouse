@@ -1,6 +1,6 @@
 # Mini-Mouse
 LoRaWan Stack
-LoRaWan Stack
+
 
 
 Note : This First draft delivery implement only the backbone of the future minimouse development.

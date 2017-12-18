@@ -32,7 +32,7 @@ public:
     int init(); 
  
 
-    /** Read data from a flash device.  
+    /** RestoreContext data from a flash device.  
      * 
      *  This method invokes memcpy - reads number of bytes from the address 
      * 
@@ -41,10 +41,10 @@ public:
      *  @param size   Size to read in bytes 
      *  @return       0 on success, negative error code on failure 
      */ 
-    int read(uint8_t *buffer, uint32_t addr, uint32_t size); 
+    int RestoreContext(uint8_t *buffer, uint32_t addr, uint32_t size); 
 
  
-    /** Program data to flash
+    /** StoreContext data to flash
      *  To be safer this function have to implement a read/check data sequence after programation 
      *  
      * 
@@ -53,7 +53,7 @@ public:
      *  @param size   Size to write in bytes,
      *  @return       0 on success, negative error code on failure 
      */ 
-    int program(const void *buffer, uint32_t addr, uint32_t size); 
+    int StoreContext(const void *buffer, uint32_t addr, uint32_t size); 
 
  
     /** Erase sectors 

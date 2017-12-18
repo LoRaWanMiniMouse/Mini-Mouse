@@ -18,7 +18,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "LoraWanProcess.h"
 #include "ApiRtc.h"
 #include "utilities.h"
-Serial pcf( PA_9, PA_10 );
+Serial pcf( SERIAL_TX, SERIAL_RX );
 
 LoraWanObjet::LoraWanObjet( PinName interrupt ):packet( interrupt ){
     StateLoraWanProcess=LWPSTATE_IDLE;
@@ -136,7 +136,7 @@ LoraWanObjet::~LoraWanObjet() {
             if ( ValidRxPacket == JOINACCEPTPACKET){
                 packet.UpdateJoinProcedure( );
             }
-            if ( ValidRxPacket == NWKRXPACKET){
+            if ( ( ValidRxPacket == NWKRXPACKET) || ( ValidRxPacket == USERRX_FOPTSPACKET) ) {
                 packet.ParseManagementPacket( );
             }
             packet.UpdateMacLayer();

@@ -21,13 +21,14 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "MacLayer.h"
 #include "LoraWanProcess.h"
 #include "ApiRtc.h"
+#include "Define.h"
 
 static RadioEvents_t RadioEvents;
 
 
 
 RadioContainer::RadioContainer( PinName interrupt )
-                :Radio( NULL ), TxInterrupt( interrupt ), RxTimeoutInterrupt ( PB_1 ) {
+                :Radio( NULL ), TxInterrupt( interrupt ), RxTimeoutInterrupt ( RX_TIMEOUT_IT ) {
     StateRadioProcess = RADIOSTATE_IDLE;
     TxInterrupt.rise( this,&RadioContainer::IsrRadio );
     RxTimeoutInterrupt.rise( this,&RadioContainer::IsrRadio );

@@ -24,26 +24,7 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #define MAC_LAYER_H
 
 #define LORA_MAC_SYNCWORD                           0x34
-static uint8_t LoRaMacNwkSKey[] =
-{ 0x94, 0x02, 0x9E, 0xAB, 0xE9, 0x0C, 0xE3, 0xCF, 0x51, 0xA2, 0x31, 0x7F, 0x03, 0x27, 0xEF, 0xA6 };
 
-/*!
- * AES encryption/decryption cipher application session key
- */
-static uint8_t LoRaMacAppSKey[] =
-{ 0xBB, 0xEB, 0xEB, 0x4D, 0x5C, 0xAF, 0x95, 0x5D, 0x33, 0xD1, 0xC0, 0xC4, 0x41, 0x55, 0xB5, 0xA1 };
-
-
-static uint8_t LoRaMacAppKey[] =
-{ 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-static uint8_t AppEui[] = 
-{ 0x70, 0xB3, 0xD5, 0x7E, 0xF0, 0x00, 0x36, 0x12 };
-
-
-static uint8_t DevEui[] = 
-{ 0x33, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x33 };    
-
-//@note find the right place of the keys
 
 
 class LoraWanContainer { 
@@ -58,10 +39,10 @@ public:
     void ConfigureRadioForRx2 ( void );
     void ConfigureTimerForRx  ( int type );
     void UpdateMacLayer       ( void );
-    void ParseManagementPacket( void );
     void UpdateJoinProcedure  ( void );
     uint8_t IsFrameToSend;
-    eRxPacketType  DecodeRxFrame        ( void );
+    eRxPacketType   DecodeRxFrame            ( void );
+    eStatusLoRaWan  ParseManagementPacket    ( void );
 /* LoraWan Context */ 
 /* Only 16 ch mask => ChMaskCntl not used */
 /* Duty cycle is not managed */

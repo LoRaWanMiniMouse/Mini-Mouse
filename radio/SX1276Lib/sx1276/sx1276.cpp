@@ -17,7 +17,6 @@ Maintainers: Miguel Luis, Gregory Cristian and Nicolas Huguenin
 
 
 
-Serial pcsx (PA_9, PA_10);
 # define DEBUG_PRINT(x)   do {} while (0)
 const FskBandwidth_t SX1276::FskBandwidths[] =
 {       
@@ -1285,7 +1284,7 @@ void SX1276::OnDio0Irq( void )
             case MODEM_LORA:
                 {
                     int8_t snr = 0;
-                    pcsx.printf("RX interrupt func in  enter irq flag %d\n", Read(REG_LR_IRQFLAGS));
+                    //pcsx.printf("RX interrupt func in  enter irq flag %d\n", Read(REG_LR_IRQFLAGS));
                     // Clear Irq
                     Write( REG_LR_IRQFLAGS, RFLR_IRQFLAGS_RXDONE );
 

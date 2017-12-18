@@ -20,6 +20,47 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "mbed.h"
 
 /********************************************************************************/
+/*                         PINOUT Platform dependant                            */
+/********************************************************************************/
+                    // MURATA   //    sx1276 MBAS
+#define LORA_SPI_MOSI   PA_7    //      D11
+#define LORA_SPI_MISO   PA_6    //      D12
+#define LORA_SPI_SCLK   PB_3    //      D13
+#define LORA_CS         PA_15   //      D10
+#define LORA_RESET      PC_0    //      A0
+#define TX_RX_IT        PB_4    //      D2
+#define RX_TIMEOUT_IT   PB_1    //      D3
+#define SERIAL_TX       PA_9    //      D0
+#define SERIAL_RX       PA_10   //      D1
+
+
+/********************************************************************************/
+/*                         LORA KEYS USER Specific                              */
+/********************************************************************************/
+static uint8_t LoRaMacNwkSKey[] =
+{ 0x94, 0x02, 0x9E, 0xAB, 0xE9, 0x0C, 0xE3, 0xCF, 0x51, 0xA2, 0x31, 0x7F, 0x03, 0x27, 0xEF, 0xA6 };
+
+/*!
+ * AES encryption/decryption cipher application session key
+ */
+static uint8_t LoRaMacAppSKey[] =
+{ 0xBB, 0xEB, 0xEB, 0x4D, 0x5C, 0xAF, 0x95, 0x5D, 0x33, 0xD1, 0xC0, 0xC4, 0x41, 0x55, 0xB5, 0xA1 };
+
+
+static uint8_t LoRaMacAppKey[] =
+{ 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+static uint8_t AppEui[] = 
+{ 0x70, 0xB3, 0xD5, 0x7E, 0xF0, 0x00, 0x36, 0x12 };
+
+
+static uint8_t DevEui[] = 
+{ 0x33, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x33 };    
+
+
+
+
+
+/********************************************************************************/
 /*                         LoraWan Process States                               */
 /********************************************************************************/
 
@@ -89,6 +130,23 @@ enum {
     RXTIMING_SETUP_REQ,
     RXTIMING_SETUP_ANS,
 };
+enum {
+    LINK_CHECK_REQ_SIZE ,
+    LINK_CHECK_ANS_SIZE ,
+    LINK_ADR_REQ_SIZE,
+    LINK_ADR_ANS_SIZE,
+    DUTY_CYCLE_REQ_SIZE,
+    DUTY_CYCLE_ANS_SIZE,
+    RXPARRAM_SETUP_REQ_SIZE,
+    RXPARRAM_SETUP_ANS_SIZE,
+    DEV_STATUS_REQ_SIZE,
+    DEV_STATUS_ANS_SIZE,
+    NEW_CHANNEL_REQ_SIZE,
+    NEW_CHANNEL_ANS_SIZE,
+    RXTIMING_SETUP_REQ_SIZE,
+    RXTIMING_SETUP_ANS_SIZE ,
+};
+
 #define RX1DELAY              1000 // define in ms
 #define RX1DELAYJOIN          5000 // define in ms
 #define MAX_FCNT_GAP          16384
@@ -131,10 +189,10 @@ typedef enum eDataRateStrategy{
     MOBILELOWPOWERADRMODE,
 } eDataRateStrategy;
 
-enum { 
+typedef enum { 
     ERRORLORAWAN = -1,
     OKLORAWAN    = 0,
-};
+}eStatusLoRaWan;
 
 typedef enum {
     NOVALIDRXPACKET,

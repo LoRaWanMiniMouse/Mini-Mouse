@@ -13,7 +13,7 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 Maintainers: Miguel Luis, Gregory Cristian and Nicolas Huguenin
 */
 #include "sx1276-hal.h"
-
+#include "Define.h"
 const RadioRegisters_t SX1276MB1xAS::RadioRegsInit[] = RADIO_INIT_REGISTERS_VALUE;
 
 
@@ -49,16 +49,7 @@ SX1276MB1xAS::SX1276MB1xAS( RadioEvents_t *events,
     this->settings.State = RF_IDLE ;
 }
 
-#define LORA_SPI_MOSI   PA_7
-#define LORA_SPI_MISO   PA_6
-#define LORA_SPI_SCLK   PB_3
-#define LORA_CS         PA_15
-#define LORA_RESET      PC_0
-#define LORA_DIO0       PB_4
-#define LORA_DIO1       PB_1
-#define LORA_DIO2       PB_0
-#define LORA_DIO3       PC_13
-#define LORA_DIO4       PA_5
+
 #define LORA_DIO5       PA_4
 #define LORA_ANT_RX     PA_1
 #define LORA_ANT_TX     PC_2

@@ -152,13 +152,14 @@ eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
                 LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, appSKey, DevAddr, 1, FcntDwn, &MacRxPayload[0] );
                 if ( FoptsLength != 0 ) {
                     memcpy ( MacNwkPayload, Fopts, FoptsLength);
+                    MacNwkPayloadSize = FoptsLength;
                     RxPacketType = USERRX_FOPTSPACKET ;
                 } else {
-                    AvailableRxPacketForUser = LORARXPACKETAVAILABLE; //@note in this case fopts should be not equal to zero and so there are also management frame available + user data
+                    AvailableRxPacketForUser = LORARXPACKETAVAILABLE; 
                     RxPacketType = USERRXPACKET ;
                 }
             }
-                pcf.printf( " MtypeRx = %d \n ",MtypeRx );
+            pcf.printf( " MtypeRx = %d \n ",MtypeRx );
             pcf.printf( " FcntDwn = %d \n ",FcntDwn );
         }
     }
@@ -170,33 +171,41 @@ eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
     /************************************************************************************************/
     /*                      NWK MANAGEMENTS Methods                                                 */
     /************************************************************************************************/
-void LoraWanContainer::ParseManagementPacket( void ) {
+eStatusLoRaWan LoraWanContainer::ParseManagementPacket( void ) {
     uint8_t CmdIdentifier;
-    CmdIdentifier = MacRxPayload[0];
-    switch ( CmdIdentifier ) {
-        case LINK_CHECK_ANS :
-            LinkCheckParser( );
-            break;
-        case LINK_ADR_REQ :
-            LinkADRParser( );
-            break;
-        case DUTY_CYCLE_REQ :
-            DutyCycleParser( );
-            break;
-        case RXPARRAM_SETUP_REQ :
-            RXParamSetupParser( );
-            break;
-        case DEV_STATUS_REQ :
-            DevStatusParser( );
-            break;
-        case NEW_CHANNEL_REQ :
-            NewChannelParser( );
-            break;
-        case RXTIMING_SETUP_REQ :
-            RXTimingSetupParser( );
-            break;
+    eStatusLoRaWan status = OKLORAWAN ;
+    uint8_t MaxCmdNum = 16 ; //@note security to avoid an infinite While erro 
+    while ( ( MacNwkPayloadSize > 0 ) || (  MaxCmdNum > 0 ) ) { //@note MacNwkPayloadSize and MacNwkPayload[0] are updated in Parser's method
+        MaxCmdNum --; 
+        if ( MaxCmdNum == 0 ) {
+            return ( ERRORLORAWAN );
+        }
+        CmdIdentifier = MacNwkPayload[0];
+        switch ( CmdIdentifier ) {
+            case LINK_CHECK_ANS :
+                LinkCheckParser( );
+                break;
+            case LINK_ADR_REQ :
+                LinkADRParser( );
+                break;
+            case DUTY_CYCLE_REQ :
+                DutyCycleParser( );
+                break;
+            case RXPARRAM_SETUP_REQ :
+                RXParamSetupParser( );
+                break;
+            case DEV_STATUS_REQ :
+                DevStatusParser( );
+                break;
+            case NEW_CHANNEL_REQ :
+                NewChannelParser( );
+                break;
+            case RXTIMING_SETUP_REQ :
+                RXTimingSetupParser( );
+                break;
+        }
     }
-    
+    return ( status ); 
 }
 
 void LoraWanContainer::UpdateMacLayer ( void ) {
@@ -533,12 +542,12 @@ void LoraWanContainer::SaveInFlash ( ) {
     memcpy( &BackUpFlash.MacMinMaxSFChannel[0], &MacMinMaxSFChannel[0], 16);
     memcpy( &BackUpFlash.nwkSKey[0], &nwkSKey[0], 16);
     memcpy( &BackUpFlash.appSKey[0], &appSKey[0], 16);
-    gFlash.program( &BackUpFlash, USERFLASHADRESS, sizeof(sBackUpFlash) );    
+    gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, sizeof(sBackUpFlash) );    
 }
 
 
 void LoraWanContainer::LoadFromFlash ( ) {
-    gFlash.read((uint8_t *)(&BackUpFlash), USERFLASHADRESS, sizeof(sBackUpFlash));
+    gFlash.RestoreContext((uint8_t *)(&BackUpFlash), USERFLASHADRESS, sizeof(sBackUpFlash));
     BackUpFlash.FcntUp            +=  FLASH_UPDATE_PERIOD; //@note automatic increment
     MacTxSf                       = BackUpFlash.MacTxSf;
     MacTxPower                    = BackUpFlash.MacTxPower;
@@ -557,7 +566,7 @@ void LoraWanContainer::LoadFromFlash ( ) {
     memcpy( &MacMinMaxSFChannel[0], &BackUpFlash.MacMinMaxSFChannel[0], 16);
     memcpy( &nwkSKey[0], &BackUpFlash.nwkSKey[0], 16);
     memcpy( &appSKey[0], &BackUpFlash.appSKey[0], 16); 
-    gFlash.program( &BackUpFlash, USERFLASHADRESS, sizeof(sBackUpFlash) );    
+    gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, sizeof(sBackUpFlash) );    
 }
 /**************************************TIMER PART**********************************************************/
 /**********************************************************************************************************/

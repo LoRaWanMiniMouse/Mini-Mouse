@@ -11,7 +11,7 @@ DigitalOut led( D13 );
 
 
 struct sBackUpFlash BackUpFlash;
-static LoraWanObjet Lp( PB_4 );
+static LoraWanObjet Lp( TX_RX_IT );
 
 //@note set to board definition
 //#define CHECKFCNTDOWN 0

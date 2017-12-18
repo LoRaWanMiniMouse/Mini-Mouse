@@ -27,7 +27,7 @@ int Flash::init() {
     // to be completed by mcu providers
     return (0);
 }
-int Flash::read(uint8_t *buffer, uint32_t addr, uint32_t size){
+int Flash::RestoreContext(uint8_t *buffer, uint32_t addr, uint32_t size){
      /* have to be implemented by mcu providers
     the following code propose a lite implementation without any error cases*/
     int i;
@@ -39,7 +39,7 @@ int Flash::read(uint8_t *buffer, uint32_t addr, uint32_t size){
 
 
 
-int Flash::program(const void *buffer, uint32_t addr, uint32_t size){
+int Flash::StoreContext(const void *buffer, uint32_t addr, uint32_t size){
     /* have to be implemented by mcu providers
     the following code propose a lite implementation without any error cases
     this section have to be very robust, have to support failure mode such as  power off during flash programmation    

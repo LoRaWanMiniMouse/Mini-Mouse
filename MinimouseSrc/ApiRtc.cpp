@@ -181,28 +181,30 @@ void my_rtc_init (void)
     NVIC_SetVector(RTC_WKUP_IRQn, (uint32_t)RTC_IRQHandler);
     NVIC_EnableIRQ(RTC_WKUP_IRQn);
     myrtc_write ( 0 );
-// __HAL_RTC_WAKEUPTIMER_EXTI_ENABLE_EVENT();
+
+}
+
+
+
+
+
+
+
+//void mysleep (int time)
+//{
 //    pcf.printf("status %d\n",HAL_RTCEx_SetWakeUpTimer_IT(&RtcHandle, 10000, 0));
-//    HAL_RTCEx_WakeUpTimerIRQHandler(&RtcHandle);
-//    pcf.printf("rtccounter %d\n",HAL_RTCEx_GetWakeUpTimer(&RtcHandle));
-//    wait_ms(100);
-//    pcf.printf("rtccounter %d\n",HAL_RTCEx_GetWakeUpTimer(&RtcHandle));
-}
-void mysleep (int time)
-{
-    pcf.printf("status %d\n",HAL_RTCEx_SetWakeUpTimer_IT(&RtcHandle, 10000, 0));
-    deepsleep();
-}
+//    deepsleep();
+//}
 
 void wait_s ( int t )
 {
     wait(t);
 }
-Timer timerglobal ; 
-void TimerLoraInit(void){
-    timerglobal.start();
-}
-int GetTime(void)
-{
-    return(timerglobal.read_ms());
-}
+//Timer timerglobal ; 
+//void TimerLoraInit(void){
+//    timerglobal.start();
+//}
+//int GetTime(void)
+//{
+//    return(timerglobal.read_ms());
+//}

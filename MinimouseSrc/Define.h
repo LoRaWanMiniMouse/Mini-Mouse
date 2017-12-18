@@ -136,12 +136,13 @@ enum {
     OKLORAWAN    = 0,
 };
 
-enum {
+typedef enum {
     NOVALIDRXPACKET,
     USERRXPACKET,
+    USERRX_FOPTSPACKET,
     NWKRXPACKET,
     JOINACCEPTPACKET,
-};
+} eRxPacketType;
 enum {
     RX1,
     RX2

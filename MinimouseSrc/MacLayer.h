@@ -57,11 +57,11 @@ public:
     void ConfigureRadioForRx1 ( void );
     void ConfigureRadioForRx2 ( void );
     void ConfigureTimerForRx  ( int type );
-    int  DecodeRxFrame        ( void );
     void UpdateMacLayer       ( void );
     void ParseManagementPacket( void );
     void UpdateJoinProcedure  ( void );
     uint8_t IsFrameToSend;
+    eRxPacketType  DecodeRxFrame        ( void );
 /* LoraWan Context */ 
 /* Only 16 ch mask => ChMaskCntl not used */
 /* Duty cycle is not managed */
@@ -130,6 +130,9 @@ public:
     uint8_t  JoinedStatus; 
     
 /* LoRaWan Mac Data for nwk Ans */
+    uint8_t    MacNwkPayload[255];  //@note resize this buffer 
+    uint8_t    MacNwkPayloadSize;
+
     uint8_t    MacNwkAns[255];  //@note reuse user payload data or at least reduce size or use opt byte
     uint8_t    MacNwkAnsSize;
 

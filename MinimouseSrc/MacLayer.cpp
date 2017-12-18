@@ -108,8 +108,9 @@ void LoraWanContainer::ConfigureTimerForRx ( int type ) {
     /****************************/
     /*       DecodeRxFrame      */
     /****************************/
-int LoraWanContainer::DecodeRxFrame( void ) {
+eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
     int status = OKLORAWAN ;
+    eRxPacketType RxPacketType = NOVALIDRXPACKET ; 
     uint32_t micIn ;
     status += CheckRxPayloadLength ( );
     status += ExtractRxMhdr ( ) ;
@@ -143,20 +144,25 @@ int LoraWanContainer::DecodeRxFrame( void ) {
         }
         if ( status == OKLORAWAN) {
             MacRxPayloadSize = MacRxPayloadSize - FHDROFFSET - FoptsLength ;
-            LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, (FportRx == 0 )?nwkSKey:appSKey, DevAddr, 1, FcntDwn, &MacRxPayload[0] );
-            pcf.printf( " MtypeRx = %d \n ",MtypeRx );
+            if ( FportRx == 0 ) {
+                LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, nwkSKey, DevAddr, 1, FcntDwn, &MacNwkPayload[0] );
+                MacNwkPayloadSize = MacRxPayloadSize;
+                RxPacketType = NWKRXPACKET ;
+            } else {
+                LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, appSKey, DevAddr, 1, FcntDwn, &MacRxPayload[0] );
+                if ( FoptsLength != 0 ) {
+                    memcpy ( MacNwkPayload, Fopts, FoptsLength);
+                    RxPacketType = USERRX_FOPTSPACKET ;
+                } else {
+                    AvailableRxPacketForUser = LORARXPACKETAVAILABLE; //@note in this case fopts should be not equal to zero and so there are also management frame available + user data
+                    RxPacketType = USERRXPACKET ;
+                }
+            }
+                pcf.printf( " MtypeRx = %d \n ",MtypeRx );
             pcf.printf( " FcntDwn = %d \n ",FcntDwn );
         }
     }
-    if (status != OKLORAWAN ) {
-        return ( NOVALIDRXPACKET );
-    } 
-    else if ( FportRx == 0 ) {
-        return ( NWKRXPACKET ) ;
-    } else {
-        AvailableRxPacketForUser = LORARXPACKETAVAILABLE; //@note in this case fopts should be not equal to zero and so there are also management frame available + user data
-        return ( USERRXPACKET ) ;
-    }
+    return ( RxPacketType );
 }
     /*********************************/
     /*      End of Decode Frame      */

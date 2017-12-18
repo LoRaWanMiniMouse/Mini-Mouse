@@ -30,8 +30,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define LORA_RESET      PC_0    //      A0
 #define TX_RX_IT        PB_4    //      D2
 #define RX_TIMEOUT_IT   PB_1    //      D3
-#define SERIAL_TX       PA_9    //      D0
-#define SERIAL_RX       PA_10   //      D1
+#define SERIAL_TX       PA_9    //      USBTX
+#define SERIAL_RX       PA_10   //      USBRX
 
 
 /********************************************************************************/

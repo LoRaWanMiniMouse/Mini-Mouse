@@ -44,7 +44,6 @@ LoraWanContainer::LoraWanContainer( PinName interrupt )
     JoinedStatus = 0 ;
     memcpy( appSKey, LoRaMacAppSKey, 16 );
     memcpy( nwkSKey, LoRaMacNwkSKey, 16 );
-    DevAddr = 0x26011918;
 }; 
 LoraWanContainer::~LoraWanContainer( ) {
 };
@@ -85,8 +84,9 @@ void LoraWanContainer::ConfigureTimerForRx ( int type ) {
     int status = OKLORAWAN ;
     uint32_t tCurrentMillisec;
     uint32_t tAlarmMillisec;
+    uint64_t tAlarm64bits;
     int toffset = 8;  // @note created a Define?  
-    tCurrentMillisec =  RtcGetTimeMs( );
+    tCurrentMillisec =  RtcGetTimeMs( &tAlarm64bits);
     if (type == RX1) {
         tAlarmMillisec = MacRx1Delay + Phy.TimestampRtcIsr - tCurrentMillisec - toffset ;
         if ( tAlarmMillisec <= toffset ) {// too late to launch a timer
@@ -373,6 +373,7 @@ int LoraWanContainer::AcceptFcntDwn ( uint16_t FcntDwnTmp ) {
         FcntDwn = FcntDwnTmp ;
     } 
 #endif
+    pcf.printf("fcntdwn = %d\n",status);
     return ( status ) ;
 }
 

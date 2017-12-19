@@ -19,6 +19,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "rtc_api.h"
 #include "LoraWanProcess.h"
 #include "mbed.h"
+#include "ApiRtc.h"
 RTC_HandleTypeDef RtcHandle;
 static int rtc_inited = 0;
 static void RTC_IRQHandler (void)
@@ -31,7 +32,7 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
 }
 
 
-uint32_t RtcGetTimeMs( void )//uint32_t  *Seconds, uint16_t * SubSeconds)
+uint32_t RtcGetTimeMs( uint64_t  *longTime64bits )//uint32_t  *Seconds, uint16_t * SubSeconds)
 {
     RTC_DateTypeDef dateStruct;
     RTC_TimeTypeDef timeStruct;
@@ -53,7 +54,7 @@ uint32_t RtcGetTimeMs( void )//uint32_t  *Seconds, uint16_t * SubSeconds)
     timeinfo.tm_min  = timeStruct.Minutes;
     timeinfo.tm_sec  = timeStruct.Seconds;
     SubSeconds      = ( 255 - ( timeStruct.SubSeconds ) ) << 7; 
-     
+    *longTime64bits =  cal_convertBCD_2_Cnt64( &dateStruct, &timeStruct );
     // Convert to timestamp
     time_t t = mktime(&timeinfo);
     Seconds = t;
@@ -80,8 +81,7 @@ uint32_t RtcGetTimeSecond( void )//uint32_t  *Seconds, uint16_t * SubSeconds)
     timeinfo.tm_hour = timeStruct.Hours;
     timeinfo.tm_min  = timeStruct.Minutes;
     timeinfo.tm_sec  = timeStruct.Seconds;
-
-     
+    
     // Convert to timestamp
     time_t t = mktime(&timeinfo);
     return ( t );
@@ -109,30 +109,6 @@ void RtcGetAlarm( void ){
     pcf.printf("sAlarm.AlarmTime.Seconds = %d\n",sAlarm.AlarmTime.Seconds);
     pcf.printf("sAlarm.AlarmTime.AlarmDateWeekDaySel = %d\n",sAlarm.AlarmDateWeekDaySel);
     pcf.printf("sAlarm.AlarmTime.AlarmMask = %x\n",sAlarm.AlarmMask);
-}
-void myrtc_write( time_t t )
-{
-    RTC_DateTypeDef dateStruct;
-    RTC_TimeTypeDef timeStruct;
-    RtcHandle.Instance = RTC;
-    // Convert the time into a tm
-    struct tm *timeinfo = localtime(&t);
-
-    // Fill RTC structures
-    dateStruct.WeekDay        = timeinfo->tm_wday;
-    dateStruct.Month          = timeinfo->tm_mon + 1;
-    dateStruct.Date           = timeinfo->tm_mday;
-    dateStruct.Year           = timeinfo->tm_year;
-    timeStruct.Hours          = timeinfo->tm_hour;
-    timeStruct.Minutes        = timeinfo->tm_min;
-    timeStruct.Seconds        = timeinfo->tm_sec;
-    timeStruct.TimeFormat     = RTC_HOURFORMAT_24;
-    timeStruct.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-    timeStruct.StoreOperation = RTC_STOREOPERATION_RESET;
-
-    // Change the RTC current date/time
-    HAL_RTC_SetDate(&RtcHandle, &dateStruct, FORMAT_BIN);
-    HAL_RTC_SetTime(&RtcHandle, &timeStruct, FORMAT_BIN);
 }
 
 
@@ -180,31 +156,30 @@ void my_rtc_init (void)
     NVIC_DisableIRQ(RTC_WKUP_IRQn);
     NVIC_SetVector(RTC_WKUP_IRQn, (uint32_t)RTC_IRQHandler);
     NVIC_EnableIRQ(RTC_WKUP_IRQn);
-    myrtc_write ( 0 );
+
+     /*init time to 0*/
+     struct tm *timeinfo = localtime(0);
+     RTC_DateTypeDef dateStruct;
+     RTC_TimeTypeDef timeStruct;
+    // Fill RTC structures
+    dateStruct.WeekDay        = timeinfo->tm_wday;
+    dateStruct.Month          = timeinfo->tm_mon + 1;
+    dateStruct.Date           = timeinfo->tm_mday;
+    dateStruct.Year           = timeinfo->tm_year;
+    timeStruct.Hours          = timeinfo->tm_hour;
+    timeStruct.Minutes        = timeinfo->tm_min;
+    timeStruct.Seconds        = timeinfo->tm_sec;
+    timeStruct.TimeFormat     = RTC_HOURFORMAT_24;
+    timeStruct.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+    timeStruct.StoreOperation = RTC_STOREOPERATION_RESET;
+
+    // Change the RTC current date/time
+    HAL_RTC_SetDate(&RtcHandle, &dateStruct, FORMAT_BIN);
+    HAL_RTC_SetTime(&RtcHandle, &timeStruct, FORMAT_BIN);
 
 }
-
-
-
-
-
-
-
-//void mysleep (int time)
-//{
-//    pcf.printf("status %d\n",HAL_RTCEx_SetWakeUpTimer_IT(&RtcHandle, 10000, 0));
-//    deepsleep();
-//}
 
 void wait_s ( int t )
 {
     wait(t);
 }
-//Timer timerglobal ; 
-//void TimerLoraInit(void){
-//    timerglobal.start();
-//}
-//int GetTime(void)
-//{
-//    return(timerglobal.read_ms());
-//}

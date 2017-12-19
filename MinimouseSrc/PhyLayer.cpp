@@ -48,6 +48,7 @@ RadioContainer::~RadioContainer( ) {
 /*          Set Radio in Sleep Mode                                  */
 /*******************Isr Radio  ***************************************/
 void RadioContainer::IsrRadio( void ) {
+    uint64_t tAlarm64bits ;
     int status = OKLORAWAN;
     GetIrqRadioFlag ( );
     ClearIrqRadioFlag ( );
@@ -60,7 +61,7 @@ void RadioContainer::IsrRadio( void ) {
     Radio.Sleep ( );
     switch ( StateRadioProcess ) { 
         case RADIOSTATE_TXON :
-            TimestampRtcIsr = RtcGetTimeMs ( ); //@info Timestamp only on txdone it
+            TimestampRtcIsr = RtcGetTimeMs ( &tAlarm64bits ); //@info Timestamp only on txdone it
             StateRadioProcess = RADIOSTATE_TXFINISHED;
             break;
         

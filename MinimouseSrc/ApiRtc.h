@@ -19,7 +19,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define APIRTC_H
 #include "mbed.h"
 void     my_rtc_init     ( void ) ;
-uint32_t RtcGetTimeMs    ( void ) ;//uint32_t  *Seconds, uint16_t * SubSeconds);
+uint32_t RtcGetTimeMs    ( uint64_t  *longTime64bits ) ;//uint32_t  *Seconds, uint16_t * SubSeconds);
 uint32_t RtcGetTimeSecond( void ) ;//uint32_t  *Seconds, uint16_t * SubSeconds);
 void myrtc_write(  time_t t );
 void mysleep (int time);

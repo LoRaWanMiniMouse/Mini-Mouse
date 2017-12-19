@@ -1,0 +1,7 @@
+*.uvoptx
+*.uvprojx
+.mbed
+mbed.bld
+mbed/
+mbed_config.h
+BUILD/

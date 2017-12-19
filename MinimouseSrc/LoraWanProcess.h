@@ -30,7 +30,7 @@ public:
     ~LoraWanObjet();
     eLoraWan_Process_States    SendPayload   ( uint8_t fPort, const uint8_t* dataIn, const uint16_t sizeIn, uint8_t PacketType );
     uint8_t    ReceivePayload( uint8_t* UserRxFport, uint8_t* UserRxPayload, uint8_t* UserRxPayloadSize );
-    uint8_t    Join          ( void );
+    eLoraWan_Process_States    Join          ( void );
     uint8_t    IsJoined      ( void );
     void       SetDataRateStrategy ( eDataRateStrategy adrModeSelect );
     eLoraWan_Process_States    LoraWanProcess( uint8_t * AvailableRxPacket );

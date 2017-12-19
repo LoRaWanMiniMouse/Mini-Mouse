@@ -56,7 +56,7 @@ static uint8_t AppEui[] =
 static uint8_t DevEui[] = 
 { 0x33, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x33 };    
 
-static uint32_t DevAddr = 0x26011918;
+static uint32_t LoRaDevAddr = 0x26011918;
 
 
 

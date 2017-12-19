@@ -43,11 +43,17 @@ int main( ) {
     /*           Restore Context from Flash         */
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
-    Lp.RestoreContext ( );
+    //Lp.RestoreContext ( );
 
     while(1) {
         pcf.printf("\n\n\n\n ");
-        LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, UNCONFDATAUP );
+        //LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, UNCONFDATAUP );
+//        if ( Lp.IsJoined( ) == ISJOINED ) {            
+            LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, UNCONFDATAUP );
+//        } else {
+//            LpState = Lp.Join( );
+//        }
+        
         led = 1;
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );

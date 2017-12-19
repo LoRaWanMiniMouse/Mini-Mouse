@@ -44,6 +44,8 @@ LoraWanContainer::LoraWanContainer( PinName interrupt )
     JoinedStatus = 0 ;
     memcpy( appSKey, LoRaMacAppSKey, 16 );
     memcpy( nwkSKey, LoRaMacNwkSKey, 16 );
+    DevAddr = LoRaDevAddr ;
+    
 }; 
 LoraWanContainer::~LoraWanContainer( ) {
 };
@@ -114,12 +116,12 @@ eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
     uint32_t micIn ;
     status += CheckRxPayloadLength ( );
     status += ExtractRxMhdr ( ) ;
-
+        pcf.printf("is a recive decode  \n");
         /************************************************************************/
         /*                 Case : the receive packet is a JoinResponse          */
         /************************************************************************/
     if ( MtypeRx == JOINACCEPT ) {
-        
+        pcf.printf("is a joinaccept \n");
         LoRaMacJoinDecrypt( &Phy.RxPhyPayload[1], Phy.RxPhyPayloadSize-1, LoRaMacAppKey, &MacRxPayload[1] );
         MacRxPayload[0] =  Phy.RxPhyPayload[0];
         MacRxPayloadSize = Phy.RxPhyPayloadSize - MICSIZE ;
@@ -262,7 +264,7 @@ void LoraWanContainer::UpdateJoinProcedure ( void ) {
 /********************************************************/
 
 void LoraWanContainer::BuildJoinLoraFrame( void ) {
-    DevNonce = randr( 0, 65535 );
+    DevNonce = randr( 0, 65535 )+2414;
     MType = JOINREQUEST ;
     SetMacHeader ( );
     for (int i = 0; i <8; i++){ 
@@ -384,7 +386,7 @@ void LoraWanContainer::GiveNextSf( void ) {
             break;
         case MOBILELONGRANGEADRMODE:
             if ( MacTxSf == 12 ) { 
-                MacTxSf = 7;
+                MacTxSf = 11;
             } else {
                  MacTxSf = 12;
             }

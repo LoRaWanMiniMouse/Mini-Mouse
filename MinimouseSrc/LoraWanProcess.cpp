@@ -177,7 +177,7 @@ LoraWanObjet::~LoraWanObjet() {
 /**************************************************/
 /*            LoraWan  Join  Method               */
 /**************************************************/
-uint8_t LoraWanObjet::Join ( void ) {
+eLoraWan_Process_States LoraWanObjet::Join ( void ) {
     packet.BuildJoinLoraFrame( );
     packet.MacRx1Delay = RX1DELAYJOIN;
     packet.MacTxSf = 12;

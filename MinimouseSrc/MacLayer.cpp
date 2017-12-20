@@ -84,7 +84,7 @@ void LoraWanContainer::ConfigureRadioForRx2 ( void ) {
 void LoraWanContainer::ConfigureTimerForRx ( int type ) {
     int status = OKLORAWAN ;
     uint32_t tCurrentMillisec;
-    uint32_t tAlarmMillisec;
+    int tAlarmMillisec;
     uint64_t tAlarm64bits;
     int toffset = 8;  // @note created a Define?  
     tCurrentMillisec =  RtcGetTimeMs( &tAlarm64bits);
@@ -99,6 +99,7 @@ void LoraWanContainer::ConfigureTimerForRx ( int type ) {
         tAlarmMillisec = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - tCurrentMillisec - toffset ;// @note Rx2 Dalay is alway RX1DELAY + 1 second
         if ( tAlarmMillisec <= toffset ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_IDLE ;
+            pcf.printf( " error case negative Timer %d ms\n", tAlarmMillisec );
         } else { 
             SetAlarm( tAlarmMillisec );
         }

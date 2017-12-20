@@ -24,7 +24,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define DEBUG_TRACE  1
 #if DEBUG_TRACE == 1
 #define DEBUG_MSG(str)               pcf.printf(str)
-#define DEBUG_PRINTF(fmt, args...)   pcf.printf("%s:%d: "fmt, __FUNCTION__, __LINE__, args)
+#define DEBUG_PRINTF(fmt, args...)   pcf.printf("  %s:%d: "fmt, __FUNCTION__, __LINE__, args)
 #define DEBUG_ARRAY(a,b,c)           for(a=0;a!=0;){}
 #define CHECK_NULL(a)                if(a==NULL){return LGW_HAL_ERROR;}
 #else

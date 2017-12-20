@@ -31,9 +31,9 @@ public:
     eLoraWan_Process_States    SendPayload   ( uint8_t fPort, const uint8_t* dataIn, const uint16_t sizeIn, uint8_t PacketType );
     uint8_t    ReceivePayload( uint8_t* UserRxFport, uint8_t* UserRxPayload, uint8_t* UserRxPayloadSize );
     eLoraWan_Process_States    Join          ( void );
-    uint8_t    IsJoined      ( void );
+    eJoinStatus    IsJoined      ( void );
     void       SetDataRateStrategy ( eDataRateStrategy adrModeSelect );
-    eLoraWan_Process_States    LoraWanProcess( uint8_t * AvailableRxPacket );
+    eLoraWan_Process_States    LoraWanProcess( uint8_t* AvailableRxPacket );
     uint8_t    GetRadioState ( void );
     void       RestoreContext( void ); 
     LoraWanContainer packet;

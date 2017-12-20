@@ -51,6 +51,7 @@ public:
     uint8_t    RxSf;
     uint32_t   DevAddrIsr ; // copy of the devaddr to be tested in the isr routine
     uint8_t    RegIrqFlag;
+    eJoinStatus  JoinedStatus; //@note used in isr routine to filter or not on devaddr
     int StateRadioProcess;
     
     //@note probably have to split with a timer objet

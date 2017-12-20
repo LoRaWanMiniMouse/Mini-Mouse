@@ -36,6 +36,7 @@ RadioContainer::RadioContainer( PinName interrupt )
     TxFrequency = 868100000;
     TxPower = 14;
     TxSf = 7;
+    JoinedStatus = JOINED ;
 }; 
 RadioContainer::~RadioContainer( ) {
 };
@@ -56,6 +57,7 @@ void RadioContainer::IsrRadio( void ) {
         status = DumpRxPayloadAndMetadata ( );
         if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
             RegIrqFlag = BADPACKETIRQFLAG ; // this case is exactly the same than the case of rx timeout
+            DEBUG_MSG( "Receive a packet But rejected\n"); 
         }
     }
     Radio.Sleep ( );
@@ -74,7 +76,7 @@ void RadioContainer::IsrRadio( void ) {
             break;
         
         default :
-            pcf.printf ("receive It radio error\n");
+            DEBUG_MSG ("receive It radio error\n");
             break;
     }
 };
@@ -116,7 +118,6 @@ void RadioContainer::RadioContainerInit( void ) {
 
 
 int RadioContainer::DumpRxPayloadAndMetadata ( void ) {
-
     RxPhyPayloadSize = Radio.Read( REG_LR_RXNBBYTES );
     Radio.ReadFifo( RxPhyPayload, RxPhyPayloadSize );
     RxPhyPayloadSnr = Radio.Read( REG_LR_PKTSNRVALUE );
@@ -126,12 +127,19 @@ int RadioContainer::DumpRxPayloadAndMetadata ( void ) {
     uint8_t MtypeRxtmp = RxPhyPayload[0] >> 5 ;
     if (( MtypeRxtmp == JOINREQUEST) || ( MtypeRxtmp == UNCONFDATAUP ) || ( MtypeRxtmp == CONFDATAUP) || ( MtypeRxtmp == REJOINREQUEST )) {
         status += ERRORLORAWAN;
+        DEBUG_PRINTF(" BAD Mtype = %d for RX Frame \n", MtypeRxtmp );
     }
     /* check devaddr */
-    uint32_t DevAddrtmp = RxPhyPayload[1] + ( RxPhyPayload[2] << 8 ) + ( RxPhyPayload[3] << 16 )+ ( RxPhyPayload[4] << 24 );
-    status += (DevAddrtmp == DevAddrIsr) ? OKLORAWAN : ERRORLORAWAN;
-    if ( status != OKLORAWAN ) {
-        RxPhyPayloadSize = 0;
+    if ( JoinedStatus == JOINED ) {
+            
+        uint32_t DevAddrtmp = RxPhyPayload[1] + ( RxPhyPayload[2] << 8 ) + ( RxPhyPayload[3] << 16 )+ ( RxPhyPayload[4] << 24 );
+        if ( DevAddrtmp != DevAddrIsr ) {
+            status += ERRORLORAWAN;
+            DEBUG_PRINTF( " BAD DevAddr = %d for RX Frame \n", DevAddrtmp );
+        }
+        if ( status != OKLORAWAN ) {
+            RxPhyPayloadSize = 0;
+        }
     }
     return (status);
 }

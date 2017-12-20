@@ -41,7 +41,6 @@ LoraWanContainer::LoraWanContainer( PinName interrupt )
     MacRx2Frequency  = 869525000; 
     MacRx2Sf = 9;
     MacRx1Delay = RX1DELAY;
-    JoinedStatus = 0 ;
     memcpy( appSKey, LoRaMacAppSKey, 16 );
     memcpy( nwkSKey, LoRaMacNwkSKey, 16 );
     DevAddr = LoRaDevAddr ;
@@ -90,14 +89,14 @@ void LoraWanContainer::ConfigureTimerForRx ( int type ) {
     int toffset = 8;  // @note created a Define?  
     tCurrentMillisec =  RtcGetTimeMs( &tAlarm64bits);
     if (type == RX1) {
-        tAlarmMillisec = MacRx1Delay + Phy.TimestampRtcIsr - tCurrentMillisec - toffset ;
+        tAlarmMillisec = ( MacRx1Delay * 1000 )+ Phy.TimestampRtcIsr - tCurrentMillisec - toffset ;
         if ( tAlarmMillisec <= toffset ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_RX1FINISHED ;
         } else { 
             SetAlarm( tAlarmMillisec );
         }
     } else {
-        tAlarmMillisec = MacRx1Delay + 1000 + Phy.TimestampRtcIsr - tCurrentMillisec ;// @note Rx2 Dalay is alway RX1DELAY + 1 second
+        tAlarmMillisec = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - tCurrentMillisec - toffset ;// @note Rx2 Dalay is alway RX1DELAY + 1 second
         if ( tAlarmMillisec <= toffset ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_IDLE ;
         } else { 
@@ -111,17 +110,16 @@ void LoraWanContainer::ConfigureTimerForRx ( int type ) {
     /*       DecodeRxFrame      */
     /****************************/
 eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
+
     int status = OKLORAWAN ;
     eRxPacketType RxPacketType = NOVALIDRXPACKET ; 
     uint32_t micIn ;
     status += CheckRxPayloadLength ( );
     status += ExtractRxMhdr ( ) ;
-        pcf.printf("is a recive decode  \n");
         /************************************************************************/
         /*                 Case : the receive packet is a JoinResponse          */
         /************************************************************************/
     if ( MtypeRx == JOINACCEPT ) {
-        pcf.printf("is a joinaccept \n");
         LoRaMacJoinDecrypt( &Phy.RxPhyPayload[1], Phy.RxPhyPayloadSize-1, LoRaMacAppKey, &MacRxPayload[1] );
         MacRxPayload[0] =  Phy.RxPhyPayload[0];
         MacRxPayloadSize = Phy.RxPhyPayloadSize - MICSIZE ;
@@ -239,16 +237,18 @@ void LoraWanContainer::UpdateMacLayer ( void ) {
     /*                      Special Case Join OTA                         */
     /**********************************************************************/
 void LoraWanContainer::UpdateJoinProcedure ( void ) {
-    pcf.printf( " receive a Join Response \n");
     uint8_t AppNonce[3];
-    memcpy( AppNonce, &MacRxPayload[1], 6);
+    memcpy( AppNonce, &MacRxPayload[1], 3 );
     LoRaMacJoinComputeSKeys(LoRaMacAppKey, AppNonce, DevNonce,  nwkSKey, appSKey );
+    for( int i = 0 ;i<16;i++) {
+        
+    }
     DevAddr        = MacRxPayload[7] + ( MacRxPayload[8] << 8 ) + ( MacRxPayload[9] << 16 )+ ( MacRxPayload[10] << 24 );
     Phy.DevAddrIsr = DevAddr ; 
-    MacRx1SfOffset = ( MacRxPayload[11] & 0x70 ) >> 3 ;
+    MacRx1SfOffset = ( MacRxPayload[11] & 0x70 ) >> 3;
     MacRx2Sf       = ( MacRxPayload[11] & 0x0F );
-    MacRx1Delay    = MacRxPayload[12] ;
-    JoinedStatus = 1;
+    MacRx1Delay    = MacRxPayload[12];
+    Phy.JoinedStatus = JOINED;
     //@note have to manage option byte for channel frequency planned
 }
 /**********************************************************************/
@@ -264,7 +264,7 @@ void LoraWanContainer::UpdateJoinProcedure ( void ) {
 /********************************************************/
 
 void LoraWanContainer::BuildJoinLoraFrame( void ) {
-    DevNonce = randr( 0, 65535 )+2414;
+    DevNonce = randr( 0, 65535 )+18714;
     MType = JOINREQUEST ;
     SetMacHeader ( );
     for (int i = 0; i <8; i++){ 
@@ -540,7 +540,7 @@ void LoraWanContainer::SaveInFlash ( ) {
     BackUpFlash.FcntUp                  = FcntUp;
     BackUpFlash.FcntDwn                 = FcntDwn;
     BackUpFlash.DevAddr                 = DevAddr;
-    BackUpFlash.JoinedStatus            = JoinedStatus;
+    BackUpFlash.JoinedStatus            = Phy.JoinedStatus;
     memcpy( &BackUpFlash.MacTxFrequency[0], &MacTxFrequency[0], 16);
     memcpy( &BackUpFlash.MacMinMaxSFChannel[0], &MacMinMaxSFChannel[0], 16);
     memcpy( &BackUpFlash.nwkSKey[0], &nwkSKey[0], 16);
@@ -564,7 +564,7 @@ void LoraWanContainer::LoadFromFlash ( ) {
     FcntUp                        = BackUpFlash.FcntUp ;
     FcntDwn                       = BackUpFlash.FcntDwn ;
     DevAddr                       = BackUpFlash.DevAddr;
-    JoinedStatus                  = BackUpFlash.JoinedStatus;
+    Phy.JoinedStatus              = ( eJoinStatus ) BackUpFlash.JoinedStatus;
     memcpy( &MacTxFrequency[0], &BackUpFlash.MacTxFrequency[0], 16);
     memcpy( &MacMinMaxSFChannel[0], &BackUpFlash.MacMinMaxSFChannel[0], 16);
     memcpy( &nwkSKey[0], &BackUpFlash.nwkSKey[0], 16);

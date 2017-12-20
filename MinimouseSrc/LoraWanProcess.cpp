@@ -18,6 +18,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "LoraWanProcess.h"
 #include "ApiRtc.h"
 #include "utilities.h"
+#include "Define.h"
 Serial pcf( SERIAL_TX, SERIAL_RX );
 
 LoraWanObjet::LoraWanObjet( PinName interrupt ):packet( interrupt ){
@@ -35,7 +36,7 @@ LoraWanObjet::~LoraWanObjet() {
 /*    LoraWanProcess Method                                                                    */
 /***********************************************************************************************/
 
- eLoraWan_Process_States LoraWanObjet::LoraWanProcess( uint8_t * AvailableRxPacket ) {
+ eLoraWan_Process_States LoraWanObjet::LoraWanProcess( uint8_t* AvailableRxPacket ) {
  
     *AvailableRxPacket = NOLORARXPACKETAVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE*
     switch ( StateLoraWanProcess ) {
@@ -178,6 +179,7 @@ LoraWanObjet::~LoraWanObjet() {
 /*            LoraWan  Join  Method               */
 /**************************************************/
 eLoraWan_Process_States LoraWanObjet::Join ( void ) {
+    packet.Phy.JoinedStatus = NOTJOINED;
     packet.BuildJoinLoraFrame( );
     packet.MacRx1Delay = RX1DELAYJOIN;
     packet.MacTxSf = 12;
@@ -190,10 +192,9 @@ eLoraWan_Process_States LoraWanObjet::Join ( void ) {
 /**************************************************/
 /*          LoraWan  IsJoined  Method             */
 /**************************************************/
-uint8_t  LoraWanObjet::IsJoined( void ) {
-    uint8_t status;
-    pcf.printf( " New DevAddr        = 0x%.8x \n",packet.DevAddr);
-    status = packet.JoinedStatus;
+eJoinStatus  LoraWanObjet::IsJoined( void ) {
+    eJoinStatus status = NOTJOINED;
+    status = packet.Phy.JoinedStatus;
     return ( status );
 }
 

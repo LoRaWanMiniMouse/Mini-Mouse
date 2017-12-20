@@ -43,12 +43,12 @@ int main( ) {
     /*           Restore Context from Flash         */
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
-    //Lp.RestoreContext ( );
+    Lp.RestoreContext ( );
 
     while(1) {
-        pcf.printf("\n\n\n\n ");
-        //LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, UNCONFDATAUP );
-//        if ( Lp.IsJoined( ) == ISJOINED ) {            
+          pcf.printf("\n\n\n\n ");
+//        if ( Lp.IsJoined ( ) == JOINED ) {            
+//            pcf.printf("send payload \n");
             LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, UNCONFDATAUP );
 //        } else {
 //            LpState = Lp.Join( );
@@ -71,10 +71,3 @@ int main( ) {
         wait_s( 5 );
     }
 }
-/*************************************************if OTA  *****************************************/
-//        if ( Lp.IsJoined( ) == ISJOINED ) {            
-//            LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, UNCONFDATAUP );
-//        } else {
-//            LpState = Lp.Join( );
-//        }
-/**************************************************************************************************/

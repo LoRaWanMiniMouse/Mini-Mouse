@@ -19,6 +19,22 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define DEFINE_H
 #include "mbed.h"
 
+
+
+#define DEBUG_TRACE  1
+#if DEBUG_TRACE == 1
+#define DEBUG_MSG(str)               pcf.printf(str)
+#define DEBUG_PRINTF(fmt, args...)   pcf.printf("%s:%d: "fmt, __FUNCTION__, __LINE__, args)
+#define DEBUG_ARRAY(a,b,c)           for(a=0;a!=0;){}
+#define CHECK_NULL(a)                if(a==NULL){return LGW_HAL_ERROR;}
+#else
+#define DEBUG_MSG(str)
+#define DEBUG_PRINTF(fmt, args...)
+#define DEBUG_ARRAY(a,b,c)            for(a=0;a!=0;){}
+#define CHECK_NULL(a)                 if(a==NULL){return LGW_HAL_ERROR;}
+#endif
+
+
 /********************************************************************************/
 /*                         PINOUT Platform dependant                            */
 /********************************************************************************/
@@ -147,8 +163,8 @@ enum {
     RXTIMING_SETUP_ANS_SIZE ,
 };
 
-#define RX1DELAY              1000 // define in ms
-#define RX1DELAYJOIN          5000 // define in ms
+#define RX1DELAY              1 // define in s
+#define RX1DELAYJOIN          5 // define in s
 #define MAX_FCNT_GAP          16384
 #define MINLORAWANPAYLOADSIZE 13
 #define PORTNWK 0
@@ -213,10 +229,10 @@ enum {
     LORARXPACKETAVAILABLE,
 };
 
-enum { 
+typedef enum { 
     NOTJOINED,
-    ISJOINED,
-};
+    JOINED,
+} eJoinStatus;
 
 enum { 
     NOFRAME_TOSEND,

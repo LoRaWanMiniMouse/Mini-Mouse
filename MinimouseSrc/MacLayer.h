@@ -108,7 +108,7 @@ public:
 
 /* LoRaWan Mac Data for join */
     uint16_t DevNonce;
-    uint8_t  JoinedStatus; 
+
     
 /* LoRaWan Mac Data for nwk Ans */
     uint8_t    MacNwkPayload[255];  //@note resize this buffer 

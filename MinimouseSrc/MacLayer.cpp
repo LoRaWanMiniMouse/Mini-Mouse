@@ -238,8 +238,8 @@ void LoraWanContainer::UpdateMacLayer ( void ) {
     /*                      Special Case Join OTA                         */
     /**********************************************************************/
 void LoraWanContainer::UpdateJoinProcedure ( void ) {
-    uint8_t AppNonce[3];
-    memcpy( AppNonce, &MacRxPayload[1], 3 );
+    uint8_t AppNonce[6];
+    memcpy( AppNonce, &MacRxPayload[1], 6 );
     LoRaMacJoinComputeSKeys(LoRaMacAppKey, AppNonce, DevNonce,  nwkSKey, appSKey );
     for( int i = 0 ;i<16;i++) {
         

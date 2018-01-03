@@ -40,7 +40,7 @@ LoraWanContainer::LoraWanContainer( PinName interrupt )
     MacRx1SfOffset = 0;
     MacRx2Frequency  = 869525000; 
     MacRx2Sf = 9;
-    MacRx1Delay = RX1DELAY;
+    MacRx1Delay = RECEIVE_DELAY1;// @note replace by default setting regions
     memcpy( appSKey, LoRaMacAppSKey, 16 );
     memcpy( nwkSKey, LoRaMacNwkSKey, 16 );
     DevAddr = LoRaDevAddr ;
@@ -155,9 +155,9 @@ eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
                     memcpy ( MacNwkPayload, Fopts, FoptsLength);
                     MacNwkPayloadSize = FoptsLength;
                     RxPacketType = USERRX_FOPTSPACKET ;
-                } else {
+                } 
+                if ( MacRxPayloadSize > 0 ) {
                     AvailableRxPacketForUser = LORARXPACKETAVAILABLE; 
-                    RxPacketType = USERRXPACKET ;
                 }
             }
             pcf.printf( " MtypeRx = %d \n ",MtypeRx );
@@ -421,36 +421,36 @@ void LoraWanContainer::LinkCheckParser( void ) {
     /*    Private NWK MANAGEMENTS : LinkADR              */
     /*****************************************************/
 void LoraWanContainer::LinkADRParser( void ) {
-    DEBUG_PRINTF (" %x %x %x %x \n", MacRxPayload[1], MacRxPayload[2], MacRxPayload[3], MacRxPayload[4]);
+    DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[1], MacNwkPayload[2], MacNwkPayload[3], MacNwkPayload[4]);
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
     uint8_t temp ; 
     uint16_t temp2 ; 
      /* Valid DataRate  And Prepare Ans */
-    temp = ( ( MacRxPayload[1] & 0xF0 ) >> 4 );
+    temp = ( ( MacNwkPayload[1] & 0xF0 ) >> 4 );
     status = isValidDataRate( temp );
     (status == OKLORAWAN ) ? MacTxPower = temp : StatusAns &= 0x5 ; 
     
     /* Valid TxPower  And Prepare Ans */
-    temp = ( MacRxPayload[1] & 0x0F );
+    temp = ( MacNwkPayload[1] & 0x0F );
     status = OKLORAWAN;
     status = isValidTxPower( temp );
     (status == OKLORAWAN ) ? MacTxPower = temp : StatusAns &= 0x5 ; 
     
      /* Valid DataRate Channel Mask And Prepare Ans */
-     temp2 = MacRxPayload[2] + ( MacRxPayload[3] << 8 )  ;
+     temp2 = MacNwkPayload[2] + ( MacNwkPayload[3] << 8 )  ;
      status = OKLORAWAN;
      status = isValidChannelMask( temp2 );
     (status == OKLORAWAN ) ? MacChMask = temp2 : StatusAns &= 0x6 ; 
     
     /* Valid Redundancy And Prepare Ans */
-     temp = MacRxPayload[4];
+     temp = MacNwkPayload[4];
      status = OKLORAWAN;
      status = isValidNbRep( temp );
     (status == OKLORAWAN ) ? MacNbRepUnconfirmedTx = temp : StatusAns &= 0x3 ; 
     
     /* Prepare Ans*/
-    MacNwkAns [0] = MacRxPayload[0] ; // copy Cid
+    MacNwkAns [0] = MacNwkPayload[0] ; // copy Cid
     MacNwkAns [1] = StatusAns ;
     MacNwkAnsSize = 2 ;
     IsFrameToSend = NWKFRAME_TOSEND ;
@@ -463,25 +463,25 @@ void LoraWanContainer::DutyCycleParser( void ) {
     /*    Private NWK MANAGEMENTS : RXParamSetupParser   */
     /*****************************************************/
 void LoraWanContainer::RXParamSetupParser( void ) {
-    DEBUG_PRINTF (" %x %x %x %x \n", MacRxPayload[1], MacRxPayload[2], MacRxPayload[3], MacRxPayload[4]);
+    DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[1], MacNwkPayload[2], MacNwkPayload[3], MacNwkPayload[4]);
     //@note not valid case or error case have been yet implemented
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
     int temp ; 
     /* Valid Rx1SfOffset And Prepare Ans */
-    temp = ( MacRxPayload[1] & 0x70 ) >> 3 ;
+    temp = ( MacNwkPayload[1] & 0x70 ) >> 3 ;
     status = isValidRx1SfOffset( temp );
     (status == OKLORAWAN ) ? MacRx1SfOffset = temp : StatusAns &= 0x6 ; 
     
     /* Valid MacRx2Sf And Prepare Ans */
     status = OKLORAWAN;
-    temp = ( MacRxPayload[1] & 0x0F );
+    temp = ( MacNwkPayload[1] & 0x0F );
     status = isValidMacRx2Sf( temp );
     (status == OKLORAWAN ) ? MacRx2Sf = temp : StatusAns &= 0x5 ; 
     
     /* Valid MacRx2Frequency And Prepare Ans */
     status = OKLORAWAN;
-    temp = ( MacRxPayload[2] ) + ( MacRxPayload[3] << 8 ) + ( MacRxPayload[4] << 16 );
+    temp = ( MacNwkPayload[2] ) + ( MacNwkPayload[3] << 8 ) + ( MacNwkPayload[4] << 16 );
     status = isValidMacRx2Frequency( temp );
     (status == OKLORAWAN ) ? MacRx2Frequency = temp : StatusAns &= 0x3 ; 
     

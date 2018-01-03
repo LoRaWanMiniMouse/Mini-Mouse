@@ -166,9 +166,7 @@ enum {
 #define    RXTIMING_SETUP_ANS_SIZE 
 
 
-#define RX1DELAY              1 // define in s
-#define RX1DELAYJOIN          5 // define in s
-#define MAX_FCNT_GAP          16384
+
 #define MINLORAWANPAYLOADSIZE 13
 #define PORTNWK 0
 /*****************************************************************************/
@@ -215,7 +213,6 @@ typedef enum {
 
 typedef enum {
     NOMOREVALIDRXPACKET,
-    USERRXPACKET,
     USERRX_FOPTSPACKET,
     NWKRXPACKET,
     JOINACCEPTPACKET,

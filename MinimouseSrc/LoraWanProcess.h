@@ -20,7 +20,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "mbed.h"
 #include "Define.h"
 #include "MacLayer.h"
-
+#include "Regions.h"
 extern Serial pcf;
 
 
@@ -36,7 +36,7 @@ public:
     eLoraWan_Process_States    LoraWanProcess( uint8_t* AvailableRxPacket );
     uint8_t    GetRadioState ( void );
     void       RestoreContext( void ); 
-    LoraWanContainer packet;
+    LoraRegionsEU packet;
 /* not implemented yet*/
     uint8_t    TryToJoin               ( void );
     uint32_t   GetNextMaxPayloadLength ( void );

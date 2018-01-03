@@ -123,7 +123,7 @@ LoraWanObjet::~LoraWanObjet() {
             pcf.printf( " **************************\n " );
             pcf.printf( " * Process Downlink       *\n " );
             pcf.printf( " **************************\n " );
-            ValidRxPacket = packet.DecodeRxFrame( ); // return NOVALIDRXPACKET or  USERRXPACKET or NWKRXPACKET or JOINACCEPTPACKET.
+            ValidRxPacket = packet.DecodeRxFrame( ); // return NOVALIDRXPACKET or  USERRX_FOPTSPACKET or NWKRXPACKET or JOINACCEPTPACKET.
             StateLoraWanProcess = LWPSTATE_UPDATEMAC;
             break;
     /************************************************************************************/
@@ -182,7 +182,7 @@ LoraWanObjet::~LoraWanObjet() {
 eLoraWan_Process_States LoraWanObjet::Join ( void ) {
     packet.Phy.JoinedStatus = NOTJOINED;
     packet.BuildJoinLoraFrame( );
-    packet.MacRx1Delay = RX1DELAYJOIN;
+    packet.MacRx1Delay = JOIN_ACCEPT_DELAY1; // to be set in default setting regions
     packet.MacTxSf = 12;
     packet.MacRx2Sf = 12;
     StateLoraWanProcess = LWPSTATE_SEND;

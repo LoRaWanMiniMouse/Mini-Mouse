@@ -143,18 +143,19 @@ LoraWanObjet::~LoraWanObjet() {
             packet.UpdateMacLayer();
             *AvailableRxPacket = packet.AvailableRxPacketForUser;
             if ( ( packet.IsFrameToSend == NWKFRAME_TOSEND ) ) {// @note ack send during the next tx|| ( packet.IsFrameToSend == USERACK_TOSEND ) ) {
-                RtcTargetTimer = RtcGetTimeSecond( ) + randr( 5, 25 ); //@note RtcGetTime in s so no wrap before 136 year since 1970 discuss wait between 5s and 25s
+                packet.IsFrameToSend = NOFRAME_TOSEND;
+                RtcTargetTimer = RtcGetTimeSecond( ) + randr( 1, 2 ); //@note RtcGetTime in s so no wrap before 136 year since 1970 discuss wait between 5s and 25s
                 StateLoraWanProcess = LWPSTATE_TXWAIT;
             } else {
                 RadioReset ( ) ; 
                 StateLoraWanProcess = LWPSTATE_IDLE;
             }
+            ValidRxPacket = NOMOREVALIDRXPACKET;
             break;
     /************************************************************************************/
     /*                              STATE TXWAIT MAC                                    */
     /************************************************************************************/
         case LWPSTATE_TXWAIT:
-                      
             pcf.printf( " **************************\n " );
             pcf.printf( " *       TXWAIT MAC       *\n " );
             pcf.printf( " **************************\n " );

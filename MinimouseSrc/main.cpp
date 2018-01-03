@@ -43,7 +43,7 @@ int main( ) {
     /*           Restore Context from Flash         */
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
-    Lp.RestoreContext ( );
+    //Lp.RestoreContext ( );
 
     while(1) {
           pcf.printf("\n\n\n\n ");

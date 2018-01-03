@@ -26,6 +26,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define DEBUG_MSG(str)               pcf.printf(str)
 #define DEBUG_PRINTF(fmt, args...)   pcf.printf("  %s:%d: "fmt, __FUNCTION__, __LINE__, args)
 #define DEBUG_ARRAY(a,b,c)           for(a=0;a!=0;){}
+    
 #define CHECK_NULL(a)                if(a==NULL){return LGW_HAL_ERROR;}
 #else
 #define DEBUG_MSG(str)
@@ -54,13 +55,13 @@ Maintainer        : Fabien Holin (SEMTECH)
 /*                         LORA KEYS USER Specific                              */
 /********************************************************************************/
 static uint8_t LoRaMacNwkSKey[] =
-{ 0x94, 0x02, 0x9E, 0xAB, 0xE9, 0x0C, 0xE3, 0xCF, 0x51, 0xA2, 0x31, 0x7F, 0x03, 0x27, 0xEF, 0xA6 };
+{ 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
 
 /*!
  * AES encryption/decryption cipher application session key
  */
 static uint8_t LoRaMacAppSKey[] =
-{ 0xBB, 0xEB, 0xEB, 0x4D, 0x5C, 0xAF, 0x95, 0x5D, 0x33, 0xD1, 0xC0, 0xC4, 0x41, 0x55, 0xB5, 0xA1 };
+{ 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
 
 
 static uint8_t LoRaMacAppKey[] =
@@ -131,37 +132,39 @@ enum{
 };
 
 enum {
-    LINK_CHECK_REQ,
-    LINK_CHECK_ANS,
+    LINK_CHECK_REQ = 2,
     LINK_ADR_REQ,
-    LINK_ADR_ANS,
     DUTY_CYCLE_REQ,
-    DUTY_CYCLE_ANS,
     RXPARRAM_SETUP_REQ,
-    RXPARRAM_SETUP_ANS,
     DEV_STATUS_REQ,
-    DEV_STATUS_ANS,
     NEW_CHANNEL_REQ,
-    NEW_CHANNEL_ANS,
     RXTIMING_SETUP_REQ,
-    RXTIMING_SETUP_ANS,
 };
 enum {
-    LINK_CHECK_REQ_SIZE ,
-    LINK_CHECK_ANS_SIZE ,
-    LINK_ADR_REQ_SIZE,
-    LINK_ADR_ANS_SIZE,
-    DUTY_CYCLE_REQ_SIZE,
-    DUTY_CYCLE_ANS_SIZE,
-    RXPARRAM_SETUP_REQ_SIZE,
-    RXPARRAM_SETUP_ANS_SIZE,
-    DEV_STATUS_REQ_SIZE,
-    DEV_STATUS_ANS_SIZE,
-    NEW_CHANNEL_REQ_SIZE,
-    NEW_CHANNEL_ANS_SIZE,
-    RXTIMING_SETUP_REQ_SIZE,
-    RXTIMING_SETUP_ANS_SIZE ,
+    LINK_CHECK_ANS = 2,
+    LINK_ADR_ANS,
+    DUTY_CYCLE_ANS,
+    RXPARRAM_SETUP_ANS,
+    DEV_STATUS_ANS,
+    NEW_CHANNEL_ANS,
+    RXTIMING_SETUP_ANS,
 };
+
+#define    LINK_CHECK_REQ_SIZE 
+#define    LINK_CHECK_ANS_SIZE 
+#define    LINK_ADR_REQ_SIZE
+#define    LINK_ADR_ANS_SIZE
+#define    DUTY_CYCLE_REQ_SIZE
+#define    DUTY_CYCLE_ANS_SIZE
+#define    RXPARRAM_SETUP_REQ_SIZE    5
+#define    RXPARRAM_SETUP_ANS_SIZE    2
+#define    DEV_STATUS_REQ_SIZE
+#define    DEV_STATUS_ANS_SIZE
+#define    NEW_CHANNEL_REQ_SIZE
+#define    NEW_CHANNEL_ANS_SIZE
+#define    RXTIMING_SETUP_REQ_SIZE
+#define    RXTIMING_SETUP_ANS_SIZE 
+
 
 #define RX1DELAY              1 // define in s
 #define RX1DELAYJOIN          5 // define in s
@@ -211,7 +214,7 @@ typedef enum {
 }eStatusLoRaWan;
 
 typedef enum {
-    NOVALIDRXPACKET,
+    NOMOREVALIDRXPACKET,
     USERRXPACKET,
     USERRX_FOPTSPACKET,
     NWKRXPACKET,

@@ -113,7 +113,7 @@ void LoraWanContainer::ConfigureTimerForRx ( int type ) {
 eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
 
     int status = OKLORAWAN ;
-    eRxPacketType RxPacketType = NOVALIDRXPACKET ; 
+    eRxPacketType RxPacketType = NOMOREVALIDRXPACKET ; 
     uint32_t micIn ;
     status += CheckRxPayloadLength ( );
     status += ExtractRxMhdr ( ) ;
@@ -176,7 +176,7 @@ eStatusLoRaWan LoraWanContainer::ParseManagementPacket( void ) {
     uint8_t CmdIdentifier;
     eStatusLoRaWan status = OKLORAWAN ;
     uint8_t MaxCmdNum = 16 ; //@note security to avoid an infinite While erro 
-    while ( ( MacNwkPayloadSize > 0 ) || (  MaxCmdNum > 0 ) ) { //@note MacNwkPayloadSize and MacNwkPayload[0] are updated in Parser's method
+    while ( ( MacNwkPayloadSize > 0 ) && (  MaxCmdNum > 0 ) ) { //@note MacNwkPayloadSize and MacNwkPayload[0] are updated in Parser's method
         MaxCmdNum --; 
         if ( MaxCmdNum == 0 ) {
             return ( ERRORLORAWAN );
@@ -295,7 +295,7 @@ void LoraWanContainer::BuildTxLoraFrame( void ) {
     MacPayloadSize = UserPayloadSize+FHDROFFSET; 
 };
 void LoraWanContainer::EncryptTxFrame( void ) {
-    LoRaMacPayloadEncrypt( &Phy.TxPhyPayload[FHDROFFSET], UserPayloadSize, appSKey, DevAddr, UP_LINK, FcntUp, &Phy.TxPhyPayload[FHDROFFSET] );
+    LoRaMacPayloadEncrypt( &Phy.TxPhyPayload[FHDROFFSET], UserPayloadSize, (fPort == PORTNWK)? nwkSKey :appSKey, DevAddr, UP_LINK, FcntUp, &Phy.TxPhyPayload[FHDROFFSET] );
     LoRaMacComputeAndAddMic( &Phy.TxPhyPayload[0], MacPayloadSize, nwkSKey, DevAddr, UP_LINK, FcntUp );
     MacPayloadSize = MacPayloadSize + 4;
 };
@@ -334,6 +334,7 @@ int LoraWanContainer::ExtractRxMhdr ( void ) {
     MajorRx =  Phy.RxPhyPayload[0] & 0x3 ;
     if (( MtypeRx == JOINREQUEST) || ( MtypeRx == UNCONFDATAUP ) || ( MtypeRx == CONFDATAUP) || ( MtypeRx == REJOINREQUEST )) {
         status = ERRORLORAWAN;
+        DEBUG_MSG( " BAD RX MHDR\n " );
     }
     AckBitForTx = ( MtypeRx == CONFDATADOWN ) ? 1 : 0 ;
         
@@ -349,6 +350,9 @@ int LoraWanContainer::ExtractRxFhdr ( uint16_t *FcntDwnTmp ) { //@note Not yet a
     *FcntDwnTmp = Phy.RxPhyPayload[6] + ( Phy.RxPhyPayload[7] << 8 );
     FoptsLength = FctrlRx & 0x7;
     memcpy(&Fopts[0], &Phy.RxPhyPayload[8], FoptsLength);
+    for (int i = 0 ; i < FoptsLength ; i ++) {
+        DEBUG_PRINTF( " %x \n", Fopts[i] );
+    }
     FportRx = Phy.RxPhyPayload[8+FoptsLength];
     /**************************/
     /* manage Fctrl Byte      */
@@ -417,6 +421,7 @@ void LoraWanContainer::LinkCheckParser( void ) {
     /*    Private NWK MANAGEMENTS : LinkADR              */
     /*****************************************************/
 void LoraWanContainer::LinkADRParser( void ) {
+    DEBUG_PRINTF (" %x %x %x %x \n", MacRxPayload[1], MacRxPayload[2], MacRxPayload[3], MacRxPayload[4]);
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
     uint8_t temp ; 
@@ -458,6 +463,7 @@ void LoraWanContainer::DutyCycleParser( void ) {
     /*    Private NWK MANAGEMENTS : RXParamSetupParser   */
     /*****************************************************/
 void LoraWanContainer::RXParamSetupParser( void ) {
+    DEBUG_PRINTF (" %x %x %x %x \n", MacRxPayload[1], MacRxPayload[2], MacRxPayload[3], MacRxPayload[4]);
     //@note not valid case or error case have been yet implemented
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
@@ -480,9 +486,10 @@ void LoraWanContainer::RXParamSetupParser( void ) {
     (status == OKLORAWAN ) ? MacRx2Frequency = temp : StatusAns &= 0x3 ; 
     
     /* Prepare Ans*/
-    MacNwkAns [0] = MacRxPayload[0] ; // copy Cid
+    MacNwkAns [0] = RXPARRAM_SETUP_ANS ; // copy Cid
     MacNwkAns [1] = StatusAns ;
-    MacNwkAnsSize = 2 ;
+    MacNwkAnsSize = RXPARRAM_SETUP_ANS_SIZE ;
+    MacNwkPayloadSize -= RXPARRAM_SETUP_REQ_SIZE;
     IsFrameToSend = NWKFRAME_TOSEND ;
 }
 

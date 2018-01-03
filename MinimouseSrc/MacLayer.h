@@ -43,23 +43,26 @@ public:
     uint8_t IsFrameToSend;
     eRxPacketType   DecodeRxFrame            ( void );
     eStatusLoRaWan  ParseManagementPacket    ( void );
+
 /* LoraWan Context */ 
 /* Only 16 ch mask => ChMaskCntl not used */
 /* Duty cycle is not managed */
-
+    eBandWidth    MacRx1Bw;
     /*******************************************/
     /*      Update by Link ADR command         */
     /*******************************************/
-    uint8_t    MacTxSf;
-    uint8_t    MacTxPower;
-    uint16_t   MacChMask;
-    uint8_t    MacNbRepUnconfirmedTx; 
+    uint8_t      MacTxSf;
+    eBandWidth   MacTxBw;
+    uint8_t      MacTxPower;
+    uint16_t     MacChMask;
+    uint8_t      MacNbRepUnconfirmedTx; 
     /********************************************/
     /*     Update by TxParamaSetupRequest       */
     /********************************************/
-    uint32_t   MacRx2Frequency ; 
-    uint8_t    MacRx2Sf;
-    uint8_t    MacRx1SfOffset;
+    uint32_t     MacRx2Frequency ; 
+    uint8_t      MacRx2Sf;
+    eBandWidth   MacRx2Bw;
+    uint8_t      MacRx1SfOffset;
     /********************************************/
     /*     Update by NewChannelReq command      */
     /********************************************/
@@ -157,7 +160,7 @@ private :
     uint8_t isValidChannelMask     ( uint16_t );
     uint8_t isValidNbRep           ( uint8_t ) ;
     void SaveInFlash               ( void );
-    uint8_t crypto_verifyMICandDecrypt ( uint8_t *frame_header, const uint8_t *encrypted_payload ,uint32_t micIn, uint8_t keySet, uint8_t *decrypted_payload, uint8_t PayloadSize);
+    //uint8_t crypto_verifyMICandDecrypt ( uint8_t *frame_header, const uint8_t *encrypted_payload ,uint32_t micIn, uint8_t keySet, uint8_t *decrypted_payload, uint8_t PayloadSize);
     sBackUpFlash BackUpFlash;
 }; 
 

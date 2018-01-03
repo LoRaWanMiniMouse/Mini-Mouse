@@ -17,41 +17,45 @@ Maintainer        : Fabien Holin (SEMTECH)
 */
 #ifndef DATASTOREINFLASH_H
 #define DATASTOREINFLASH_H
+#include "Define.h"
 
 struct sBackUpFlash
 {    /*******************************************/
     /*      Update by Link ADR command         */
     /*******************************************/
-    uint8_t    MacTxSf;
-    uint8_t    MacTxPower;
-    uint16_t   MacChMask;
-    uint8_t    MacNbRepUnconfirmedTx; 
+    uint8_t      MacTxSf;
+    uint8_t      MacTxPower;
+    eBandWidth   MacTxBw;
+    uint16_t     MacChMask;
+    uint8_t      MacNbRepUnconfirmedTx; 
     /********************************************/
     /*     Update by TxParamaSetupRequest       */
     /********************************************/
-    uint32_t   MacRx2Frequency ; 
-    uint8_t    MacRx2Sf;
-    uint8_t    MacRx1SfOffset;
+    uint32_t     MacRx2Frequency ; 
+    uint8_t      MacRx2Sf;
+    eBandWidth   MacRx2Bw;
+    uint8_t      MacRx1SfOffset;
     /********************************************/
     /*     Update by NewChannelReq command      */
     /********************************************/
-    uint32_t   MacTxFrequency[16];
-    uint32_t   MacMinMaxSFChannel[16];
-    uint8_t    NbOfActiveChannel;
+    uint32_t     MacTxFrequency[16];
+    uint32_t     MacMinMaxSFChannel[16];
+    uint8_t      NbOfActiveChannel;
     /********************************************/
     /*   Update by RXTimingSetupReq command     */
     /********************************************/
-    int        MacRx1Delay;
+    int          MacRx1Delay;
     /********************************************/
     /*   Other Data To store                    */
     /********************************************/
-    uint16_t   FcntUp;
-    uint32_t   FcntDwn;
-    uint32_t   DevAddr;
-    uint8_t    nwkSKey[16];
-    uint8_t    appSKey[16];
-    uint8_t    JoinedStatus; 
-    uint8_t    Reserved [1]; 
+    eBandWidth   MacRx1Bw;
+    uint16_t     FcntUp;
+    uint32_t     FcntDwn;
+    uint32_t     DevAddr;
+    uint8_t      nwkSKey[16];
+    uint8_t      appSKey[16];
+    uint8_t      JoinedStatus; 
+    uint8_t      Reserved [1]; 
 } ;
 extern struct sBackUpFlash BackUpFlash;
 #endif

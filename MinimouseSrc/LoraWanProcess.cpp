@@ -183,8 +183,8 @@ eLoraWan_Process_States LoraWanObjet::Join ( void ) {
     packet.Phy.JoinedStatus = NOTJOINED;
     packet.BuildJoinLoraFrame( );
     packet.MacRx1Delay = JOIN_ACCEPT_DELAY1; // to be set in default setting regions
-    packet.MacTxSf = 12;
-    packet.MacRx2Sf = 12;
+    packet.MacTxSf = 12; //@note tbd implement % sf 
+    //@note should be done in region constructor packet.MacRx2Sf = 12;
     StateLoraWanProcess = LWPSTATE_SEND;
     return( StateLoraWanProcess );
 };
@@ -244,42 +244,42 @@ void LoraWanObjet::SetDataRateStrategy( eDataRateStrategy adrModeSelect ) {
 /*        LoraWan  TryToJoin  Method              */
 /**************************************************/
 uint8_t LoraWanObjet::TryToJoin ( void ) {
-    //@NOTE NOT YET IMPLEMENTED
+    return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 /**************************************************/
 /*   LoraWan  GetNextMaxPayloadLength  Method     */
 /**************************************************/
 uint32_t LoraWanObjet::GetNextMaxPayloadLength ( void ) {
-    //@NOTE NOT YET IMPLEMENTED
+     return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 /**************************************************/
 /*         LoraWan  GetDevAddr  Method            */
 /**************************************************/
 uint32_t LoraWanObjet::GetDevAddr ( void ) {
-    //@NOTE NOT YET IMPLEMENTED
+     return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 /**************************************************/
 /*         LoraWan  GetNextPower  Method          */
 /**************************************************/
 uint8_t LoraWanObjet::GetNextPower ( void ) {
-    //@NOTE NOT YET IMPLEMENTED
+     return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 /**************************************************/
 /*        LoraWan  GetNextDataRate  Method        */
 /**************************************************/
 uint8_t LoraWanObjet::GetNextDataRate ( void ) {
-    //@NOTE NOT YET IMPLEMENTED
+     return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 /**************************************************/
 /*    LoraWan  GetLorawanProcessState  Method     */
 /**************************************************/
 uint8_t LoraWanObjet::GetLorawanProcessState ( void ) {
-    //@NOTE NOT YET IMPLEMENTED
+     return(0);//@NOTE NOT YET IMPLEMENTED
 }
  
 /**************************************************/

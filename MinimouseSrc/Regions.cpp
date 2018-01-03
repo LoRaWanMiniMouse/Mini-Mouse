@@ -23,6 +23,16 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*@note have to check init values                */
 /*************************************************/
 LoraRegionsEU :: LoraRegionsEU (  PinName interrupt ) : LoraWanContainer (interrupt){
+    MacTxFrequency[0] = 868100000;
+    MacTxFrequency[1] = 868300000;
+    MacTxFrequency[2] = 868500000;
+    NbOfActiveChannel = 3;
+    MacRx2Frequency  = 869525000; 
+    MacRx2Sf = 12;
+    MacRx2Bw = BW125;
+    MacTxBw  = BW125;
+    MacRx1Bw = BW125;
+    MacRx1Delay = RECEIVE_DELAY1;// @note replace by default setting regions
 }
 
 /***********************************************************************************************/

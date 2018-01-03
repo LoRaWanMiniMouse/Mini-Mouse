@@ -330,10 +330,5 @@ __STATIC_INLINE void cal_convert_Cnt64_2_Bcd( RTC_DateTypeDef* Date, RTC_TimeTyp
   Date->Month++; /* 0 to 1 indexed.  month={0..11} to {1..12}*/
   Date->Date = (Days+1);/* 0 to 1 indexed */
 }
-
-
-
-
-
-
 #endif
+

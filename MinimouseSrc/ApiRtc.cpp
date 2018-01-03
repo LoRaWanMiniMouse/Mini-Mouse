@@ -21,7 +21,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "mbed.h"
 #include "ApiRtc.h"
 RTC_HandleTypeDef RtcHandle;
-static int rtc_inited = 0;
+
 static void RTC_IRQHandler (void)
 {
     HAL_RTC_AlarmIRQHandler(&RtcHandle);
@@ -38,8 +38,6 @@ uint32_t RtcGetTimeMs( uint64_t  *longTime64bits )//uint32_t  *Seconds, uint16_t
     RTC_TimeTypeDef timeStruct;
     struct tm timeinfo;
     RtcHandle.Instance = RTC;
-    uint32_t  Seconds;
-    uint16_t SubSeconds;
     // Read actual date and time
     // Warning: the time must be read first!
     HAL_RTC_GetTime(&RtcHandle, &timeStruct, FORMAT_BIN);
@@ -53,11 +51,9 @@ uint32_t RtcGetTimeMs( uint64_t  *longTime64bits )//uint32_t  *Seconds, uint16_t
     timeinfo.tm_hour = timeStruct.Hours;
     timeinfo.tm_min  = timeStruct.Minutes;
     timeinfo.tm_sec  = timeStruct.Seconds;
-    SubSeconds      = ( 255 - ( timeStruct.SubSeconds ) ) << 7; 
     *longTime64bits =  cal_convertBCD_2_Cnt64( &dateStruct, &timeStruct );
     // Convert to timestamp
     time_t t = mktime(&timeinfo);
-    Seconds = t;
     return ( ( t * 1000 ) + ( 999 - ( ( timeStruct.SubSeconds *999) / 255 ) ) );  // get time en ms
 }
 
@@ -115,7 +111,6 @@ void RtcGetAlarm( void ){
 
 void my_rtc_init (void)
 {
-    int rtc_inited = 0;
     uint32_t rtc_freq = 0;
     RTC_HandleTypeDef RtcHandle;
     RCC_OscInitTypeDef RCC_OscInitStruct;

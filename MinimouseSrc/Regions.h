@@ -42,3 +42,4 @@ public:
     void SetRegionsdefaultSettings ( void );
 };
 #endif
+

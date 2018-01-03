@@ -30,17 +30,9 @@ LoraWanContainer::LoraWanContainer( PinName interrupt )
     Phy.RadioContainerInit( );
     StateTimer = TIMERSTATE_SLEEP;
     FcntDwn = 0;
-    AvailableRxPacketForUser = NOLORARXPACKETAVAILABLE;
-    MacTxFrequency[0] = 868100000;
-    MacTxFrequency[1] = 868300000;
-    MacTxFrequency[2] = 868500000;
-    NbOfActiveChannel = 3;
-    MacTxSf = 7;
     MacTxPower = 14;
     MacRx1SfOffset = 0;
-    MacRx2Frequency  = 869525000; 
-    MacRx2Sf = 9;
-    MacRx1Delay = RECEIVE_DELAY1;// @note replace by default setting regions
+    AvailableRxPacketForUser = NOLORARXPACKETAVAILABLE;
     memcpy( appSKey, LoRaMacAppSKey, 16 );
     memcpy( nwkSKey, LoRaMacNwkSKey, 16 );
     DevAddr = LoRaDevAddr ;
@@ -65,6 +57,7 @@ void LoraWanContainer::ConfigureRadioAndSend( void ) {
     Phy.TxFrequency   = MacTxFrequency[ChannelIndex]; 
     Phy.TxPower       = MacTxPower;
     Phy.TxSf          = MacTxSf;
+    Phy.TxBw          = MacTxBw;
     Phy.SetTxConfig( );
     Phy.TxPayloadSize = MacPayloadSize;
     Phy.Send( );
@@ -72,17 +65,18 @@ void LoraWanContainer::ConfigureRadioAndSend( void ) {
 void LoraWanContainer::ConfigureRadioForRx1 ( void ) {
     Phy.RxFrequency   = Phy.TxFrequency;
     Phy.RxSf          = Phy.TxSf + MacRx1SfOffset;//@note + sf offset
+    Phy.RxBw          = MacRx1Bw;
     Phy.SetRxConfig( );
 };
 
 void LoraWanContainer::ConfigureRadioForRx2 ( void ) {
     Phy.RxFrequency   = MacRx2Frequency;
     Phy.RxSf          = MacRx2Sf;
+    Phy.RxBw          = MacRx2Bw;
     Phy.SetRxConfig( );
 };
 
 void LoraWanContainer::ConfigureTimerForRx ( int type ) {
-    int status = OKLORAWAN ;
     uint32_t tCurrentMillisec;
     int tAlarmMillisec;
     uint64_t tAlarm64bits;
@@ -542,6 +536,9 @@ void LoraWanContainer::SaveInFlash ( ) {
     BackUpFlash.MacNbRepUnconfirmedTx   = MacNbRepUnconfirmedTx; 
     BackUpFlash.MacRx2Frequency         = MacRx2Frequency; 
     BackUpFlash.MacRx2Sf                = MacRx2Sf;
+    BackUpFlash.MacTxBw                 = MacTxBw;
+    BackUpFlash.MacRx2Bw                = MacRx2Bw;
+    BackUpFlash.MacRx1Bw                = MacRx1Bw;
     BackUpFlash.MacRx1SfOffset          = MacRx1SfOffset;
     BackUpFlash.NbOfActiveChannel       = NbOfActiveChannel;
     BackUpFlash.MacRx1Delay             = MacRx1Delay;
@@ -562,10 +559,13 @@ void LoraWanContainer::LoadFromFlash ( ) {
     BackUpFlash.FcntUp            +=  FLASH_UPDATE_PERIOD; //@note automatic increment
     MacTxSf                       = BackUpFlash.MacTxSf;
     MacTxPower                    = BackUpFlash.MacTxPower;
-    MacChMask                     = BackUpFlash.MacChMask ;
-    MacNbRepUnconfirmedTx         = BackUpFlash.MacNbRepUnconfirmedTx ; 
-    MacRx2Frequency               = BackUpFlash.MacRx2Frequency ; 
-    MacRx2Sf                      = BackUpFlash.MacRx2Sf ;
+    MacChMask                     = BackUpFlash.MacChMask;
+    MacNbRepUnconfirmedTx         = BackUpFlash.MacNbRepUnconfirmedTx; 
+    MacRx2Frequency               = BackUpFlash.MacRx2Frequency; 
+    MacRx2Sf                      = BackUpFlash.MacRx2Sf;
+    MacTxBw                       = BackUpFlash.MacTxBw;
+    MacRx2Bw                      = BackUpFlash.MacRx2Bw;
+    MacRx1Bw                      = BackUpFlash.MacRx1Bw;
     MacRx1SfOffset                = BackUpFlash.MacRx1SfOffset;
     NbOfActiveChannel             = BackUpFlash.NbOfActiveChannel;
     MacRx1Delay                   = BackUpFlash.MacRx1Delay ;
@@ -599,20 +599,21 @@ void LoraWanContainer::IsrTimerRx( void ) {
  
 
 /****************************************API Crypto ***********************/
-uint8_t LoraWanContainer::crypto_verifyMICandDecrypt( uint8_t *frame_header, const uint8_t *encrypted_payload ,uint32_t micIn, uint8_t keySet, uint8_t *decrypted_payload, uint8_t PayloadSize){
-    uint32_t DevAddrtmp = 0;
-    uint16_t FcntDwnmtp = 0;
-    int status = OKLORAWAN ;
-    if ( keySet == UNICASTKEY) {
-        DevAddrtmp = frame_header[1] + ( frame_header[2] << 8 ) + ( frame_header[3] << 16 )+ ( frame_header[4] << 24 );
-        FcntDwnmtp = frame_header[6] + ( frame_header[7] << 8 );
-        status += LoRaMacCheckMic(frame_header, PayloadSize, nwkSKey, DevAddrtmp, FcntDwnmtp, micIn );
-        
-        //@note note sure that it is better to  sen dheader because extract again devaddr fcntdwn fopts etc ....
-        
-        PayloadSize = PayloadSize - FHDROFFSET - FoptsLength ;
-        if ( status == OKLORAWAN) {
-            LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, (FportRx == 0 )?nwkSKey:appSKey, DevAddr, 1, FcntDwn, &MacRxPayload[0] );
-        }
-    }
-}
+//uint8_t LoraWanContainer::crypto_verifyMICandDecrypt( uint8_t *frame_header, const uint8_t *encrypted_payload ,uint32_t micIn, uint8_t keySet, uint8_t *decrypted_payload, uint8_t PayloadSize){
+//    uint32_t DevAddrtmp = 0;
+//    uint16_t FcntDwnmtp = 0;
+//    int status = OKLORAWAN ;
+//    if ( keySet == UNICASTKEY) {
+//        DevAddrtmp = frame_header[1] + ( frame_header[2] << 8 ) + ( frame_header[3] << 16 )+ ( frame_header[4] << 24 );
+//        FcntDwnmtp = frame_header[6] + ( frame_header[7] << 8 );
+//        status += LoRaMacCheckMic(frame_header, PayloadSize, nwkSKey, DevAddrtmp, FcntDwnmtp, micIn );
+//        
+//        //@note note sure that it is better to  sen dheader because extract again devaddr fcntdwn fopts etc ....
+//        
+//        PayloadSize = PayloadSize - FHDROFFSET - FoptsLength ;
+//        if ( status == OKLORAWAN) {
+//            LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, (FportRx == 0 )?nwkSKey:appSKey, DevAddr, 1, FcntDwn, &MacRxPayload[0] );
+//        }
+//    }
+//    return ( status );
+//}

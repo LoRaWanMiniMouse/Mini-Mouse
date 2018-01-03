@@ -199,6 +199,12 @@ enum{
  */
 #define DOWN_LINK                                   1
 
+typedef enum { 
+    BW125,
+    BW250,
+    BW500
+}eBandWidth;    
+
 /*User Confi for Adr Mode select*/
 typedef enum eDataRateStrategy{
     STATICADRMODE,

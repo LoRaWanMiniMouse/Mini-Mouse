@@ -21,11 +21,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define PHY_LAYER_H
 
 /*   BW enum for LoRa */
-enum { 
-    BW125,
-    BW250,
-    BW500
-};    
+
 class RadioContainer { 
 public: 
     RadioContainer( PinName interrupt ); 
@@ -47,7 +43,9 @@ public:
     uint32_t   TxFrequency;
     uint8_t    TxPower;
     uint8_t    TxSf;
+    uint32_t   TxBw;
     uint32_t   RxFrequency;
+    uint32_t   RxBw;
     uint8_t    RxSf;
     uint32_t   DevAddrIsr ; // copy of the devaddr to be tested in the isr routine
     uint8_t    RegIrqFlag;

@@ -23,7 +23,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "ApiRtc.h"
 #include "Define.h"
 
-static RadioEvents_t RadioEvents;
+//static RadioEvents_t RadioEvents;
 
 
 
@@ -91,7 +91,7 @@ void RadioContainer::SetTxConfig( void ) {
     StateRadioProcess = RADIOSTATE_TXON;
     Radio.SetChannel( TxFrequency );
     Radio.Write( REG_LR_SYNCWORD, LORA_MAC_SYNCWORD );
-    Radio.SetTxConfig( MODEM_LORA, TxPower, 0, BW125, TxSf, 1, 8, false, true, 0, 0, false, 10e3 );
+    Radio.SetTxConfig( MODEM_LORA, TxPower, 0, TxBw, TxSf, 1, 8, false, true, 0, 0, false, 10e3 );
 };
 void RadioContainer::Send( ) { //@note could/should be merge with tx config
     Radio.Send( TxPhyPayload, TxPayloadSize );
@@ -99,7 +99,7 @@ void RadioContainer::Send( ) { //@note could/should be merge with tx config
 
 void RadioContainer::SetRxConfig( void ) {
     Radio.SetChannel( RxFrequency );
-    Radio.SetRxConfig( MODEM_LORA, BW125, RxSf, 1, 0, 6, 10, false, 0, false, 0, 0, true, false );//@note rxtimeout 400ms!!!!
+    Radio.SetRxConfig( MODEM_LORA, RxBw, RxSf, 1, 0, 6, 10, false, 0, false, 0, 0, true, false );//@note rxtimeout 400ms!!!!
 }
 
 int RadioContainer::GetRadioState( void ) {

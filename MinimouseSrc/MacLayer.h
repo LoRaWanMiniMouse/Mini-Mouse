@@ -152,6 +152,7 @@ protected :
     uint8_t      MacRx2Sf;
     eBandWidth   MacRx2Bw;
 private :
+    static const uint16_t MAX_FCNT_GAP       = 16384 ;
     void SetMacHeader              ( void );
     void SetFrameHeader            ( void );// no opts
     uint8_t GiveNextChannel       ( void );

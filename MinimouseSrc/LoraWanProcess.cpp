@@ -185,7 +185,7 @@ template <class T>
 eLoraWan_Process_States LoraWanObjet <T> ::Join ( void ) {
     packet.Phy.JoinedStatus = NOTJOINED;
     packet.BuildJoinLoraFrame( );
-    packet.MacRx1Delay = JOIN_ACCEPT_DELAY1; // to be set in default setting regions
+    packet.MacRx1Delay = packet.JOIN_ACCEPT_DELAY1; // to be set in default setting regions
     //@note should be done in region constructor packet.MacRx2Sf = 12;
     StateLoraWanProcess = LWPSTATE_SEND;
     return( StateLoraWanProcess );

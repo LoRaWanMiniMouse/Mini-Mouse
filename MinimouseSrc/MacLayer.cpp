@@ -31,7 +31,6 @@ LoraWanContainer::LoraWanContainer( PinName interrupt )
     StateTimer = TIMERSTATE_SLEEP;
     FcntDwn = 0;
     MacTxPower = 14;
-    MacRx1SfOffset = 0;
     AvailableRxPacketForUser = NOLORARXPACKETAVAILABLE;
     memcpy( appSKey, LoRaMacAppSKey, 16 );
     memcpy( nwkSKey, LoRaMacNwkSKey, 16 );
@@ -51,7 +50,7 @@ LoraWanContainer::~LoraWanContainer( ) {
 /*                      Called During  LP.Process                     */
 /**********************************************************************/
 void LoraWanContainer::ConfigureRadioAndSend( void ) {
-    GiveNextDataRate( );
+    RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region dependant)
     uint8_t ChannelIndex = GiveNextChannel ( );//@note have to be completed
     Phy.DevAddrIsr    = DevAddr ;  //@note copy of the mac devaddr in order to filter it in the radio isr routine.
     Phy.TxFrequency   = MacTxFrequency[ChannelIndex]; 
@@ -63,13 +62,15 @@ void LoraWanContainer::ConfigureRadioAndSend( void ) {
     Phy.Send( );
 };
 void LoraWanContainer::ConfigureRadioForRx1 ( void ) {
+    RegionSetRxConfig ( RX1 );
     Phy.RxFrequency   = Phy.TxFrequency;
-    Phy.RxSf          = Phy.TxSf + MacRx1SfOffset;//@note + sf offset
-    Phy.RxBw          = MacTxBw;
+    Phy.RxSf          = MacRx1Sf ;
+    Phy.RxBw          = MacRx1Bw ;
     Phy.SetRxConfig( );
 };
 
 void LoraWanContainer::ConfigureRadioForRx2 ( void ) {
+    RegionSetRxConfig ( RX2 );
     Phy.RxFrequency   = MacRx2Frequency;
     Phy.RxSf          = MacRx2Sf;
     Phy.RxBw          = MacRx2Bw;
@@ -231,18 +232,18 @@ void LoraWanContainer::UpdateMacLayer ( void ) {
     /**********************************************************************/
     /*                      Special Case Join OTA                         */
     /**********************************************************************/
-void LoraWanContainer::UpdateJoinProcedure ( void ) {
+void LoraWanContainer::UpdateJoinProcedure ( void ) { //@note tbd add valid test 
     uint8_t AppNonce[6];
     memcpy( AppNonce, &MacRxPayload[1], 6 );
     LoRaMacJoinComputeSKeys(LoRaMacAppKey, AppNonce, DevNonce,  nwkSKey, appSKey );
     for( int i = 0 ;i<16;i++) {
         
     }
-    DevAddr        = MacRxPayload[7] + ( MacRxPayload[8] << 8 ) + ( MacRxPayload[9] << 16 )+ ( MacRxPayload[10] << 24 );
-    Phy.DevAddrIsr = DevAddr ; 
-    MacRx1SfOffset = ( MacRxPayload[11] & 0x70 ) >> 3;
-    MacRx2Sf       = ( MacRxPayload[11] & 0x0F );
-    MacRx1Delay    = MacRxPayload[12];
+    DevAddr              = MacRxPayload[7] + ( MacRxPayload[8] << 8 ) + ( MacRxPayload[9] << 16 )+ ( MacRxPayload[10] << 24 );
+    Phy.DevAddrIsr       = DevAddr ; 
+    MacRx1DataRateOffset = ( MacRxPayload[11] & 0x70 ) >> 3;
+    MacRx2Sf             = ( MacRxPayload[11] & 0x0F );
+    MacRx1Delay          = MacRxPayload[12];
     Phy.JoinedStatus = JOINED;
     //@note have to manage option byte for channel frequency planned
 }
@@ -438,26 +439,26 @@ void LoraWanContainer::DutyCycleParser( void ) {
     /*****************************************************/
 void LoraWanContainer::RXParamSetupParser( void ) {
     DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[1], MacNwkPayload[2], MacNwkPayload[3], MacNwkPayload[4]);
-    //@note not valid case or error case have been yet implemented
+
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
-    int temp ; 
-    /* Valid Rx1SfOffset And Prepare Ans */
+    uint32_t temp ; 
+    /* Valid Rx1DrOffset And Prepare Ans */
     temp = ( MacNwkPayload[1] & 0x70 ) >> 3 ;
-    status = isValidRx1SfOffset( temp );
-    (status == OKLORAWAN ) ? MacRx1SfOffset = temp : StatusAns &= 0x6 ; 
+    status = isValidRx1DrOffset( temp );
+    (status == OKLORAWAN ) ? MacRx1DataRateOffset = temp : StatusAns &= 0x6 ; 
     
-    /* Valid MacRx2Sf And Prepare Ans */
+    /* Valid MacRx2Dr And Prepare Ans */
     status = OKLORAWAN;
     temp = ( MacNwkPayload[1] & 0x0F );
-    status = isValidMacRx2Sf( temp );
-    (status == OKLORAWAN ) ? MacRx2Sf = temp : StatusAns &= 0x5 ; 
+    status = isValidMacRx2Dr( temp );
+    (status == OKLORAWAN ) ? MacRx2DataRate = temp : StatusAns &= 0x5 ; 
     
     /* Valid MacRx2Frequency And Prepare Ans */
     status = OKLORAWAN;
     temp = ( MacNwkPayload[2] ) + ( MacNwkPayload[3] << 8 ) + ( MacNwkPayload[4] << 16 );
-    status = isValidMacRx2Frequency( temp );
-    (status == OKLORAWAN ) ? MacRx2Frequency = temp : StatusAns &= 0x3 ; 
+    status = isValidMacFrequency ( temp );
+    (status == OKLORAWAN ) ? MacRx2Frequency = temp * 100 : StatusAns &= 0x3 ; 
     
     /* Prepare Ans*/
     MacNwkAns [0] = RXPARRAM_SETUP_ANS ; // copy Cid
@@ -477,21 +478,6 @@ void LoraWanContainer::RXTimingSetupParser( void ) {
     //@NOTE NOT YET IMPLEMENTED
 }
 
-
-
-
-uint8_t LoraWanContainer::isValidRx1SfOffset ( uint8_t temp ) {
-// @note not yet implemented 
-    return ( OKLORAWAN );
-}
-uint8_t LoraWanContainer::isValidMacRx2Sf ( uint8_t temp ) {
-// @note not yet implemented 
-    return ( OKLORAWAN );
-}
-uint8_t LoraWanContainer::isValidMacRx2Frequency ( uint32_t temp ) {
-// @note not yet implemented 
-    return ( OKLORAWAN );
-}
 uint8_t LoraWanContainer::isValidDataRate ( uint8_t temp ) {
     // @note not yet implemented 
     return ( OKLORAWAN );
@@ -516,7 +502,7 @@ void LoraWanContainer::SaveInFlash ( ) {
     BackUpFlash.MacNbRepUnconfirmedTx   = MacNbRepUnconfirmedTx; 
     BackUpFlash.MacRx2Frequency         = MacRx2Frequency; 
     BackUpFlash.MacRx2DataRate          = MacRx2DataRate;
-    BackUpFlash.MacRx1SfOffset          = MacRx1SfOffset;
+    BackUpFlash.MacRx1DataRateOffset    = MacRx1DataRateOffset;
     BackUpFlash.NbOfActiveChannel       = NbOfActiveChannel;
     BackUpFlash.MacRx1Delay             = MacRx1Delay;
     BackUpFlash.FcntUp                  = FcntUp;
@@ -540,7 +526,7 @@ void LoraWanContainer::LoadFromFlash ( ) {
     MacNbRepUnconfirmedTx         = BackUpFlash.MacNbRepUnconfirmedTx; 
     MacRx2Frequency               = BackUpFlash.MacRx2Frequency; 
     MacRx2DataRate                = BackUpFlash.MacRx2DataRate;
-    MacRx1SfOffset                = BackUpFlash.MacRx1SfOffset;
+    MacRx1DataRateOffset          = BackUpFlash.MacRx1DataRateOffset;
     NbOfActiveChannel             = BackUpFlash.NbOfActiveChannel;
     MacRx1Delay                   = BackUpFlash.MacRx1Delay ;
     FcntUp                        = BackUpFlash.FcntUp ;

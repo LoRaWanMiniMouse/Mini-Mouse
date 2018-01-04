@@ -60,7 +60,7 @@ public:
     /********************************************/
     uint8_t      MacRx2DataRate ;
     uint32_t     MacRx2Frequency ; 
-    uint8_t      MacRx1SfOffset;
+    uint8_t      MacRx1DataRateOffset;
     /********************************************/
     /*     Update by NewChannelReq command      */
     /********************************************/
@@ -132,10 +132,23 @@ public:
 
 /*  Flash */
     void LoadFromFlash             ( void );
-    virtual void GiveNextDataRate  ( void ) = 0;
+/***************************************************************/
+/*  Virtual Method overwritten by the Class  of the region     */
+/***************************************************************/
+    virtual void           RegionGiveNextDataRate                ( void ) = 0;
+    virtual void           RegionSetRxConfig                     ( eRxWinType type ) = 0;
+    virtual                eStatusLoRaWan isValidRx1DrOffset     ( uint8_t Rx1DataRateOffset) = 0;
+    virtual                eStatusLoRaWan isValidMacRx2Dr        ( uint8_t Rx2DataRate) = 0;
+    virtual                eStatusLoRaWan isValidMacFrequency    ( uint32_t Frequency) = 0;
+    
+/**************************************************************/
+/*      Protected Methods and variables                       */
+/**************************************************************/
 protected :
     uint8_t      MacTxSf;
     eBandWidth   MacTxBw;
+    uint8_t      MacRx1Sf;
+    eBandWidth   MacRx1Bw;
     uint8_t      MacRx2Sf;
     eBandWidth   MacRx2Bw;
 private :
@@ -154,9 +167,9 @@ private :
     void DevStatusParser           ( void );
     void NewChannelParser          ( void );
     void RXTimingSetupParser       ( void );
-    uint8_t isValidRx1SfOffset     ( uint8_t );
-    uint8_t isValidMacRx2Sf        ( uint8_t );
-    uint8_t isValidMacRx2Frequency ( uint32_t );
+
+
+
     uint8_t isValidDataRate        ( uint8_t );
     uint8_t isValidTxPower         ( uint8_t );
     uint8_t isValidChannelMask     ( uint16_t );

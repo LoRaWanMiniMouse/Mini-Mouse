@@ -32,7 +32,7 @@ struct sBackUpFlash
     /********************************************/
     uint32_t     MacRx2Frequency ; 
     uint8_t      MacRx2DataRate;
-    uint8_t      MacRx1SfOffset;
+    uint8_t      MacRx1DataRateOffset;
     /********************************************/
     /*     Update by NewChannelReq command      */
     /********************************************/

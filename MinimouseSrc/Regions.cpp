@@ -23,15 +23,14 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*@note have to check init values                */
 /*************************************************/
 LoraRegionsEU :: LoraRegionsEU (  PinName interrupt ) : LoraWanContainer (interrupt){
-    MacTxFrequency[0] = 868100000;
-    MacTxFrequency[1] = 868300000;
-    MacTxFrequency[2] = 868500000;
-    NbOfActiveChannel = 3;
-    MacRx2Frequency  = 869525000; 
-    MacRx2Sf = 12;
-    MacRx2Bw = BW125;
-    MacTxBw  = BW125;
-    MacRx1Delay = RECEIVE_DELAY1;// @note replace by default setting regions
+    MacTxFrequency[0]    = 868100000;
+    MacTxFrequency[1]    = 868300000;
+    MacTxFrequency[2]    = 868500000;
+    NbOfActiveChannel    = 3;
+    MacRx2Frequency      = 869525000; 
+    MacRx1DataRateOffset = 0;
+    MacRx2DataRate       = 0;
+    MacRx1Delay          = RECEIVE_DELAY1;// @note replace by default setting regions
 }
 
 /***********************************************************************************************/
@@ -42,7 +41,7 @@ void LoraRegionsEU :: SetRegionsdefaultSettings ( void ) {
     
 }
 
-void LoraRegionsEU::GiveNextDataRate( void ) {
+void LoraRegionsEU::RegionGiveNextDataRate( void ) {
      switch ( AdrModeSelect ) {
         case STATICADRMODE :
             MacTxDataRate = 5;
@@ -61,17 +60,81 @@ void LoraRegionsEU::GiveNextDataRate( void ) {
            MacTxDataRate = 0;
     }
     MacTxDataRate = ( MacTxDataRate > 5 ) ? 5 : MacTxDataRate;
-    MacTxBw = BW125;
-    MacTxSf = DataRateToSf ( MacTxDataRate );
+    TxDataRateToSfBw ( MacTxDataRate );
 }
 
+void LoraRegionsEU::RegionSetRxConfig ( eRxWinType type ) {
+    if ( type == RX1 ) {
+        MacRx1Sf =  ( MacTxSf < 12 - MacRx1DataRateOffset) ? MacTxSf + MacRx1DataRateOffset : 12;
+        MacRx1Bw = MacTxBw;
+    } else if ( type == RX2 ) {
+       Rx2DataRateToSfBw ( MacRx2DataRate );
+    } else {
+        DEBUG_MSG ("INVALID RX TYPE \n");
+    }
+
+
+}
+    
+eStatusLoRaWan LoraRegionsEU::isValidRx1DrOffset ( uint8_t Rx1DataRateOffset ) {
+    eStatusLoRaWan status = OKLORAWAN;
+    if (Rx1DataRateOffset > 5) {
+        status = ERRORLORAWAN ;
+        DEBUG_MSG ( "RECEIVE AN INVALID RX1 DR OFFSET \n");
+    }
+    return ( status );
+}
+
+eStatusLoRaWan LoraRegionsEU::isValidMacRx2Dr ( uint8_t Rx2DataRate ){
+    eStatusLoRaWan status = OKLORAWAN;
+    if (Rx2DataRate > 7) {//@note must be impossible because RX2datarATe send over 3 bits !
+        status = ERRORLORAWAN ;
+        DEBUG_MSG ( "RECEIVE AN INVALID RX2 DR \n");
+    }
+    return ( status );
+}
+eStatusLoRaWan LoraRegionsEU::isValidMacFrequency ( uint32_t Frequency) {
+    eStatusLoRaWan status = OKLORAWAN;
+    if ( ( Frequency > FREQMAX ) || ( Frequency < FREQMIN ) ) {
+        status = ERRORLORAWAN ;
+        DEBUG_PRINTF ( "RECEIVE AN INVALID FREQUENCY = %d\n", Frequency);
+    }
+    return ( status );
+}
 /***********************************************************************************************/
 /*                      Private  Methods                                                        */
 /***********************************************************************************************/
  //@note Partionning Public/private not yet finalized
-uint8_t LoraRegionsEU :: DataRateToSf ( uint8_t dataRate) {
-    //@note tbd manage fsk
-    return ( 12 - dataRate ) ;
-    
+void LoraRegionsEU :: TxDataRateToSfBw ( uint8_t dataRate ) {
+    if ( dataRate < 6 ){ 
+        MacTxSf = 12 - dataRate ;
+        MacTxBw = BW125 ;
+    } else if ( dataRate== 6 ){ 
+        MacTxSf = 7;
+        MacTxBw = BW250 ;}
+    else if ( dataRate == 7 ) {
+        //@note tbd manage fsk case }
+    }
+    else {
+        MacTxSf = 12 ;
+        MacTxBw = BW125 ;
+        DEBUG_MSG( " Invalid Datarate \n" ) ; 
+    }
+}
+void LoraRegionsEU :: Rx2DataRateToSfBw ( uint8_t dataRate ) {
+    if ( dataRate < 6 ){ 
+        MacRx2Sf = 12 - dataRate ;
+        MacRx2Bw = BW125 ;
+    } else if ( dataRate== 6 ){ 
+        MacRx2Sf = 7;
+        MacRx2Bw = BW250 ;}
+    else if ( dataRate == 7 ) {
+        //@note tbd manage fsk case }
+    }
+    else {
+        MacRx2Sf = 12 ;
+        MacRx2Bw = BW125 ;
+        DEBUG_MSG( " Invalid Datarate \n" ) ; 
+    }
 }
 

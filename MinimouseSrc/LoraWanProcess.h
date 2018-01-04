@@ -21,7 +21,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "Define.h"
 #include "MacLayer.h"
 #include "Regions.h"
-extern Serial pcf;
+
 
 template <class T>
 class LoraWanObjet { 

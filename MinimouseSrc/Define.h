@@ -20,7 +20,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "mbed.h"
 
 
-
+extern Serial pcf;
 #define DEBUG_TRACE  1
 #if DEBUG_TRACE == 1
 #define DEBUG_MSG(str)               pcf.printf(str)
@@ -223,10 +223,10 @@ typedef enum {
     NWKRXPACKET,
     JOINACCEPTPACKET,
 } eRxPacketType;
-enum {
+typedef enum {
     RX1,
     RX2
-};
+}eRxWinType;
 /*************************/
 /*    SHARE WITH USER    */
 /*************************/

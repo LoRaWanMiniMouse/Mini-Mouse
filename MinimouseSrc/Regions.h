@@ -26,6 +26,11 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*****************************************************************/
 
 
+
+
+
+class LoraRegionsEU : public LoraWanContainer { 
+    
 #define RECEIVE_DELAY1          1 // define in seconds
 #define RECEIVE_DELAY2          2 // define in seconds (must be RECEIVE_DELAY1 + 1s)
 #define JOIN_ACCEPT_DELAY1      5 // define in seconds
@@ -34,17 +39,23 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #define ADR_ACK_LIMIT           64
 #define ADR_ACK_DELAY           32
 #define ACK_TIMEOUT             2 // +/- 1 s (random delay between 1 and 3 seconds)
-
-
-class LoraRegionsEU : public LoraWanContainer { 
+#define FREQMIN                 8630000  // code on 24 bits 
+#define FREQMAX                 8700000
+    
 public: 
     LoraRegionsEU (  PinName interrupt ); 
-    void SetRegionsdefaultSettings ( void );
-    void GiveNextDataRate          ( void );
-    void TxDataRateToSfBw          ( void );
-    void Rx2DataRateToSfBw          ( void );
+    void SetRegionsdefaultSettings       ( void );
+    void RegionGiveNextDataRate          ( void );
+    void RegionSetRxConfig               ( eRxWinType type );
+
+
+
+    eStatusLoRaWan isValidRx1DrOffset     ( uint8_t Rx1DataRateOffset );
+    eStatusLoRaWan isValidMacRx2Dr        ( uint8_t Rx2DataRate );
+    eStatusLoRaWan isValidMacFrequency    ( uint32_t Frequency);
 private :
-    uint8_t DataRateToSf ( uint8_t dataRate);
+    void TxDataRateToSfBw                  ( uint8_t dataRate );
+    void Rx2DataRateToSfBw                 ( uint8_t dataRate );
 };
 #endif
 

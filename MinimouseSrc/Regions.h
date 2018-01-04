@@ -40,6 +40,11 @@ class LoraRegionsEU : public LoraWanContainer {
 public: 
     LoraRegionsEU (  PinName interrupt ); 
     void SetRegionsdefaultSettings ( void );
+    void GiveNextDataRate          ( void );
+    void TxDataRateToSfBw          ( void );
+    void Rx2DataRateToSfBw          ( void );
+private :
+    uint8_t DataRateToSf ( uint8_t dataRate);
 };
 #endif
 

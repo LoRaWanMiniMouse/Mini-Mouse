@@ -23,17 +23,15 @@ struct sBackUpFlash
 {    /*******************************************/
     /*      Update by Link ADR command         */
     /*******************************************/
-    uint8_t      MacTxSf;
+    uint8_t      MacTxDataRate;
     uint8_t      MacTxPower;
-    eBandWidth   MacTxBw;
     uint16_t     MacChMask;
     uint8_t      MacNbRepUnconfirmedTx; 
     /********************************************/
     /*     Update by TxParamaSetupRequest       */
     /********************************************/
     uint32_t     MacRx2Frequency ; 
-    uint8_t      MacRx2Sf;
-    eBandWidth   MacRx2Bw;
+    uint8_t      MacRx2DataRate;
     uint8_t      MacRx1SfOffset;
     /********************************************/
     /*     Update by NewChannelReq command      */
@@ -48,7 +46,6 @@ struct sBackUpFlash
     /********************************************/
     /*   Other Data To store                    */
     /********************************************/
-    eBandWidth   MacRx1Bw;
     uint16_t     FcntUp;
     uint32_t     FcntDwn;
     uint32_t     DevAddr;

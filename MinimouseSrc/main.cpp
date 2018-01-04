@@ -11,13 +11,14 @@ DigitalOut led( D13 );
 
 
 struct sBackUpFlash BackUpFlash;
-static LoraWanObjet Lp( TX_RX_IT );
-
+//static LoraWanObjet<LoraRegionsEU> Lp( TX_RX_IT );
+//static LoraWanObjet Lp( TX_RX_IT );
 //@note set to board definition
 //#define CHECKFCNTDOWN 0
 
 
 int main( ) {
+    LoraWanObjet<LoraRegionsEU> Lp( TX_RX_IT );
     int i;
     led = 0;
     my_rtc_init ( );

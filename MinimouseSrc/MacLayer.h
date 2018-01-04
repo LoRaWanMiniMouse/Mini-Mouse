@@ -47,21 +47,19 @@ public:
 /* LoraWan Context */ 
 /* Only 16 ch mask => ChMaskCntl not used */
 /* Duty cycle is not managed */
-    eBandWidth    MacRx1Bw;
+
     /*******************************************/
     /*      Update by Link ADR command         */
     /*******************************************/
-    uint8_t      MacTxSf;
-    eBandWidth   MacTxBw;
+    uint8_t      MacTxDataRate;
     uint8_t      MacTxPower;
     uint16_t     MacChMask;
     uint8_t      MacNbRepUnconfirmedTx; 
     /********************************************/
-    /*     Update by TxParamaSetupRequest       */
+    /*     Update by RxParamaSetupRequest       */
     /********************************************/
+    uint8_t      MacRx2DataRate ;
     uint32_t     MacRx2Frequency ; 
-    uint8_t      MacRx2Sf;
-    eBandWidth   MacRx2Bw;
     uint8_t      MacRx1SfOffset;
     /********************************************/
     /*     Update by NewChannelReq command      */
@@ -134,11 +132,15 @@ public:
 
 /*  Flash */
     void LoadFromFlash             ( void );
-
+    virtual void GiveNextDataRate  ( void ) = 0;
+protected :
+    uint8_t      MacTxSf;
+    eBandWidth   MacTxBw;
+    uint8_t      MacRx2Sf;
+    eBandWidth   MacRx2Bw;
 private :
     void SetMacHeader              ( void );
     void SetFrameHeader            ( void );// no opts
-    void GiveNextSf                ( void );
     uint8_t GiveNextChannel       ( void );
     int ExtractRxMhdr              ( void );
     int CheckRxPayloadLength       ( void );

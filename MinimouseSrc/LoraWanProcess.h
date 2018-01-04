@@ -23,7 +23,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "Regions.h"
 extern Serial pcf;
 
-
+template <class T>
 class LoraWanObjet { 
 public: 
     LoraWanObjet( PinName interrupt ); 
@@ -36,7 +36,7 @@ public:
     eLoraWan_Process_States    LoraWanProcess( uint8_t* AvailableRxPacket );
     uint8_t    GetRadioState ( void );
     void       RestoreContext( void ); 
-    LoraRegionsEU packet;
+    T packet;
 /* not implemented yet*/
     uint8_t    TryToJoin               ( void );
     uint32_t   GetNextMaxPayloadLength ( void );
@@ -55,5 +55,5 @@ private :
     uint32_t RtcTargetTimer;
     void RadioReset ( void ) ;
 };
-extern LoraWanObjet Lp;
+//extern LoraWanObjet Lp;
 #endif

@@ -31,7 +31,6 @@ LoraRegionsEU :: LoraRegionsEU (  PinName interrupt ) : LoraWanContainer (interr
     MacRx2Sf = 12;
     MacRx2Bw = BW125;
     MacTxBw  = BW125;
-    MacRx1Bw = BW125;
     MacRx1Delay = RECEIVE_DELAY1;// @note replace by default setting regions
 }
 
@@ -41,5 +40,38 @@ LoraRegionsEU :: LoraRegionsEU (  PinName interrupt ) : LoraWanContainer (interr
  //@note Partionning Public/private not yet finalized
 void LoraRegionsEU :: SetRegionsdefaultSettings ( void ) {
     
-
 }
+
+void LoraRegionsEU::GiveNextDataRate( void ) {
+     switch ( AdrModeSelect ) {
+        case STATICADRMODE :
+            MacTxDataRate = 5;
+            break;
+        case MOBILELONGRANGEADRMODE:
+            if ( MacTxDataRate == 0 ) { 
+                MacTxDataRate = 1;
+            } else {
+                MacTxDataRate = 0;
+            }
+            break;
+        case MOBILELOWPOWERADRMODE:
+            ( MacTxDataRate == 5 ) ? MacTxDataRate = 0 : MacTxDataRate++ ;
+             break;
+        default: 
+           MacTxDataRate = 0;
+    }
+    MacTxDataRate = ( MacTxDataRate > 5 ) ? 5 : MacTxDataRate;
+    MacTxBw = BW125;
+    MacTxSf = DataRateToSf ( MacTxDataRate );
+}
+
+/***********************************************************************************************/
+/*                      Private  Methods                                                        */
+/***********************************************************************************************/
+ //@note Partionning Public/private not yet finalized
+uint8_t LoraRegionsEU :: DataRateToSf ( uint8_t dataRate) {
+    //@note tbd manage fsk
+    return ( 12 - dataRate ) ;
+    
+}
+

@@ -20,12 +20,13 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "utilities.h"
 #include "Define.h"
 Serial pcf( SERIAL_TX, SERIAL_RX );
-
-LoraWanObjet::LoraWanObjet( PinName interrupt ):packet( interrupt ){
+template class LoraWanObjet<LoraRegionsEU>;
+template <class T> 
+LoraWanObjet <T> ::LoraWanObjet( PinName interrupt ):packet( interrupt ){
     StateLoraWanProcess=LWPSTATE_IDLE;
     packet.MajorBits= LORAWANR1;
 }; 
-LoraWanObjet::~LoraWanObjet() {
+template <class T> LoraWanObjet <T> ::~LoraWanObjet() {
 };
 /************************************************************************************************/
 /*                      Public  Methods                                                         */
@@ -36,7 +37,8 @@ LoraWanObjet::~LoraWanObjet() {
 /*    LoraWanProcess Method                                                                    */
 /***********************************************************************************************/
 
- eLoraWan_Process_States LoraWanObjet::LoraWanProcess( uint8_t* AvailableRxPacket ) {
+template <class T> 
+eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
  
     *AvailableRxPacket = NOLORARXPACKETAVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE*
     switch ( StateLoraWanProcess ) {
@@ -179,11 +181,11 @@ LoraWanObjet::~LoraWanObjet() {
 /**************************************************/
 /*            LoraWan  Join  Method               */
 /**************************************************/
-eLoraWan_Process_States LoraWanObjet::Join ( void ) {
+template <class T> 
+eLoraWan_Process_States LoraWanObjet <T> ::Join ( void ) {
     packet.Phy.JoinedStatus = NOTJOINED;
     packet.BuildJoinLoraFrame( );
     packet.MacRx1Delay = JOIN_ACCEPT_DELAY1; // to be set in default setting regions
-    packet.MacTxSf = 12; //@note tbd implement % sf 
     //@note should be done in region constructor packet.MacRx2Sf = 12;
     StateLoraWanProcess = LWPSTATE_SEND;
     return( StateLoraWanProcess );
@@ -193,7 +195,8 @@ eLoraWan_Process_States LoraWanObjet::Join ( void ) {
 /**************************************************/
 /*          LoraWan  IsJoined  Method             */
 /**************************************************/
-eJoinStatus  LoraWanObjet::IsJoined( void ) {
+template <class T> 
+eJoinStatus LoraWanObjet <T> ::IsJoined( void ) {
     eJoinStatus status = NOTJOINED;
     status = packet.Phy.JoinedStatus;
     return ( status );
@@ -202,7 +205,8 @@ eJoinStatus  LoraWanObjet::IsJoined( void ) {
 /**************************************************/
 /*         LoraWan  SendPayload  Method           */
 /**************************************************/
-eLoraWan_Process_States LoraWanObjet::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint16_t sizeIn, uint8_t PacketType ) {
+template <class T> 
+eLoraWan_Process_States LoraWanObjet <T> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint16_t sizeIn, uint8_t PacketType ) {
     
     if ( StateLoraWanProcess != LWPSTATE_IDLE ) {
         return ( LWPSTATE_ERROR );
@@ -221,7 +225,8 @@ eLoraWan_Process_States LoraWanObjet::SendPayload ( uint8_t fPort, const uint8_t
 /**************************************************/
 /*        LoraWan  Receive  Method                */
 /**************************************************/
-uint8_t LoraWanObjet::ReceivePayload ( uint8_t* UserRxFport, uint8_t* UserRxPayload, uint8_t* UserRxPayloadSize ) {
+template <class T> 
+uint8_t LoraWanObjet <T> ::ReceivePayload ( uint8_t* UserRxFport, uint8_t* UserRxPayload, uint8_t* UserRxPayloadSize ) {
     int status = OKLORAWAN; 
     if (packet.AvailableRxPacketForUser == NOLORARXPACKETAVAILABLE) {
         status = ERRORLORAWAN ;
@@ -237,76 +242,89 @@ uint8_t LoraWanObjet::ReceivePayload ( uint8_t* UserRxFport, uint8_t* UserRxPayl
 /**************************************************/
 /*       LoraWan  AdrModeSelect  Method           */
 /**************************************************/
-void LoraWanObjet::SetDataRateStrategy( eDataRateStrategy adrModeSelect ) {
+template <class T>
+void LoraWanObjet <T> ::SetDataRateStrategy( eDataRateStrategy adrModeSelect ) {
     packet.AdrModeSelect = adrModeSelect;
 };
 /**************************************************/
 /*        LoraWan  TryToJoin  Method              */
 /**************************************************/
-uint8_t LoraWanObjet::TryToJoin ( void ) {
+template <class T> 
+uint8_t LoraWanObjet <T> ::TryToJoin ( void ) {
     return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 /**************************************************/
 /*   LoraWan  GetNextMaxPayloadLength  Method     */
 /**************************************************/
-uint32_t LoraWanObjet::GetNextMaxPayloadLength ( void ) {
+template <class T>
+uint32_t LoraWanObjet <T> ::GetNextMaxPayloadLength ( void ) {
      return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 /**************************************************/
 /*         LoraWan  GetDevAddr  Method            */
 /**************************************************/
-uint32_t LoraWanObjet::GetDevAddr ( void ) {
+template <class T> 
+uint32_t LoraWanObjet <T> ::GetDevAddr ( void ) {
      return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 /**************************************************/
 /*         LoraWan  GetNextPower  Method          */
 /**************************************************/
-uint8_t LoraWanObjet::GetNextPower ( void ) {
+template <class T>
+uint8_t LoraWanObjet <T> ::GetNextPower ( void ) {
      return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 /**************************************************/
 /*        LoraWan  GetNextDataRate  Method        */
 /**************************************************/
-uint8_t LoraWanObjet::GetNextDataRate ( void ) {
+template <class T> 
+uint8_t LoraWanObjet <T> ::GetNextDataRate ( void ) {
      return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 /**************************************************/
 /*    LoraWan  GetLorawanProcessState  Method     */
 /**************************************************/
-uint8_t LoraWanObjet::GetLorawanProcessState ( void ) {
+template <class T> 
+uint8_t LoraWanObjet <T> ::GetLorawanProcessState ( void ) {
      return(0);//@NOTE NOT YET IMPLEMENTED
 }
  
 /**************************************************/
 /*    LoraWan  RestoreContext  Method     */
 /**************************************************/
-void LoraWanObjet::RestoreContext ( void ) {
+template <class T> 
+void LoraWanObjet <T> ::RestoreContext ( void ) {
     packet.LoadFromFlash ( );
 }; 
 
 /************************************************************************************************/
 /*                      Private  Methods                                                        */
 /************************************************************************************************/
- void LoraWanObjet::CopyUserPayload( const uint8_t* dataIn, const uint16_t sizeIn ) {
+template <class T> 
+void LoraWanObjet <T> ::CopyUserPayload( const uint8_t* dataIn, const uint16_t sizeIn ) {
     memcpy( &packet.Phy.TxPhyPayload[FHDROFFSET], dataIn, sizeIn );
  };
  
- uint8_t LoraWanObjet::GetStateTimer(void) {
+template <class T> 
+uint8_t LoraWanObjet <T> ::GetStateTimer(void) {
      return (packet.StateTimer);
- }
- 
-uint8_t LoraWanObjet::GetRadioState ( void ) {
+}
+
+template <class T> 
+uint8_t LoraWanObjet <T> ::GetRadioState ( void ) {
     return packet.Phy.GetRadioState( );
 };
  
-uint8_t LoraWanObjet::GetRadioIrqFlag ( void ) {
+template <class T> 
+uint8_t LoraWanObjet <T> ::GetRadioIrqFlag ( void ) {
     return packet.Phy.RegIrqFlag;
 };
-void LoraWanObjet::RadioReset ( void ) {
+template <class T>
+void LoraWanObjet <T> ::RadioReset ( void ) {
     //NOT YET IMPLEMENTED
 }

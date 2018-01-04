@@ -51,7 +51,7 @@ LoraWanContainer::~LoraWanContainer( ) {
 /*                      Called During  LP.Process                     */
 /**********************************************************************/
 void LoraWanContainer::ConfigureRadioAndSend( void ) {
-    GiveNextSf( );
+    GiveNextDataRate( );
     uint8_t ChannelIndex = GiveNextChannel ( );//@note have to be completed
     Phy.DevAddrIsr    = DevAddr ;  //@note copy of the mac devaddr in order to filter it in the radio isr routine.
     Phy.TxFrequency   = MacTxFrequency[ChannelIndex]; 
@@ -65,7 +65,7 @@ void LoraWanContainer::ConfigureRadioAndSend( void ) {
 void LoraWanContainer::ConfigureRadioForRx1 ( void ) {
     Phy.RxFrequency   = Phy.TxFrequency;
     Phy.RxSf          = Phy.TxSf + MacRx1SfOffset;//@note + sf offset
-    Phy.RxBw          = MacRx1Bw;
+    Phy.RxBw          = MacTxBw;
     Phy.SetRxConfig( );
 };
 
@@ -378,27 +378,7 @@ int LoraWanContainer::AcceptFcntDwn ( uint16_t FcntDwnTmp ) {
     return ( status ) ;
 }
 
-void LoraWanContainer::GiveNextSf( void ) {
-     switch ( AdrModeSelect ) {
-        case STATICADRMODE :
-            MacTxSf = 7;
-            break;
-        case MOBILELONGRANGEADRMODE:
-            if ( MacTxSf == 12 ) { 
-                MacTxSf = 11;
-            } else {
-                 MacTxSf = 12;
-            }
-            break;
-        case MOBILELOWPOWERADRMODE:
-            ( MacTxSf == 12 ) ? MacTxSf = 7 : MacTxSf++ ;
-             break;
-        default: 
-           MacTxSf = 12;
-    }
-    MacTxSf = ( MacTxSf > 12 ) ? 12 : MacTxSf;
-    MacTxSf = ( MacTxSf < 7 ) ? 7 : MacTxSf;
-}
+
 uint8_t  LoraWanContainer::GiveNextChannel( void ) {
     return ( randr( 0, NbOfActiveChannel - 1 ) );
 
@@ -530,15 +510,12 @@ uint8_t LoraWanContainer::isValidNbRep ( uint8_t temp ) {
     return ( OKLORAWAN );
 }
 void LoraWanContainer::SaveInFlash ( ) {
-    BackUpFlash.MacTxSf                 = MacTxSf;
+    BackUpFlash.MacTxDataRate           = MacTxDataRate;
     BackUpFlash.MacTxPower              = MacTxPower;
     BackUpFlash.MacChMask               = MacChMask;
     BackUpFlash.MacNbRepUnconfirmedTx   = MacNbRepUnconfirmedTx; 
     BackUpFlash.MacRx2Frequency         = MacRx2Frequency; 
-    BackUpFlash.MacRx2Sf                = MacRx2Sf;
-    BackUpFlash.MacTxBw                 = MacTxBw;
-    BackUpFlash.MacRx2Bw                = MacRx2Bw;
-    BackUpFlash.MacRx1Bw                = MacRx1Bw;
+    BackUpFlash.MacRx2DataRate          = MacRx2DataRate;
     BackUpFlash.MacRx1SfOffset          = MacRx1SfOffset;
     BackUpFlash.NbOfActiveChannel       = NbOfActiveChannel;
     BackUpFlash.MacRx1Delay             = MacRx1Delay;
@@ -557,15 +534,12 @@ void LoraWanContainer::SaveInFlash ( ) {
 void LoraWanContainer::LoadFromFlash ( ) {
     gFlash.RestoreContext((uint8_t *)(&BackUpFlash), USERFLASHADRESS, sizeof(sBackUpFlash));
     BackUpFlash.FcntUp            +=  FLASH_UPDATE_PERIOD; //@note automatic increment
-    MacTxSf                       = BackUpFlash.MacTxSf;
+    MacTxDataRate                 = BackUpFlash.MacTxDataRate;
     MacTxPower                    = BackUpFlash.MacTxPower;
     MacChMask                     = BackUpFlash.MacChMask;
     MacNbRepUnconfirmedTx         = BackUpFlash.MacNbRepUnconfirmedTx; 
     MacRx2Frequency               = BackUpFlash.MacRx2Frequency; 
-    MacRx2Sf                      = BackUpFlash.MacRx2Sf;
-    MacTxBw                       = BackUpFlash.MacTxBw;
-    MacRx2Bw                      = BackUpFlash.MacRx2Bw;
-    MacRx1Bw                      = BackUpFlash.MacRx1Bw;
+    MacRx2DataRate                = BackUpFlash.MacRx2DataRate;
     MacRx1SfOffset                = BackUpFlash.MacRx1SfOffset;
     NbOfActiveChannel             = BackUpFlash.NbOfActiveChannel;
     MacRx1Delay                   = BackUpFlash.MacRx1Delay ;

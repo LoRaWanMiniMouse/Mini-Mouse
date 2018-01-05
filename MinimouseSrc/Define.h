@@ -152,8 +152,8 @@ enum {
 
 #define    LINK_CHECK_REQ_SIZE 
 #define    LINK_CHECK_ANS_SIZE 
-#define    LINK_ADR_REQ_SIZE
-#define    LINK_ADR_ANS_SIZE
+#define    LINK_ADR_REQ_SIZE          5
+#define    LINK_ADR_ANS_SIZE          2
 #define    DUTY_CYCLE_REQ_SIZE
 #define    DUTY_CYCLE_ANS_SIZE
 #define    RXPARRAM_SETUP_REQ_SIZE    5

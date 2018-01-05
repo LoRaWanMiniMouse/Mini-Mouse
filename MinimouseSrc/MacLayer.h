@@ -52,6 +52,7 @@ public:
     /*      Update by Link ADR command         */
     /*******************************************/
     uint8_t      MacTxDataRate;
+    uint8_t      MacTxDataRateAdr;
     uint8_t      MacTxPower;
     uint16_t     MacChMask;
     uint8_t      MacNbRepUnconfirmedTx; 
@@ -65,7 +66,7 @@ public:
     /*     Update by NewChannelReq command      */
     /********************************************/
     uint32_t   MacTxFrequency[16];
-    uint32_t   MacMinMaxSFChannel[16];
+    uint32_t   MacMinMaxDataRateChannel[16];
     uint8_t    NbOfActiveChannel;
     /********************************************/
     /*   Update by RXTimingSetupReq command     */
@@ -137,9 +138,11 @@ public:
 /***************************************************************/
     virtual void           RegionGiveNextDataRate                ( void ) = 0;
     virtual void           RegionSetRxConfig                     ( eRxWinType type ) = 0;
+    virtual void           RegionSetPower                        ( uint8_t PowerCmd ) = 0;
     virtual                eStatusLoRaWan isValidRx1DrOffset     ( uint8_t Rx1DataRateOffset) = 0;
-    virtual                eStatusLoRaWan isValidMacRx2Dr        ( uint8_t Rx2DataRate) = 0;
+    virtual                eStatusLoRaWan isValidDataRate        ( uint8_t DataRate) = 0;
     virtual                eStatusLoRaWan isValidMacFrequency    ( uint32_t Frequency) = 0;
+    virtual                eStatusLoRaWan isValidTxPower         ( uint8_t Power ) = 0;
     
 /**************************************************************/
 /*      Protected Methods and variables                       */
@@ -171,8 +174,8 @@ private :
 
 
 
-    uint8_t isValidDataRate        ( uint8_t );
-    uint8_t isValidTxPower         ( uint8_t );
+
+
     uint8_t isValidChannelMask     ( uint16_t );
     uint8_t isValidNbRep           ( uint8_t ) ;
     void SaveInFlash               ( void );

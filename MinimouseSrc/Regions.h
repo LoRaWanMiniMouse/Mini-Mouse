@@ -38,9 +38,11 @@ public:
     virtual void SetRegionsdefaultSettings       ( void );
     virtual void RegionGiveNextDataRate          ( void );
     virtual void RegionSetRxConfig               ( eRxWinType type );
+    virtual void RegionSetPower                  ( uint8_t PowerCmd );
     virtual eStatusLoRaWan isValidRx1DrOffset     ( uint8_t Rx1DataRateOffset );
-    virtual eStatusLoRaWan isValidMacRx2Dr        ( uint8_t Rx2DataRate );
+    virtual eStatusLoRaWan isValidDataRate        ( uint8_t DataRate );
     virtual eStatusLoRaWan isValidMacFrequency    ( uint32_t Frequency);
+    virtual eStatusLoRaWan isValidTxPower         ( uint8_t Power );
 /*********************************************************************/
 /*            Define Regional parameter                              */
 /*********************************************************************/

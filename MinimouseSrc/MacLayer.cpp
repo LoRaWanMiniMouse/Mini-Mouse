@@ -398,38 +398,38 @@ void LoraWanContainer::LinkCheckParser( void ) {
     /*    Private NWK MANAGEMENTS : LinkADR              */
     /*****************************************************/
 void LoraWanContainer::LinkADRParser( void ) {
-    DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[1], MacNwkPayload[2], MacNwkPayload[3], MacNwkPayload[4]);
+    DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4] );
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
     uint8_t temp ; 
     uint16_t temp2 ; 
      /* Valid DataRate  And Prepare Ans */
-    temp = ( ( MacNwkPayload[1] & 0xF0 ) >> 4 );
+    temp = ( ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0xF0 ) >> 4 );
     status = isValidDataRate( temp );
-    (status == OKLORAWAN ) ? MacTxPower = temp : StatusAns &= 0x5 ; 
+    (status == OKLORAWAN ) ? MacTxDataRateAdr = temp : StatusAns &= 0x5 ; 
     
     /* Valid TxPower  And Prepare Ans */
-    temp = ( MacNwkPayload[1] & 0x0F );
+    temp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x0F );
     status = OKLORAWAN;
     status = isValidTxPower( temp );
-    (status == OKLORAWAN ) ? MacTxPower = temp : StatusAns &= 0x5 ; 
-    
+    if (status == OKLORAWAN ) {
+        RegionSetPower ( temp );
+    } else {
+        StatusAns &= 0x3 ; 
+    }
      /* Valid DataRate Channel Mask And Prepare Ans */
-     temp2 = MacNwkPayload[2] + ( MacNwkPayload[3] << 8 )  ;
-     status = OKLORAWAN;
-     status = isValidChannelMask( temp2 );
+     temp2 = MacNwkPayload[ NwkPayloadIndex + 2 ] + ( MacNwkPayload[ NwkPayloadIndex + 3 ] << 8 )  ;
     (status == OKLORAWAN ) ? MacChMask = temp2 : StatusAns &= 0x6 ; 
     
     /* Valid Redundancy And Prepare Ans */
-     temp = MacNwkPayload[4];
-     status = OKLORAWAN;
-     status = isValidNbRep( temp );
-    (status == OKLORAWAN ) ? MacNbRepUnconfirmedTx = temp : StatusAns &= 0x3 ; 
+     temp = ( MacNwkPayload[ NwkPayloadIndex + 4] & 0x0F );
+     (temp >0 ) ? MacNbRepUnconfirmedTx = temp : StatusAns &= 0x6 ; 
     
     /* Prepare Ans*/
-    MacNwkAns [0] = MacNwkPayload[0] ; // copy Cid
-    MacNwkAns [1] = StatusAns ;
-    MacNwkAnsSize = 2 ;
+    MacNwkAns [ MacNwkAnsSize ] = LINK_ADR_ANS ; // copy Cid
+    MacNwkAns [ MacNwkAnsSize + 1 ] = StatusAns ;
+    MacNwkAnsSize   += LINK_ADR_ANS_SIZE ;
+    NwkPayloadIndex += LINK_ADR_REQ_SIZE;
     IsFrameToSend = NWKFRAME_TOSEND ;
 }
 
@@ -440,25 +440,24 @@ void LoraWanContainer::DutyCycleParser( void ) {
     /*    Private NWK MANAGEMENTS : RXParamSetupParser   */
     /*****************************************************/
 void LoraWanContainer::RXParamSetupParser( void ) {
-    DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[1], MacNwkPayload[2], MacNwkPayload[3], MacNwkPayload[4]);
-
+    DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4] );
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
     uint32_t temp ; 
     /* Valid Rx1DrOffset And Prepare Ans */
-    temp = ( MacNwkPayload[1] & 0x70 ) >> 3 ;
+    temp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x70 ) >> 3 ;
     status = isValidRx1DrOffset( temp );
     (status == OKLORAWAN ) ? MacRx1DataRateOffset = temp : StatusAns &= 0x6 ; 
     
     /* Valid MacRx2Dr And Prepare Ans */
     status = OKLORAWAN;
-    temp = ( MacNwkPayload[1] & 0x0F );
-    status = isValidMacRx2Dr( temp );
+    temp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x0F );
+    status = isValidDataRate( temp );
     (status == OKLORAWAN ) ? MacRx2DataRate = temp : StatusAns &= 0x5 ; 
     
     /* Valid MacRx2Frequency And Prepare Ans */
     status = OKLORAWAN;
-    temp = ( MacNwkPayload[2] ) + ( MacNwkPayload[3] << 8 ) + ( MacNwkPayload[4] << 16 );
+    temp = ( MacNwkPayload[ NwkPayloadIndex + 2 ] ) + ( MacNwkPayload[ NwkPayloadIndex + 3 ] << 8 ) + ( MacNwkPayload[ NwkPayloadIndex + 4 ] << 16 );
     status = isValidMacFrequency ( temp );
     (status == OKLORAWAN ) ? MacRx2Frequency = temp * 100 : StatusAns &= 0x3 ; 
     
@@ -480,14 +479,6 @@ void LoraWanContainer::RXTimingSetupParser( void ) {
     //@NOTE NOT YET IMPLEMENTED
 }
 
-uint8_t LoraWanContainer::isValidDataRate ( uint8_t temp ) {
-    // @note not yet implemented 
-    return ( OKLORAWAN );
-}
-uint8_t LoraWanContainer::isValidTxPower ( uint8_t temp ) {
-    // @note not yet implemented 
-    return ( OKLORAWAN );
-}
 
 uint8_t LoraWanContainer::isValidChannelMask ( uint16_t temp ) {
     // @note not yet implemented 
@@ -512,7 +503,7 @@ void LoraWanContainer::SaveInFlash ( ) {
     BackUpFlash.DevAddr                 = DevAddr;
     BackUpFlash.JoinedStatus            = Phy.JoinedStatus;
     memcpy( &BackUpFlash.MacTxFrequency[0], &MacTxFrequency[0], 16);
-    memcpy( &BackUpFlash.MacMinMaxSFChannel[0], &MacMinMaxSFChannel[0], 16);
+    memcpy( &BackUpFlash.MacMinMaxDataRateChannel[0], &MacMinMaxDataRateChannel[0], 16);
     memcpy( &BackUpFlash.nwkSKey[0], &nwkSKey[0], 16);
     memcpy( &BackUpFlash.appSKey[0], &appSKey[0], 16);
     gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, sizeof(sBackUpFlash) );    
@@ -536,7 +527,7 @@ void LoraWanContainer::LoadFromFlash ( ) {
     DevAddr                       = BackUpFlash.DevAddr;
     Phy.JoinedStatus              = ( eJoinStatus ) BackUpFlash.JoinedStatus;
     memcpy( &MacTxFrequency[0], &BackUpFlash.MacTxFrequency[0], 16);
-    memcpy( &MacMinMaxSFChannel[0], &BackUpFlash.MacMinMaxSFChannel[0], 16);
+    memcpy( &MacMinMaxDataRateChannel[0], &BackUpFlash.MacMinMaxDataRateChannel[0], 16);
     memcpy( &nwkSKey[0], &BackUpFlash.nwkSKey[0], 16);
     memcpy( &appSKey[0], &BackUpFlash.appSKey[0], 16); 
     gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, sizeof(sBackUpFlash) );    

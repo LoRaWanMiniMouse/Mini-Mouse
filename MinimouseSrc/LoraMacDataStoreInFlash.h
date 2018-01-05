@@ -37,7 +37,8 @@ struct sBackUpFlash
     /*     Update by NewChannelReq command      */
     /********************************************/
     uint32_t     MacTxFrequency[16];
-    uint32_t     MacMinMaxSFChannel[16];
+    uint32_t     MacMinMaxDataRateChannel[16];
+    uint16_t     MacChannelMask;
     uint8_t      NbOfActiveChannel;
     /********************************************/
     /*   Update by RXTimingSetupReq command     */

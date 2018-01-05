@@ -31,6 +31,7 @@ LoraRegionsEU :: LoraRegionsEU (  PinName interrupt ) : LoraWanContainer (interr
     MacRx1DataRateOffset = 0;
     MacRx2DataRate       = 0;
     MacRx1Delay          = RECEIVE_DELAY1;// @note replace by default setting regions
+    MacTxDataRateAdr     = 0 ;//@note tbdN if adr active , before the first adrReq datarate = 0  
 }
 
 /***********************************************************************************************/
@@ -44,7 +45,7 @@ void LoraRegionsEU :: SetRegionsdefaultSettings ( void ) {
 void LoraRegionsEU::RegionGiveNextDataRate( void ) {
      switch ( AdrModeSelect ) {
         case STATICADRMODE :
-            MacTxDataRate = 5;
+            MacTxDataRate = MacTxDataRateAdr;
             break;
         case MOBILELONGRANGEADRMODE:
             if ( MacTxDataRate == 0 ) { 
@@ -72,10 +73,35 @@ void LoraRegionsEU::RegionSetRxConfig ( eRxWinType type ) {
     } else {
         DEBUG_MSG ("INVALID RX TYPE \n");
     }
-
-
 }
-    
+void LoraRegionsEU::RegionSetPower ( uint8_t PowerCmd ) {
+    switch ( PowerCmd ) {
+        case 0 :
+           MacTxPower = 20 ;
+           break;
+        case 1 :
+           MacTxPower = 14 ;
+           break;
+        case 2 :
+           MacTxPower = 11 ;
+           break;
+        case 3 :
+           MacTxPower = 8 ;
+           break;
+        case 4 :
+           MacTxPower = 5 ;
+           break;
+        case 5 :
+           MacTxPower = 2 ;
+           break;
+        default :
+           MacTxPower = 14 ;
+           DEBUG_MSG ("INVALID POWER \n");
+    }
+}
+/********************************************************************************/
+/*           Chack parameter of received mac commands                           */
+/********************************************************************************/
 eStatusLoRaWan LoraRegionsEU::isValidRx1DrOffset ( uint8_t Rx1DataRateOffset ) {
     eStatusLoRaWan status = OKLORAWAN;
     if (Rx1DataRateOffset > 5) {
@@ -85,9 +111,9 @@ eStatusLoRaWan LoraRegionsEU::isValidRx1DrOffset ( uint8_t Rx1DataRateOffset ) {
     return ( status );
 }
 
-eStatusLoRaWan LoraRegionsEU::isValidMacRx2Dr ( uint8_t Rx2DataRate ){
+eStatusLoRaWan LoraRegionsEU::isValidDataRate ( uint8_t DataRate ){
     eStatusLoRaWan status = OKLORAWAN;
-    if (Rx2DataRate > 7) {//@note must be impossible because RX2datarATe send over 3 bits !
+    if (DataRate > 7) {//@note must be impossible because RX2datarATe send over 3 bits !
         status = ERRORLORAWAN ;
         DEBUG_MSG ( "RECEIVE AN INVALID RX2 DR \n");
     }
@@ -98,6 +124,14 @@ eStatusLoRaWan LoraRegionsEU::isValidMacFrequency ( uint32_t Frequency) {
     if ( ( Frequency > FREQMAX ) || ( Frequency < FREQMIN ) ) {
         status = ERRORLORAWAN ;
         DEBUG_PRINTF ( "RECEIVE AN INVALID FREQUENCY = %d\n", Frequency);
+    }
+    return ( status );
+}
+eStatusLoRaWan LoraRegionsEU::isValidTxPower ( uint8_t Power) {
+    eStatusLoRaWan status = OKLORAWAN;
+    if ( ( Power > 5 ) ) {
+        status = ERRORLORAWAN ;
+        DEBUG_PRINTF ( "RECEIVE AN INVALID Power Cmd = %d\n", Power);
     }
     return ( status );
 }

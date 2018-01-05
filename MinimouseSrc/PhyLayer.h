@@ -31,6 +31,8 @@ public:
     void Send( void );
     void Receive (void );
     void IsrRadio( void ); // call back it tx done
+    void AttachIsr ( void ) ;
+    void DetachIsr ( void ); 
     int GetRadioState( void );
     void SetTxConfig( void );
     void SetRxConfig( void );

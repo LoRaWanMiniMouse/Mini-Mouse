@@ -51,6 +51,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
     /*                                    STATE TX                                      */
     /************************************************************************************/
         case LWPSTATE_SEND:
+            AttachRadioIsr ( );
             switch ( GetRadioState( ) ) {
                 
                 case  RADIOSTATE_IDLE : 
@@ -132,6 +133,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
     /*                              STATE UPDATE MAC                                    */
     /************************************************************************************/
         case LWPSTATE_UPDATEMAC:
+            DetachRadioIsr ( );
             packet.Phy.StateRadioProcess = RADIOSTATE_IDLE;  
             pcf.printf( " **************************\n " );
             pcf.printf( " *       UpdateMac        *\n " );

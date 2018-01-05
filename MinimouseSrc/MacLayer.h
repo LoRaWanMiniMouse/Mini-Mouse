@@ -178,6 +178,7 @@ private :
     void SaveInFlash               ( void );
     //uint8_t crypto_verifyMICandDecrypt ( uint8_t *frame_header, const uint8_t *encrypted_payload ,uint32_t micIn, uint8_t keySet, uint8_t *decrypted_payload, uint8_t PayloadSize);
     sBackUpFlash BackUpFlash;
+    uint8_t NwkPayloadIndex ;
 }; 
 
 

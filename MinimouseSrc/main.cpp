@@ -39,7 +39,7 @@ int main( ) {
     /*          Configure Adr Mode                  */
     /************************************************/
     Lp.SetDataRateStrategy( MOBILELONGRANGEADRMODE );
-    
+
     /************************************************/
     /*           Restore Context from Flash         */
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
@@ -70,5 +70,6 @@ int main( ) {
         }
         led = 0;
         wait_s( 5 );
+
     }
 }

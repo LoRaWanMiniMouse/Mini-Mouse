@@ -54,6 +54,8 @@ private :
     uint8_t ValidRxPacket; 
     uint32_t RtcTargetTimer;
     void RadioReset ( void ) ;
+    void AttachRadioIsr ( void ) { packet.Phy.AttachIsr ( ); };
+    void DetachRadioIsr ( void ) { packet.Phy.DetachIsr ( ); };
 };
 //extern LoraWanObjet Lp;
 #endif

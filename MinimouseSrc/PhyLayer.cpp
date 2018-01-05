@@ -30,7 +30,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 RadioContainer::RadioContainer( PinName interrupt )
                 :Radio( NULL ), TxInterrupt( interrupt ), RxTimeoutInterrupt ( RX_TIMEOUT_IT ) {
     StateRadioProcess = RADIOSTATE_IDLE;
-    TxInterrupt.rise( this,&RadioContainer::IsrRadio );
+    //TxInterrupt.rise( this,&RadioContainer::IsrRadio );
     RxTimeoutInterrupt.rise( this,&RadioContainer::IsrRadio );
     TimestampRtcIsr =0;
     TxFrequency = 868100000;
@@ -48,6 +48,12 @@ RadioContainer::~RadioContainer( ) {
 /*          Cpy data +meta data in case of reception & crc ok        */
 /*          Set Radio in Sleep Mode                                  */
 /*******************Isr Radio  ***************************************/
+void RadioContainer::AttachIsr ( void ) {
+     TxInterrupt.rise( this,&RadioContainer::IsrRadio );
+}
+void RadioContainer::DetachIsr ( void ) {
+     TxInterrupt.rise( NULL );
+}
 void RadioContainer::IsrRadio( void ) {
     uint64_t tAlarm64bits ;
     int status = OKLORAWAN;

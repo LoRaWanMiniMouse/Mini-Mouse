@@ -170,13 +170,15 @@ eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
 eStatusLoRaWan LoraWanContainer::ParseManagementPacket( void ) {
     uint8_t CmdIdentifier;
     eStatusLoRaWan status = OKLORAWAN ;
+    NwkPayloadIndex = 0;
+    MacNwkAnsSize = 0;
     uint8_t MaxCmdNum = 16 ; //@note security to avoid an infinite While erro 
-    while ( ( MacNwkPayloadSize > 0 ) && (  MaxCmdNum > 0 ) ) { //@note MacNwkPayloadSize and MacNwkPayload[0] are updated in Parser's method
+    while ( ( MacNwkPayloadSize > NwkPayloadIndex ) && (  MaxCmdNum > 0 ) ) { //@note MacNwkPayloadSize and MacNwkPayload[0] are updated in Parser's method
         MaxCmdNum --; 
         if ( MaxCmdNum == 0 ) {
             return ( ERRORLORAWAN );
         }
-        CmdIdentifier = MacNwkPayload[0];
+        CmdIdentifier = MacNwkPayload[NwkPayloadIndex];
         switch ( CmdIdentifier ) {
             case LINK_CHECK_ANS :
                 LinkCheckParser( );
@@ -343,7 +345,7 @@ int LoraWanContainer::ExtractRxFhdr ( uint16_t *FcntDwnTmp ) { //@note Not yet a
     status = (DevAddrtmp == DevAddr) ? OKLORAWAN : ERRORLORAWAN;
     FctrlRx = Phy.RxPhyPayload[5] ;
     *FcntDwnTmp = Phy.RxPhyPayload[6] + ( Phy.RxPhyPayload[7] << 8 );
-    FoptsLength = FctrlRx & 0x7;
+    FoptsLength = FctrlRx & 0x0F;
     memcpy(&Fopts[0], &Phy.RxPhyPayload[8], FoptsLength);
     for (int i = 0 ; i < FoptsLength ; i ++) {
         DEBUG_PRINTF( " %x \n", Fopts[i] );
@@ -461,10 +463,10 @@ void LoraWanContainer::RXParamSetupParser( void ) {
     (status == OKLORAWAN ) ? MacRx2Frequency = temp * 100 : StatusAns &= 0x3 ; 
     
     /* Prepare Ans*/
-    MacNwkAns [0] = RXPARRAM_SETUP_ANS ; // copy Cid
-    MacNwkAns [1] = StatusAns ;
-    MacNwkAnsSize = RXPARRAM_SETUP_ANS_SIZE ;
-    MacNwkPayloadSize -= RXPARRAM_SETUP_REQ_SIZE;
+    MacNwkAns [ MacNwkAnsSize ] = RXPARRAM_SETUP_ANS ; // copy Cid
+    MacNwkAns [ MacNwkAnsSize + 1 ] = StatusAns ;
+    MacNwkAnsSize += RXPARRAM_SETUP_ANS_SIZE ;
+    NwkPayloadIndex += RXPARRAM_SETUP_REQ_SIZE;
     IsFrameToSend = NWKFRAME_TOSEND ;
 }
 

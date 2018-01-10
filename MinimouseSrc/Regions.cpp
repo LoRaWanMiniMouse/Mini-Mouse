@@ -164,8 +164,26 @@ eStatusChannel LoraRegionsEU::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint1
     }        
     return ( status );
 };
+void LoraRegionsEU::RegionGetCFList ( void ) {
+    int cpt = 0 ;
+    for ( int i = 0 ; i < 5 ; i++ ) {
+        MacTxFrequency [3 + i] = 100 * ( ( CFList[2 + ( 3 * i )] ) + ( CFList[1 + ( 3 * i )] << 8 )+ ( CFList[0 + ( 3 * i )] << 16 ) );
+        if ( ( MacTxFrequency [3 + i] >= 863000000) && ( MacTxFrequency [3 + i] <= 870000000) ) {
+            cpt++;
+            MacMinDataRateChannel [3 + i] = 0;
+            MacMaxDataRateChannel [3 + i] = 5;
+            MacChannelIndexEnabled [3 + i] = CHANNEL_ENABLED ;
+            DEBUG_PRINTF( " MacTxFrequency [%d] = %d \n",i,MacTxFrequency [3 + i]);
+            DEBUG_PRINTF( " MacMinDataRateChannel [%d] = %d \n",i,MacMinDataRateChannel [3 + i]);
+            DEBUG_PRINTF( " MacMaxDataRateChannel [%d] = %d \n",i,MacMaxDataRateChannel [3 + i]);
+            DEBUG_PRINTF( " MacChannelIndexEnabled [%d] = %d \n",i,MacChannelIndexEnabled [3 + i]);
+        }
+    }
+    NbOfActiveChannel += cpt ;
+    DEBUG_PRINTF( " NbOfActiveChannel = %d \n",NbOfActiveChannel);
+}
 /********************************************************************************/
-/*           Chack parameter of received mac commands                           */
+/*           Check parameter of received mac commands                           */
 /********************************************************************************/
 eStatusLoRaWan LoraRegionsEU::RegionIsValidRx1DrOffset ( uint8_t Rx1DataRateOffset ) {
     eStatusLoRaWan status = OKLORAWAN;

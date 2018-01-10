@@ -244,9 +244,12 @@ void LoraWanContainer::UpdateJoinProcedure ( void ) { //@note tbd add valid test
     uint8_t AppNonce[6];
     memcpy( AppNonce, &MacRxPayload[1], 6 );
     LoRaMacJoinComputeSKeys(LoRaMacAppKey, AppNonce, DevNonce,  nwkSKey, appSKey );
-    for( int i = 0 ;i<16;i++) {
-        
+    if ( MacRxPayloadSize > 13 ) { // cflist are presents
+        for( int i = 0 ; i < 16 ; i++) {
+            CFList[i] = MacRxPayload[13 + i];
+        }
     }
+    RegionGetCFList ( ) ; 
     DevAddr              = MacRxPayload[7] + ( MacRxPayload[8] << 8 ) + ( MacRxPayload[9] << 16 )+ ( MacRxPayload[10] << 24 );
     Phy.DevAddrIsr       = DevAddr ; 
     MacRx1DataRateOffset = ( MacRxPayload[11] & 0x70 ) >> 3;

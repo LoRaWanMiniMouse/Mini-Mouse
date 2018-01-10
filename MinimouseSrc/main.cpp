@@ -48,12 +48,12 @@ int main( ) {
 
     while(1) {
           pcf.printf("\n\n\n\n ");
-//        if ( Lp.IsJoined ( ) == JOINED ) {            
-//            pcf.printf("send payload \n");
+        if ( Lp.IsJoined ( ) == JOINED ) {            
+            pcf.printf("send payload \n");
             LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, UNCONFDATAUP );
-//        } else {
-//            LpState = Lp.Join( );
-//        }
+        } else {
+            LpState = Lp.Join( );
+        }
         
         led = 1;
         while ( LpState != LWPSTATE_IDLE ){

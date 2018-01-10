@@ -115,7 +115,7 @@ public:
 
 /* LoRaWan Mac Data for join */
     uint16_t DevNonce;
-
+    uint8_t  CFList[16];
     
 /* LoRaWan Mac Data for nwk Ans */
     uint8_t    MacNwkPayload[255];  //@note resize this buffer 
@@ -147,6 +147,7 @@ public:
     virtual void              RegionSetPower         ( uint8_t PowerCmd )                     = 0;
     virtual void              RegionSetMask          ( void )                                 = 0;
     virtual void              RegionInitChannelMask  ( void )                                 = 0;
+    virtual void              RegionGetCFList        ( void )                                 = 0;
     virtual eStatusChannel    RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMaskIn) = 0;
     
     virtual eStatusLoRaWan    RegionIsValidRx1DrOffset     ( uint8_t Rx1DataRateOffset) = 0;

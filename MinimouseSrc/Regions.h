@@ -37,6 +37,7 @@ public:
     LoraRegionsEU (  PinName interrupt ); 
     virtual void SetRegionsdefaultSettings        ( void );
     virtual void RegionGiveNextDataRate           ( void );
+    virtual void RegionGetCFList                  ( void );
     virtual void RegionGiveNextChannel            ( void ); 
     virtual void RegionSetRxConfig                ( eRxWinType type );
     virtual void RegionSetPower                   ( uint8_t PowerCmd );

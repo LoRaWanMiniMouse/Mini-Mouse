@@ -167,7 +167,7 @@ eStatusChannel LoraRegionsEU::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint1
 void LoraRegionsEU::RegionGetCFList ( void ) {
     int cpt = 0 ;
     for ( int i = 0 ; i < 5 ; i++ ) {
-        MacTxFrequency [3 + i] = 100 * ( ( CFList[2 + ( 3 * i )] ) + ( CFList[1 + ( 3 * i )] << 8 )+ ( CFList[0 + ( 3 * i )] << 16 ) );
+        MacTxFrequency [3 + i] = 100 * ( ( CFList[0 + ( 3 * i )] ) + ( CFList[1 + ( 3 * i )] << 8 )+ ( CFList[2 + ( 3 * i )] << 16 ) );
         if ( ( MacTxFrequency [3 + i] >= 863000000) && ( MacTxFrequency [3 + i] <= 870000000) ) {
             cpt++;
             MacMinDataRateChannel [3 + i] = 0;

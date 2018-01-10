@@ -271,7 +271,7 @@ void LoraWanContainer::UpdateJoinProcedure ( void ) { //@note tbd add valid test
 /********************************************************/
 
 void LoraWanContainer::BuildJoinLoraFrame( void ) {
-    DevNonce = randr( 0, 65535 )+18714;
+    DevNonce = randr( 0, 65535 )+19999;
     MType = JOINREQUEST ;
     SetMacHeader ( );
     for (int i = 0; i <8; i++){ 

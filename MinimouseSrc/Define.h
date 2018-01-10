@@ -205,6 +205,15 @@ typedef enum {
     BW500
 }eBandWidth;    
 
+enum {
+    CHANNEL_DISABLED,
+    CHANNEL_ENABLED,
+};
+
+typedef enum {
+    UNVALIDCHANNEL,
+    VALIDCHANNEL,
+}eValidChannel;
 /*User Confi for Adr Mode select*/
 typedef enum eDataRateStrategy{
     STATICADRMODE,
@@ -217,6 +226,11 @@ typedef enum {
     OKLORAWAN    = 0,
 }eStatusLoRaWan;
 
+typedef enum {
+    ERRORCHANNELCNTL = -2,    
+    ERRORCHANNELMASK = -1,
+    OKCHANNEL    = 0,
+}eStatusChannel;
 typedef enum {
     NOMOREVALIDRXPACKET,
     USERRX_FOPTSPACKET,

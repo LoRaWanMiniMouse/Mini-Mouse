@@ -29,6 +29,7 @@ Maintainer        : Fabien Holin ( SEMTECH)
 
 class LoraWanContainer { 
 public: 
+    static const uint8_t  NUMBER_OF_CHANNEL     = 16; // @note this is an issue it is region dependant so move in region but tbd...
     LoraWanContainer( PinName interrupt ); 
     ~LoraWanContainer( );
     void BuildTxLoraFrame     ( void );
@@ -65,9 +66,13 @@ public:
     /********************************************/
     /*     Update by NewChannelReq command      */
     /********************************************/
-    uint32_t   MacTxFrequency[16];
-    uint32_t   MacMinMaxDataRateChannel[16];
+    uint32_t  MacTxFrequency            [ NUMBER_OF_CHANNEL ];
+    uint8_t   MacMinDataRateChannel     [ NUMBER_OF_CHANNEL ];
+    uint8_t   MacMaxDataRateChannel     [ NUMBER_OF_CHANNEL ];
+    uint8_t   MacChannelIndexEnabled    [ NUMBER_OF_CHANNEL ]; // Contain the index of the activated channel only NbOfActiveChannel value are valid
+   
     uint8_t    NbOfActiveChannel;
+    
     /********************************************/
     /*   Update by RXTimingSetupReq command     */
     /********************************************/
@@ -136,24 +141,32 @@ public:
 /***************************************************************/
 /*  Virtual Method overwritten by the Class  of the region     */
 /***************************************************************/
-    virtual void           RegionGiveNextDataRate                ( void ) = 0;
-    virtual void           RegionSetRxConfig                     ( eRxWinType type ) = 0;
-    virtual void           RegionSetPower                        ( uint8_t PowerCmd ) = 0;
-    virtual                eStatusLoRaWan isValidRx1DrOffset     ( uint8_t Rx1DataRateOffset) = 0;
-    virtual                eStatusLoRaWan isValidDataRate        ( uint8_t DataRate) = 0;
-    virtual                eStatusLoRaWan isValidMacFrequency    ( uint32_t Frequency) = 0;
-    virtual                eStatusLoRaWan isValidTxPower         ( uint8_t Power ) = 0;
+    virtual void              RegionGiveNextDataRate ( void )                                 = 0;
+    virtual void              RegionGiveNextChannel  ( void )                                 = 0; 
+    virtual void              RegionSetRxConfig      ( eRxWinType type )                      = 0;
+    virtual void              RegionSetPower         ( uint8_t PowerCmd )                     = 0;
+    virtual void              RegionSetMask          ( void )                                 = 0;
+    virtual void              RegionInitChannelMask  ( void )                                 = 0;
+    virtual eStatusChannel    RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMaskIn) = 0;
+    
+    virtual eStatusLoRaWan    RegionIsValidRx1DrOffset     ( uint8_t Rx1DataRateOffset) = 0;
+    virtual eStatusLoRaWan    RegionIsValidDataRateRx2     ( uint8_t temp )             = 0;
+    virtual eStatusLoRaWan    RegionIsValidDataRate        ( uint8_t DataRate)          = 0;
+    virtual eStatusLoRaWan    RegionIsValidMacFrequency    ( uint32_t Frequency)        = 0;
+    virtual eStatusLoRaWan    RegionIsValidTxPower         ( uint8_t Power )            = 0;
     
 /**************************************************************/
 /*      Protected Methods and variables                       */
 /**************************************************************/
 protected :
-    uint8_t      MacTxSf;
-    eBandWidth   MacTxBw;
-    uint8_t      MacRx1Sf;
-    eBandWidth   MacRx1Bw;
-    uint8_t      MacRx2Sf;
-    eBandWidth   MacRx2Bw;
+    uint8_t      MacTxSfCurrent;
+    eBandWidth   MacTxBwCurrent;
+    uint32_t     MacTxFrequencyCurrent;
+    uint8_t      MacRx1SfCurrent;
+    eBandWidth   MacRx1BwCurrent;
+    uint8_t      MacRx2SfCurrent;
+    eBandWidth   MacRx2BwCurrent;
+    int      FindEnabledChannel ( uint8_t Index);
 private :
     static const uint16_t MAX_FCNT_GAP       = 16384 ;
     void SetMacHeader              ( void );
@@ -165,7 +178,7 @@ private :
     int AcceptFcntDwn              ( uint16_t FcntDwnTmp ) ;
     void SetAlarm                  ( uint32_t alarmInMs );
     void LinkCheckParser           ( void );
-    void LinkADRParser             ( void );
+    void LinkADRParser             ( uint8_t NbMultiLinkAdrReq );
     void DutyCycleParser           ( void );
     void RXParamSetupParser        ( void );
     void DevStatusParser           ( void );

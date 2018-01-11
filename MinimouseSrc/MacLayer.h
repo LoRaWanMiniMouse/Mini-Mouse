@@ -151,10 +151,11 @@ public:
     virtual eStatusChannel    RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMaskIn) = 0;
     
     virtual eStatusLoRaWan    RegionIsValidRx1DrOffset     ( uint8_t Rx1DataRateOffset) = 0;
-    virtual eStatusLoRaWan    RegionIsValidDataRateRx2     ( uint8_t temp )             = 0;
-    virtual eStatusLoRaWan    RegionIsValidDataRate        ( uint8_t DataRate)          = 0;
+    virtual eStatusLoRaWan    RegionIsValidDataRate        ( uint8_t temp )             = 0;
+    virtual eStatusLoRaWan    RegionIsAcceptableDataRate   ( uint8_t DataRate)          = 0;
     virtual eStatusLoRaWan    RegionIsValidMacFrequency    ( uint32_t Frequency)        = 0;
     virtual eStatusLoRaWan    RegionIsValidTxPower         ( uint8_t Power )            = 0;
+    virtual eStatusLoRaWan    RegionIsValidChannelIndex    ( uint8_t ChannelIndex)      = 0;
     
 /**************************************************************/
 /*      Protected Methods and variables                       */
@@ -167,7 +168,7 @@ protected :
     eBandWidth   MacRx1BwCurrent;
     uint8_t      MacRx2SfCurrent;
     eBandWidth   MacRx2BwCurrent;
-    int      FindEnabledChannel ( uint8_t Index);
+    int          FindEnabledChannel ( uint8_t Index);
 private :
     static const uint16_t MAX_FCNT_GAP       = 16384 ;
     void SetMacHeader              ( void );
@@ -186,14 +187,7 @@ private :
     void NewChannelParser          ( void );
     void RXTimingSetupParser       ( void );
 
-
-
-
-
-    uint8_t isValidChannelMask     ( uint16_t );
-    uint8_t isValidNbRep           ( uint8_t ) ;
     void SaveInFlash               ( void );
-    //uint8_t crypto_verifyMICandDecrypt ( uint8_t *frame_header, const uint8_t *encrypted_payload ,uint32_t micIn, uint8_t keySet, uint8_t *decrypted_payload, uint8_t PayloadSize);
     sBackUpFlash BackUpFlash;
     uint8_t NwkPayloadIndex ;
 }; 

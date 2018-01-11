@@ -181,7 +181,7 @@ eStatusLoRaWan LoraWanContainer::ParseManagementPacket( void ) {
         }
         CmdIdentifier = MacNwkPayload[NwkPayloadIndex];
         switch ( CmdIdentifier ) {
-            case LINK_CHECK_ANS :
+            case LINK_CHECK_ANS :  //@note NOT YET IMPLEMENTED
                 LinkCheckParser( );
                 break;
             case LINK_ADR_REQ :
@@ -193,19 +193,19 @@ eStatusLoRaWan LoraWanContainer::ParseManagementPacket( void ) {
                 LinkADRParser( NbMultiLinkAdrReq );
                 break;
             case DUTY_CYCLE_REQ :
-                DutyCycleParser( );
+                DutyCycleParser( ); //@note send answer but do nothong
                 break;
             case RXPARRAM_SETUP_REQ :
-                RXParamSetupParser( );
+                RXParamSetupParser( ); 
                 break;
             case DEV_STATUS_REQ :
-                DevStatusParser( );
+                DevStatusParser( ); //@note  Done but margin have no sense tbimplemented
                 break;
             case NEW_CHANNEL_REQ :
                 NewChannelParser( );
                 break;
             case RXTIMING_SETUP_REQ :
-                RXTimingSetupParser( );
+                RXTimingSetupParser( ); 
                 break;
         }
     }
@@ -271,7 +271,7 @@ void LoraWanContainer::UpdateJoinProcedure ( void ) { //@note tbd add valid test
 /********************************************************/
 
 void LoraWanContainer::BuildJoinLoraFrame( void ) {
-    DevNonce = randr( 0, 65535 )+19999;
+    DevNonce = randr( 0, 65535 )+29999;
     MType = JOINREQUEST ;
     SetMacHeader ( );
     for (int i = 0; i <8; i++){ 
@@ -446,7 +446,7 @@ void LoraWanContainer::LinkADRParser( uint8_t NbMultiLinkAdrReq  ) {
     /* At This point global temporary channel mask is built and validated */
     /* Valid the last DataRate */
     DataRateTemp = ( ( MacNwkPayload[ NwkPayloadIndex + ( NbMultiLinkAdrReq * LINK_ADR_REQ_SIZE ) + 1 ] & 0xF0 ) >> 4 );
-    status = RegionIsValidDataRate( DataRateTemp );
+    status = RegionIsAcceptableDataRate( DataRateTemp );
     if ( status == ERRORLORAWAN ) {   // Test Channelmask enables a not defined channel
         StatusAns &= 0x5 ;
         DEBUG_MSG("INVALID DATARATE \n");
@@ -505,7 +505,7 @@ void LoraWanContainer::RXParamSetupParser( void ) {
     /* Valid MacRx2Dr And Prepare Ans */
     status = OKLORAWAN;
     MacRx2DataRateTemp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x0F );
-    status = RegionIsValidDataRateRx2( MacRx2DataRateTemp );
+    status = RegionIsValidDataRate( MacRx2DataRateTemp );
     if (status == ERRORLORAWAN ) {
         StatusAns &= 0x5 ; 
         DEBUG_MSG ("INVALID RX2DR \n");
@@ -514,6 +514,7 @@ void LoraWanContainer::RXParamSetupParser( void ) {
     /* Valid MacRx2Frequency And Prepare Ans */
     status = OKLORAWAN;
     MacRx2FrequencyTemp = ( MacNwkPayload[ NwkPayloadIndex + 2 ] ) + ( MacNwkPayload[ NwkPayloadIndex + 3 ] << 8 ) + ( MacNwkPayload[ NwkPayloadIndex + 4 ] << 16 );
+    status = RegionIsValidMacFrequency ( MacRx2FrequencyTemp ) ;
     if (status == ERRORLORAWAN ) {
         StatusAns &= 0x3 ; 
         DEBUG_MSG ("INVALID RX2 FREQUENCY \n");
@@ -542,28 +543,97 @@ void LoraWanContainer::RXParamSetupParser( void ) {
 
 
 void LoraWanContainer::DutyCycleParser( void ) {
-    //@NOTE NOT YET IMPLEMENTED
+    DEBUG_PRINTF (" %x \n", MacNwkPayload[ NwkPayloadIndex + 1]);
+    uint8_t DutyCycleTemp = ( MacNwkPayload[ NwkPayloadIndex + 1] & 0xF );
+       /* Prepare Ans*/
+    MacNwkAns [ MacNwkAnsSize ] = DUTY_CYCLE_ANS ; // copy Cid
+    MacNwkAnsSize += DUTY_CYCLE_ANS_SIZE ;
+    NwkPayloadIndex += DUTY_CYCLE_REQ_SIZE;
+    IsFrameToSend = NWKFRAME_TOSEND ;
 }
 
 void LoraWanContainer::DevStatusParser( void ) {
-    //@NOTE NOT YET IMPLEMENTED
+    DEBUG_MSG ( "Receive a dev status req\n");
+    int status = OKLORAWAN;
+    uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
+        /* Prepare Ans*/
+    MacNwkAns [ MacNwkAnsSize ] = RXPARRAM_SETUP_ANS ; // copy Cid
+    MacNwkAns [ MacNwkAnsSize + 1 ] = 255 ;
+    MacNwkAns [ MacNwkAnsSize + 2 ] = 0 ;
+    MacNwkAnsSize += DEV_STATUS_ANS_SIZE ;
+    NwkPayloadIndex += DEV_STATUS_REQ_SIZE;
+    IsFrameToSend = NWKFRAME_TOSEND ;
 }
 void LoraWanContainer::NewChannelParser( void ) {
-    //@NOTE NOT YET IMPLEMENTED
+    int i;
+    DEBUG_PRINTF (" %x %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + i], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4], MacNwkPayload[NwkPayloadIndex + 5]);
+    int status = OKLORAWAN;
+    uint8_t StatusAns = 0x3 ; // initilised for ans answer ok 
+    uint8_t ChannelIndexTemp;
+    uint8_t DataRateRangeMaxTemp;
+    uint8_t DataRateRangeMinTemp;
+    uint32_t FrequencyTemp; 
+    /* Valid Channel Index */
+    ChannelIndexTemp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x70 ) >> 3 ;
+    status = RegionIsValidChannelIndex( ChannelIndexTemp );
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x2 ; 
+        DEBUG_MSG ("INVALID CHANNEL INDEX \n");
+    }
+    /* Valid Frequency  */
+    FrequencyTemp = ( MacNwkPayload[ NwkPayloadIndex + 2 ] ) + ( MacNwkPayload[ NwkPayloadIndex + 3 ] << 8 ) + ( MacNwkPayload[ NwkPayloadIndex + 4 ] << 16 );
+    status = RegionIsValidMacFrequency ( FrequencyTemp ) ;
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x2 ; 
+        DEBUG_MSG ("INVALID FREQUENCY\n");
+    }
+        /* Valid DRMIN/MAX */
+    DataRateRangeMinTemp = MacNwkPayload[ NwkPayloadIndex + 5 ] & 0xF;
+    status = RegionIsValidDataRate ( DataRateRangeMinTemp ) ;
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x1 ; 
+        DEBUG_MSG ("INVALID DR MIN \n");
+    }
+    DataRateRangeMaxTemp = ( MacNwkPayload[ NwkPayloadIndex + 5 ] & 0xF0 ) > 4;
+    status = RegionIsValidDataRate ( DataRateRangeMaxTemp ) ;
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x1 ; 
+        DEBUG_MSG ("INVALID DR MAX \n");
+    }
+    if ( DataRateRangeMaxTemp < DataRateRangeMinTemp ) {
+        StatusAns &= 0x1 ; 
+        DEBUG_MSG ("INVALID DR MAX < DR MIN \n");
+    }
+
+    /* Update the mac parameters if case of no error */
+    
+    if ( StatusAns == 0x2 ) {
+        MacTxFrequency [ ChannelIndexTemp ] = 100 * FrequencyTemp;
+        MacMinDataRateChannel [ ChannelIndexTemp ] = DataRateRangeMinTemp;
+        MacMaxDataRateChannel [ ChannelIndexTemp ] = DataRateRangeMaxTemp;
+        DEBUG_PRINTF("MacTxFrequency [ %d ] = %d\n", ChannelIndexTemp, MacTxFrequency [ ChannelIndexTemp ]);
+        DEBUG_PRINTF("MacMinDataRateChannel [ %d ] = %d\n", ChannelIndexTemp, MacMinDataRateChannel [ ChannelIndexTemp ]);
+        DEBUG_PRINTF("MacMaxDataRateChannel [ %d ] = %d\n", ChannelIndexTemp, MacMaxDataRateChannel [ ChannelIndexTemp ]);
+    }
+
+    /* Prepare Ans*/
+    MacNwkAns [ MacNwkAnsSize ] = NEW_CHANNEL_ANS ; // copy Cid
+    MacNwkAns [ MacNwkAnsSize + 1 ] = StatusAns ;
+    MacNwkAnsSize += NEW_CHANNEL_ANS_SIZE ;
+    NwkPayloadIndex += NEW_CHANNEL_REQ_SIZE;
+    IsFrameToSend = NWKFRAME_TOSEND ;
 }
 void LoraWanContainer::RXTimingSetupParser( void ) {
-    //@NOTE NOT YET IMPLEMENTED
+    DEBUG_PRINTF (" %x \n", MacNwkPayload[ NwkPayloadIndex + 1]);
+    MacRx1Delay = ( MacNwkPayload[ NwkPayloadIndex + 1] & 0xF );
+       /* Prepare Ans*/
+    MacNwkAns [ MacNwkAnsSize ] = RXTIMING_SETUP_ANS ; // copy Cid
+    MacNwkAnsSize += RXTIMING_SETUP_ANS_SIZE ;
+    NwkPayloadIndex += RXTIMING_SETUP_REQ_SIZE;
+    IsFrameToSend = NWKFRAME_TOSEND ;
 }
 
 
-uint8_t LoraWanContainer::isValidChannelMask ( uint16_t temp ) {
-    // @note not yet implemented 
-    return ( OKLORAWAN );
-}
-uint8_t LoraWanContainer::isValidNbRep ( uint8_t temp ) {
-    // @note not yet implemented 
-    return ( OKLORAWAN );
-}
 void LoraWanContainer::SaveInFlash ( ) {
     BackUpFlash.MacTxDataRate           = MacTxDataRate;
     BackUpFlash.MacTxPower              = MacTxPower;

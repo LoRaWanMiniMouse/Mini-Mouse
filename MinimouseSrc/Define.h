@@ -65,13 +65,13 @@ static uint8_t LoRaMacAppSKey[] =
 
 
 static uint8_t LoRaMacAppKey[] =
-{ 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+{ 0xAA, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
 static uint8_t AppEui[] = 
 { 0x70, 0xB3, 0xD5, 0x7E, 0xF0, 0x00, 0x36, 0x12 };
 
 
 static uint8_t DevEui[] = 
-{ 0x33, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x33 };    
+{ 0xAA, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0xAA };    
 
 static uint32_t LoRaDevAddr = 0x26011918;
 
@@ -154,16 +154,16 @@ enum {
 #define    LINK_CHECK_ANS_SIZE 
 #define    LINK_ADR_REQ_SIZE          5
 #define    LINK_ADR_ANS_SIZE          2
-#define    DUTY_CYCLE_REQ_SIZE
-#define    DUTY_CYCLE_ANS_SIZE
+#define    DUTY_CYCLE_REQ_SIZE        2
+#define    DUTY_CYCLE_ANS_SIZE        1
 #define    RXPARRAM_SETUP_REQ_SIZE    5
 #define    RXPARRAM_SETUP_ANS_SIZE    2
-#define    DEV_STATUS_REQ_SIZE
-#define    DEV_STATUS_ANS_SIZE
-#define    NEW_CHANNEL_REQ_SIZE
-#define    NEW_CHANNEL_ANS_SIZE
-#define    RXTIMING_SETUP_REQ_SIZE
-#define    RXTIMING_SETUP_ANS_SIZE 
+#define    DEV_STATUS_REQ_SIZE        1
+#define    DEV_STATUS_ANS_SIZE        3
+#define    NEW_CHANNEL_REQ_SIZE       6
+#define    NEW_CHANNEL_ANS_SIZE       2
+#define    RXTIMING_SETUP_REQ_SIZE    2
+#define    RXTIMING_SETUP_ANS_SIZE    1
 
 
 

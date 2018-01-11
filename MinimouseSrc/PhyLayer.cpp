@@ -36,7 +36,7 @@ RadioContainer::RadioContainer( PinName interrupt )
     TxFrequency = 868100000;
     TxPower = 14;
     TxSf = 7;
-    JoinedStatus = NOTJOINED ;
+    JoinedStatus = JOINED ;
 }; 
 RadioContainer::~RadioContainer( ) {
 };

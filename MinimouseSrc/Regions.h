@@ -45,10 +45,11 @@ public:
     virtual void RegionInitChannelMask            ( void );
     virtual eStatusChannel RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMask );
     virtual eStatusLoRaWan RegionIsValidRx1DrOffset     ( uint8_t Rx1DataRateOffset );
-    virtual eStatusLoRaWan RegionIsValidDataRateRx2     ( uint8_t temp );
-    virtual eStatusLoRaWan RegionIsValidDataRate        ( uint8_t DataRate );
+    virtual eStatusLoRaWan RegionIsValidDataRate        ( uint8_t temp );
+    virtual eStatusLoRaWan RegionIsAcceptableDataRate   ( uint8_t DataRate );
     virtual eStatusLoRaWan RegionIsValidMacFrequency    ( uint32_t Frequency);
     virtual eStatusLoRaWan RegionIsValidTxPower         ( uint8_t Power );
+    virtual eStatusLoRaWan RegionIsValidChannelIndex    ( uint8_t ChannelIndex);
 /*********************************************************************/
 /*            Define Regional parameter                              */
 /*********************************************************************/

@@ -77,7 +77,6 @@ void LoraRegionsEU::RegionGiveNextDataRate( void ) {
 
 void  LoraRegionsEU::RegionGiveNextChannel( void ) {
     uint8_t temp =  randr( 0, NbOfActiveChannel - 1 ) ;
-    int i = 0;
     int ChannelIndex = 0;
     eValidChannel status = UNVALIDCHANNEL;
     ChannelIndex = FindEnabledChannel ( temp ); // @note datarate valid not yett tested
@@ -194,13 +193,13 @@ eStatusLoRaWan LoraRegionsEU::RegionIsValidRx1DrOffset ( uint8_t Rx1DataRateOffs
     return ( status );
 }
 
-eStatusLoRaWan LoraRegionsEU:: RegionIsValidDataRateRx2 ( uint8_t temp ) {
+eStatusLoRaWan LoraRegionsEU:: RegionIsValidDataRate ( uint8_t temp ) {
     eStatusLoRaWan status ;
     status = ( temp > 7) ? ERRORLORAWAN : OKLORAWAN;
     return ( status );
 }
     
-eStatusLoRaWan LoraRegionsEU::RegionIsValidDataRate ( uint8_t DataRate ) {
+eStatusLoRaWan LoraRegionsEU::RegionIsAcceptableDataRate ( uint8_t DataRate ) {
     eStatusLoRaWan status = ERRORLORAWAN;
     for ( int i = 0 ; i < NUMBER_OF_CHANNEL; i++) {
         if ( ( ( UnwrappedChannelMask >> i) & 0x1) == 1 ) {
@@ -227,6 +226,13 @@ eStatusLoRaWan LoraRegionsEU::RegionIsValidTxPower ( uint8_t Power) {
     }
     return ( status );
 }
+eStatusLoRaWan LoraRegionsEU::RegionIsValidChannelIndex ( uint8_t ChannelIndex) {
+    eStatusLoRaWan status = OKLORAWAN;
+    if ( ( ChannelIndex  < 3 ) || ( ChannelIndex  > 15 ) ) {
+        status = ERRORLORAWAN ;
+    }
+    return ( status );
+};
 /***********************************************************************************************/
 /*                      Private  Methods                                                        */
 /***********************************************************************************************/

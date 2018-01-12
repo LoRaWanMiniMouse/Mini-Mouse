@@ -26,16 +26,22 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*************************************************/
 LoraWanContainer::LoraWanContainer( PinName interrupt )
                     :Phy( interrupt ) { 
-    FcntUp = 0;
     Phy.RadioContainerInit( );
     StateTimer = TIMERSTATE_SLEEP;
-    FcntDwn = 0;
-    MacTxPower = 14;
     AvailableRxPacketForUser = NOLORARXPACKETAVAILABLE;
     memcpy( appSKey, LoRaMacAppSKey, 16 );
     memcpy( nwkSKey, LoRaMacNwkSKey, 16 );
-    DevAddr = LoRaDevAddr ;
-    
+    FcntUp        = 0;
+    FcntDwn       = 0;
+    MacTxPower    = 14;
+    DevAddr       = LoRaDevAddr ;
+    AdrAckCnt     = 0;
+    AdrAckLimit   = 5;
+    AdrAckDelay   = 1;
+    AdrAckReq     = 0;
+    AdrEnable     = 0;
+    MacNbTrans    = 1;
+    IsFrameToSend = NOFRAME_TOSEND;
 }; 
 LoraWanContainer::~LoraWanContainer( ) {
 };
@@ -45,12 +51,36 @@ LoraWanContainer::~LoraWanContainer( ) {
 /*                      Public  Methods                                                        */
 /***********************************************************************************************/
  //@note Partionning Public/private not yet finalized
+
+/**********************************************************************/
+/*                    Called During LP.Send ()                        */
+/**********************************************************************/
+
+void LoraWanContainer::BuildTxLoraFrame( void ) {
+    Fctrl = 0;  // @todo in V1.0 Adr isn't manage and ack is done by an empty packet
+    Fctrl = ( AdrEnable << 7 ) + ( AdrAckReq << 6 ) + ( AckBitForTx << 5 );
+    AckBitForTx = 0;
+    SetMacHeader( );
+    SetFrameHeader( );
+    MacPayloadSize = UserPayloadSize+FHDROFFSET; 
+};
+void LoraWanContainer::EncryptTxFrame( void ) {
+    LoRaMacPayloadEncrypt( &Phy.TxPhyPayload[FHDROFFSET], UserPayloadSize, (fPort == PORTNWK)? nwkSKey :appSKey, DevAddr, UP_LINK, FcntUp, &Phy.TxPhyPayload[FHDROFFSET] );
+    LoRaMacComputeAndAddMic( &Phy.TxPhyPayload[0], MacPayloadSize, nwkSKey, DevAddr, UP_LINK, FcntUp );
+    MacPayloadSize = MacPayloadSize + 4;
+};
+
  
 /**********************************************************************/
 /*                      Called During  LP.Process                     */
 /**********************************************************************/
+
+/************************************************************************************************************************************/
+/*                                              ConfigureRadioAndSend                                                               */
+/* Call in case of state = LWPSTATE_SEND                                                                                            */
+/************************************************************************************************************************************/
 void LoraWanContainer::ConfigureRadioAndSend( void ) {
-    RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region dependant)
+
     RegionGiveNextChannel ( );//@note have to be completed
     Phy.DevAddrIsr    = DevAddr ;  //@note copy of the mac devaddr in order to filter it in the radio isr routine.
     Phy.TxFrequency   = MacTxFrequencyCurrent; 
@@ -60,7 +90,13 @@ void LoraWanContainer::ConfigureRadioAndSend( void ) {
     Phy.SetTxConfig( );
     Phy.TxPayloadSize = MacPayloadSize;
     Phy.Send( );
+    AdrAckCnt ++ ; // increment adr counter each uplmink frame;
 };
+/************************************************************************************************************************************/
+/*                                              ConfigureRadioForRx1                                                                */
+/* Call in case of state = LWPSTATE_SEND & Isr TX end                                                                               */
+/************************************************************************************************************************************/
+
 void LoraWanContainer::ConfigureRadioForRx1 ( void ) {
     RegionSetRxConfig ( RX1 );
     Phy.RxFrequency   = Phy.TxFrequency;
@@ -68,6 +104,10 @@ void LoraWanContainer::ConfigureRadioForRx1 ( void ) {
     Phy.RxBw          = MacRx1BwCurrent ;
     Phy.SetRxConfig( );
 };
+/************************************************************************************************************************************/
+/*                                              ConfigureRadioForRx2 +  ConfigureTimerForRx                                         */
+/* Call in case of state = LWPSTATE_RX1 & No Receive RX1 Packet                                                                     */
+/************************************************************************************************************************************/
 
 void LoraWanContainer::ConfigureRadioForRx2 ( void ) {
     RegionSetRxConfig ( RX2 );
@@ -101,10 +141,10 @@ void LoraWanContainer::ConfigureTimerForRx ( int type ) {
     }
     pcf.printf( " timer will expire in %d ms\n", tAlarmMillisec );
 }
-
-    /****************************/
-    /*       DecodeRxFrame      */
-    /****************************/
+/************************************************************************************************************************************/
+/*                                              DecodeRxFRame                                                                       */
+/* Call in case of state = LWPSTATE_PROCESSDOWNLINK                                                                                 */
+/************************************************************************************************************************************/
 eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
 
     int status = OKLORAWAN ;
@@ -139,6 +179,7 @@ eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
             status = AcceptFcntDwn ( FcntDownTmp ) ;
         }
         if ( status == OKLORAWAN) {
+            AdrAckCnt = 0 ; // reset adr counter , receive a valid frame.
             MacRxPayloadSize = MacRxPayloadSize - FHDROFFSET - FoptsLength ;
             if ( FportRx == 0 ) {
                 LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, nwkSKey, DevAddr, 1, FcntDwn, &MacNwkPayload[0] );
@@ -155,18 +196,67 @@ eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
                     AvailableRxPacketForUser = LORARXPACKETAVAILABLE; 
                 }
             }
-            pcf.printf( " MtypeRx = %d \n ",MtypeRx );
-            pcf.printf( " FcntDwn = %d \n ",FcntDwn );
         }
     }
     return ( RxPacketType );
 }
-    /*********************************/
-    /*      End of Decode Frame      */
-    /*********************************/
-    /************************************************************************************************/
-    /*                      NWK MANAGEMENTS Methods                                                 */
-    /************************************************************************************************/
+
+
+/************************************************************************************************************************************/
+/*                                              UPdate Mac Layer                                                                    */
+/* Call in case of state = LWPSTATE_UPDATEMAC                                                                                       */
+/************************************************************************************************************************************/
+
+void LoraWanContainer::UpdateMacLayer ( void ) {
+    if ( ( AdrAckCnt >= AdrAckLimit) &&  ( AdrAckCnt < ( AdrAckLimit + AdrAckDelay ) ) ) {
+        AdrAckReq = 1 ;
+    }
+    if ( AdrAckCnt >= ( AdrAckLimit + AdrAckDelay ) ) {
+        RegionDecreaseDataRate ( ) ;
+        AdrAckCnt = AdrAckLimit ;
+        AdrAckReq = 1 ;
+    }
+    if ( AdrAckCnt < AdrAckLimit ) {
+        AdrAckReq = 0 ;
+    }
+    if ( MacNbTransCpt <= 1 ) { // could also be set to 1 if receive valid ans
+        FcntUp++; 
+        MacNbTransCpt = 1 ; // error case shouldn't exist
+    } else {
+        IsFrameToSend = USRFRAME_TORETRANSMIT ;
+        MacNbTransCpt -- ;
+    }
+
+    /*Store Context In ROM */
+    if (( FcntUp % FLASH_UPDATE_PERIOD ) == 0 ){
+        SaveInFlash ( );
+    }
+        
+    switch ( IsFrameToSend ) {
+        case NOFRAME_TOSEND :
+
+            break;
+        case NWKFRAME_TOSEND :
+            memcpy( &Phy.TxPhyPayload[FHDROFFSET], MacNwkAns, MacNwkAnsSize );
+            UserPayloadSize = MacNwkAnsSize;
+            fPort = PORTNWK;
+            MType = UNCONFDATAUP; //@note Mtype have to be confirm 
+            BuildTxLoraFrame( );
+            EncryptTxFrame( );
+            
+            break;
+        case USERACK_TOSEND :
+
+            break;
+    }
+}
+
+
+/************************************************************************************************************************************/
+/*                                              NWK MANAGEMENTS Methods                                                             */
+/*  Call in case of state = LWPSTATE_UPDATEMAC & Receive either NWK Payload or Fopts                                                */
+/************************************************************************************************************************************/
+
 eStatusLoRaWan LoraWanContainer::ParseManagementPacket( void ) {
     uint8_t CmdIdentifier;
     eStatusLoRaWan status = OKLORAWAN ;
@@ -212,34 +302,268 @@ eStatusLoRaWan LoraWanContainer::ParseManagementPacket( void ) {
     return ( status ); 
 }
 
-void LoraWanContainer::UpdateMacLayer ( void ) {
-    FcntUp++; //@note case Retry not yet manage
-    /*Store Context In ROM */
-    if (( FcntUp % FLASH_UPDATE_PERIOD ) == 0 ){
-        SaveInFlash ( );
-    }
-        
-    switch ( IsFrameToSend ) {
-        case NOFRAME_TOSEND :
+/************************************************************************************************/
+/*                    Private NWK MANAGEMENTS Methods                                           */
+/************************************************************************************************/
 
-            break;
-        case NWKFRAME_TOSEND :
-            memcpy( &Phy.TxPhyPayload[FHDROFFSET], MacNwkAns, MacNwkAnsSize );
-            UserPayloadSize = MacNwkAnsSize;
-            fPort = PORTNWK;
-            MType = UNCONFDATAUP; //@note Mtype have to be confirm 
-            BuildTxLoraFrame( );
-            EncryptTxFrame( );
-            
-            break;
-        case USERACK_TOSEND :
-
-            break;
-    }
+void LoraWanContainer::LinkCheckParser( void ) {
+    
+    //@NOTE NOT YET IMPLEMENTED
 }
-    /**********************************************************************/
-    /*                      Special Case Join OTA                         */
-    /**********************************************************************/
+/********************************************************************************************************************************/
+/*                                               Private NWK MANAGEMENTS : LinkADR                                              */ 
+/*  Note : describe multiple adr specification                                                                                  */
+/*                                                                                                                              */
+/*  Step 1 : Create a "unwrapped channel mask" in case of multiple adr cmd with both Channem Mask and ChannnelMaskCntl          */
+/*       2 : Extract from the last adr cmd datarate candidate                                                                   */
+/*       3 : Extract from the last adr cmd TxPower candidate                                                                    */       
+/*       4 : Extract from the last adr cmd NBRetry candidate                                                                    */   
+/*       5 : Check errors cases (described below)                                                                               */
+/*       6 : If No error Set new channel mask, txpower,datarate and nbretry                                                     */ 
+/*       7 : Compute duplicated LinkAdrAns                                                                                      */
+/*                                                                                                                              */
+/*  Error cases    1 : Channel Cntl mask RFU for each adr cmd (in case of multiple cmd)                                         */
+/*                 2 : Undefined channel ( freq = 0 ) for active bit in the unwrapped channel mask                              */
+/*                 3 : Unwrapped channel mask = 0 (none active channel)                                                         */
+/*                 4 : For the last adr cmd not valid tx power                                                                  */
+/*                 5 : For the last adr cmd not valid datarate ( datarate > dRMax or datarate < dRMin for all active channel )  */
+/********************************************************************************************************************************/
+void LoraWanContainer::LinkADRParser( uint8_t NbMultiLinkAdrReq  ) {
+
+    DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4] );
+    eStatusLoRaWan status = OKLORAWAN;
+    eStatusChannel statusChannel = OKCHANNEL ;
+    uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
+    uint8_t ChMAstCntlTemp ; 
+    uint16_t ChMaskTemp ; 
+    uint8_t DataRateTemp;
+    uint8_t TxPowerTemp;
+    uint8_t NbTransTemp;
+    int i ;
+    /*Create "Unwrapped" chanel mask */
+    RegionInitChannelMask ( );
+    for ( i = 0 ; i <= NbMultiLinkAdrReq ; i++ ) {
+        ChMaskTemp = MacNwkPayload[ NwkPayloadIndex + ( i * LINK_ADR_REQ_SIZE ) + 2 ] + ( MacNwkPayload[ NwkPayloadIndex + ( i * LINK_ADR_REQ_SIZE ) +3 ] << 8 )  ;
+        ChMAstCntlTemp = (MacNwkPayload[ NwkPayloadIndex + ( i * LINK_ADR_REQ_SIZE ) + 4] & 0x70 ) >> 4 ;
+        statusChannel = RegionBuildChannelMask ( ChMAstCntlTemp, ChMaskTemp ) ; 
+        if ( statusChannel == ERRORCHANNELCNTL ) { // Test ChannelCNTL not defined
+            StatusAns &= 0x6 ;
+            DEBUG_MSG("INVALID CHANNEL CNTL \n");
+        }                       
+    }
+    /* Valid global channel mask  */
+    if ( statusChannel == ERRORCHANNELMASK ) {   // Test Channelmask enables a not defined channel or Channelmask = 0
+        StatusAns &= 0x6 ;
+        DEBUG_MSG("INVALID CHANNEL MASK \n");
+    }             
+    /* At This point global temporary channel mask is built and validated */
+    /* Valid the last DataRate */
+    DataRateTemp = ( ( MacNwkPayload[ NwkPayloadIndex + ( NbMultiLinkAdrReq * LINK_ADR_REQ_SIZE ) + 1 ] & 0xF0 ) >> 4 );
+    status = RegionIsAcceptableDataRate( DataRateTemp );
+    if ( status == ERRORLORAWAN ) {   // Test Channelmask enables a not defined channel
+        StatusAns &= 0x5 ;
+        DEBUG_MSG("INVALID DATARATE \n");
+    }     
+  
+    
+    /* Valid the last TxPower  And Prepare Ans */
+    TxPowerTemp = ( MacNwkPayload[ NwkPayloadIndex +  ( NbMultiLinkAdrReq * LINK_ADR_REQ_SIZE ) + 1 ] & 0x0F );
+    status = RegionIsValidTxPower( TxPowerTemp );
+    if ( status == ERRORLORAWAN ) {   // Test tx power
+        StatusAns &= 0x3 ;
+        DEBUG_MSG("INVALID TXPOWER \n");
+    }    
+
+    NbTransTemp = (MacNwkPayload[ NwkPayloadIndex + ( NbMultiLinkAdrReq * LINK_ADR_REQ_SIZE ) + 4] & 0x0F );
+    
+    /* Update the mac parameters if case of no error */
+    
+    if ( StatusAns == 0x7 ) {
+        RegionSetMask ( ) ;
+        RegionSetPower ( TxPowerTemp );
+        MacNbTrans = NbTransTemp ;
+        MacTxDataRateAdr = DataRateTemp ;
+    }
+
+    
+    /* Prepare repeteated Ans*/
+    for (i = 0 ; i <= NbMultiLinkAdrReq ; i++){
+        MacNwkAns [ MacNwkAnsSize + ( i * LINK_ADR_ANS_SIZE )] = LINK_ADR_ANS ; // copy Cid
+        MacNwkAns [ MacNwkAnsSize + ( i * LINK_ADR_ANS_SIZE ) + 1 ] = StatusAns ;
+    }
+    MacNwkAnsSize   += ( NbMultiLinkAdrReq + 1 ) * LINK_ADR_ANS_SIZE ;
+    NwkPayloadIndex += ( NbMultiLinkAdrReq + 1 ) * LINK_ADR_REQ_SIZE ;
+    IsFrameToSend = NWKFRAME_TOSEND ;
+}
+
+/********************************************************************************************************************************/
+/*                                                 Private NWK MANAGEMENTS : RXParamSetupParser                                 */
+/********************************************************************************************************************************/
+void LoraWanContainer::RXParamSetupParser( void ) {
+    DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4] );
+    int status = OKLORAWAN;
+    uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
+    uint8_t MacRx1DataRateOffsetTemp;
+    uint8_t MacRx2DataRateTemp;
+    uint32_t MacRx2FrequencyTemp; 
+    /* Valid Rx1DrOffset And Prepare Ans */
+    MacRx1DataRateOffsetTemp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x70 ) >> 3 ;
+    status = RegionIsValidRx1DrOffset( MacRx1DataRateOffsetTemp );
+        
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x6 ; 
+        DEBUG_MSG ("INVALID RX1DROFFSET \n");
+    }
+    
+    /* Valid MacRx2Dr And Prepare Ans */
+    status = OKLORAWAN;
+    MacRx2DataRateTemp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x0F );
+    status = RegionIsValidDataRate( MacRx2DataRateTemp );
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x5 ; 
+        DEBUG_MSG ("INVALID RX2DR \n");
+    }
+    
+    /* Valid MacRx2Frequency And Prepare Ans */
+    status = OKLORAWAN;
+    MacRx2FrequencyTemp = ( MacNwkPayload[ NwkPayloadIndex + 2 ] ) + ( MacNwkPayload[ NwkPayloadIndex + 3 ] << 8 ) + ( MacNwkPayload[ NwkPayloadIndex + 4 ] << 16 );
+    status = RegionIsValidMacFrequency ( MacRx2FrequencyTemp ) ;
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x3 ; 
+        DEBUG_MSG ("INVALID RX2 FREQUENCY \n");
+    }
+    
+    /* Update the mac parameters if case of no error */
+    
+    if ( StatusAns == 0x7 ) {
+        MacRx1DataRateOffset = MacRx1DataRateOffsetTemp;
+        MacRx2DataRate       = MacRx2DataRateTemp;
+        MacRx2Frequency      = MacRx2FrequencyTemp * 100;
+        DEBUG_PRINTF("MacRx1DataRateOffset = %d\n",MacRx1DataRateOffset);
+        DEBUG_PRINTF("MacRx2DataRate = %d\n",MacRx2DataRate);
+        DEBUG_PRINTF("MacRx2Frequency = %d\n",MacRx2Frequency);
+
+    }
+
+    /* Prepare Ans*/
+    MacNwkAns [ MacNwkAnsSize ] = RXPARRAM_SETUP_ANS ; // copy Cid
+    MacNwkAns [ MacNwkAnsSize + 1 ] = StatusAns ;
+    MacNwkAnsSize += RXPARRAM_SETUP_ANS_SIZE ;
+    NwkPayloadIndex += RXPARRAM_SETUP_REQ_SIZE;
+    IsFrameToSend = NWKFRAME_TOSEND ;
+}
+
+/********************************************************************************************************************************/
+/*                                                 Private NWK MANAGEMENTS : DutyCycleParser                                    */
+/********************************************************************************************************************************/
+
+void LoraWanContainer::DutyCycleParser( void ) {
+    DEBUG_PRINTF (" %x \n", MacNwkPayload[ NwkPayloadIndex + 1]);
+    uint8_t DutyCycleTemp = ( MacNwkPayload[ NwkPayloadIndex + 1] & 0xF );
+       /* Prepare Ans*/
+    MacNwkAns [ MacNwkAnsSize ] = DUTY_CYCLE_ANS ; // copy Cid
+    MacNwkAnsSize += DUTY_CYCLE_ANS_SIZE ;
+    NwkPayloadIndex += DUTY_CYCLE_REQ_SIZE;
+    IsFrameToSend = NWKFRAME_TOSEND ;
+}
+/********************************************************************************************************************************/
+/*                                                 Private NWK MANAGEMENTS : DevStatusParser                                    */
+/********************************************************************************************************************************/
+
+void LoraWanContainer::DevStatusParser( void ) {
+    DEBUG_MSG ( "Receive a dev status req\n");
+    int status = OKLORAWAN;
+    uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
+        /* Prepare Ans*/
+    MacNwkAns [ MacNwkAnsSize ] = RXPARRAM_SETUP_ANS ; // copy Cid
+    MacNwkAns [ MacNwkAnsSize + 1 ] = 255 ;
+    MacNwkAns [ MacNwkAnsSize + 2 ] = 0 ;
+    MacNwkAnsSize += DEV_STATUS_ANS_SIZE ;
+    NwkPayloadIndex += DEV_STATUS_REQ_SIZE;
+    IsFrameToSend = NWKFRAME_TOSEND ;
+}
+/********************************************************************************************************************************/
+/*                                                 Private NWK MANAGEMENTS : NewChannelParser                                    */
+/********************************************************************************************************************************/
+
+void LoraWanContainer::NewChannelParser( void ) {
+    int i;
+    DEBUG_PRINTF (" %x %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + i], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4], MacNwkPayload[NwkPayloadIndex + 5]);
+    int status = OKLORAWAN;
+    uint8_t StatusAns = 0x3 ; // initilised for ans answer ok 
+    uint8_t ChannelIndexTemp;
+    uint8_t DataRateRangeMaxTemp;
+    uint8_t DataRateRangeMinTemp;
+    uint32_t FrequencyTemp; 
+    /* Valid Channel Index */
+    ChannelIndexTemp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x70 ) >> 3 ;
+    status = RegionIsValidChannelIndex( ChannelIndexTemp );
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x2 ; 
+        DEBUG_MSG ("INVALID CHANNEL INDEX \n");
+    }
+    /* Valid Frequency  */
+    FrequencyTemp = ( MacNwkPayload[ NwkPayloadIndex + 2 ] ) + ( MacNwkPayload[ NwkPayloadIndex + 3 ] << 8 ) + ( MacNwkPayload[ NwkPayloadIndex + 4 ] << 16 );
+    status = RegionIsValidMacFrequency ( FrequencyTemp ) ;
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x2 ; 
+        DEBUG_MSG ("INVALID FREQUENCY\n");
+    }
+        /* Valid DRMIN/MAX */
+    DataRateRangeMinTemp = MacNwkPayload[ NwkPayloadIndex + 5 ] & 0xF;
+    status = RegionIsValidDataRate ( DataRateRangeMinTemp ) ;
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x1 ; 
+        DEBUG_MSG ("INVALID DR MIN \n");
+    }
+    DataRateRangeMaxTemp = ( MacNwkPayload[ NwkPayloadIndex + 5 ] & 0xF0 ) > 4;
+    status = RegionIsValidDataRate ( DataRateRangeMaxTemp ) ;
+    if (status == ERRORLORAWAN ) {
+        StatusAns &= 0x1 ; 
+        DEBUG_MSG ("INVALID DR MAX \n");
+    }
+    if ( DataRateRangeMaxTemp < DataRateRangeMinTemp ) {
+        StatusAns &= 0x1 ; 
+        DEBUG_MSG ("INVALID DR MAX < DR MIN \n");
+    }
+
+    /* Update the mac parameters if case of no error */
+    
+    if ( StatusAns == 0x2 ) {
+        MacTxFrequency [ ChannelIndexTemp ] = 100 * FrequencyTemp;
+        MacMinDataRateChannel [ ChannelIndexTemp ] = DataRateRangeMinTemp;
+        MacMaxDataRateChannel [ ChannelIndexTemp ] = DataRateRangeMaxTemp;
+        DEBUG_PRINTF("MacTxFrequency [ %d ] = %d\n", ChannelIndexTemp, MacTxFrequency [ ChannelIndexTemp ]);
+        DEBUG_PRINTF("MacMinDataRateChannel [ %d ] = %d\n", ChannelIndexTemp, MacMinDataRateChannel [ ChannelIndexTemp ]);
+        DEBUG_PRINTF("MacMaxDataRateChannel [ %d ] = %d\n", ChannelIndexTemp, MacMaxDataRateChannel [ ChannelIndexTemp ]);
+    }
+
+    /* Prepare Ans*/
+    MacNwkAns [ MacNwkAnsSize ] = NEW_CHANNEL_ANS ; // copy Cid
+    MacNwkAns [ MacNwkAnsSize + 1 ] = StatusAns ;
+    MacNwkAnsSize += NEW_CHANNEL_ANS_SIZE ;
+    NwkPayloadIndex += NEW_CHANNEL_REQ_SIZE;
+    IsFrameToSend = NWKFRAME_TOSEND ;
+}
+/********************************************************************************************************************************/
+/*                                                 Private NWK MANAGEMENTS : RXTimingSetupParser                                */
+/********************************************************************************************************************************/
+
+void LoraWanContainer::RXTimingSetupParser( void ) {
+    DEBUG_PRINTF (" %x \n", MacNwkPayload[ NwkPayloadIndex + 1]);
+    MacRx1Delay = ( MacNwkPayload[ NwkPayloadIndex + 1] & 0xF );
+       /* Prepare Ans*/
+    MacNwkAns [ MacNwkAnsSize ] = RXTIMING_SETUP_ANS ; // copy Cid
+    MacNwkAnsSize += RXTIMING_SETUP_ANS_SIZE ;
+    NwkPayloadIndex += RXTIMING_SETUP_REQ_SIZE;
+    IsFrameToSend = NWKFRAME_TOSEND ;
+}
+
+
+/********************************************************************************************************************************/
+/*                                          Special Case Join OTA                                                               */
+/*  Call in case of state = LWPSTATE_UPDATEMAC & Receivea Join Ans                                                              */
+/********************************************************************************************************************************/
 void LoraWanContainer::UpdateJoinProcedure ( void ) { //@note tbd add valid test 
     uint8_t AppNonce[6];
     memcpy( AppNonce, &MacRxPayload[1], 6 );
@@ -255,23 +579,20 @@ void LoraWanContainer::UpdateJoinProcedure ( void ) { //@note tbd add valid test
     MacRx1DataRateOffset = ( MacRxPayload[11] & 0x70 ) >> 3;
     MacRx2DataRate       = ( MacRxPayload[11] & 0x0F );
     MacRx1Delay          = MacRxPayload[12];
+    DEBUG_PRINTF("DevAddr= %d\n",DevAddr);
+    DEBUG_PRINTF("MacRx1DataRateOffset= %d\n",MacRx1DataRateOffset);
+    DEBUG_PRINTF("MacRx2DataRate= %d\n",MacRx2DataRate);
+    DEBUG_PRINTF("MacRx1Delay= %d\n",MacRx1Delay);
     Phy.JoinedStatus = JOINED;
     //@note have to manage option byte for channel frequency planned
 }
-/**********************************************************************/
-/*                    End Of Called During  LP.Process                */
-/**********************************************************************/
-
-
-
-
 
 /********************************************************/
 /*               Called During LP.Join()                */
 /********************************************************/
 
 void LoraWanContainer::BuildJoinLoraFrame( void ) {
-    DevNonce = randr( 0, 65535 )+29999;
+    DevNonce = randr( 0, 65535 )+199;
     MType = JOINREQUEST ;
     SetMacHeader ( );
     for (int i = 0; i <8; i++){ 
@@ -286,26 +607,6 @@ void LoraWanContainer::BuildJoinLoraFrame( void ) {
     memcpy(&Phy.TxPhyPayload[MacPayloadSize], (uint8_t *)&mic, 4);
     MacPayloadSize = MacPayloadSize + 4;
 }
-
-
-/********************************************************/
-/*               Called During LP.Send ()               */
-/********************************************************/
-
-void LoraWanContainer::BuildTxLoraFrame( void ) {
-    Fctrl = 0;  // @todo in V1.0 Adr isn't manage and ack is done by an empty packet
-    Fctrl = ( AckBitForTx << 5 );
-    AckBitForTx = 0;
-    SetMacHeader( );
-    SetFrameHeader( );
-    MacPayloadSize = UserPayloadSize+FHDROFFSET; 
-};
-void LoraWanContainer::EncryptTxFrame( void ) {
-    LoRaMacPayloadEncrypt( &Phy.TxPhyPayload[FHDROFFSET], UserPayloadSize, (fPort == PORTNWK)? nwkSKey :appSKey, DevAddr, UP_LINK, FcntUp, &Phy.TxPhyPayload[FHDROFFSET] );
-    LoRaMacComputeAndAddMic( &Phy.TxPhyPayload[0], MacPayloadSize, nwkSKey, DevAddr, UP_LINK, FcntUp );
-    MacPayloadSize = MacPayloadSize + 4;
-};
-
 
 
 /************************************************************************************************/
@@ -389,256 +690,12 @@ int LoraWanContainer::AcceptFcntDwn ( uint16_t FcntDwnTmp ) {
 
 
 
-/************************************************************************************************/
-/*                    Private NWK MANAGEMENTS Methods                                           */
-/************************************************************************************************/
-
-void LoraWanContainer::LinkCheckParser( void ) {
-    
-    //@NOTE NOT YET IMPLEMENTED
-}
-/********************************************************************************************************************************/
-/*                                               Private NWK MANAGEMENTS : LinkADR                                              */ 
-/*  Note : describe multiple adr specification                                                                                  */
-/*                                                                                                                              */
-/*  Step 1 : Create a "unwrapped channel mask" in case of multiple adr cmd with both Channem Mask and ChannnelMaskCntl          */
-/*       2 : Extract from the last adr cmd datarate candidate                                                                   */
-/*       3 : Extract from the last adr cmd TxPower candidate                                                                    */       
-/*       4 : Extract from the last adr cmd NBRetry candidate                                                                    */   
-/*       5 : Check errors cases (described below)                                                                               */
-/*       6 : If No error Set new channel mask, txpower,datarate and nbretry                                                     */ 
-/*       7 : Compute duplicated LinkAdrAns                                                                                      */
-/*                                                                                                                              */
-/*  Error cases    1 : Channel Cntl mask RFU for each adr cmd (in case of multiple cmd)                                         */
-/*                 2 : Undefined channel ( freq = 0 ) for active bit in the unwrapped channel mask                              */
-/*                 3 : Unwrapped channel mask = 0 (none active channel)                                                         */
-/*                 4 : For the last adr cmd not valid tx power                                                                  */
-/*                 5 : For the last adr cmd not valid datarate ( datarate > dRMax or datarate < dRMin for all active channel )  */
-/********************************************************************************************************************************/
-void LoraWanContainer::LinkADRParser( uint8_t NbMultiLinkAdrReq  ) {
-
-    DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4] );
-    eStatusLoRaWan status = OKLORAWAN;
-    eStatusChannel statusChannel = OKCHANNEL ;
-    uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
-    uint8_t ChMAstCntlTemp ; 
-    uint16_t ChMaskTemp ; 
-    uint8_t DataRateTemp;
-    uint8_t TxPowerTemp;
-    uint8_t NbTransTemp;
-    int i ;
-    /*Create "Unwrapped" chanel mask */
-    RegionInitChannelMask ( );
-    for ( i = 0 ; i <= NbMultiLinkAdrReq ; i++ ) {
-        ChMaskTemp = MacNwkPayload[ NwkPayloadIndex + ( i * LINK_ADR_REQ_SIZE ) + 2 ] + ( MacNwkPayload[ NwkPayloadIndex + ( i * LINK_ADR_REQ_SIZE ) +3 ] << 8 )  ;
-        ChMAstCntlTemp = (MacNwkPayload[ NwkPayloadIndex + ( i * LINK_ADR_REQ_SIZE ) + 4] & 0x70 ) >> 4 ;
-        statusChannel = RegionBuildChannelMask ( ChMAstCntlTemp, ChMaskTemp ) ; 
-        if ( statusChannel == ERRORCHANNELCNTL ) { // Test ChannelCNTL not defined
-            StatusAns &= 0x6 ;
-            DEBUG_MSG("INVALID CHANNEL CNTL \n");
-        }                       
-    }
-    /* Valid global channel mask  */
-    if ( statusChannel == ERRORCHANNELMASK ) {   // Test Channelmask enables a not defined channel or Channelmask = 0
-        StatusAns &= 0x6 ;
-        DEBUG_MSG("INVALID CHANNEL MASK \n");
-    }             
-    /* At This point global temporary channel mask is built and validated */
-    /* Valid the last DataRate */
-    DataRateTemp = ( ( MacNwkPayload[ NwkPayloadIndex + ( NbMultiLinkAdrReq * LINK_ADR_REQ_SIZE ) + 1 ] & 0xF0 ) >> 4 );
-    status = RegionIsAcceptableDataRate( DataRateTemp );
-    if ( status == ERRORLORAWAN ) {   // Test Channelmask enables a not defined channel
-        StatusAns &= 0x5 ;
-        DEBUG_MSG("INVALID DATARATE \n");
-    }     
-  
-    
-    /* Valid the last TxPower  And Prepare Ans */
-    TxPowerTemp = ( MacNwkPayload[ NwkPayloadIndex +  ( NbMultiLinkAdrReq * LINK_ADR_REQ_SIZE ) + 1 ] & 0x0F );
-    status = RegionIsValidTxPower( TxPowerTemp );
-    if ( status == ERRORLORAWAN ) {   // Test tx power
-        StatusAns &= 0x3 ;
-        DEBUG_MSG("INVALID TXPOWER \n");
-    }    
-
-    NbTransTemp = (MacNwkPayload[ NwkPayloadIndex + ( NbMultiLinkAdrReq * LINK_ADR_REQ_SIZE ) + 4] & 0x0F );
-    
-    /* Update the mac parameters if case of no error */
-    
-    if ( StatusAns == 0x7 ) {
-        RegionSetMask ( ) ;
-        RegionSetPower ( TxPowerTemp );
-        MacNbRepUnconfirmedTx = NbTransTemp ;
-        MacTxDataRateAdr = DataRateTemp ;
-    }
-
-    
-    /* Prepare repeteated Ans*/
-    for (i = 0 ; i <= NbMultiLinkAdrReq ; i++){
-        MacNwkAns [ MacNwkAnsSize + ( i * LINK_ADR_ANS_SIZE )] = LINK_ADR_ANS ; // copy Cid
-        MacNwkAns [ MacNwkAnsSize + ( i * LINK_ADR_ANS_SIZE ) + 1 ] = StatusAns ;
-    }
-    MacNwkAnsSize   += ( NbMultiLinkAdrReq + 1 ) * LINK_ADR_ANS_SIZE ;
-    NwkPayloadIndex += ( NbMultiLinkAdrReq + 1 ) * LINK_ADR_REQ_SIZE ;
-    IsFrameToSend = NWKFRAME_TOSEND ;
-}
-
-/****************************************************************************************************/
-/*                     Private NWK MANAGEMENTS : RXParamSetupParser                                 */
-/****************************************************************************************************/
-void LoraWanContainer::RXParamSetupParser( void ) {
-    DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4] );
-    int status = OKLORAWAN;
-    uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
-    uint8_t MacRx1DataRateOffsetTemp;
-    uint8_t MacRx2DataRateTemp;
-    uint32_t MacRx2FrequencyTemp; 
-    /* Valid Rx1DrOffset And Prepare Ans */
-    MacRx1DataRateOffsetTemp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x70 ) >> 3 ;
-    status = RegionIsValidRx1DrOffset( MacRx1DataRateOffsetTemp );
-        
-    if (status == ERRORLORAWAN ) {
-        StatusAns &= 0x6 ; 
-        DEBUG_MSG ("INVALID RX1DROFFSET \n");
-    }
-    
-    /* Valid MacRx2Dr And Prepare Ans */
-    status = OKLORAWAN;
-    MacRx2DataRateTemp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x0F );
-    status = RegionIsValidDataRate( MacRx2DataRateTemp );
-    if (status == ERRORLORAWAN ) {
-        StatusAns &= 0x5 ; 
-        DEBUG_MSG ("INVALID RX2DR \n");
-    }
-    
-    /* Valid MacRx2Frequency And Prepare Ans */
-    status = OKLORAWAN;
-    MacRx2FrequencyTemp = ( MacNwkPayload[ NwkPayloadIndex + 2 ] ) + ( MacNwkPayload[ NwkPayloadIndex + 3 ] << 8 ) + ( MacNwkPayload[ NwkPayloadIndex + 4 ] << 16 );
-    status = RegionIsValidMacFrequency ( MacRx2FrequencyTemp ) ;
-    if (status == ERRORLORAWAN ) {
-        StatusAns &= 0x3 ; 
-        DEBUG_MSG ("INVALID RX2 FREQUENCY \n");
-    }
-    
-    /* Update the mac parameters if case of no error */
-    
-    if ( StatusAns == 0x7 ) {
-        MacRx1DataRateOffset = MacRx1DataRateOffsetTemp;
-        MacRx2DataRate       = MacRx2DataRateTemp;
-        MacRx2Frequency      = MacRx2FrequencyTemp * 100;
-        DEBUG_PRINTF("MacRx1DataRateOffset = %d\n",MacRx1DataRateOffset);
-        DEBUG_PRINTF("MacRx2DataRate = %d\n",MacRx2DataRate);
-        DEBUG_PRINTF("MacRx2Frequency = %d\n",MacRx2Frequency);
-
-    }
-
-    /* Prepare Ans*/
-    MacNwkAns [ MacNwkAnsSize ] = RXPARRAM_SETUP_ANS ; // copy Cid
-    MacNwkAns [ MacNwkAnsSize + 1 ] = StatusAns ;
-    MacNwkAnsSize += RXPARRAM_SETUP_ANS_SIZE ;
-    NwkPayloadIndex += RXPARRAM_SETUP_REQ_SIZE;
-    IsFrameToSend = NWKFRAME_TOSEND ;
-}
-
-
-
-void LoraWanContainer::DutyCycleParser( void ) {
-    DEBUG_PRINTF (" %x \n", MacNwkPayload[ NwkPayloadIndex + 1]);
-    uint8_t DutyCycleTemp = ( MacNwkPayload[ NwkPayloadIndex + 1] & 0xF );
-       /* Prepare Ans*/
-    MacNwkAns [ MacNwkAnsSize ] = DUTY_CYCLE_ANS ; // copy Cid
-    MacNwkAnsSize += DUTY_CYCLE_ANS_SIZE ;
-    NwkPayloadIndex += DUTY_CYCLE_REQ_SIZE;
-    IsFrameToSend = NWKFRAME_TOSEND ;
-}
-
-void LoraWanContainer::DevStatusParser( void ) {
-    DEBUG_MSG ( "Receive a dev status req\n");
-    int status = OKLORAWAN;
-    uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
-        /* Prepare Ans*/
-    MacNwkAns [ MacNwkAnsSize ] = RXPARRAM_SETUP_ANS ; // copy Cid
-    MacNwkAns [ MacNwkAnsSize + 1 ] = 255 ;
-    MacNwkAns [ MacNwkAnsSize + 2 ] = 0 ;
-    MacNwkAnsSize += DEV_STATUS_ANS_SIZE ;
-    NwkPayloadIndex += DEV_STATUS_REQ_SIZE;
-    IsFrameToSend = NWKFRAME_TOSEND ;
-}
-void LoraWanContainer::NewChannelParser( void ) {
-    int i;
-    DEBUG_PRINTF (" %x %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + i], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4], MacNwkPayload[NwkPayloadIndex + 5]);
-    int status = OKLORAWAN;
-    uint8_t StatusAns = 0x3 ; // initilised for ans answer ok 
-    uint8_t ChannelIndexTemp;
-    uint8_t DataRateRangeMaxTemp;
-    uint8_t DataRateRangeMinTemp;
-    uint32_t FrequencyTemp; 
-    /* Valid Channel Index */
-    ChannelIndexTemp = ( MacNwkPayload[ NwkPayloadIndex + 1 ] & 0x70 ) >> 3 ;
-    status = RegionIsValidChannelIndex( ChannelIndexTemp );
-    if (status == ERRORLORAWAN ) {
-        StatusAns &= 0x2 ; 
-        DEBUG_MSG ("INVALID CHANNEL INDEX \n");
-    }
-    /* Valid Frequency  */
-    FrequencyTemp = ( MacNwkPayload[ NwkPayloadIndex + 2 ] ) + ( MacNwkPayload[ NwkPayloadIndex + 3 ] << 8 ) + ( MacNwkPayload[ NwkPayloadIndex + 4 ] << 16 );
-    status = RegionIsValidMacFrequency ( FrequencyTemp ) ;
-    if (status == ERRORLORAWAN ) {
-        StatusAns &= 0x2 ; 
-        DEBUG_MSG ("INVALID FREQUENCY\n");
-    }
-        /* Valid DRMIN/MAX */
-    DataRateRangeMinTemp = MacNwkPayload[ NwkPayloadIndex + 5 ] & 0xF;
-    status = RegionIsValidDataRate ( DataRateRangeMinTemp ) ;
-    if (status == ERRORLORAWAN ) {
-        StatusAns &= 0x1 ; 
-        DEBUG_MSG ("INVALID DR MIN \n");
-    }
-    DataRateRangeMaxTemp = ( MacNwkPayload[ NwkPayloadIndex + 5 ] & 0xF0 ) > 4;
-    status = RegionIsValidDataRate ( DataRateRangeMaxTemp ) ;
-    if (status == ERRORLORAWAN ) {
-        StatusAns &= 0x1 ; 
-        DEBUG_MSG ("INVALID DR MAX \n");
-    }
-    if ( DataRateRangeMaxTemp < DataRateRangeMinTemp ) {
-        StatusAns &= 0x1 ; 
-        DEBUG_MSG ("INVALID DR MAX < DR MIN \n");
-    }
-
-    /* Update the mac parameters if case of no error */
-    
-    if ( StatusAns == 0x2 ) {
-        MacTxFrequency [ ChannelIndexTemp ] = 100 * FrequencyTemp;
-        MacMinDataRateChannel [ ChannelIndexTemp ] = DataRateRangeMinTemp;
-        MacMaxDataRateChannel [ ChannelIndexTemp ] = DataRateRangeMaxTemp;
-        DEBUG_PRINTF("MacTxFrequency [ %d ] = %d\n", ChannelIndexTemp, MacTxFrequency [ ChannelIndexTemp ]);
-        DEBUG_PRINTF("MacMinDataRateChannel [ %d ] = %d\n", ChannelIndexTemp, MacMinDataRateChannel [ ChannelIndexTemp ]);
-        DEBUG_PRINTF("MacMaxDataRateChannel [ %d ] = %d\n", ChannelIndexTemp, MacMaxDataRateChannel [ ChannelIndexTemp ]);
-    }
-
-    /* Prepare Ans*/
-    MacNwkAns [ MacNwkAnsSize ] = NEW_CHANNEL_ANS ; // copy Cid
-    MacNwkAns [ MacNwkAnsSize + 1 ] = StatusAns ;
-    MacNwkAnsSize += NEW_CHANNEL_ANS_SIZE ;
-    NwkPayloadIndex += NEW_CHANNEL_REQ_SIZE;
-    IsFrameToSend = NWKFRAME_TOSEND ;
-}
-void LoraWanContainer::RXTimingSetupParser( void ) {
-    DEBUG_PRINTF (" %x \n", MacNwkPayload[ NwkPayloadIndex + 1]);
-    MacRx1Delay = ( MacNwkPayload[ NwkPayloadIndex + 1] & 0xF );
-       /* Prepare Ans*/
-    MacNwkAns [ MacNwkAnsSize ] = RXTIMING_SETUP_ANS ; // copy Cid
-    MacNwkAnsSize += RXTIMING_SETUP_ANS_SIZE ;
-    NwkPayloadIndex += RXTIMING_SETUP_REQ_SIZE;
-    IsFrameToSend = NWKFRAME_TOSEND ;
-}
-
 
 void LoraWanContainer::SaveInFlash ( ) {
     BackUpFlash.MacTxDataRate           = MacTxDataRate;
     BackUpFlash.MacTxPower              = MacTxPower;
     BackUpFlash.MacChMask               = MacChMask;
-    BackUpFlash.MacNbRepUnconfirmedTx   = MacNbRepUnconfirmedTx; 
+    BackUpFlash.MacNbTrans   = MacNbTrans; 
     BackUpFlash.MacRx2Frequency         = MacRx2Frequency; 
     BackUpFlash.MacRx2DataRate          = MacRx2DataRate;
     BackUpFlash.MacRx1DataRateOffset    = MacRx1DataRateOffset;
@@ -663,7 +720,7 @@ void LoraWanContainer::LoadFromFlash ( ) {
     MacTxDataRate                 = BackUpFlash.MacTxDataRate;
     MacTxPower                    = BackUpFlash.MacTxPower;
     MacChMask                     = BackUpFlash.MacChMask;
-    MacNbRepUnconfirmedTx         = BackUpFlash.MacNbRepUnconfirmedTx; 
+    MacNbTrans                    = BackUpFlash.MacNbTrans; 
     MacRx2Frequency               = BackUpFlash.MacRx2Frequency; 
     MacRx2DataRate                = BackUpFlash.MacRx2DataRate;
     MacRx1DataRateOffset          = BackUpFlash.MacRx1DataRateOffset;
@@ -699,25 +756,7 @@ void LoraWanContainer::IsrTimerRx( void ) {
 };
  
 
-/****************************************API Crypto ***********************/
-//uint8_t LoraWanContainer::crypto_verifyMICandDecrypt( uint8_t *frame_header, const uint8_t *encrypted_payload ,uint32_t micIn, uint8_t keySet, uint8_t *decrypted_payload, uint8_t PayloadSize){
-//    uint32_t DevAddrtmp = 0;
-//    uint16_t FcntDwnmtp = 0;
-//    int status = OKLORAWAN ;
-//    if ( keySet == UNICASTKEY) {
-//        DevAddrtmp = frame_header[1] + ( frame_header[2] << 8 ) + ( frame_header[3] << 16 )+ ( frame_header[4] << 24 );
-//        FcntDwnmtp = frame_header[6] + ( frame_header[7] << 8 );
-//        status += LoRaMacCheckMic(frame_header, PayloadSize, nwkSKey, DevAddrtmp, FcntDwnmtp, micIn );
-//        
-//        //@note note sure that it is better to  sen dheader because extract again devaddr fcntdwn fopts etc ....
-//        
-//        PayloadSize = PayloadSize - FHDROFFSET - FoptsLength ;
-//        if ( status == OKLORAWAN) {
-//            LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, (FportRx == 0 )?nwkSKey:appSKey, DevAddr, 1, FcntDwn, &MacRxPayload[0] );
-//        }
-//    }
-//    return ( status );
-//}
+
 /*********************************************************************************/
 /*                           Protected Methods                                   */
 /*********************************************************************************/

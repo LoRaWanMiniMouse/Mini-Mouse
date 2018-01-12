@@ -153,7 +153,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
             }
             packet.UpdateMacLayer();
             *AvailableRxPacket = packet.AvailableRxPacketForUser;
-            if ( ( packet.IsFrameToSend == NWKFRAME_TOSEND ) ) {// @note ack send during the next tx|| ( packet.IsFrameToSend == USERACK_TOSEND ) ) {
+            if ( ( packet.IsFrameToSend == NWKFRAME_TOSEND ) || ( packet.IsFrameToSend == USRFRAME_TORETRANSMIT) ) {// @note ack send during the next tx|| ( packet.IsFrameToSend == USERACK_TOSEND ) ) {
                 packet.IsFrameToSend = NOFRAME_TOSEND;
                 RtcTargetTimer = RtcGetTimeSecond( ) + randr( 1, 2 ); //@note RtcGetTime in s so no wrap before 136 year since 1970 discuss wait between 5s and 25s
                 StateLoraWanProcess = LWPSTATE_TXWAIT;
@@ -194,6 +194,8 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
 template <class T> 
 eLoraWan_Process_States LoraWanObjet <T> ::Join ( void ) {
     packet.Phy.JoinedStatus = NOTJOINED;
+    packet.MacNbTransCpt = packet.MacNbTrans = 1;
+    packet.RegionGiveNextDataRate ( );
     packet.BuildJoinLoraFrame( );
     packet.MacRx1Delay = packet.JOIN_ACCEPT_DELAY1; // to be set in default setting regions
     //@note should be done in region constructor packet.MacRx2Sf = 12;
@@ -217,8 +219,17 @@ eJoinStatus LoraWanObjet <T> ::IsJoined( void ) {
 /**************************************************/
 template <class T> 
 eLoraWan_Process_States LoraWanObjet <T> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint16_t sizeIn, uint8_t PacketType ) {
-    
+    //@note implement MAX TX LENGHT
+    eStatusLoRaWan status;
     if ( StateLoraWanProcess != LWPSTATE_IDLE ) {
+        DEBUG_MSG( " ERROR : LP STATE NOT EQUAL TO IDLE \n" );
+        return ( LWPSTATE_ERROR );
+    }
+    // check max payload length 
+    packet.RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region dependant)
+    status = packet.RegionMaxPayloadSize ( sizeIn );
+    if ( status == ERRORLORAWAN ) {
+        DEBUG_MSG( " ERROR : PAYLOAD SIZE TOO HIGH \n" );
         return ( LWPSTATE_ERROR );
     }
     RadioReset ( ) ; 
@@ -228,6 +239,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::SendPayload ( uint8_t fPort, const ui
     packet.MType = PacketType;
     packet.BuildTxLoraFrame( );
     packet.EncryptTxFrame( );
+    packet.MacNbTransCpt = packet.MacNbTrans;
     StateLoraWanProcess = LWPSTATE_SEND;
     return( StateLoraWanProcess );
 };

@@ -56,7 +56,8 @@ public:
     uint8_t      MacTxDataRateAdr;
     uint8_t      MacTxPower;
     uint16_t     MacChMask;
-    uint8_t      MacNbRepUnconfirmedTx; 
+    uint8_t      MacNbTrans; 
+    uint8_t      MacNbTransCpt;
     /********************************************/
     /*     Update by RxParamaSetupRequest       */
     /********************************************/
@@ -126,6 +127,11 @@ public:
 
 /* LoraWan Config */
     uint8_t AdrModeSelect;
+    int AdrAckCnt;
+    int AdrAckLimit;
+    int AdrAckDelay;
+    uint8_t AdrAckReq;
+    uint8_t AdrEnable;
     
     
 /* Objet RadioContainer*/
@@ -141,13 +147,13 @@ public:
 /***************************************************************/
 /*  Virtual Method overwritten by the Class  of the region     */
 /***************************************************************/
-    virtual void              RegionGiveNextDataRate ( void )                                 = 0;
     virtual void              RegionGiveNextChannel  ( void )                                 = 0; 
     virtual void              RegionSetRxConfig      ( eRxWinType type )                      = 0;
     virtual void              RegionSetPower         ( uint8_t PowerCmd )                     = 0;
     virtual void              RegionSetMask          ( void )                                 = 0;
     virtual void              RegionInitChannelMask  ( void )                                 = 0;
     virtual void              RegionGetCFList        ( void )                                 = 0;
+    virtual void              RegionDecreaseDataRate ( void )                                 = 0;
     virtual eStatusChannel    RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMaskIn) = 0;
     
     virtual eStatusLoRaWan    RegionIsValidRx1DrOffset     ( uint8_t Rx1DataRateOffset) = 0;
@@ -186,10 +192,11 @@ private :
     void DevStatusParser           ( void );
     void NewChannelParser          ( void );
     void RXTimingSetupParser       ( void );
-
+    void UpdateDataRateForAdr      ( void );
     void SaveInFlash               ( void );
     sBackUpFlash BackUpFlash;
     uint8_t NwkPayloadIndex ;
+
 }; 
 
 

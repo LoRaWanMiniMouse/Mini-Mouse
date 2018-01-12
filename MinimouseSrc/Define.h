@@ -258,6 +258,7 @@ enum {
     NOFRAME_TOSEND,
     NWKFRAME_TOSEND,
     USERACK_TOSEND,
+    USRFRAME_TORETRANSMIT,
 };
 
 /*************************/

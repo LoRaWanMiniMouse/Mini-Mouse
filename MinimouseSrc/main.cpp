@@ -38,16 +38,16 @@ int main( ) {
     /************************************************/
     /*          Configure Adr Mode                  */
     /************************************************/
-    Lp.SetDataRateStrategy( MOBILELONGRANGEADRMODE );
+    Lp.SetDataRateStrategy( STATICADRMODE );
 
     /************************************************/
     /*           Restore Context from Flash         */
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
     //Lp.RestoreContext ( );
-
+//@note join procedure, rajouter rejoin apres in adr rajouter fonction rejoin, protected lp.
     while(1) {
-          pcf.printf("\n\n\n\n ");
+        pcf.printf("\n\n\n\n ");
         if ( Lp.IsJoined ( ) == JOINED ) {            
             pcf.printf("send payload \n");
             LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, UNCONFDATAUP );
@@ -69,7 +69,9 @@ int main( ) {
             pcf.printf("]\n");
         }
         led = 0;
-        wait_s( 5 );
+        for (int j = 0 ; j < 1; j ++) {
+        wait_s( 6 );
+        }
 
     }
 }

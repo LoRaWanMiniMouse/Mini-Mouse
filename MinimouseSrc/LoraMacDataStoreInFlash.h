@@ -26,7 +26,7 @@ struct sBackUpFlash
     uint8_t      MacTxDataRate;
     uint8_t      MacTxPower;
     uint16_t     MacChMask;
-    uint8_t      MacNbRepUnconfirmedTx; 
+    uint8_t      MacNbTrans; 
     /********************************************/
     /*     Update by TxParamaSetupRequest       */
     /********************************************/

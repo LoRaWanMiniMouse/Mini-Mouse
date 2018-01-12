@@ -28,26 +28,27 @@ class LoraWanObjet {
 public: 
     LoraWanObjet( PinName interrupt ); 
     ~LoraWanObjet();
-    eLoraWan_Process_States    SendPayload   ( uint8_t fPort, const uint8_t* dataIn, const uint16_t sizeIn, uint8_t PacketType );
-    uint8_t    ReceivePayload( uint8_t* UserRxFport, uint8_t* UserRxPayload, uint8_t* UserRxPayloadSize );
-    eLoraWan_Process_States    Join          ( void );
-    eJoinStatus    IsJoined      ( void );
-    void       SetDataRateStrategy ( eDataRateStrategy adrModeSelect );
-    eLoraWan_Process_States    LoraWanProcess( uint8_t* AvailableRxPacket );
-    uint8_t    GetRadioState ( void );
-    void       RestoreContext( void ); 
-    T packet;
+    eLoraWan_Process_States    SendPayload         ( uint8_t fPort, const uint8_t* dataIn, const uint16_t sizeIn, uint8_t PacketType );
+    uint8_t                    ReceivePayload      ( uint8_t* UserRxFport, uint8_t* UserRxPayload, uint8_t* UserRxPayloadSize );
+    eLoraWan_Process_States    Join                ( void );
+    eJoinStatus                IsJoined            ( void );
+    void                       SetDataRateStrategy ( eDataRateStrategy adrModeSelect );
+    eLoraWan_Process_States    LoraWanProcess      ( uint8_t* AvailableRxPacket );
+    uint8_t                    GetRadioState       ( void );
+    void                       RestoreContext      ( void ); 
 /* not implemented yet*/
-    uint8_t    TryToJoin               ( void );
+    uint8_t    TryToJoin               ( void ); // @NOte to be removed
     uint32_t   GetNextMaxPayloadLength ( void );
     uint32_t   GetDevAddr              ( void );
     uint8_t    GetNextPower            ( void );
     uint8_t    GetNextDataRate         ( void );
     uint8_t    GetLorawanProcessState  ( void );
     
-    eLoraWan_Process_States StateLoraWanProcess; // for debug not private
+
 private :
     //int StateLoraWanProcess;
+    T packet;
+    eLoraWan_Process_States StateLoraWanProcess; // for debug not private
     void CopyUserPayload( const uint8_t* dataIn, const uint16_t sizeIn );
     uint8_t GetStateTimer( void );
     uint8_t GetRadioIrqFlag ( void );

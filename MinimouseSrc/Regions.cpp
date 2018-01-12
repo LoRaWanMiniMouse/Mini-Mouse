@@ -45,48 +45,29 @@ LoraRegionsEU :: LoraRegionsEU (  PinName interrupt ) : LoraWanContainer (interr
 }
 
 /***********************************************************************************************/
-/*                      Public  Methods                                                        */
+/*                      Protected  Methods                                                     */
 /***********************************************************************************************/
  //@note Partionning Public/private not yet finalized
 void LoraRegionsEU :: SetRegionsdefaultSettings ( void ) {
-    
+    //@note probably unused replace by constructor
 }
 
-void LoraRegionsEU::RegionGiveNextDataRate( void ) {
-     switch ( AdrModeSelect ) {
-        case STATICADRMODE :
-            MacTxDataRate = MacTxDataRateAdr;
-            
-            break;
-        case MOBILELONGRANGEADRMODE:
-            if ( MacTxDataRate == 0 ) { 
-                MacTxDataRate = 1;
-            } else {
-                MacTxDataRate = 0;
-            }
-            break;
-        case MOBILELOWPOWERADRMODE:
-            ( MacTxDataRate == 5 ) ? MacTxDataRate = 0 : MacTxDataRate++ ;
-             break;
-        default: 
-           MacTxDataRate = 0;
-    }
-    MacTxDataRate = ( MacTxDataRate > 5 ) ? 5 : MacTxDataRate;
-    TxDataRateToSfBw ( MacTxDataRate );
+
+/********************************************************************/
+/*                  Region MAx PAyload SIze  Configuration          */
+/* Chapter 7.1.6 LoRaWan 1.0.1 specification                        */
+/********************************************************************/
+eStatusLoRaWan LoraRegionsEU ::RegionMaxPayloadSize ( uint16_t sizeIn ) {
+    eStatusLoRaWan  status ;
+    uint8_t M [ 8 ] = { 59, 59, 59, 123, 230, 230, 230, 230 };
+    status = ( sizeIn >= M [MacTxDataRate] ) ? ERRORLORAWAN : OKLORAWAN ;
+    return ( status );
 }
 
-void  LoraRegionsEU::RegionGiveNextChannel( void ) {
-    uint8_t temp =  randr( 0, NbOfActiveChannel - 1 ) ;
-    int ChannelIndex = 0;
-    eValidChannel status = UNVALIDCHANNEL;
-    ChannelIndex = FindEnabledChannel ( temp ); // @note datarate valid not yett tested
-    if ( ChannelIndex == -1 ) {
-        DEBUG_MSG ("INVALID CHANNEL\n");
-    } else {
-        MacTxFrequencyCurrent = MacTxFrequency[ChannelIndex];
-    }
-
-};
+/********************************************************************/
+/*                  Region Rx Window  Configuration                 */
+/* Chapter 7.1.7 LoRaWan 1.0.1 specification                        */
+/********************************************************************/
 
 void LoraRegionsEU::RegionSetRxConfig ( eRxWinType type ) {
     if ( type == RX1 ) {
@@ -98,29 +79,27 @@ void LoraRegionsEU::RegionSetRxConfig ( eRxWinType type ) {
         DEBUG_MSG ("INVALID RX TYPE \n");
     }
 }
+/********************************************************************/
+/*                  Region Tx Power  Configuration                  */
+/* Chapter 7.1.3 LoRaWan 1.0.1 specification                        */
+/*  TXPower    Configuration                                        */
+/*  0            20 dBm (if supported)                              */
+/*  1            14 dBm                                             */
+/*  2            11 dBm                                             */
+/*  3             8 dBm                                             */
+/*  4             5 dBm                                             */
+/*  5             2 dBm                                             */
+/*  6..15           RFU                                             */
+/********************************************************************/
+
 void LoraRegionsEU::RegionSetPower ( uint8_t PowerCmd ) {
-    switch ( PowerCmd ) {
-        case 0 :
-           MacTxPower = 20 ;
-           break;
-        case 1 :
-           MacTxPower = 14 ;
-           break;
-        case 2 :
-           MacTxPower = 11 ;
-           break;
-        case 3 :
-           MacTxPower = 8 ;
-           break;
-        case 4 :
-           MacTxPower = 5 ;
-           break;
-        case 5 :
-           MacTxPower = 2 ;
-           break;
-        default :
+    //@note return error status ?
+    uint8_t PowerTab [ 6 ] = { 20, 14, 11, 8, 5, 2};
+    if  ( PowerCmd >=6 ) {
            MacTxPower = 14 ;
            DEBUG_MSG ("INVALID POWER \n");
+    } else {
+        MacTxPower = PowerTab [ PowerCmd ] ;
     }
 }
 void LoraRegionsEU::RegionInitChannelMask ( void ) {
@@ -181,6 +160,27 @@ void LoraRegionsEU::RegionGetCFList ( void ) {
     NbOfActiveChannel += cpt ;
     DEBUG_PRINTF( " NbOfActiveChannel = %d \n",NbOfActiveChannel);
 }
+
+
+void LoraRegionsEU::RegionDecreaseDataRate ( void ) {
+    uint8_t ValidTemp = 0;
+    while ( ( MacTxDataRateAdr > 0 ) && ( ValidTemp == 0 ) ) {
+        MacTxDataRateAdr --;
+        for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+            if ( MacChannelIndexEnabled [i] == CHANNEL_ENABLED ) {
+                if ( ( MacTxDataRateAdr <= MacMaxDataRateChannel [i] ) && ( MacTxDataRateAdr >= MacMinDataRateChannel [i] ) ) {
+                    ValidTemp ++;
+                }
+            }
+        }
+    }
+    if ( ( MacTxDataRateAdr == 0 ) && ( ValidTemp == 0) ) {
+         MacChannelIndexEnabled [0] = CHANNEL_ENABLED ;
+         MacChannelIndexEnabled [1] = CHANNEL_ENABLED ;
+         MacChannelIndexEnabled [2] = CHANNEL_ENABLED ;
+    }
+}
+
 /********************************************************************************/
 /*           Check parameter of received mac commands                           */
 /********************************************************************************/
@@ -232,6 +232,46 @@ eStatusLoRaWan LoraRegionsEU::RegionIsValidChannelIndex ( uint8_t ChannelIndex) 
         status = ERRORLORAWAN ;
     }
     return ( status );
+};
+
+void LoraRegionsEU::RegionGiveNextDataRate( void ) {
+     switch ( AdrModeSelect ) {
+        case STATICADRMODE :
+            MacTxDataRate = MacTxDataRateAdr;
+            AdrEnable = 1;
+            
+            break;
+        case MOBILELONGRANGEADRMODE:
+            if ( MacTxDataRate == 0 ) { 
+                MacTxDataRate = 1;
+            } else {
+                MacTxDataRate = 0;
+            }
+            AdrEnable = 0;
+            break;
+        case MOBILELOWPOWERADRMODE:
+            ( MacTxDataRate == 5 ) ? MacTxDataRate = 0 : MacTxDataRate++ ;
+             AdrEnable = 0;
+             break;
+        default: 
+           AdrEnable = 0;
+           MacTxDataRate = 0;
+    }
+    MacTxDataRate = ( MacTxDataRate > 7 ) ? 7 : MacTxDataRate;
+    TxDataRateToSfBw ( MacTxDataRate );
+}
+
+void  LoraRegionsEU::RegionGiveNextChannel( void ) {
+    uint8_t temp =  randr( 0, NbOfActiveChannel - 1 ) ;
+    int ChannelIndex = 0;
+    eValidChannel status = UNVALIDCHANNEL;
+    ChannelIndex = FindEnabledChannel ( temp ); // @note datarate valid not yett tested
+    if ( ChannelIndex == -1 ) {
+        DEBUG_PRINTF ("INVALID CHANNEL Boactive channel = %d and random channel = %d \n",NbOfActiveChannel,temp);
+    } else {
+        MacTxFrequencyCurrent = MacTxFrequency[ChannelIndex];
+    }
+
 };
 /***********************************************************************************************/
 /*                      Private  Methods                                                        */

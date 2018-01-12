@@ -22,7 +22,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "LoraWanProcess.h"
 #include "ApiRtc.h"
 #include "Define.h"
-
+#include "math.h"
 //static RadioEvents_t RadioEvents;
 
 
@@ -36,7 +36,7 @@ RadioContainer::RadioContainer( PinName interrupt )
     TxFrequency = 868100000;
     TxPower = 14;
     TxSf = 7;
-    JoinedStatus = JOINED ;
+    JoinedStatus = NOTJOINED ;
 }; 
 RadioContainer::~RadioContainer( ) {
 };
@@ -105,7 +105,8 @@ void RadioContainer::Send( ) { //@note could/should be merge with tx config
 
 void RadioContainer::SetRxConfig( void ) {
     Radio.SetChannel( RxFrequency );
-    Radio.SetRxConfig( MODEM_LORA, RxBw, RxSf, 1, 0, 6, 10, false, 0, false, 0, 0, true, false );//@note rxtimeout 400ms!!!!
+    int nbSymbtimeout =  18;// @ note check the real signification of this timeout 
+    Radio.SetRxConfig( MODEM_LORA, RxBw, RxSf, 1, 0, 8, nbSymbtimeout, false, 0, false, 0, 0, true, false );//@note rxtimeout 400ms!!!!
 }
 
 int RadioContainer::GetRadioState( void ) {

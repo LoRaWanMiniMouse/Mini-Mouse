@@ -142,7 +142,7 @@ int RadioContainer::DumpRxPayloadAndMetadata ( void ) {
         uint32_t DevAddrtmp = RxPhyPayload[1] + ( RxPhyPayload[2] << 8 ) + ( RxPhyPayload[3] << 16 )+ ( RxPhyPayload[4] << 24 );
         if ( DevAddrtmp != DevAddrIsr ) {
             status += ERRORLORAWAN;
-            DEBUG_PRINTF( " BAD DevAddr = %d for RX Frame \n", DevAddrtmp );
+            DEBUG_PRINTF( " BAD DevAddr = %x for RX Frame \n", DevAddrtmp );
         }
         if ( status != OKLORAWAN ) {
             RxPhyPayloadSize = 0;

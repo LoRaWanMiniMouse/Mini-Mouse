@@ -114,6 +114,11 @@ void LoraRegionsEU::RegionSetMask ( void ) {
             cpt ++;
         }
     }
+    DEBUG_MSG(" \n Mask = ");
+    for (i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+         pcf.printf(" %d ",MacChannelIndexEnabled [i]);
+    }
+    DEBUG_MSG(" \n");
     NbOfActiveChannel = cpt ;
 };
 eStatusChannel LoraRegionsEU::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMask ) {

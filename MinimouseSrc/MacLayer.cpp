@@ -102,6 +102,7 @@ void LoraWanContainer::ConfigureRadioForRx1 ( void ) {
     Phy.RxFrequency   = Phy.TxFrequency;
     Phy.RxSf          = MacRx1SfCurrent ;
     Phy.RxBw          = MacRx1BwCurrent ;
+    DEBUG_PRINTF ( " RxFrequency = %d, RxSf = %d , RxBw = %d \n", Phy.RxFrequency, Phy.RxSf,Phy.RxBw ) ; 
     Phy.SetRxConfig( );
 };
 /************************************************************************************************************************************/
@@ -114,6 +115,7 @@ void LoraWanContainer::ConfigureRadioForRx2 ( void ) {
     Phy.RxFrequency   = MacRx2Frequency;
     Phy.RxSf          = MacRx2SfCurrent;
     Phy.RxBw          = MacRx2BwCurrent;
+    DEBUG_PRINTF ( " RxFrequency = %d, RxSf = %d , RxBw = %d \n", Phy.RxFrequency, Phy.RxSf,Phy.RxBw ) ;
     Phy.SetRxConfig( );
 };
 
@@ -121,7 +123,7 @@ void LoraWanContainer::ConfigureTimerForRx ( int type ) {
     uint32_t tCurrentMillisec;
     int tAlarmMillisec;
     uint64_t tAlarm64bits;
-    int toffset = 8;  // @note created a Define?  
+    int toffset = 8;  // @note created a Define sf dependant without tcxo?  
     tCurrentMillisec =  RtcGetTimeMs( &tAlarm64bits);
     if (type == RX1) {
         tAlarmMillisec = ( MacRx1Delay * 1000 )+ Phy.TimestampRtcIsr - tCurrentMillisec - toffset ;
@@ -198,6 +200,7 @@ eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
             }
         }
     }
+    DEBUG_PRINTF(" RxPacketType = %d \n", RxPacketType );
     return ( RxPacketType );
 }
 
@@ -383,6 +386,9 @@ void LoraWanContainer::LinkADRParser( uint8_t NbMultiLinkAdrReq  ) {
         RegionSetPower ( TxPowerTemp );
         MacNbTrans = NbTransTemp ;
         MacTxDataRateAdr = DataRateTemp ;
+        DEBUG_PRINTF("MacNbTrans = %d\n",MacNbTrans);
+        DEBUG_PRINTF("MacTxDataRateAdr = %d\n",MacTxDataRateAdr);
+        DEBUG_PRINTF("MacRx2Frequency = %d\n",MacRx2Frequency);
     }
 
     
@@ -592,7 +598,7 @@ void LoraWanContainer::UpdateJoinProcedure ( void ) { //@note tbd add valid test
 /********************************************************/
 
 void LoraWanContainer::BuildJoinLoraFrame( void ) {
-    DevNonce = randr( 0, 65535 )+199;
+    DevNonce = randr( 0, 65535 )+509;
     MType = JOINREQUEST ;
     SetMacHeader ( );
     for (int i = 0; i <8; i++){ 
@@ -630,6 +636,7 @@ int LoraWanContainer::CheckRxPayloadLength ( void ) {
     int status = OKLORAWAN;
     if ( Phy.RxPhyPayloadSize < MINLORAWANPAYLOADSIZE ) {
         status = ERRORLORAWAN;
+        DEBUG_PRINTF ( " ERROR CheckRxPayloadLength = %d \n",Phy.RxPhyPayloadSize);
         return (status);
     }
     return (status);
@@ -661,7 +668,9 @@ int LoraWanContainer::ExtractRxFhdr ( uint16_t *FcntDwnTmp ) { //@note Not yet a
     /**************************/
     /* manage Fctrl Byte      */
     /**************************/
-
+    if (status == ERRORLORAWAN ) {
+        DEBUG_PRINTF(" ERROR %x\n ", DevAddrtmp );
+    }
     return (status);
 }
 int LoraWanContainer::AcceptFcntDwn ( uint16_t FcntDwnTmp ) {
@@ -674,7 +683,8 @@ int LoraWanContainer::AcceptFcntDwn ( uint16_t FcntDwnTmp ) {
     } else if ( ( FcntDwnLsb - FcntDwnmtp ) > MAX_FCNT_GAP ) ) {
         FcntDwn = ( ( FcntDwnMsb + 1 ) << 16 ) + FcntDwnTmp ;
     } else {
-         status = ERRORLORAWAN ;
+        status = ERRORLORAWAN ;
+        DEBUG_MSG (" ERROR AcceptFcntDwn \n");
     }
         
 #else

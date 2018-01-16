@@ -42,7 +42,7 @@ public:
     uint32_t   GetDevAddr              ( void );
     uint8_t    GetNextPower            ( void );
     uint8_t    GetNextDataRate         ( void );
-    uint8_t    GetLorawanProcessState  ( void );
+    eLoraWan_Process_States    GetLorawanProcessState  ( void );
     
 
 private :

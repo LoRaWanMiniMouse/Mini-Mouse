@@ -36,7 +36,6 @@ LoraRegionsEU :: LoraRegionsEU (  PinName interrupt ) : LoraWanContainer (interr
     MacTxFrequency[0]    = 868100000;
     MacTxFrequency[1]    = 868300000;
     MacTxFrequency[2]    = 868500000;
-    NbOfActiveChannel    = 3;
     MacRx2Frequency      = 869525000; 
     MacRx1DataRateOffset = 0;
     MacRx2DataRate       = 0;
@@ -119,7 +118,6 @@ void LoraRegionsEU::RegionSetMask ( void ) {
          pcf.printf(" %d ",MacChannelIndexEnabled [i]);
     }
     DEBUG_MSG(" \n");
-    NbOfActiveChannel = cpt ;
 };
 eStatusChannel LoraRegionsEU::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMask ) {
     eStatusChannel status = OKCHANNEL;
@@ -148,11 +146,9 @@ eStatusChannel LoraRegionsEU::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint1
     return ( status );
 };
 void LoraRegionsEU::RegionGetCFList ( void ) {
-    int cpt = 0 ;
     for ( int i = 0 ; i < 5 ; i++ ) {
         MacTxFrequency [3 + i] = 100 * ( ( CFList[0 + ( 3 * i )] ) + ( CFList[1 + ( 3 * i )] << 8 )+ ( CFList[2 + ( 3 * i )] << 16 ) );
         if ( ( MacTxFrequency [3 + i] >= 863000000) && ( MacTxFrequency [3 + i] <= 870000000) ) {
-            cpt++;
             MacMinDataRateChannel [3 + i] = 0;
             MacMaxDataRateChannel [3 + i] = 5;
             MacChannelIndexEnabled [3 + i] = CHANNEL_ENABLED ;
@@ -162,8 +158,6 @@ void LoraRegionsEU::RegionGetCFList ( void ) {
             DEBUG_PRINTF( " MacChannelIndexEnabled [%d] = %d \n",i,MacChannelIndexEnabled [3 + i]);
         }
     }
-    NbOfActiveChannel += cpt ;
-    DEBUG_PRINTF( " NbOfActiveChannel = %d \n",NbOfActiveChannel);
 }
 
 
@@ -182,9 +176,12 @@ void LoraRegionsEU::RegionDecreaseDataRate ( void ) {
     if ( ( MacTxDataRateAdr == 0 ) && ( ValidTemp == 0) ) {
          MacChannelIndexEnabled [0] = CHANNEL_ENABLED ;
          MacChannelIndexEnabled [1] = CHANNEL_ENABLED ;
-         MacChannelIndexEnabled [2] = CHANNEL_ENABLED ;
+         MacChannelIndexEnabled [2] = CHANNEL_ENABLED ;;
     }
 }
+
+
+
 
 /********************************************************************************/
 /*           Check parameter of received mac commands                           */
@@ -267,7 +264,13 @@ void LoraRegionsEU::RegionGiveNextDataRate( void ) {
 }
 
 void  LoraRegionsEU::RegionGiveNextChannel( void ) {
-    uint8_t temp =  randr( 0, NbOfActiveChannel - 1 ) ;
+    uint8_t NbOfActiveChannel = 0 ;
+    for (int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+        if ( MacChannelIndexEnabled [i] == CHANNEL_ENABLED ) { 
+            NbOfActiveChannel++;
+        }
+    }
+    uint8_t temp = randr ( 0, ( NbOfActiveChannel - 1 ) );
     int ChannelIndex = 0;
     eValidChannel status = UNVALIDCHANNEL;
     ChannelIndex = FindEnabledChannel ( temp ); // @note datarate valid not yett tested

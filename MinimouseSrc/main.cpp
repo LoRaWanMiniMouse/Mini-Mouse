@@ -44,7 +44,7 @@ int main( ) {
     /*           Restore Context from Flash         */
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
-    //Lp.RestoreContext ( );
+    Lp.RestoreContext ( );
 //@note join procedure, rajouter rejoin apres in adr rajouter fonction rejoin, protected lp.
     while(1) {
         pcf.printf("\n\n\n\n ");
@@ -69,7 +69,7 @@ int main( ) {
             pcf.printf("]\n");
         }
         led = 0;
-        for (int j = 0 ; j < 1; j ++) {
+        for (int j = 0 ; j < 10; j ++) {
         wait_s( 6 );
         }
 

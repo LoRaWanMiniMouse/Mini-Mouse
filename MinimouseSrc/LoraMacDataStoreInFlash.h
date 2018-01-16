@@ -36,11 +36,11 @@ struct sBackUpFlash
     /********************************************/
     /*     Update by NewChannelReq command      */
     /********************************************/
-    uint32_t     MacTxFrequency[16];
-    uint8_t      MacMinDataRateChannel[16];
-    uint8_t      MacMaxDataRateChannel[16];
+    uint32_t     MacTxFrequency[16];//@note region dependant
+    uint8_t      MacMinDataRateChannel [16];
+    uint8_t      MacMaxDataRateChannel [16];
+    uint8_t      MacChannelIndexEnabled [16];
     uint16_t     MacChannelMask;
-    uint8_t      NbOfActiveChannel;
     /********************************************/
     /*   Update by RXTimingSetupReq command     */
     /********************************************/
@@ -51,8 +51,8 @@ struct sBackUpFlash
     uint16_t     FcntUp;
     uint32_t     FcntDwn;
     uint32_t     DevAddr;
-    uint8_t      nwkSKey[16];
-    uint8_t      appSKey[16];
+    uint8_t      nwkSKey [16];
+    uint8_t      appSKey [16];
     uint8_t      JoinedStatus; 
     uint8_t      Reserved [1]; 
 } ;

@@ -26,10 +26,10 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #define LORA_MAC_SYNCWORD                           0x34
 
 
-
+template<uint8_t  nbOfChannel>
 class LoraWanContainer { 
 public: 
-    static const uint8_t  NUMBER_OF_CHANNEL     = 16; // @note this is an issue it is region dependant so move in region but tbd...
+    static const uint8_t  NUMBER_OF_CHANNEL     = nbOfChannel; // @note this is an issue it is region dependant so move in region but tbd...
     LoraWanContainer( PinName interrupt ); 
     ~LoraWanContainer( );
     void BuildTxLoraFrame     ( void );
@@ -67,12 +67,11 @@ public:
     /********************************************/
     /*     Update by NewChannelReq command      */
     /********************************************/
-    uint32_t  MacTxFrequency            [ NUMBER_OF_CHANNEL ];
-    uint8_t   MacMinDataRateChannel     [ NUMBER_OF_CHANNEL ];
-    uint8_t   MacMaxDataRateChannel     [ NUMBER_OF_CHANNEL ];
-    uint8_t   MacChannelIndexEnabled    [ NUMBER_OF_CHANNEL ]; // Contain the index of the activated channel only NbOfActiveChannel value are valid
-   
-    uint8_t    NbOfActiveChannel;
+    uint32_t  MacTxFrequency            [ nbOfChannel ];
+    uint8_t   MacMinDataRateChannel     [ nbOfChannel ];
+    uint8_t   MacMaxDataRateChannel     [ nbOfChannel ];
+    uint8_t   MacChannelIndexEnabled    [ nbOfChannel ]; // Contain the index of the activated channel only NbOfActiveChannel value are valid
+
     
     /********************************************/
     /*   Update by RXTimingSetupReq command     */
@@ -175,6 +174,7 @@ protected :
     uint8_t      MacRx2SfCurrent;
     eBandWidth   MacRx2BwCurrent;
     int          FindEnabledChannel ( uint8_t Index);
+    void         PrintMacContext ( void ) ;
 private :
     static const uint16_t MAX_FCNT_GAP       = 16384 ;
     void SetMacHeader              ( void );
@@ -196,6 +196,7 @@ private :
     void SaveInFlash               ( void );
     sBackUpFlash BackUpFlash;
     uint8_t NwkPayloadIndex ;
+    uint8_t RxEmptyPayload ;
 
 }; 
 

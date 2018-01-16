@@ -268,6 +268,45 @@ template <class T>
 void LoraWanObjet <T> ::SetDataRateStrategy( eDataRateStrategy adrModeSelect ) {
     packet.AdrModeSelect = adrModeSelect;
 };
+
+
+/**************************************************/
+/*         LoraWan  GetDevAddr  Method            */
+/**************************************************/
+template <class T> 
+uint32_t LoraWanObjet <T> ::GetDevAddr ( void ) {
+     return(packet.DevAddr);
+}
+
+/**************************************************/
+/*         LoraWan  GetNextPower  Method          */
+/**************************************************/
+template <class T>
+uint8_t LoraWanObjet <T> ::GetNextPower ( void ) {
+     return(packet.MacTxPower);
+}
+
+/**************************************************/
+/*    LoraWan  GetLorawanProcessState  Method     */
+/**************************************************/
+template <class T> 
+eLoraWan_Process_States LoraWanObjet <T> ::GetLorawanProcessState ( void ) {
+     return(StateLoraWanProcess);
+}
+ 
+/**************************************************/
+/*    LoraWan  RestoreContext  Method     */
+/**************************************************/
+template <class T> 
+void LoraWanObjet <T> ::RestoreContext ( void ) {
+    packet.LoadFromFlash ( );
+}; 
+
+/***************************************************************************************/
+/* NOT yet implemented */
+/***************************************************************************************/
+
+
 /**************************************************/
 /*        LoraWan  TryToJoin  Method              */
 /**************************************************/
@@ -280,49 +319,19 @@ uint8_t LoraWanObjet <T> ::TryToJoin ( void ) {
 /*   LoraWan  GetNextMaxPayloadLength  Method     */
 /**************************************************/
 template <class T>
-uint32_t LoraWanObjet <T> ::GetNextMaxPayloadLength ( void ) {
+uint32_t LoraWanObjet <T> ::GetNextMaxPayloadLength ( void ) {// error return during tx send to be replace by get datarate?
      return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
-/**************************************************/
-/*         LoraWan  GetDevAddr  Method            */
-/**************************************************/
-template <class T> 
-uint32_t LoraWanObjet <T> ::GetDevAddr ( void ) {
-     return(0);//@NOTE NOT YET IMPLEMENTED
-}
-
-/**************************************************/
-/*         LoraWan  GetNextPower  Method          */
-/**************************************************/
-template <class T>
-uint8_t LoraWanObjet <T> ::GetNextPower ( void ) {
-     return(0);//@NOTE NOT YET IMPLEMENTED
-}
 
 /**************************************************/
 /*        LoraWan  GetNextDataRate  Method        */
 /**************************************************/
 template <class T> 
-uint8_t LoraWanObjet <T> ::GetNextDataRate ( void ) {
+uint8_t LoraWanObjet <T> ::GetNextDataRate ( void ) { // note return datareate in case of adr
      return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
-/**************************************************/
-/*    LoraWan  GetLorawanProcessState  Method     */
-/**************************************************/
-template <class T> 
-uint8_t LoraWanObjet <T> ::GetLorawanProcessState ( void ) {
-     return(0);//@NOTE NOT YET IMPLEMENTED
-}
- 
-/**************************************************/
-/*    LoraWan  RestoreContext  Method     */
-/**************************************************/
-template <class T> 
-void LoraWanObjet <T> ::RestoreContext ( void ) {
-    packet.LoadFromFlash ( );
-}; 
 
 /************************************************************************************************/
 /*                      Private  Methods                                                        */

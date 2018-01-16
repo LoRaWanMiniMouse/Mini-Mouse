@@ -39,7 +39,6 @@ LoraWanContainer::LoraWanContainer( PinName interrupt )
     AdrAckLimit   = 5;
     AdrAckDelay   = 1;
     AdrAckReq     = 0;
-    AdrEnable     = 0;
     MacNbTrans    = 1;
     IsFrameToSend = NOFRAME_TOSEND;
 }; 
@@ -180,22 +179,25 @@ eRxPacketType LoraWanContainer::DecodeRxFrame( void ) {
         if ( status == OKLORAWAN) {
             status = AcceptFcntDwn ( FcntDownTmp ) ;
         }
-        if ( status == OKLORAWAN) {
+        if ( status == OKLORAWAN) { // @note check if it is possible to reduce the if  if  if
             AdrAckCnt = 0 ; // reset adr counter , receive a valid frame.
-            MacRxPayloadSize = MacRxPayloadSize - FHDROFFSET - FoptsLength ;
-            if ( FportRx == 0 ) {
-                LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, nwkSKey, DevAddr, 1, FcntDwn, &MacNwkPayload[0] );
-                MacNwkPayloadSize = MacRxPayloadSize;
-                RxPacketType = NWKRXPACKET ;
-            } else {
-                LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, appSKey, DevAddr, 1, FcntDwn, &MacRxPayload[0] );
-                if ( FoptsLength != 0 ) {
-                    memcpy ( MacNwkPayload, Fopts, FoptsLength);
-                    MacNwkPayloadSize = FoptsLength;
-                    RxPacketType = USERRX_FOPTSPACKET ;
-                } 
-                if ( MacRxPayloadSize > 0 ) {
-                    AvailableRxPacketForUser = LORARXPACKETAVAILABLE; 
+            DEBUG_MSG ( " RESET ADRACKCNT \n");
+            MacRxPayloadSize = ( RxEmptyPayload == 0 )? MacRxPayloadSize - FHDROFFSET - FoptsLength : 0;
+            if ( RxEmptyPayload == 0 ) {
+                if ( FportRx == 0 ) {
+                    LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, nwkSKey, DevAddr, 1, FcntDwn, &MacNwkPayload[0] );
+                    MacNwkPayloadSize = MacRxPayloadSize;
+                    RxPacketType = NWKRXPACKET ;
+                } else {
+                    LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, appSKey, DevAddr, 1, FcntDwn, &MacRxPayload[0] );
+                    if ( FoptsLength != 0 ) {
+                        memcpy ( MacNwkPayload, Fopts, FoptsLength);
+                        MacNwkPayloadSize = FoptsLength;
+                        RxPacketType = USERRX_FOPTSPACKET ;
+                    } 
+                    if ( MacRxPayloadSize > 0 ) {
+                        AvailableRxPacketForUser = LORARXPACKETAVAILABLE; 
+                    }
                 }
             }
         }
@@ -302,6 +304,7 @@ eStatusLoRaWan LoraWanContainer::ParseManagementPacket( void ) {
                 break;
         }
     }
+    PrintMacContext ( );
     return ( status ); 
 }
 
@@ -598,7 +601,7 @@ void LoraWanContainer::UpdateJoinProcedure ( void ) { //@note tbd add valid test
 /********************************************************/
 
 void LoraWanContainer::BuildJoinLoraFrame( void ) {
-    DevNonce = randr( 0, 65535 )+509;
+    DevNonce = randr( 0, 65535 )+989;
     MType = JOINREQUEST ;
     SetMacHeader ( );
     for (int i = 0; i <8; i++){ 
@@ -664,7 +667,14 @@ int LoraWanContainer::ExtractRxFhdr ( uint16_t *FcntDwnTmp ) { //@note Not yet a
     *FcntDwnTmp = Phy.RxPhyPayload[6] + ( Phy.RxPhyPayload[7] << 8 );
     FoptsLength = FctrlRx & 0x0F;
     memcpy(&Fopts[0], &Phy.RxPhyPayload[8], FoptsLength);
-    FportRx = Phy.RxPhyPayload[8+FoptsLength];
+    // case empty payload without fport :
+    if ( Phy.RxPhyPayloadSize > 8 + MICSIZE + FoptsLength){
+        FportRx = Phy.RxPhyPayload[8+FoptsLength];
+        RxEmptyPayload = 0;
+    } else {
+        RxEmptyPayload = 1;
+        DEBUG_MSG( " EMPTY MSG \n" ); 
+    }
     /**************************/
     /* manage Fctrl Byte      */
     /**************************/
@@ -709,15 +719,17 @@ void LoraWanContainer::SaveInFlash ( ) {
     BackUpFlash.MacRx2Frequency         = MacRx2Frequency; 
     BackUpFlash.MacRx2DataRate          = MacRx2DataRate;
     BackUpFlash.MacRx1DataRateOffset    = MacRx1DataRateOffset;
-    BackUpFlash.NbOfActiveChannel       = NbOfActiveChannel;
     BackUpFlash.MacRx1Delay             = MacRx1Delay;
     BackUpFlash.FcntUp                  = FcntUp;
     BackUpFlash.FcntDwn                 = FcntDwn;
     BackUpFlash.DevAddr                 = DevAddr;
     BackUpFlash.JoinedStatus            = Phy.JoinedStatus;
-    memcpy( &BackUpFlash.MacTxFrequency[0], &MacTxFrequency[0], 16);
-    memcpy( &BackUpFlash.MacMinDataRateChannel[0], &MacMinDataRateChannel[0], 16);
-    memcpy( &BackUpFlash.MacMaxDataRateChannel[0], &MacMaxDataRateChannel[0], 16);
+    for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+        BackUpFlash.MacTxFrequency[i]         = MacTxFrequency[i];
+        BackUpFlash.MacMaxDataRateChannel[i]  = MacMaxDataRateChannel[i];
+        BackUpFlash.MacMinDataRateChannel[i]  = MacMinDataRateChannel[i];
+        BackUpFlash.MacChannelIndexEnabled[i] = MacChannelIndexEnabled[i];
+    }
     memcpy( &BackUpFlash.nwkSKey[0], &nwkSKey[0], 16);
     memcpy( &BackUpFlash.appSKey[0], &appSKey[0], 16);
     gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, sizeof(sBackUpFlash) );    
@@ -734,19 +746,59 @@ void LoraWanContainer::LoadFromFlash ( ) {
     MacRx2Frequency               = BackUpFlash.MacRx2Frequency; 
     MacRx2DataRate                = BackUpFlash.MacRx2DataRate;
     MacRx1DataRateOffset          = BackUpFlash.MacRx1DataRateOffset;
-    NbOfActiveChannel             = BackUpFlash.NbOfActiveChannel;
     MacRx1Delay                   = BackUpFlash.MacRx1Delay ;
     FcntUp                        = BackUpFlash.FcntUp ;
     FcntDwn                       = BackUpFlash.FcntDwn ;
     DevAddr                       = BackUpFlash.DevAddr;
     Phy.JoinedStatus              = ( eJoinStatus ) BackUpFlash.JoinedStatus;
-    memcpy( &MacTxFrequency[0], &BackUpFlash.MacTxFrequency[0], 16);
-    memcpy( &MacMaxDataRateChannel[0], &BackUpFlash.MacMaxDataRateChannel[0], 16);
-    memcpy( &MacMinDataRateChannel[0], &BackUpFlash.MacMinDataRateChannel[0], 16);
+    for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+        MacTxFrequency[i]         = BackUpFlash.MacTxFrequency[i] ;
+        MacMaxDataRateChannel[i]  = BackUpFlash.MacMaxDataRateChannel[i] ;
+        MacMinDataRateChannel[i]  = BackUpFlash.MacMinDataRateChannel[i];
+        MacChannelIndexEnabled[i] = BackUpFlash.MacChannelIndexEnabled[i];
+    }
     memcpy( &nwkSKey[0], &BackUpFlash.nwkSKey[0], 16);
     memcpy( &appSKey[0], &BackUpFlash.appSKey[0], 16); 
     gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, sizeof(sBackUpFlash) );    
+    DEBUG_PRINTF ("\n MacTxDataRate = %d ", MacTxDataRate ) ;
+    DEBUG_PRINTF ("\n MacTxPower = %d ", MacTxPower ) ;
+    DEBUG_PRINTF ("\n MacChMask = 0x%x ", MacChMask ) ;
+    DEBUG_PRINTF ("\n MacRx2Frequency = %d ", MacRx2Frequency ) ;
+    DEBUG_PRINTF ("\n MacRx2DataRate = %d ", MacRx2DataRate ) ;
+    DEBUG_PRINTF ("\n MacRx1DataRateOffset = %d ", MacRx1DataRateOffset ) ;
+    DEBUG_PRINTF ("\n MacRx1Delay = %d ", MacRx1Delay ) ;
+    DEBUG_PRINTF ("\n FcntUp = %d ", FcntUp ) ;
+    DEBUG_PRINTF ("\n FcntDwn = %d ", FcntDwn ) ;
+    DEBUG_PRINTF ("\n DevAddr = 0x%x ", DevAddr ) ;
+    DEBUG_PRINTF ("\n JoinedStatus = %d ",Phy.JoinedStatus  ) ;
+    for (int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+        DEBUG_PRINTF ("\n MacTxFrequency[%d]= %d ", i, MacTxFrequency[i] ) ;
+        DEBUG_PRINTF ("\n MacMaxDataRateChannel[%d]   = %d ", i, MacMaxDataRateChannel[i] ) ;
+        DEBUG_PRINTF ("\n MacMinDataRateChannel[%d]   = %d ", i, MacMinDataRateChannel[i] ) ;
+        DEBUG_PRINTF ("\n MacChannelIndexEnabled[%d]  = %d \n", i, MacChannelIndexEnabled[i] );
+    }
 }
+
+void LoraWanContainer::PrintMacContext ( ) {
+    DEBUG_PRINTF ("\n MacTxDataRate = %d ", MacTxDataRate ) ;
+    DEBUG_PRINTF ("\n MacTxPower = %d ", MacTxPower ) ;
+    DEBUG_PRINTF ("\n MacChMask = 0x%x ", MacChMask ) ;
+    DEBUG_PRINTF ("\n MacRx2Frequency = %d ", MacRx2Frequency ) ;
+    DEBUG_PRINTF ("\n MacRx2DataRate = %d ", MacRx2DataRate ) ;
+    DEBUG_PRINTF ("\n MacRx1DataRateOffset = %d ", MacRx1DataRateOffset ) ;
+    DEBUG_PRINTF ("\n MacRx1Delay = %d ", MacRx1Delay ) ;
+    DEBUG_PRINTF ("\n FcntUp = %d ", FcntUp ) ;
+    DEBUG_PRINTF ("\n FcntDwn = %d ", FcntDwn ) ;
+    DEBUG_PRINTF ("\n DevAddr = 0x%x ", DevAddr ) ;
+    DEBUG_PRINTF ("\n JoinedStatus = %d ",Phy.JoinedStatus  ) ;
+    for (int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+        DEBUG_PRINTF ("\n MacTxFrequency[%d]= %d ", i, MacTxFrequency[i] ) ;
+        DEBUG_PRINTF ("\n MacMaxDataRateChannel[%d]   = %d ", i, MacMaxDataRateChannel[i] ) ;
+        DEBUG_PRINTF ("\n MacMinDataRateChannel[%d]   = %d ", i, MacMinDataRateChannel[i] ) ;
+        DEBUG_PRINTF ("\n MacChannelIndexEnabled[%d]  = %d \n", i, MacChannelIndexEnabled[i] );
+    }
+}
+
 /**************************************TIMER PART**********************************************************/
 /**********************************************************************************************************/
 /*@Note Probably to create a new directory or may be an timer Object to be discuss                        */

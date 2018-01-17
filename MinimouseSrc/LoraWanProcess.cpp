@@ -267,6 +267,7 @@ uint8_t LoraWanObjet <T> ::ReceivePayload ( uint8_t* UserRxFport, uint8_t* UserR
 template <class T>
 void LoraWanObjet <T> ::SetDataRateStrategy( eDataRateStrategy adrModeSelect ) {
     packet.AdrModeSelect = adrModeSelect;
+    packet.SetDataRateDistribution( );
 };
 
 

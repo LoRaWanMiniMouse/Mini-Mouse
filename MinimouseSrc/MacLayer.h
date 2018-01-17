@@ -26,12 +26,13 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #define LORA_MAC_SYNCWORD                           0x34
 
 
-template<uint8_t  nbOfChannel>
+template <int NBCHANNEL>
 class LoraWanContainer { 
 public: 
-    static const uint8_t  NUMBER_OF_CHANNEL     = nbOfChannel; // @note this is an issue it is region dependant so move in region but tbd...
-    LoraWanContainer( PinName interrupt ); 
+
+    LoraWanContainer( PinName interrupt); 
     ~LoraWanContainer( );
+    static const uint8_t  NUMBER_OF_CHANNEL = NBCHANNEL; // @note this is an issue it is region dependant so move in region but tbd...
     void BuildTxLoraFrame     ( void );
     void BuildJoinLoraFrame   ( void );
     void EncryptTxFrame       ( void );
@@ -67,10 +68,10 @@ public:
     /********************************************/
     /*     Update by NewChannelReq command      */
     /********************************************/
-    uint32_t  MacTxFrequency            [ nbOfChannel ];
-    uint8_t   MacMinDataRateChannel     [ nbOfChannel ];
-    uint8_t   MacMaxDataRateChannel     [ nbOfChannel ];
-    uint8_t   MacChannelIndexEnabled    [ nbOfChannel ]; // Contain the index of the activated channel only NbOfActiveChannel value are valid
+    uint32_t  MacTxFrequency        [ NBCHANNEL ];
+    uint8_t   MacMinDataRateChannel [ NBCHANNEL ];
+    uint8_t   MacMaxDataRateChannel [ NBCHANNEL ];
+    uint8_t   MacChannelIndexEnabled[ NBCHANNEL ]; // Contain the index of the activated channel only NbOfActiveChannel value are valid
 
     
     /********************************************/

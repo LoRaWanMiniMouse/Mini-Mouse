@@ -38,7 +38,7 @@ int main( ) {
     /************************************************/
     /*          Configure Adr Mode                  */
     /************************************************/
-    Lp.SetDataRateStrategy( STATICADRMODE );
+    Lp.SetDataRateStrategy( MOBILELOWPOWERADRMODE );
 
     /************************************************/
     /*           Restore Context from Flash         */
@@ -69,7 +69,7 @@ int main( ) {
             pcf.printf("]\n");
         }
         led = 0;
-        for (int j = 0 ; j < 10; j ++) {
+        for (int j = 0 ; j < 1; j ++) {
         wait_s( 6 );
         }
 

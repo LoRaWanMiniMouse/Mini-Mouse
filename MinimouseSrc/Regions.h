@@ -29,13 +29,14 @@ Maintainer        : Fabien Holin ( SEMTECH)
 
 
 
-class LoraRegionsEU : public LoraWanContainer { 
+class LoraRegionsEU : public LoraWanContainer<16> { 
     
 
     
 public: 
     LoraRegionsEU (  PinName interrupt ); 
     eStatusLoRaWan RegionMaxPayloadSize ( uint16_t sizeIn ) ;
+    void  SetDataRateDistribution       ( void );
     void RegionGiveNextDataRate         ( void );
 /*********************************************************************/
 /*            Define Regional parameter                              */
@@ -49,8 +50,8 @@ public:
     static const int      ACK_TIMEOUT        = 2 ;// +/- 1 s (random delay between 1 and 3 seconds)
     static const uint32_t FREQMIN            = 8630000 ;// MHz/100 coded over 24 bits
     static const uint32_t FREQMAX            = 8700000 ;// MHz/100 coded over 24 bits
+    uint8_t DistriDataRate[7];
 protected : 
-    virtual void SetRegionsdefaultSettings        ( void );
     virtual void RegionGetCFList                  ( void );
     virtual void RegionGiveNextChannel            ( void ); 
     virtual void RegionSetRxConfig                ( eRxWinType type );
@@ -67,6 +68,7 @@ protected :
     virtual eStatusLoRaWan RegionIsValidChannelIndex    ( uint8_t ChannelIndex);
 private :
 
+    uint8_t DistriDataRateInit[7];
     void TxDataRateToSfBw                  ( uint8_t dataRate );
     void Rx2DataRateToSfBw                 ( uint8_t dataRate );
     uint16_t   UnwrappedChannelMask ;                          // this variable is used for multiple linkadr cmds is region dependant at contruction use template

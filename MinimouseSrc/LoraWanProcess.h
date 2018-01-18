@@ -28,20 +28,19 @@ class LoraWanObjet {
 public: 
     LoraWanObjet( PinName interrupt ); 
     ~LoraWanObjet();
-    eLoraWan_Process_States    SendPayload         ( uint8_t fPort, const uint8_t* dataIn, const uint16_t sizeIn, uint8_t PacketType );
-    uint8_t                    ReceivePayload      ( uint8_t* UserRxFport, uint8_t* UserRxPayload, uint8_t* UserRxPayloadSize );
-    eLoraWan_Process_States    Join                ( void );
-    eJoinStatus                IsJoined            ( void );
-    void                       SetDataRateStrategy ( eDataRateStrategy adrModeSelect );
-    eLoraWan_Process_States    LoraWanProcess      ( uint8_t* AvailableRxPacket );
-    uint8_t                    GetRadioState       ( void );
-    void                       RestoreContext      ( void ); 
-/* not implemented yet*/
-    uint8_t    TryToJoin               ( void ); // @NOte to be removed
-    uint32_t   GetNextMaxPayloadLength ( void );
-    uint32_t   GetDevAddr              ( void );
-    uint8_t    GetNextPower            ( void );
-    uint8_t    GetNextDataRate         ( void );
+    eLoraWan_Process_States    SendPayload             ( uint8_t fPort, const uint8_t* dataIn, const uint16_t sizeIn, uint8_t PacketType );
+    uint8_t                    ReceivePayload          ( uint8_t* UserRxFport, uint8_t* UserRxPayload, uint8_t* UserRxPayloadSize );
+    eLoraWan_Process_States    Join                    ( void );
+    eJoinStatus                IsJoined                ( void );
+    void                       SetDataRateStrategy     ( eDataRateStrategy adrModeSelect );
+    eLoraWan_Process_States    LoraWanProcess          ( uint8_t* AvailableRxPacket );
+    uint8_t                    GetRadioState           ( void );
+    void                       RestoreContext          ( void ); 
+    void                       NewJoin                 ( void );
+    uint32_t                   GetNextMaxPayloadLength ( void );
+    uint32_t                   GetDevAddr              ( void );
+    uint8_t                    GetNextPower            ( void );
+    uint8_t                    GetNextDataRate         ( void );
     eLoraWan_Process_States    GetLorawanProcessState  ( void );
     
 

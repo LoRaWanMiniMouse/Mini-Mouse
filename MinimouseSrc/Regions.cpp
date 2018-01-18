@@ -232,19 +232,25 @@ eStatusLoRaWan LoraRegionsEU::RegionIsValidChannelIndex ( uint8_t ChannelIndex) 
 /*    method to set the next data Rate in different mode                        */
 /********************************************************************************/
 
-void LoraRegionsEU::SetDataRateDistribution( void ) {
-     switch ( AdrModeSelect ) {
+void LoraRegionsEU::RegionSetDataRateDistribution( uint8_t adrMode ) {
+     switch ( adrMode ) {
 
-        case MOBILELONGRANGEADRMODE:  // in this example 4/7 dr2 2/7 dr1 and 1/7 dr0
+        case MOBILE_LONGRANGE_DR_DISTRIBUTION:  // in this example 4/7 dr2 2/7 dr1 and 1/7 dr0
              memset(DistriDataRateInit,0 , 7);
              DistriDataRateInit[2]    = 4; 
              DistriDataRateInit[1]    = 2; 
              DistriDataRateInit[0]    = 1; 
             break;
-        case MOBILELOWPOWERADRMODE:
+        case MOBILE_LOWPER_DR_DISTRIBUTION:
              memset(DistriDataRateInit,0 , 7); //in this example 8/13 dr5 4/13 dr4 and 1/13 dr0
              DistriDataRateInit[5]    = 8; 
              DistriDataRateInit[4]    = 4; 
+             DistriDataRateInit[0]    = 1; 
+             break;
+        case JOIN_DR_DISTRIBUTION:
+             memset(DistriDataRateInit,0 , 7); //in this example 1/3 dr5 1/3 dr4 and 1/3 dr0
+             DistriDataRateInit[5]    = 0; 
+             DistriDataRateInit[4]    = 0; 
              DistriDataRateInit[0]    = 1; 
              break;
         default: 
@@ -278,9 +284,6 @@ void LoraRegionsEU::RegionGiveNextDataRate( void ) {
     MacTxDataRate = ( MacTxDataRate > 7 ) ? 7 : MacTxDataRate;
     TxDataRateToSfBw ( MacTxDataRate );
     DEBUG_PRINTF("tx data rate = %d\n",MacTxDataRate );
-    for (int i = 0 ; i < 7 ; i ++ ){
-        DEBUG_PRINTF("DistriDataRate[%d] = %d\n",i,DistriDataRate[i] );
-    }
 }
 
 /********************************************************************************/
@@ -321,10 +324,9 @@ void  LoraRegionsEU::RegionGiveNextChannel( void ) {
     }
     uint8_t temp = randr ( 0, ( NbOfActiveChannel - 1 ) );
     int ChannelIndex = 0;
-    eValidChannel status = UNVALIDCHANNEL;
     ChannelIndex = FindEnabledChannel ( temp ); // @note datarate valid not yett tested
     if ( ChannelIndex == -1 ) {
-        DEBUG_PRINTF ("INVALID CHANNEL Boactive channel = %d and random channel = %d \n",NbOfActiveChannel,temp);
+        DEBUG_PRINTF ("INVALID CHANNEL  active channel = %d and random channel = %d \n",NbOfActiveChannel,temp);
     } else {
         MacTxFrequencyCurrent = MacTxFrequency[ChannelIndex];
     }

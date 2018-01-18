@@ -168,8 +168,8 @@ enum {
 #define    NEW_CHANNEL_ANS_SIZE       2
 #define    RXTIMING_SETUP_REQ_SIZE    2
 #define    RXTIMING_SETUP_ANS_SIZE    1
-
-
+#define    TIMEONAIR_JOIN_SF7_MS      65 // ms  
+#define    MAX_RETRY_JOIN_DUTY_CYCLE_1000 10
 
 #define MINLORAWANPAYLOADSIZE 12
 #define PORTNWK 0
@@ -221,8 +221,9 @@ typedef enum {
 /*User Confi for Adr Mode select*/
 typedef enum eDataRateStrategy{
     STATICADRMODE,
-    MOBILELONGRANGEADRMODE,
-    MOBILELOWPOWERADRMODE,
+    MOBILE_LONGRANGE_DR_DISTRIBUTION,
+    MOBILE_LOWPER_DR_DISTRIBUTION,
+    JOIN_DR_DISTRIBUTION,
 } eDataRateStrategy;
 
 typedef enum { 

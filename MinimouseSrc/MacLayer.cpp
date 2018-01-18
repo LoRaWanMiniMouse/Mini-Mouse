@@ -42,6 +42,8 @@ template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::LoraWanContainer( PinName 
     AdrAckReq     = 0;
     MacNbTrans    = 1;
     IsFrameToSend = NOFRAME_TOSEND;
+    RtcNextTimeJoinSecond = 0;
+    RetryJoinCpt = 0 ;
 }; 
 
 template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::~LoraWanContainer( ) {
@@ -220,6 +222,14 @@ template <int NBCHANNEL> eRxPacketType LoraWanContainer<NBCHANNEL>::DecodeRxFram
 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateMacLayer ( void ) {
+     if  ( Phy.JoinedStatus == NOTJOINED ) {
+        RetryJoinCpt ++ ; // reset when join ok
+        if ( RetryJoinCpt < MAX_RETRY_JOIN_DUTY_CYCLE_1000 ) {
+            RtcNextTimeJoinSecond = RtcGetTimeSecond( ) + ( ( TIMEONAIR_JOIN_SF7_MS << ( MacTxSfCurrent - 7 ) ) )/10 ; //@note 1/100 duty cycle fix
+        } else {
+            RtcNextTimeJoinSecond = RtcGetTimeSecond( ) + ( ( TIMEONAIR_JOIN_SF7_MS << ( MacTxSfCurrent - 7 ) ) )/100 ; //@note 1/1000 duty cycle fix
+        }
+    }
     if ( ( AdrAckCnt >= AdrAckLimit) &&  ( AdrAckCnt < ( AdrAckLimit + AdrAckDelay ) ) ) {
         AdrAckReq = 1 ;
     }
@@ -609,7 +619,8 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateJoinProcedure (
     DEBUG_PRINTF("MacRx2DataRate= %d\n",MacRx2DataRate);
     DEBUG_PRINTF("MacRx1Delay= %d\n",MacRx1Delay);
     Phy.JoinedStatus = JOINED;
-    //@note have to manage option byte for channel frequency planned
+    RetryJoinCpt = 0;
+    SaveInFlash ( );
 }
 
 /********************************************************/

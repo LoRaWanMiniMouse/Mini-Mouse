@@ -36,7 +36,7 @@ class LoraRegionsEU : public LoraWanContainer<16> {
 public: 
     LoraRegionsEU (  PinName interrupt ); 
     eStatusLoRaWan RegionMaxPayloadSize ( uint16_t sizeIn ) ;
-    void  SetDataRateDistribution       ( void );
+    void RegionSetDataRateDistribution    ( uint8_t adrMode );
     void RegionGiveNextDataRate         ( void );
 /*********************************************************************/
 /*            Define Regional parameter                              */

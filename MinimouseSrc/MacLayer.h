@@ -141,21 +141,24 @@ public:
     Timeout    TimerLora ;
     void       IsrTimerRx( void );
     int        StateTimer;
+/* Join Duty cycle management */
+    uint32_t   RtcNextTimeJoinSecond ;
+    uint32_t   RetryJoinCpt;
 
 /*  Flash */
     void LoadFromFlash             ( void );
 /***************************************************************/
 /*  Virtual Method overwritten by the Class  of the region     */
 /***************************************************************/
-    virtual void              RegionGiveNextChannel  ( void )                                 = 0; 
-    virtual void              RegionSetRxConfig      ( eRxWinType type )                      = 0;
-    virtual void              RegionSetPower         ( uint8_t PowerCmd )                     = 0;
-    virtual void              RegionSetMask          ( void )                                 = 0;
-    virtual void              RegionInitChannelMask  ( void )                                 = 0;
-    virtual void              RegionGetCFList        ( void )                                 = 0;
-    virtual void              RegionDecreaseDataRate ( void )                                 = 0;
-    virtual eStatusChannel    RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMaskIn) = 0;
-    
+    virtual void              RegionGiveNextChannel            ( void )                                 = 0; 
+    virtual void              RegionSetRxConfig                ( eRxWinType type )                      = 0;
+    virtual void              RegionSetPower                   ( uint8_t PowerCmd )                     = 0;
+    virtual void              RegionSetMask                    ( void )                                 = 0;
+    virtual void              RegionInitChannelMask            ( void )                                 = 0;
+    virtual void              RegionGetCFList                  ( void )                                 = 0;
+    virtual void              RegionDecreaseDataRate           ( void )                                 = 0;
+    virtual eStatusChannel    RegionBuildChannelMask           ( uint8_t ChMaskCntl, uint16_t ChMaskIn) = 0;
+
     virtual eStatusLoRaWan    RegionIsValidRx1DrOffset     ( uint8_t Rx1DataRateOffset) = 0;
     virtual eStatusLoRaWan    RegionIsValidDataRate        ( uint8_t temp )             = 0;
     virtual eStatusLoRaWan    RegionIsAcceptableDataRate   ( uint8_t DataRate)          = 0;

@@ -38,13 +38,15 @@ int main( ) {
     /************************************************/
     /*          Configure Adr Mode                  */
     /************************************************/
-    Lp.SetDataRateStrategy( MOBILELOWPOWERADRMODE );
+    Lp.SetDataRateStrategy( MOBILE_LOWPER_DR_DISTRIBUTION );
 
     /************************************************/
     /*           Restore Context from Flash         */
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
     Lp.RestoreContext ( );
+    Lp.NewJoin( );
+    
 //@note join procedure, rajouter rejoin apres in adr rajouter fonction rejoin, protected lp.
     while(1) {
         pcf.printf("\n\n\n\n ");

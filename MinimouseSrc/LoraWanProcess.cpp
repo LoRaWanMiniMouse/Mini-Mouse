@@ -40,7 +40,13 @@ template <class T> LoraWanObjet <T> ::~LoraWanObjet() {
 template <class T> 
 eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
  
-    *AvailableRxPacket = NOLORARXPACKETAVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE*
+    *AvailableRxPacket = NOLORARXPACKETAVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE
+    if ( ( IsJoined ( ) == NOTJOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
+        pcf.printf("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
+        
+        StateLoraWanProcess = LWPSTATE_IDLE ;
+    }        
+        
     switch ( StateLoraWanProcess ) {
     /************************************************************************************/
     /*                                    STATE IDLE                                    */
@@ -147,6 +153,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
             pcf.printf( " **************************\n " );
             if ( ValidRxPacket == JOINACCEPTPACKET){
                 packet.UpdateJoinProcedure( );
+                packet.RegionSetDataRateDistribution( packet.AdrModeSelect );//@note because datarate Distribution habe been changed during join
             }
             if ( ( ValidRxPacket == NWKRXPACKET) || ( ValidRxPacket == USERRX_FOPTSPACKET) ) {
                 packet.ParseManagementPacket( );
@@ -195,10 +202,12 @@ template <class T>
 eLoraWan_Process_States LoraWanObjet <T> ::Join ( void ) {
     packet.Phy.JoinedStatus = NOTJOINED;
     packet.MacNbTransCpt = packet.MacNbTrans = 1;
+    packet.RegionSetDataRateDistribution( JOIN_DR_DISTRIBUTION ); // @when joined don't forget to set datrate distribution for send 
     packet.RegionGiveNextDataRate ( );
     packet.BuildJoinLoraFrame( );
     packet.MacRx1Delay = packet.JOIN_ACCEPT_DELAY1; // to be set in default setting regions
     //@note should be done in region constructor packet.MacRx2Sf = 12;
+    
     StateLoraWanProcess = LWPSTATE_SEND;
     return( StateLoraWanProcess );
 };
@@ -214,6 +223,13 @@ eJoinStatus LoraWanObjet <T> ::IsJoined( void ) {
     return ( status );
 }
 
+/**************************************************/
+/*          LoraWan  IsJoined  Method             */
+/**************************************************/
+template <class T> 
+void LoraWanObjet <T> ::NewJoin ( void ) {
+    packet.Phy.JoinedStatus = NOTJOINED; 
+}
 /**************************************************/
 /*         LoraWan  SendPayload  Method           */
 /**************************************************/
@@ -267,7 +283,7 @@ uint8_t LoraWanObjet <T> ::ReceivePayload ( uint8_t* UserRxFport, uint8_t* UserR
 template <class T>
 void LoraWanObjet <T> ::SetDataRateStrategy( eDataRateStrategy adrModeSelect ) {
     packet.AdrModeSelect = adrModeSelect;
-    packet.SetDataRateDistribution( );
+    packet.RegionSetDataRateDistribution( adrModeSelect );
 };
 
 
@@ -307,14 +323,6 @@ void LoraWanObjet <T> ::RestoreContext ( void ) {
 /* NOT yet implemented */
 /***************************************************************************************/
 
-
-/**************************************************/
-/*        LoraWan  TryToJoin  Method              */
-/**************************************************/
-template <class T> 
-uint8_t LoraWanObjet <T> ::TryToJoin ( void ) {
-    return(0);//@NOTE NOT YET IMPLEMENTED
-}
 
 /**************************************************/
 /*   LoraWan  GetNextMaxPayloadLength  Method     */

@@ -39,12 +39,12 @@ template <class T> LoraWanObjet <T> ::~LoraWanObjet() {
 
 template <class T> 
 eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
- 
+
     *AvailableRxPacket = NOLORARXPACKETAVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE
     if ( ( IsJoined ( ) == NOTJOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
         pcf.printf("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
-        
         StateLoraWanProcess = LWPSTATE_IDLE ;
+       //@notereview resortir status too soon
     }        
         
     switch ( StateLoraWanProcess ) {
@@ -75,7 +75,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
                     break ;
                 
                 default :
-                     break;
+                    break;
             }
             break;
     /************************************************************************************/
@@ -108,7 +108,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
         case LWPSTATE_RX2:
                             
             if ( GetRadioState( ) == RADIOSTATE_IDLE ) {
-                 if ( GetRadioIrqFlag ( ) == RECEIVEPACKETIRQFLAG) {
+                if ( GetRadioIrqFlag ( ) == RECEIVEPACKETIRQFLAG) {
                     pcf.printf( "\n" );
                     pcf.printf( "  **************************\n " );
                     pcf.printf( " * Receive a downlink RX2 *\n " );
@@ -145,6 +145,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
     /*                              STATE UPDATE MAC                                    */
     /************************************************************************************/
         case LWPSTATE_UPDATEMAC:
+       //@notereview pensez a detacher propre en cas d'erreur et destructeur 
             DetachRadioIsr ( );
             packet.Phy.StateRadioProcess = RADIOSTATE_IDLE;  
             pcf.printf( "\n" );
@@ -174,9 +175,6 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
     /*                              STATE TXWAIT MAC                                    */
     /************************************************************************************/
         case LWPSTATE_TXWAIT:
-//            pcf.printf( " **************************\n " );
-//            pcf.printf( " *       TXWAIT MAC       *\n " );
-//            pcf.printf( " **************************\n " );
             pcf.printf(".");
             if ( RtcGetTimeSecond( ) > RtcTargetTimer) {
                 StateLoraWanProcess = LWPSTATE_SEND; //@note the frame have already been prepare in Upadate Mac Layer
@@ -202,12 +200,10 @@ template <class T>
 eLoraWan_Process_States LoraWanObjet <T> ::Join ( void ) {
     packet.Phy.JoinedStatus = NOTJOINED;
     packet.MacNbTransCpt = packet.MacNbTrans = 1;
-    packet.RegionSetDataRateDistribution( JOIN_DR_DISTRIBUTION ); // @when joined don't forget to set datrate distribution for send 
+    packet.RegionSetDataRateDistribution( JOIN_DR_DISTRIBUTION ); 
     packet.RegionGiveNextDataRate ( );
     packet.BuildJoinLoraFrame( );
-    packet.MacRx1Delay = packet.JOIN_ACCEPT_DELAY1; // to be set in default setting regions
-    //@note should be done in region constructor packet.MacRx2Sf = 12;
-    
+    packet.MacRx1Delay = packet.JOIN_ACCEPT_DELAY1;
     StateLoraWanProcess = LWPSTATE_SEND;
     return( StateLoraWanProcess );
 };
@@ -235,14 +231,14 @@ void LoraWanObjet <T> ::NewJoin ( void ) {
 /**************************************************/
 template <class T> 
 eLoraWan_Process_States LoraWanObjet <T> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint16_t sizeIn, uint8_t PacketType ) {
-    //@note implement MAX TX LENGHT
     eStatusLoRaWan status;
     if ( StateLoraWanProcess != LWPSTATE_IDLE ) {
         DEBUG_MSG( " ERROR : LP STATE NOT EQUAL TO IDLE \n" );
         return ( LWPSTATE_ERROR );
     }
+   //@notereview mettre partout
     // check max payload length 
-    packet.RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region dependant)
+    packet.RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region )
     status = packet.RegionMaxPayloadSize ( sizeIn );
     if ( status == ERRORLORAWAN ) {
         DEBUG_MSG( " ERROR : PAYLOAD SIZE TOO HIGH \n" );
@@ -292,7 +288,7 @@ void LoraWanObjet <T> ::SetDataRateStrategy( eDataRateStrategy adrModeSelect ) {
 /**************************************************/
 template <class T> 
 uint32_t LoraWanObjet <T> ::GetDevAddr ( void ) {
-     return(packet.DevAddr);
+    return(packet.DevAddr);
 }
 
 /**************************************************/
@@ -300,7 +296,7 @@ uint32_t LoraWanObjet <T> ::GetDevAddr ( void ) {
 /**************************************************/
 template <class T>
 uint8_t LoraWanObjet <T> ::GetNextPower ( void ) {
-     return(packet.MacTxPower);
+    return(packet.MacTxPower);
 }
 
 /**************************************************/
@@ -308,7 +304,7 @@ uint8_t LoraWanObjet <T> ::GetNextPower ( void ) {
 /**************************************************/
 template <class T> 
 eLoraWan_Process_States LoraWanObjet <T> ::GetLorawanProcessState ( void ) {
-     return(StateLoraWanProcess);
+    return(StateLoraWanProcess);
 }
  
 /**************************************************/
@@ -329,7 +325,7 @@ void LoraWanObjet <T> ::RestoreContext ( void ) {
 /**************************************************/
 template <class T>
 uint32_t LoraWanObjet <T> ::GetNextMaxPayloadLength ( void ) {// error return during tx send to be replace by get datarate?
-     return(0);//@NOTE NOT YET IMPLEMENTED
+    return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 
@@ -338,7 +334,7 @@ uint32_t LoraWanObjet <T> ::GetNextMaxPayloadLength ( void ) {// error return du
 /**************************************************/
 template <class T> 
 uint8_t LoraWanObjet <T> ::GetNextDataRate ( void ) { // note return datareate in case of adr
-     return(0);//@NOTE NOT YET IMPLEMENTED
+    return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 
@@ -348,11 +344,11 @@ uint8_t LoraWanObjet <T> ::GetNextDataRate ( void ) { // note return datareate i
 template <class T> 
 void LoraWanObjet <T> ::CopyUserPayload( const uint8_t* dataIn, const uint16_t sizeIn ) {
     memcpy( &packet.Phy.TxPhyPayload[FHDROFFSET], dataIn, sizeIn );
- };
+};
  
 template <class T> 
 uint8_t LoraWanObjet <T> ::GetStateTimer(void) {
-     return (packet.StateTimer);
+    return (packet.StateTimer);
 }
 
 template <class T> 

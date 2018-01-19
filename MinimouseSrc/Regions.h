@@ -45,6 +45,7 @@ public:
     static const int      JOIN_ACCEPT_DELAY2 = 6 ; // define in seconds
     static const int      RECEIVE_DELAY1     = 1 ; // define in seconds
     static const int      RECEIVE_DELAY2     = 2 ; // define in seconds
+    static const int      TX_POWER           = 14 ; // define in db
     static const int      ADR_ACK_LIMIT      = 64 ;
     static const int      ADR_ACK_DELAY      = 32 ;
     static const int      ACK_TIMEOUT        = 2 ;// +/- 1 s (random delay between 1 and 3 seconds)

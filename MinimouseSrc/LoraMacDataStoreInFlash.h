@@ -25,7 +25,7 @@ struct sBackUpFlash
     /*******************************************/
     uint8_t      MacTxDataRate;
     uint8_t      MacTxPower;
-    uint16_t     MacChMask;
+    uint16_t     MacChMask; //@notereview remove
     uint8_t      MacNbTrans; 
     /********************************************/
     /*     Update by TxParamaSetupRequest       */
@@ -40,7 +40,7 @@ struct sBackUpFlash
     uint8_t      MacMinDataRateChannel [16];
     uint8_t      MacMaxDataRateChannel [16];
     uint8_t      MacChannelIndexEnabled [16];
-    uint16_t     MacChannelMask;
+    uint16_t     MacChannelMask; //@notereview supprimer
     /********************************************/
     /*   Update by RXTimingSetupReq command     */
     /********************************************/
@@ -48,7 +48,7 @@ struct sBackUpFlash
     /********************************************/
     /*   Other Data To store                    */
     /********************************************/
-    uint16_t     FcntUp;
+    uint16_t     FcntUp;   //@note ERROR should BE 32 BITS and check error in case wrap 
     uint32_t     FcntDwn;
     uint32_t     DevAddr;
     uint8_t      nwkSKey [16];

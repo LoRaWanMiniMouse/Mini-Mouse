@@ -45,7 +45,7 @@ int main( ) {
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
     Lp.RestoreContext ( );
-    Lp.NewJoin( );
+    //Lp.NewJoin( );
     
 //@note join procedure, rajouter rejoin apres in adr rajouter fonction rejoin, protected lp.
     while(1) {
@@ -60,9 +60,12 @@ int main( ) {
         led = 1;
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            wait_ms( 100 );
+            wait_ms( 100 ); //@notereview goto sleep
         }
-        if ( AvailableRxPacket == LORARXPACKETAVAILABLE ) {
+        //@notereviewcase rror 
+        //@notereviewpacket status fatal error 
+        //@notereviewlow power mode mesuer
+        if ( AvailableRxPacket == LORARXPACKETAVAILABLE ) { //@notereview changer le noms get payload applicative
             Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
             pcf.printf("Receive an Applicative Downlink \n DATA[%d] = [ ",UserRxPayloadSize);
             for ( i = 0 ; i < UserRxPayloadSize ; i++){
@@ -72,7 +75,7 @@ int main( ) {
         }
         led = 0;
         for (int j = 0 ; j < 1; j ++) {
-        wait_s( 6 );
+        wait_s( 6 ); //@notereviewgoto deep sleep
         }
 
     }

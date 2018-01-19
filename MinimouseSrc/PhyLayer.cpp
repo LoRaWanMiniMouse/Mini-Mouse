@@ -93,13 +93,12 @@ void RadioContainer::IsrRadio( void ) {
 /************************************************************************************************/
  //@note Partionning Public/private not yet finalized
  
-void RadioContainer::SetTxConfig( void ) {
+
+void RadioContainer::Send( ) { //@note could/should be merge with tx config
     StateRadioProcess = RADIOSTATE_TXON;
     Radio.SetChannel( TxFrequency );
     Radio.Write( REG_LR_SYNCWORD, LORA_MAC_SYNCWORD );
     Radio.SetTxConfig( MODEM_LORA, TxPower, 0, TxBw, TxSf, 1, 8, false, true, 0, 0, false, 10e3 );
-};
-void RadioContainer::Send( ) { //@note could/should be merge with tx config
     Radio.Send( TxPhyPayload, TxPayloadSize );
 };
 
@@ -116,7 +115,24 @@ int RadioContainer::GetRadioState( void ) {
 void RadioContainer::RadioContainerInit( void ) {
     Radio.Write( REG_LR_SYNCWORD, LORA_MAC_SYNCWORD );
     Radio.Sleep( );
-}
+};
+
+
+void RadioContainer::SetTxFrequency ( uint32_t TxFrequency)
+{
+    TxFrequency = TxFrequency;
+};
+void RadioContainer::SetTxPower ( uint8_t TxPower )
+{
+    TxPower = TxPower;
+};
+
+void RadioContainer::SetTxSf ( uint8_t TxSf ){
+    TxSf = TxSf;
+};
+void RadioContainer::SetTxBw ( uint8_t TxBw ){
+   TxBw = TxBw;
+};
 
 /************************************************************************************************/
 /*                      Private  Methods                                                         */

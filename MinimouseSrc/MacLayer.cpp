@@ -85,12 +85,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioAndSend
 
     RegionGiveNextChannel ( );//@note have to be completed
     Phy.DevAddrIsr    = DevAddr ;  //@note copy of the mac devaddr in order to filter it in the radio isr routine.
-    Phy.SetTxFrequency   ( MacTxFrequencyCurrent ); 
-    Phy.SetTxPower       ( MacTxPower );
-    Phy.SetTxSf          ( MacTxSfCurrent );
-    Phy.SetTxBw          ( MacTxBwCurrent );
-    Phy.TxPayloadSize  =  MacPayloadSize ;
-    Phy.Send( );
+    Phy.Send( MacTxFrequencyCurrent, MacTxPower, MacTxSfCurrent, MacTxBwCurrent, MacPayloadSize);
     AdrAckCnt ++ ; // increment adr counter each uplmink frame;
 };
 /************************************************************************************************************************************/
@@ -101,11 +96,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioAndSend
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioForRx1 ( void ) {
     RegionSetRxConfig ( RX1 );
-    Phy.RxFrequency   = Phy.TxFrequency;
-    Phy.RxSf          = MacRx1SfCurrent ;
-    Phy.RxBw          = MacRx1BwCurrent ;
-    DEBUG_PRINTF ( " RxFrequency = %d, RxSf = %d , RxBw = %d \n", Phy.RxFrequency, Phy.RxSf,Phy.RxBw ) ; 
-    Phy.SetRxConfig( );
+    Phy.SetRxConfig(Phy.GetTxFrequency( ), MacRx1SfCurrent, MacRx1BwCurrent );
 };
 /************************************************************************************************************************************/
 /*                                              ConfigureRadioForRx2 +  ConfigureTimerForRx                                         */
@@ -115,11 +106,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioForRx1 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioForRx2 ( void ) {
     RegionSetRxConfig ( RX2 );
-    Phy.RxFrequency   = MacRx2Frequency;
-    Phy.RxSf          = MacRx2SfCurrent;
-    Phy.RxBw          = MacRx2BwCurrent;
-    DEBUG_PRINTF ( " RxFrequency = %d, RxSf = %d , RxBw = %d \n", Phy.RxFrequency, Phy.RxSf,Phy.RxBw ) ;
-    Phy.SetRxConfig( );
+    Phy.SetRxConfig( MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent );
 };
 
 
@@ -629,7 +616,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateJoinProcedure (
 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildJoinLoraFrame( void ) {
-    DevNonce = randr( 0, 65535 )+10;
+    DevNonce = randr( 0, 65535 )+10000;
     MType = JOINREQUEST ;
     SetMacHeader ( );
     for (int i = 0; i <8; i++){ 

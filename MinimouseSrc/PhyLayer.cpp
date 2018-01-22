@@ -94,18 +94,29 @@ void RadioContainer::IsrRadio( void ) {
  //@note Partionning Public/private not yet finalized
  
 
-void RadioContainer::Send( ) { //@note could/should be merge with tx config
+void RadioContainer::Send(uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, uint32_t TxBwMac, uint16_t TxPayloadSizeMac ) { //@note could/should be merge with tx config
+    TxFrequency   = TxFrequencyMac; 
+    TxPower       = TxPowerMac;
+    TxSf          = TxSfMac;
+    TxBw          = TxBwMac;
+    TxPayloadSize    = TxPayloadSizeMac ;
     StateRadioProcess = RADIOSTATE_TXON;
     Radio.SetChannel( TxFrequency );
     Radio.Write( REG_LR_SYNCWORD, LORA_MAC_SYNCWORD );
+    DEBUG_PRINTF ( " RxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
     Radio.SetTxConfig( MODEM_LORA, TxPower, 0, TxBw, TxSf, 1, 8, false, true, 0, 0, false, 10e3 );
+    wait_ms(1);
     Radio.Send( TxPhyPayload, TxPayloadSize );
 };
 
-void RadioContainer::SetRxConfig( void ) {
-    Radio.SetChannel( RxFrequency );
+void RadioContainer::SetRxConfig( uint32_t RxFrequencyMac, uint8_t RxSfMac, uint32_t RxBwMac ) {
+    RxFrequency = RxFrequencyMac;
+    RxBw        = RxBwMac;
+    RxSf        = RxSfMac;
+    Radio.SetChannel( RxFrequencyMac );
     int nbSymbtimeout =  18;// @ note check the real signification of this timeout 
     Radio.SetRxConfig( MODEM_LORA, RxBw, RxSf, 1, 0, 8, nbSymbtimeout, false, 0, false, 0, 0, true, false );//@note rxtimeout 400ms!!!!
+    DEBUG_PRINTF ( " RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw ) ; 
 }
 
 int RadioContainer::GetRadioState( void ) {
@@ -118,21 +129,20 @@ void RadioContainer::RadioContainerInit( void ) {
 };
 
 
-void RadioContainer::SetTxFrequency ( uint32_t TxFrequency)
-{
-    TxFrequency = TxFrequency;
+uint32_t RadioContainer::GetTxFrequency ( void ) {
+    return( TxFrequency );
 };
-void RadioContainer::SetTxPower ( uint8_t TxPower )
-{
-    TxPower = TxPower;
-};
+//void RadioContainer::SetTxPower ( uint8_t TxPower )
+//{
+//    TxPower = TxPower;
+//};
 
-void RadioContainer::SetTxSf ( uint8_t TxSf ){
-    TxSf = TxSf;
-};
-void RadioContainer::SetTxBw ( uint8_t TxBw ){
-   TxBw = TxBw;
-};
+//void RadioContainer::SetTxSf ( uint8_t TxSf ){
+//    TxSf = TxSf;
+//};
+//void RadioContainer::SetTxBw ( uint8_t TxBw ){
+//   TxBw = TxBw;
+//};
 
 /************************************************************************************************/
 /*                      Private  Methods                                                         */

@@ -729,27 +729,27 @@ template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::AcceptFcntDwn ( uint16
 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SaveInFlash ( ) {
-    BackUpFlash.MacTxDataRate           = MacTxDataRate;
-    BackUpFlash.MacTxPower              = MacTxPower;
-    BackUpFlash.MacChMask               = MacChMask;
-    BackUpFlash.MacNbTrans   = MacNbTrans; 
-    BackUpFlash.MacRx2Frequency         = MacRx2Frequency; 
-    BackUpFlash.MacRx2DataRate          = MacRx2DataRate;
-    BackUpFlash.MacRx1DataRateOffset    = MacRx1DataRateOffset;
-    BackUpFlash.MacRx1Delay             = MacRx1Delay;
-    BackUpFlash.FcntUp                  = FcntUp;
-    BackUpFlash.FcntDwn                 = FcntDwn;
-    BackUpFlash.DevAddr                 = DevAddr;
-    BackUpFlash.JoinedStatus            = Phy.JoinedStatus;
-    for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
-        BackUpFlash.MacTxFrequency[i]         = MacTxFrequency[i];
-        BackUpFlash.MacMaxDataRateChannel[i]  = MacMaxDataRateChannel[i];
-        BackUpFlash.MacMinDataRateChannel[i]  = MacMinDataRateChannel[i];
-        BackUpFlash.MacChannelIndexEnabled[i] = MacChannelIndexEnabled[i];
-    }
-    memcpy( &BackUpFlash.nwkSKey[0], &nwkSKey[0], 16);
-    memcpy( &BackUpFlash.appSKey[0], &appSKey[0], 16);
-    gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, sizeof(sBackUpFlash) );    
+//    BackUpFlash.MacTxDataRate           = MacTxDataRate;
+//    BackUpFlash.MacTxPower              = MacTxPower;
+//    BackUpFlash.MacChMask               = MacChMask;
+//    BackUpFlash.MacNbTrans   = MacNbTrans; 
+//    BackUpFlash.MacRx2Frequency         = MacRx2Frequency; 
+//    BackUpFlash.MacRx2DataRate          = MacRx2DataRate;
+//    BackUpFlash.MacRx1DataRateOffset    = MacRx1DataRateOffset;
+//    BackUpFlash.MacRx1Delay             = MacRx1Delay;
+//    BackUpFlash.FcntUp                  = FcntUp;
+//    BackUpFlash.FcntDwn                 = FcntDwn;
+//    BackUpFlash.DevAddr                 = DevAddr;
+//    BackUpFlash.JoinedStatus            = Phy.JoinedStatus;
+//    for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+//        BackUpFlash.MacTxFrequency[i]         = MacTxFrequency[i];
+//        BackUpFlash.MacMaxDataRateChannel[i]  = MacMaxDataRateChannel[i];
+//        BackUpFlash.MacMinDataRateChannel[i]  = MacMinDataRateChannel[i];
+//        BackUpFlash.MacChannelIndexEnabled[i] = MacChannelIndexEnabled[i];
+//    }
+//    memcpy( &BackUpFlash.nwkSKey[0], &nwkSKey[0], 16);
+//    memcpy( &BackUpFlash.appSKey[0], &appSKey[0], 16);
+//    gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, sizeof(sBackUpFlash) );    
 }
 
 

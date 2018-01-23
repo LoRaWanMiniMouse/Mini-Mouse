@@ -50,16 +50,15 @@ SX1276MB1xAS::SX1276MB1xAS( RadioEvents_t *events,
 }
 
 
-#define LORA_DIO5       PA_4
+#define LORA_DIO5       D9
 #define LORA_ANT_RX     PA_1
-#define LORA_ANT_TX     PC_2
-#define LORA_ANT_BOOST  PC_1
+#define LORA_ANT_BOOST  D9
 
 SX1276MB1xAS::SX1276MB1xAS( RadioEvents_t *events ) 
                         
                         :   SX1276( events, LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ,LORA_CS, LORA_RESET, LORA_DIO5, LORA_DIO5, LORA_DIO5, LORA_DIO5, LORA_DIO5, LORA_DIO5 ),//SX1276( events, D11, D12, D13, D10, A0, D8, D9, D9, D9, D9, D9 )
-                            antSwitch( LORA_ANT_TX ), 
-                            fake( LORA_ANT_BOOST )            
+                            antSwitch( PC_1 ), 
+                            fake( A3 )            
 {
     this->RadioEvents = events;
 
@@ -103,6 +102,7 @@ uint8_t SX1276MB1xAS::DetectBoardType( void )
         antSwitch.output( );
         wait_ms( 1 );
     }*/
+    boardConnected = SX1276MB1MAS;
     return ( boardConnected );
 }
 
@@ -203,22 +203,9 @@ void SX1276MB1xAS::AntSwDeInit( void )
 
 void SX1276MB1xAS::SetAntSw( uint8_t rxTx )
 {
-    if( this->rxTx == rxTx )
-    {
-        //no need to go further
-        return;
-    }
 
-    this->rxTx = rxTx;
+        antSwitch = rxTx;
 
-    if( rxTx != 0 )
-    {
-      //  antSwitch = 1;
-    }
-    else
-    {
-      //  antSwitch = 0;
-    }
 }
 
 bool SX1276MB1xAS::CheckRfFrequency( uint32_t frequency )

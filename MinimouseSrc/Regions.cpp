@@ -238,8 +238,8 @@ void LoraRegionsEU::RegionSetDataRateDistribution( uint8_t adrMode ) {
         case MOBILE_LOWPER_DR_DISTRIBUTION:
             memset(DistriDataRateInit,0 , 7); //in this example 8/13 dr5 4/13 dr4 and 1/13 dr0
             DistriDataRateInit[5]    = 8; 
-            DistriDataRateInit[4]    = 4; 
-            DistriDataRateInit[0]    = 1; 
+            DistriDataRateInit[4]    = 0; 
+            DistriDataRateInit[0]    = 0; 
             break;
         case JOIN_DR_DISTRIBUTION:
             memset(DistriDataRateInit,0 , 7); //in this example 1/3 dr5 1/3 dr4 and 1/3 dr0

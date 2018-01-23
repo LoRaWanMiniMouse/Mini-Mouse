@@ -381,6 +381,7 @@ void SX1276::SetRxConfig( RadioModems_t modem, uint32_t bandwidth,
         }
         break;
     }
+    
 }
 
 void SX1276::SetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev, 
@@ -656,6 +657,7 @@ double SX1276::TimeOnAir( RadioModems_t modem, uint8_t pktLen )
 
 void SX1276::Send( uint8_t *buffer, uint8_t size )
 {
+    SetAntSw( 0 );
     uint32_t txTimeout = 0;
     // DEBUG_PRINT(("Send func enter \n"));
      //dio0.rise(this, &SX1276::OnDio0Irq);
@@ -749,6 +751,7 @@ void SX1276::Standby( void )
 
 void SX1276::Rx( uint32_t timeout )
 {
+
     bool rxContinuous = false;
     
     switch( this->settings.Modem )
@@ -915,7 +918,7 @@ void SX1276::Rx( uint32_t timeout )
             
         }
     }
-     
+            SetAntSw( 0); 
        
 }
 
@@ -991,6 +994,7 @@ void SX1276::Tx( uint32_t timeout )
     this->settings.State = RF_TX_RUNNING;
     txTimeoutTimer.attach_us( this, &SX1276::OnTimeoutIrq, timeout );
     SetOpMode( RF_OPMODE_TRANSMITTER );
+            SetAntSw( 1 );
 }
 
 void SX1276::StartCad( void )

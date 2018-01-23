@@ -41,17 +41,17 @@ extern Serial pcf;
 /********************************************************************************/
 /*                         PINOUT Platform dependant                            */
 /********************************************************************************/
-                    // MURATA   //    sx1276 MBAS
-#define LORA_SPI_MOSI   PA_7    //      D11
-#define LORA_SPI_MISO   PA_6    //      D12
-#define LORA_SPI_SCLK   PB_3    //      D13
-#define LORA_CS         PA_15   //      D10
-#define LORA_RESET      PC_0    //      A0
-#define TX_RX_IT        PB_4    //      D2
-#define RX_TIMEOUT_IT   PB_1    //      D3
-#define SERIAL_TX       PA_9    //      USBTX
-#define SERIAL_RX       PA_10   //      USBRX
 
+                  //   sx1276 MBAS
+#define LORA_SPI_MOSI       D11
+#define LORA_SPI_MISO       D12
+#define LORA_SPI_SCLK       D13
+#define LORA_CS             D10
+#define LORA_RESET          A0
+#define TX_RX_IT            D2
+#define RX_TIMEOUT_IT       D3
+#define SERIAL_TX           USBTX
+#define SERIAL_RX           USBRX
 
 /********************************************************************************/
 /*                         LORA KEYS USER Specific                              */
@@ -65,18 +65,14 @@ static uint8_t LoRaMacNwkSKey[] =
 static uint8_t LoRaMacAppSKey[] =
 { 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
 
-
 static uint8_t LoRaMacAppKey[] =
-{ 0xBB, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-//{ 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+{ 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
 static uint8_t AppEui[] = 
 { 0x70, 0xB3, 0xD5, 0x7E, 0xF0, 0x00, 0x36, 0x12 };
-//{ 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0x11 };
 
 static uint8_t DevEui[] = 
 { 0xAA, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0xAA };    
-//{ 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x01 };    
-//{ 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0xBB };
+
 static uint32_t LoRaDevAddr = 0x26011918;
 
 

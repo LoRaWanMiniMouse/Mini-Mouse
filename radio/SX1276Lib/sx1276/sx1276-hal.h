@@ -49,7 +49,7 @@ protected:
     /*!
      * Antenna switch GPIO pins objects
      */
-    DigitalInOut antSwitch;
+    DigitalOut antSwitch;
     
     DigitalIn fake;
     

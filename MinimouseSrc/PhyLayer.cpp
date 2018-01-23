@@ -36,7 +36,7 @@ RadioContainer::RadioContainer( PinName interrupt )
     TxFrequency = 868100000;
     TxPower = 14;
     TxSf = 7;
-    JoinedStatus = NOTJOINED ;
+    JoinedStatus = JOINED ;
 }; 
 RadioContainer::~RadioContainer( ) {
 };
@@ -114,7 +114,7 @@ void RadioContainer::SetRxConfig( uint32_t RxFrequencyMac, uint8_t RxSfMac, uint
     RxBw        = RxBwMac;
     RxSf        = RxSfMac;
     Radio.SetChannel( RxFrequencyMac );
-    int nbSymbtimeout =  18;// @ note check the real signification of this timeout 
+    int nbSymbtimeout =  28;// @ note check the real signification of this timeout 
     Radio.SetRxConfig( MODEM_LORA, RxBw, RxSf, 1, 0, 8, nbSymbtimeout, false, 0, false, 0, 0, true, false );//@note rxtimeout 400ms!!!!
     DEBUG_PRINTF ( " RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw ) ; 
 }

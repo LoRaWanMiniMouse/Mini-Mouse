@@ -14,7 +14,7 @@ struct sBackUpFlash BackUpFlash;
 //static LoraWanObjet<LoraRegionsEU> Lp( TX_RX_IT );
 //static LoraWanObjet Lp( TX_RX_IT );
 //@note set to board definition
-//#define CHECKFCNTDOWN 0
+#define CHECKFCNTDOWN 1
 int UserPayloadSize = 14;
 uint8_t UserRxPayloadSize;
 uint8_t UserRxPayload [255];
@@ -23,7 +23,8 @@ uint8_t UserFport = 3;
 uint8_t UserRxFport ;
 uint8_t MsgType ;
 uint16_t FcntDwnCertif = 0;
-int  Certification ( void ){
+uint32_t MsgTypePrevious = UNCONFDATAUP ;
+int  Certification ( bool NewCommand ){
     pcf.printf("Receive Frame on port 224\n");
     uint32_t temp ;
     int i ;
@@ -33,47 +34,56 @@ int  Certification ( void ){
     UserPayload[1]  = FcntDwnCertif & 0xFF;
     MsgType = UNCONFDATAUP ;
     FcntDwnCertif++;
-    switch ( UserRxPayload[0] ) {
-        case 0 :  // end of test
-            UserFport       = 3;
-            UserPayloadSize = 14;
-            for (int i = 0; i < 14 ; i ++) {
-                UserPayload[i]  = i;
-            }
-            break;
-        case 1 :
-            temp =  ( UserRxPayload[0] << 3 ) + ( UserRxPayload[1] << 2 ) + ( UserRxPayload[2] << 1 ) + ( UserRxPayload[3] );
-            if ( temp == 0x01010101) {
-                 FcntDwnCertif   = 0;
-            }
-            break;            
-        case 2 :  // Confirmed Uplink
-            MsgType = CONFDATAUP ; 
-            break;
-        case 3 :  // UnConfirmed Uplink
-            MsgType = UNCONFDATAUP ; 
-            break;
-        case 4 :  //echo payload
-            UserPayloadSize = UserRxPayloadSize;
-            UserPayload[0] = 4;
-            for ( i = 1 ; i < UserPayloadSize; i++ ) {
-                UserPayload[i]  = UserRxPayload [i] + 1;
-            }
-            break;
-        case 5 :  // link check request 
-          //Not yet implemented
-            break;
-        case 6 :  // link check request 
-           NVIC_SystemReset();
-           break;
-        default :
-            break;
+    if ( NewCommand == true) {
+        switch ( UserRxPayload[0] ) {
+            case 0 :  // end of test
+                UserFport       = 3;
+                UserPayloadSize = 14;
+                for (int i = 0; i < 14 ; i ++) {
+                    UserPayload[i]  = i;
+                }
+                break;
+            case 1 :
+                temp =  ( UserRxPayload[0] << 3 ) + ( UserRxPayload[1] << 2 ) + ( UserRxPayload[2] << 1 ) + ( UserRxPayload[3] );
+                if ( temp == 0x01010101) {
+                     FcntDwnCertif   = 0;
+                }
+                break;            
+            case 2 :  // Confirmed Uplink
+                MsgType = CONFDATAUP ; 
+                MsgTypePrevious = MsgType;
+                break;
+            case 3 :  // UnConfirmed Uplink
+                MsgType = UNCONFDATAUP ;
+                MsgTypePrevious = MsgType;            
+                break;
+            case 4 :  //echo payload
+                UserPayloadSize = UserRxPayloadSize;
+                UserPayload[0] = 4;
+                for ( i = 1 ; i < UserPayloadSize; i++ ) {
+                    UserPayload[i]  = UserRxPayload [i] + 1;
+                }
+                break;
+            case 5 :  // link check request 
+              //Not yet implemented
+                break;
+            case 6 :  // rejoin 
+               //NVIC_SystemReset();
+               break;
+            default :
+                break;
+        }
+    } else { // for the case of echo cmd
+         MsgType = MsgTypePrevious;
     }
+    return ( UserRxPayload[0] );
 }
 
 int main( ) {
     LoraWanObjet<LoraRegionsEU> Lp( TX_RX_IT );
     int i;
+    int StatusCertification = 0;
+    int StatusCertificationp = 0;
     my_rtc_init ( );
     pcf.baud( 115200 );
     
@@ -101,12 +111,14 @@ int main( ) {
 
     while(1) {
         pcf.printf("\n\n\n\n ");
+
         if ( Lp.IsJoined ( ) == JOINED ) {            
             pcf.printf("send payload \n");
             LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
         } else {
             LpState = Lp.Join( );
         }
+        
         
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
@@ -122,10 +134,17 @@ int main( ) {
             }
             pcf.printf("]\n");
             if ( UserRxFport == 224 ) {
-                Certification ( );
+               StatusCertification = Certification ( true );
+               if (StatusCertification == 6 ) {
+                   Lp.NewJoin( );
+               }
             } 
+        } else {
+            if ( StatusCertification > 0 ){
+                Certification ( false );
+            }
         }
-        wait_s( 5 ); 
 
+        wait_s( 5 ); 
     }
 }

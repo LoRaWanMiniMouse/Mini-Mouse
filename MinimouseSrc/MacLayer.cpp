@@ -37,8 +37,6 @@ template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::LoraWanContainer( PinName 
     FcntDwn       = 0;
     DevAddr       = LoRaDevAddr ;
     AdrAckCnt     = 0;
-    AdrAckLimit   = 5;
-    AdrAckDelay   = 1;
     AdrAckReq     = 0;
     MacNbTrans    = 1;
     IsFrameToSend = NOFRAME_TOSEND;
@@ -178,9 +176,11 @@ template <int NBCHANNEL> eRxPacketType LoraWanContainer<NBCHANNEL>::DecodeRxFram
             MacRxPayloadSize = ( RxEmptyPayload == 0 )? MacRxPayloadSize - FHDROFFSET - FoptsLength : 0;
             if ( RxEmptyPayload == 0 ) {
                 if ( FportRx == 0 ) {
-                    LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, nwkSKey, DevAddr, 1, FcntDwn, &MacNwkPayload[0] );
-                    MacNwkPayloadSize = MacRxPayloadSize;
-                    RxPacketType = NWKRXPACKET ;
+                    if (FoptsLength == 0) {
+                        LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, nwkSKey, DevAddr, 1, FcntDwn, &MacNwkPayload[0] );
+                        MacNwkPayloadSize = MacRxPayloadSize;
+                        RxPacketType = NWKRXPACKET ;
+                    }
                 } else {
                     LoRaMacPayloadDecrypt( &Phy.RxPhyPayload[FHDROFFSET + FoptsLength], MacRxPayloadSize, appSKey, DevAddr, 1, FcntDwn, &MacRxPayload[0] );
                     if ( FoptsLength != 0 ) {
@@ -192,6 +192,12 @@ template <int NBCHANNEL> eRxPacketType LoraWanContainer<NBCHANNEL>::DecodeRxFram
                         AvailableRxPacketForUser = LORARXPACKETAVAILABLE; 
                     }
                 }
+            } else {
+                if ( FoptsLength != 0 ) {
+                        memcpy ( MacNwkPayload, Fopts, FoptsLength);
+                        MacNwkPayloadSize = FoptsLength;
+                        RxPacketType = USERRX_FOPTSPACKET ;
+                    } 
             }
         }
     }
@@ -207,6 +213,8 @@ template <int NBCHANNEL> eRxPacketType LoraWanContainer<NBCHANNEL>::DecodeRxFram
 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateMacLayer ( void ) {
+    AdrAckLimit = RegionGetAdrAckLimit ( );
+    AdrAckDelay = RegionGetAdrAckDelay ( );
     if  ( Phy.JoinedStatus == NOTJOINED ) {
         RetryJoinCpt ++ ; // reset when join ok
   //@notereview      safe join time sf7 rojoutaer case 10000
@@ -306,11 +314,12 @@ template <int NBCHANNEL> eStatusLoRaWan LoraWanContainer<NBCHANNEL>::ParseManage
             case RXTIMING_SETUP_REQ :
                 RXTimingSetupParser( ); 
                 break;
-
-//@notereview                defaultlgtlkrtmgkr
+            default: 
+                DEBUG_MSG( " Illegal state\n " );
+                break;
         }
     }
-    PrintMacContext ( );
+    //PrintMacContext ( );
     return ( status ); 
 }
 
@@ -508,7 +517,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::DevStatusParser( void
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::NewChannelParser( void ) {
     int i;
-    DEBUG_PRINTF (" %x %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + i], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4], MacNwkPayload[NwkPayloadIndex + 5]);
+    DEBUG_PRINTF (" %x %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4], MacNwkPayload[NwkPayloadIndex + 5]);
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x3 ; // initilised for ans answer ok 
     uint8_t ChannelIndexTemp;

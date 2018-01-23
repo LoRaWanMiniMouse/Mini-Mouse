@@ -327,6 +327,13 @@ void  LoraRegionsEU::RegionGiveNextChannel( void ) {
     }
 
 };
+
+uint8_t  LoraRegionsEU::RegionGetAdrAckLimit( void ) {
+    return ( ADR_ACK_LIMIT );
+}
+uint8_t  LoraRegionsEU::RegionGetAdrAckDelay( void ) {
+    return ( ADR_ACK_DELAY );
+}
 /***********************************************************************************************/
 /*                      Private  Methods                                                        */
 /***********************************************************************************************/

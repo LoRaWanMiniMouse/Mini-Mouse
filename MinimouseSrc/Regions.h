@@ -67,6 +67,8 @@ protected :
     virtual eStatusLoRaWan RegionIsValidMacFrequency    ( uint32_t Frequency);
     virtual eStatusLoRaWan RegionIsValidTxPower         ( uint8_t Power );
     virtual eStatusLoRaWan RegionIsValidChannelIndex    ( uint8_t ChannelIndex);
+    virtual uint8_t RegionGetAdrAckLimit                ( void );
+    virtual uint8_t RegionGetAdrAckDelay                ( void );
 private :
 
     uint8_t DistriDataRateInit[7];

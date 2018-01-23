@@ -166,6 +166,9 @@ public:
     virtual eStatusLoRaWan    RegionIsValidTxPower         ( uint8_t Power )            = 0;
     virtual eStatusLoRaWan    RegionIsValidChannelIndex    ( uint8_t ChannelIndex)      = 0;
     
+    virtual uint8_t RegionGetAdrAckLimit                   ( void )                     = 0;
+    virtual uint8_t RegionGetAdrAckDelay                   ( void )                     = 0;
+    
 /**************************************************************/
 /*      Protected Methods and variables                       */
 /**************************************************************/

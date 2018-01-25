@@ -28,13 +28,13 @@ public:
     ~RadioContainer( );
     SX1276MB1xAS Radio;
     void RadioContainerInit( void );
-    void Send              (uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, uint32_t TxBwMac, uint16_t TxPayloadSizeMac );
+    void Send              (eModulationType MacTxModulationCurrent, uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, uint32_t TxBwMac, uint16_t TxPayloadSizeMac );
     void Receive           ( void );
     void IsrRadio          ( void ); // call back it tx done
     void AttachIsr         ( void ) ;
     void DetachIsr         ( void ); 
     int GetRadioState      ( void );
-    void SetRxConfig       ( uint32_t RxFrequencyMac, uint8_t RxSfMac, uint32_t RxBwMac );
+    void SetRxConfig       (eModulationType RxModulation, uint32_t RxFrequencyMac, uint8_t RxSfMac, uint32_t RxBwMac );
     uint32_t GetTxFrequency ( void );
     uint8_t    TxPhyPayload[MAXTXPAYLOADSIZE]; // @note should be private to be safer , in this case have to create a set function for send in lorawan process
     uint8_t    RxPhyPayload[MAXTXPAYLOADSIZE]; 

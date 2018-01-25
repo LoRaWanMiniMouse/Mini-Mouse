@@ -216,7 +216,7 @@ typedef enum {
 }eValidChannel;
 /*User Confi for Adr Mode select*/
 typedef enum eDataRateStrategy{
-    STATICADRMODE,
+    STATIC_ADR_MODE,
     MOBILE_LONGRANGE_DR_DISTRIBUTION,
     MOBILE_LOWPER_DR_DISTRIBUTION,
     JOIN_DR_DISTRIBUTION,
@@ -261,6 +261,11 @@ enum {
     USERACK_TOSEND,
     USRFRAME_TORETRANSMIT,
 };
+
+typedef enum { 
+    LORA,
+    FSK
+}eModulationType;
 
 /*************************/
 /*    API CRYPTO         */

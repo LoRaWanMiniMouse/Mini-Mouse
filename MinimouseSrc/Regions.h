@@ -37,7 +37,7 @@ public:
     LoraRegionsEU (  PinName interrupt ); 
     eStatusLoRaWan RegionMaxPayloadSize ( uint16_t sizeIn ) ;
     void RegionSetDataRateDistribution    ( uint8_t adrMode );
-    void RegionGiveNextDataRate         ( void );
+    virtual void RegionGiveNextDataRate           ( void );
 /*********************************************************************/
 /*            Define Regional parameter                              */
 /*********************************************************************/

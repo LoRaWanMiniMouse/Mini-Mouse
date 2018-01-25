@@ -25,6 +25,10 @@ Maintainer        : Fabien Holin ( SEMTECH)
 LoraRegionsEU :: LoraRegionsEU (  PinName interrupt ) : LoraWanContainer<16>  (interrupt){
     
     memset( MacChannelIndexEnabled, CHANNEL_DISABLED, NUMBER_OF_CHANNEL );
+    memset( MacMinDataRateChannel, 0, NUMBER_OF_CHANNEL );
+    for (int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+        MacTxFrequency [i] = 0;
+    }
     MacChannelIndexEnabled [0] = CHANNEL_ENABLED;
     MacChannelIndexEnabled [1] = CHANNEL_ENABLED;
     MacChannelIndexEnabled [2] = CHANNEL_ENABLED;
@@ -56,19 +60,14 @@ LoraRegionsEU :: LoraRegionsEU (  PinName interrupt ) : LoraWanContainer<16>  (i
 /*                  Region Tx Power  Configuration                  */
 /* Chapter 7.1.3 LoRaWan 1.0.1 specification                        */
 /*  TXPower    Configuration                                        */
-/*  0            20 dBm (if supported)                              */
-/*  1            14 dBm                                             */
-/*  2            11 dBm                                             */
-/*  3             8 dBm                                             */
-/*  4             5 dBm                                             */
-/*  5             2 dBm                                             */
-/*  6..15           RFU                                             */
+/* Max TX POwer is suppose = to 14                                  */
+/*                                                                  */
 /********************************************************************/
 
 void LoraRegionsEU::RegionSetPower ( uint8_t PowerCmd ) {
     //@note return error status ?
-    uint8_t PowerTab [ 6 ] = { 20, 14, 11, 8, 5, 2};
-    if  ( PowerCmd >=6 ) {
+    uint8_t PowerTab [ 8 ] = { TX_POWER, TX_POWER-2, TX_POWER-4, TX_POWER-6, TX_POWER-8, TX_POWER-10, TX_POWER-12, TX_POWER-14 };
+    if  ( PowerCmd > 7 ) {
             MacTxPower = 14 ;
             DEBUG_MSG ("INVALID POWER \n");
     } else {
@@ -113,6 +112,7 @@ eStatusChannel LoraRegionsEU::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint1
             }
             break;
         case 6 :
+            UnwrappedChannelMask = 0;
             for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i++) {
                 if ( MacTxFrequency[i] > 0 ) {
                     UnwrappedChannelMask = UnwrappedChannelMask ^ (1 << i ) ;
@@ -198,6 +198,9 @@ eStatusLoRaWan LoraRegionsEU::RegionIsAcceptableDataRate ( uint8_t DataRate ) {
 }
 eStatusLoRaWan LoraRegionsEU::RegionIsValidMacFrequency ( uint32_t Frequency) {
     eStatusLoRaWan status = OKLORAWAN;
+    if ( Frequency == 0) {
+        return ( status );
+    }
     if ( ( Frequency > FREQMAX ) || ( Frequency < FREQMIN ) ) {
         status = ERRORLORAWAN ;
         DEBUG_PRINTF ( "RECEIVE AN INVALID FREQUENCY = %d\n", Frequency);
@@ -206,7 +209,7 @@ eStatusLoRaWan LoraRegionsEU::RegionIsValidMacFrequency ( uint32_t Frequency) {
 }
 eStatusLoRaWan LoraRegionsEU::RegionIsValidTxPower ( uint8_t Power) {
     eStatusLoRaWan status = OKLORAWAN;
-    if ( ( Power > 5 ) ) {
+    if ( ( Power > 7 ) ) {
         status = ERRORLORAWAN ;
         DEBUG_PRINTF ( "RECEIVE AN INVALID Power Cmd = %d\n", Power);
     }
@@ -255,7 +258,7 @@ void LoraRegionsEU::RegionSetDataRateDistribution( uint8_t adrMode ) {
 }
 
 void LoraRegionsEU::RegionGiveNextDataRate( void ) {
-    if ( AdrModeSelect == STATICADRMODE ) {
+    if ( AdrModeSelect == STATIC_ADR_MODE ) {
         MacTxDataRate = MacTxDataRateAdr;
         AdrEnable = 1;
     } else {
@@ -339,6 +342,7 @@ uint8_t  LoraRegionsEU::RegionGetAdrAckDelay( void ) {
 /***********************************************************************************************/
 //@notereview function a commun
 void LoraRegionsEU :: TxDataRateToSfBw ( uint8_t dataRate ) {
+     eModulationType MacTxModulationCurrent = LORA ;
     if ( dataRate < 6 ){ 
         MacTxSfCurrent = 12 - dataRate ;
         MacTxBwCurrent = BW125 ;
@@ -346,7 +350,7 @@ void LoraRegionsEU :: TxDataRateToSfBw ( uint8_t dataRate ) {
         MacTxSfCurrent = 7;
         MacTxBwCurrent = BW250 ;}
     else if ( dataRate == 7 ) {
-        //@note tbd manage fsk case }
+        MacTxModulationCurrent = FSK ;
     }
     else {
         MacTxSfCurrent = 12 ;

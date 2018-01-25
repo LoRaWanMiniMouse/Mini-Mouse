@@ -24,16 +24,15 @@ uint8_t UserRxFport ;
 uint8_t MsgType ;
 uint16_t FcntDwnCertif = 0;
 uint32_t MsgTypePrevious = UNCONFDATAUP ;
+LoraWanObjet<LoraRegionsEU> Lp( TX_RX_IT ); // shouldn't be glabal just easier for certification application
 int  Certification ( bool NewCommand ){
-    pcf.printf("Receive Frame on port 224\n");
     uint32_t temp ;
     int i ;
     UserFport       = 224;
     UserPayloadSize = 2;
-    UserPayload[0]  = FcntDwnCertif >> 8;
-    UserPayload[1]  = FcntDwnCertif & 0xFF;
+
+    
     MsgType = UNCONFDATAUP ;
-    FcntDwnCertif++;
     if ( NewCommand == true) {
         switch ( UserRxPayload[0] ) {
             case 0 :  // end of test
@@ -44,18 +43,25 @@ int  Certification ( bool NewCommand ){
                 }
                 break;
             case 1 :
-                temp =  ( UserRxPayload[0] << 3 ) + ( UserRxPayload[1] << 2 ) + ( UserRxPayload[2] << 1 ) + ( UserRxPayload[3] );
+                temp =  ( UserRxPayload[0] << 24 ) + ( UserRxPayload[1] << 16 ) + ( UserRxPayload[2] << 8 ) + ( UserRxPayload[3] );
                 if ( temp == 0x01010101) {
+                     Lp.SetDataRateStrategy( STATIC_ADR_MODE );
                      FcntDwnCertif   = 0;
+                     UserPayload[0]  = FcntDwnCertif >> 8;
+                     UserPayload[1]  = FcntDwnCertif & 0xFF;
                 }
                 break;            
             case 2 :  // Confirmed Uplink
                 MsgType = CONFDATAUP ; 
                 MsgTypePrevious = MsgType;
+                UserPayload[0]  = FcntDwnCertif >> 8;
+                UserPayload[1]  = FcntDwnCertif & 0xFF;
                 break;
             case 3 :  // UnConfirmed Uplink
                 MsgType = UNCONFDATAUP ;
-                MsgTypePrevious = MsgType;            
+                MsgTypePrevious = MsgType;   
+                UserPayload[0]  = FcntDwnCertif >> 8;
+                UserPayload[1]  = FcntDwnCertif & 0xFF;            
                 break;
             case 4 :  //echo payload
                 UserPayloadSize = UserRxPayloadSize;
@@ -68,11 +74,12 @@ int  Certification ( bool NewCommand ){
               //Not yet implemented
                 break;
             case 6 :  // rejoin 
-               //NVIC_SystemReset();
+               Lp.NewJoin( );
                break;
             default :
                 break;
         }
+        FcntDwnCertif++;
     } else { // for the case of echo cmd
          MsgType = MsgTypePrevious;
     }
@@ -80,7 +87,6 @@ int  Certification ( bool NewCommand ){
 }
 
 int main( ) {
-    LoraWanObjet<LoraRegionsEU> Lp( TX_RX_IT );
     int i;
     int StatusCertification = 0;
     int StatusCertificationp = 0;
@@ -135,9 +141,6 @@ int main( ) {
             pcf.printf("]\n");
             if ( UserRxFport == 224 ) {
                StatusCertification = Certification ( true );
-               if (StatusCertification == 6 ) {
-                   Lp.NewJoin( );
-               }
             } 
         } else {
             if ( StatusCertification > 0 ){

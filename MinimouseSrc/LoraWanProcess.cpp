@@ -343,7 +343,7 @@ uint8_t LoraWanObjet <T> ::GetNextDataRate ( void ) { // note return datareate i
 /************************************************************************************************/
 template <class T> 
 void LoraWanObjet <T> ::CopyUserPayload( const uint8_t* dataIn, const uint16_t sizeIn ) {
-    memcpy( &packet.Phy.TxPhyPayload[FHDROFFSET], dataIn, sizeIn );
+    memcpy( &packet.Phy.TxPhyPayload[ FHDROFFSET + packet.FoptsTxLengthCurrent ], dataIn, sizeIn );
 };
  
 template <class T> 

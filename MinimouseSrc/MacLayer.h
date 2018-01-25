@@ -99,9 +99,12 @@ public:
     uint8_t    AckBitForTx;
     uint8_t    UserPayloadSize;
     uint8_t    MacPayloadSize;
-
-
-
+    uint8_t    FoptsTxLength;
+    uint8_t    FoptsTxData[15];
+    uint8_t    FoptsTxLengthSticky;
+    uint8_t    FoptsTxDataSticky[15];
+    uint8_t    FoptsTxLengthCurrent;
+    uint8_t    FoptsTxDataCurrent[15];
 /* LoRaWan Mac Data for downlink*/
     uint8_t    fRxPort;
     uint8_t    MtypeRx;
@@ -157,6 +160,7 @@ public:
     virtual void              RegionInitChannelMask            ( void )                                 = 0;
     virtual void              RegionGetCFList                  ( void )                                 = 0;
     virtual void              RegionDecreaseDataRate           ( void )                                 = 0;
+    virtual void              RegionGiveNextDataRate           ( void )                                 = 0;
     virtual eStatusChannel    RegionBuildChannelMask           ( uint8_t ChMaskCntl, uint16_t ChMaskIn) = 0;
 
     virtual eStatusLoRaWan    RegionIsValidRx1DrOffset     ( uint8_t Rx1DataRateOffset) = 0;
@@ -174,6 +178,7 @@ public:
 /**************************************************************/
 protected :
     uint8_t      MacTxSfCurrent;
+    eModulationType      MacTxModulationCurrent;
     eBandWidth   MacTxBwCurrent;
     uint32_t     MacTxFrequencyCurrent;
     uint8_t      MacRx1SfCurrent;

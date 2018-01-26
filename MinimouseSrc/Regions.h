@@ -51,7 +51,8 @@ public:
     static const int      ACK_TIMEOUT        = 2 ;// +/- 1 s (random delay between 1 and 3 seconds)
     static const uint32_t FREQMIN            = 8630000 ;// MHz/100 coded over 24 bits
     static const uint32_t FREQMAX            = 8700000 ;// MHz/100 coded over 24 bits
-    uint8_t DistriDataRate[7];
+    static const int      RX2DR_INIT         = 0;
+    uint8_t DistriDataRate[8];
 protected : 
     virtual void RegionGetCFList                  ( void );
     virtual void RegionGiveNextChannel            ( void ); 
@@ -71,7 +72,7 @@ protected :
     virtual uint8_t RegionGetAdrAckDelay                ( void );
 private :
 
-    uint8_t DistriDataRateInit[7];
+    uint8_t DistriDataRateInit[8];
     void TxDataRateToSfBw                  ( uint8_t dataRate );
     void Rx2DataRateToSfBw                 ( uint8_t dataRate );
     uint16_t   UnwrappedChannelMask ;                          // this variable is used for multiple linkadr cmds is region dependant at contruction use template

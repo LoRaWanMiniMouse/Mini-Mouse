@@ -139,6 +139,8 @@ enum {
     DEV_STATUS_REQ,
     NEW_CHANNEL_REQ,
     RXTIMING_SETUP_REQ,
+    TXPARAM_SETUP_REQ,
+    DIC_CHANNEL_REQ,
 };
 enum {
     LINK_CHECK_ANS = 2,
@@ -148,10 +150,12 @@ enum {
     DEV_STATUS_ANS,
     NEW_CHANNEL_ANS,
     RXTIMING_SETUP_ANS,
+    TXPARAM_SETUP_ANS,
+    DIC_CHANNEL_ANS,
 };
 
 #define    LINK_CHECK_REQ_SIZE 
-#define    LINK_CHECK_ANS_SIZE 
+#define    LINK_CHECK_ANS_SIZE        3
 #define    LINK_ADR_REQ_SIZE          5
 #define    LINK_ADR_ANS_SIZE          2
 #define    DUTY_CYCLE_REQ_SIZE        2
@@ -164,11 +168,15 @@ enum {
 #define    NEW_CHANNEL_ANS_SIZE       2
 #define    RXTIMING_SETUP_REQ_SIZE    2
 #define    RXTIMING_SETUP_ANS_SIZE    1
+#define    DIC_CHANNEL_REQ_SIZE       5
+#define    DIC_CHANNEL_ANS_SIZE       2
 #define    TIMEONAIR_JOIN_SF7_MS      65 // ms  
 #define    MAX_RETRY_JOIN_DUTY_CYCLE_1000 10
 
 #define MINLORAWANPAYLOADSIZE 12
 #define PORTNWK 0
+
+#define MAX_CONFUP_MSG 4
 /*****************************************************************************/
 /*                   Lora Phy Irg Flags Parameters                           */
 /*****************************************************************************/
@@ -274,7 +282,4 @@ enum {
     UNICASTKEY,
 };
 #endif
-/* pense bete minimouse)
 
- SendPayload(uint8_t fPort,const uint8_t* dataIn,const uint16_t sizeIn, uint8_t* dataReceive,uint16_t *sizeOut) api
-loraWanContainer.MType = UNCONFDATAUP;//tbupdate Mtype should become a parameter of SendPayload */

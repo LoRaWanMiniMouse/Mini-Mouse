@@ -30,15 +30,13 @@ int  Certification ( bool NewCommand ){
     int i ;
     UserFport       = 224;
     UserPayloadSize = 2;
-
-    
     MsgType = UNCONFDATAUP ;
     if ( NewCommand == true) {
         switch ( UserRxPayload[0] ) {
             case 0 :  // end of test
                 UserFport       = 3;
                 UserPayloadSize = 14;
-                for (int i = 0; i < 14 ; i ++) {
+                for ( i = 0; i < 14 ; i ++) {
                     UserPayload[i]  = i;
                 }
                 break;
@@ -71,8 +69,9 @@ int  Certification ( bool NewCommand ){
                 }
                 break;
             case 5 :  // link check request 
-              //Not yet implemented
-                break;
+              UserPayloadSize = 1;
+              UserPayload[0]  = 2;
+              UserFport       = 0;
             case 6 :  // rejoin 
                Lp.NewJoin( );
                break;
@@ -119,7 +118,6 @@ int main( ) {
         pcf.printf("\n\n\n\n ");
 
         if ( Lp.IsJoined ( ) == JOINED ) {            
-            pcf.printf("send payload \n");
             LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
         } else {
             LpState = Lp.Join( );

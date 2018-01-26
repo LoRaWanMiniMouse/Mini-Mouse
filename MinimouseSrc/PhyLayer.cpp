@@ -103,11 +103,13 @@ void RadioContainer::Send(eModulationType TxModulation , uint32_t TxFrequencyMac
     StateRadioProcess = RADIOSTATE_TXON;
     Radio.SetChannel( TxFrequency );
     Radio.Write( REG_LR_SYNCWORD, LORA_MAC_SYNCWORD );
-    DEBUG_PRINTF ( " RxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
     if ( TxModulation == LORA ) {
+        DEBUG_PRINTF ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
         Radio.SetTxConfig( MODEM_LORA, TxPower, 0, TxBw, TxSf, 1, 8, false, true, 0, 0, false, 10e3 );
     } else {
-        Radio.SetTxConfig( MODEM_FSK, TxPower, 0, TxBw, TxSf, 1, 8, false, true, 0, 0, false, 10e3 );
+        DEBUG_MSG("FSK TRANSMISSION \n");
+
+        Radio.SetTxConfig( MODEM_FSK, TxPower, 25e3, 0, 50e3, 0, 5, false, true, 0, 0, false, 3e6 );
     }
     
     wait_ms(1);
@@ -119,13 +121,13 @@ void RadioContainer::SetRxConfig(eModulationType RxModulation ,uint32_t RxFreque
     RxBw        = RxBwMac;
     RxSf        = RxSfMac;
     Radio.SetChannel( RxFrequencyMac );
-    int nbSymbtimeout =  28;// @ note check the real signification of this timeout 
+    int nbSymbtimeout =  20;// @ note check the real signification of this timeout 
     if ( RxModulation == LORA ) {
         Radio.SetRxConfig( MODEM_LORA, RxBw, RxSf, 1, 0, 8, nbSymbtimeout, false, 0, false, 0, 0, true, false );//@note rxtimeout 400ms!!!!
     } else {
-        Radio.SetRxConfig( MODEM_FSK, RxBw, RxSf, 1, 0, 8, nbSymbtimeout, false, 0, false, 0, 0, true, false );//@note rxtimeout 400ms!!!!
+        Radio.SetRxConfig( MODEM_FSK, 50e3, 50e3, 0, 83.333e3, 5, 0, false, 0, true, 0, 0, true, false );//@note rxtimeout 400ms!!!!
     }
-    DEBUG_PRINTF ( " RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw ) ; 
+    DEBUG_PRINTF ( "  RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw ) ; 
 }
 
 int RadioContainer::GetRadioState( void ) {

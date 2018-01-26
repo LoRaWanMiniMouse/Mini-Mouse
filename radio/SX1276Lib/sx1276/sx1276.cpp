@@ -14,7 +14,7 @@ Maintainers: Miguel Luis, Gregory Cristian and Nicolas Huguenin
 */
 #include "sx1276.h"
 #include "mbed.h"
-
+#include "Define.h"
 
 
 # define DEBUG_PRINT(x)   do {} while (0)
@@ -1128,7 +1128,8 @@ void SX1276::SetMaxPayloadLength( RadioModems_t modem, uint8_t max )
 }
 
 void SX1276::OnTimeoutIrqtemp( void )
-{
+{    
+//    DEBUG_MSG("ERROR PHY\n");
 //    //pcsx.printf("status = %x\n",Read(0x18));
 //    if (Read(0x18)==0xF)
 //    {
@@ -1141,6 +1142,7 @@ void SX1276::OnTimeoutIrqtemp( void )
 
 void SX1276::OnTimeoutIrq( void )
 {
+//    DEBUG_MSG("ERROR PHY\n");
 //     //DEBUG_PRINT(("TX timeout func in  enter irq flag %d\n", Read(REG_LR_IRQFLAGS));
 //      Write( REG_LR_IRQFLAGS, RFLR_IRQFLAGS_TXDONE );
 //    // DEBUG_PRINT(("TX timeout func in  enter irq flag %d\n", Read(REG_LR_IRQFLAGS));

@@ -163,7 +163,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
             *AvailableRxPacket = packet.AvailableRxPacketForUser;
             if ( ( packet.IsFrameToSend == NWKFRAME_TOSEND ) || ( packet.IsFrameToSend == USRFRAME_TORETRANSMIT) ) {// @note ack send during the next tx|| ( packet.IsFrameToSend == USERACK_TOSEND ) ) {
                 packet.IsFrameToSend = NOFRAME_TOSEND;
-                RtcTargetTimer = RtcGetTimeSecond( ) + randr( 1, 2 ); //@note RtcGetTime in s so no wrap before 136 year since 1970 discuss wait between 5s and 25s
+                RtcTargetTimer = RtcGetTimeSecond( ) + randr( 3, 4 ); //@note RtcGetTime in s so no wrap before 136 year since 1970 discuss wait between 5s and 25s is ACK_TIMEOUT 
                 StateLoraWanProcess = LWPSTATE_TXWAIT;
             } else {
                 RadioReset ( ) ; 
@@ -203,6 +203,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::Join ( void ) {
     packet.RegionSetDataRateDistribution( JOIN_DR_DISTRIBUTION ); 
     packet.RegionGiveNextDataRate ( );
     packet.BuildJoinLoraFrame( );
+    packet.MacRx2DataRate = packet.RX2DR_INIT;
     packet.MacRx1Delay = packet.JOIN_ACCEPT_DELAY1;
     StateLoraWanProcess = LWPSTATE_SEND;
     return( StateLoraWanProcess );
@@ -249,9 +250,14 @@ eLoraWan_Process_States LoraWanObjet <T> ::SendPayload ( uint8_t fPort, const ui
     packet.UserPayloadSize = sizeIn;
     packet.fPort = fPort;
     packet.MType = PacketType;
+
     packet.BuildTxLoraFrame( );
     packet.EncryptTxFrame( );
-    packet.MacNbTransCpt = packet.MacNbTrans;
+    if (PacketType == CONFDATAUP){
+        packet.MacNbTransCpt = MAX_CONFUP_MSG;
+    } else {
+        packet.MacNbTransCpt = packet.MacNbTrans;
+    }
     StateLoraWanProcess = LWPSTATE_SEND;
     return( StateLoraWanProcess );
 };

@@ -69,6 +69,7 @@ public:
     /*     Update by NewChannelReq command      */
     /********************************************/
     uint32_t  MacTxFrequency        [ NBCHANNEL ];
+    uint32_t  MacRx1Frequency       [ NBCHANNEL ];
     uint8_t   MacMinDataRateChannel [ NBCHANNEL ];
     uint8_t   MacMaxDataRateChannel [ NBCHANNEL ];
     uint8_t   MacChannelIndexEnabled[ NBCHANNEL ]; // Contain the index of the activated channel only NbOfActiveChannel value are valid
@@ -181,6 +182,7 @@ protected :
     eModulationType      MacTxModulationCurrent;
     eBandWidth   MacTxBwCurrent;
     uint32_t     MacTxFrequencyCurrent;
+    uint32_t     MacRx1FrequencyCurrent;
     uint8_t      MacRx1SfCurrent;
     eBandWidth   MacRx1BwCurrent;
     uint8_t      MacRx2SfCurrent;
@@ -204,6 +206,7 @@ private :
     void DevStatusParser           ( void );
     void NewChannelParser          ( void );
     void RXTimingSetupParser       ( void );
+    void DicChannelParser          ( void );
     void UpdateDataRateForAdr      ( void );
     void SaveInFlash               ( void );
     sBackUpFlash BackUpFlash;

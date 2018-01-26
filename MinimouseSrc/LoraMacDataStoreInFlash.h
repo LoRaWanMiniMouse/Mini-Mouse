@@ -37,6 +37,7 @@ struct sBackUpFlash
     /*     Update by NewChannelReq command      */
     /********************************************/
     uint32_t     MacTxFrequency[16];//@note region dependant
+    uint32_t     MacRx1Frequency[16];//@note region dependant
     uint8_t      MacMinDataRateChannel [16];
     uint8_t      MacMaxDataRateChannel [16];
     uint8_t      MacChannelIndexEnabled [16];

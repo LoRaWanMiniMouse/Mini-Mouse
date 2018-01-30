@@ -43,6 +43,7 @@ template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::LoraWanContainer( PinName 
     RtcNextTimeJoinSecond = 0;
     RetryJoinCpt = 0 ;
     FoptsTxLengthCurrent = 0;
+    FirstDwn = true;
 }; 
 
 template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::~LoraWanContainer( ) {
@@ -92,7 +93,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioAndSend
     RegionGiveNextChannel ( );//@note have to be completed
     Phy.DevAddrIsr    = DevAddr ;  //@note copy of the mac devaddr in order to filter it in the radio isr routine.
     Phy.Send(MacTxModulationCurrent, MacTxFrequencyCurrent, MacTxPower, MacTxSfCurrent, MacTxBwCurrent, MacPayloadSize);
-    AdrAckCnt ++ ; // increment adr counter each uplmink frame;
+    AdrAckCnt ++ ; // increment adr counter each uplink frame;
 };
 /************************************************************************************************************************************/
 /*                                              ConfigureRadioForRx1                                                                */
@@ -133,7 +134,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureTimerForRx (
         tAlarmMillisec = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - tCurrentMillisec - toffset ;// @note Rx2 Dalay is alway RX1DELAY + 1 second
         if ( tAlarmMillisec <= toffset ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_IDLE ;
-            pcf.printf( " error case negative Timer %d ms\n", tAlarmMillisec );
+            DEBUG_PRINTF( " error case negative Timer %d ms\n", tAlarmMillisec );
         } else { 
             SetAlarm( tAlarmMillisec );
         }
@@ -180,6 +181,7 @@ template <int NBCHANNEL> eRxPacketType LoraWanContainer<NBCHANNEL>::DecodeRxFram
         }
         if ( status == OKLORAWAN) { // @note check if it is possible to reduce the if  if  if
             AdrAckCnt = 0 ; // reset adr counter , receive a valid frame.
+            MacNbTransCpt = 1 ; // reset retransmission counter
             FoptsTxLengthSticky = 0 ; // reset the fopts of the sticky cmd receive a valide frame
             DEBUG_MSG ( " RESET ADRACKCNT \n");
             MacRxPayloadSize = ( RxEmptyPayload == 0 )? MacRxPayloadSize - FHDROFFSET - FoptsLength : 0;
@@ -207,8 +209,8 @@ template <int NBCHANNEL> eRxPacketType LoraWanContainer<NBCHANNEL>::DecodeRxFram
                         MacNwkPayloadSize = FoptsLength;
                         RxPacketType = USERRX_FOPTSPACKET ;
                     } 
+                AvailableRxPacketForUser = LORARXPACKETAVAILABLE; 
             }
-            FcntDwn++;
         }
     }
     DEBUG_PRINTF(" RxPacketType = %d \n", RxPacketType );
@@ -664,10 +666,11 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::DicChannelParser( voi
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateJoinProcedure ( void ) { //@note tbd add valid test 
     uint8_t AppNonce[6];
+    int i;
     memcpy( AppNonce, &MacRxPayload[1], 6 );
     LoRaMacJoinComputeSKeys(LoRaMacAppKey, AppNonce, DevNonce,  nwkSKey, appSKey );
     if ( MacRxPayloadSize > 13 ) { // cflist are presents
-        for( int i = 0 ; i < 16 ; i++) {
+        for( i = 0 ; i < 16 ; i++) {
             CFList[i] = MacRxPayload[13 + i];
         }
     }
@@ -677,11 +680,14 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateJoinProcedure (
     MacRx1DataRateOffset = ( MacRxPayload[11] & 0x70 ) >> 3;
     MacRx2DataRate       = ( MacRxPayload[11] & 0x0F );
     MacRx1Delay          = MacRxPayload[12];
-    DEBUG_PRINTF("DevAddr= %d\n",DevAddr);
+    DEBUG_PRINTF("DevAddr= %x\n",DevAddr);
     DEBUG_PRINTF("MacRx1DataRateOffset= %d\n",MacRx1DataRateOffset);
     DEBUG_PRINTF("MacRx2DataRate= %d\n",MacRx2DataRate);
     DEBUG_PRINTF("MacRx1Delay= %d\n",MacRx1Delay);
     Phy.JoinedStatus = JOINED;
+    FirstDwn = true;
+    FcntDwn = 0; 
+    FcntUp = 0; 
     RetryJoinCpt = 0;
     SaveInFlash ( );
 }
@@ -703,7 +709,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildJoinLoraFrame( v
     Phy.TxPhyPayload[18] = ( uint8_t )( ( DevNonce & 0xFF00 ) >> 8 );
     MacPayloadSize = 19 ;
     uint32_t mic ; 
-
+//    FcntUp = 1; 
     LoRaMacJoinComputeMic( &Phy.TxPhyPayload[0], MacPayloadSize, LoRaMacAppKey, &mic );
     memcpy(&Phy.TxPhyPayload[MacPayloadSize], (uint8_t *)&mic, 4);
     MacPayloadSize = MacPayloadSize + 4;
@@ -724,8 +730,8 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SetFrameHeader( ) {
     Phy.TxPhyPayload[3] = ( uint8_t )( ( DevAddr & 0x00FF0000 ) >> 16 );
     Phy.TxPhyPayload[4] = ( uint8_t )( ( DevAddr & 0xFF000000 ) >> 24 );
     Phy.TxPhyPayload[5] = Fctrl;
-    Phy.TxPhyPayload[6] = ( uint8_t )( ( FcntUp & 0x00FF ) );
-    Phy.TxPhyPayload[7] = ( uint8_t )( ( FcntUp & 0x00FF00 ) >> 8 );
+    Phy.TxPhyPayload[6] = ( uint8_t )( ( FcntUp & 0x000000FF ) );
+    Phy.TxPhyPayload[7] = ( uint8_t )( ( FcntUp & 0x0000FF00 ) >> 8 );
     for (int i = 0 ; i < FoptsTxLengthCurrent ; i ++ ) {
         Phy.TxPhyPayload[ 8 + i ] = FoptsTxDataCurrent [ i ];
     }
@@ -784,18 +790,15 @@ template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::AcceptFcntDwn ( uint16
     int status = OKLORAWAN; 
     uint16_t FcntDwnLsb = ( FcntDwn & 0x0000FFFF );
     uint16_t FcntDwnMsb = ( FcntDwn & 0xFFFF0000 ) >> 16;
-    pcf.printf(" FcntDwnmtp = %d , FcntDwnLsb = %d \n",FcntDwnTmp, FcntDwnLsb);
-    if  ( FcntDwnTmp > FcntDwnLsb ) {
+    if  ( ( FcntDwnTmp > FcntDwnLsb ) || ( FirstDwn == true) ) {
         FcntDwn = FcntDwnTmp ;
+        FirstDwn = false ;
     } else if ( ( FcntDwnLsb - FcntDwnTmp ) > MAX_FCNT_GAP )  {
         FcntDwn = ( ( FcntDwnMsb + 1 ) << 16 ) + FcntDwnTmp ;
     } else {
         status = ERRORLORAWAN ;
         DEBUG_MSG (" ERROR AcceptFcntDwn \n");
     }
-        
-
-    pcf.printf("fcntdwn = %d\n",FcntDwn);
     return ( status ) ;
 }
 

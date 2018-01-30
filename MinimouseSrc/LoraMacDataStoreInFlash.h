@@ -49,7 +49,7 @@ struct sBackUpFlash
     /********************************************/
     /*   Other Data To store                    */
     /********************************************/
-    uint16_t     FcntUp;   //@note ERROR should BE 32 BITS and check error in case wrap 
+    uint32_t     FcntUp;   
     uint32_t     FcntDwn;
     uint32_t     DevAddr;
     uint8_t      nwkSKey [16];

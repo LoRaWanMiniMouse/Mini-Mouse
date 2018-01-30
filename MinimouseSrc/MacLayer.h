@@ -82,7 +82,7 @@ public:
     /********************************************/
     /*   Other Data To store                    */
     /********************************************/
-    uint16_t   FcntUp;
+    uint32_t   FcntUp;
     uint32_t   FcntDwn;  // Wrapping 16 to 32 bits is managed in AcceptFcntDwn Method
     uint32_t   DevAddr;
     uint8_t    nwkSKey[16];
@@ -212,6 +212,7 @@ private :
     sBackUpFlash BackUpFlash;
     uint8_t NwkPayloadIndex ;
     uint8_t RxEmptyPayload ;
+    bool FirstDwn;
 
 }; 
 

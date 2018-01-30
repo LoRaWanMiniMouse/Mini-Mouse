@@ -137,7 +137,8 @@ int main( ) {
                 
             }
             pcf.printf("]\n");
-            if ( UserRxFport == 224 ) {
+            if ( ( UserRxFport == 224 ) || ( UserRxPayloadSize == 0 ) ) {
+               pcf.printf("Receive Certification Payload \n"); 
                StatusCertification = Certification ( true );
             } 
         } else {

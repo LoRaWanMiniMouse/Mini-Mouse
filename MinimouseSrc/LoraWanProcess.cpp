@@ -41,11 +41,11 @@ template <class T>
 eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
 
     *AvailableRxPacket = NOLORARXPACKETAVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE
-    if ( ( IsJoined ( ) == NOTJOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
-        pcf.printf("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
-        StateLoraWanProcess = LWPSTATE_IDLE ;
-       //@notereview resortir status too soon
-    }        
+//    if ( ( IsJoined ( ) == NOTJOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
+//        pcf.printf("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
+//        StateLoraWanProcess = LWPSTATE_IDLE ;
+//       //@notereview resortir status too soon
+//    }        
         
     switch ( StateLoraWanProcess ) {
     /************************************************************************************/
@@ -154,7 +154,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
             pcf.printf( " **************************\n " );
             if ( ValidRxPacket == JOINACCEPTPACKET){
                 packet.UpdateJoinProcedure( );
-                packet.RegionSetDataRateDistribution( packet.AdrModeSelect );//@note because datarate Distribution habe been changed during join
+                packet.RegionSetDataRateDistribution( packet.AdrModeSelect );//@note because datarate Distribution has been changed during join
             }
             if ( ( ValidRxPacket == NWKRXPACKET) || ( ValidRxPacket == USERRX_FOPTSPACKET) ) {
                 packet.ParseManagementPacket( );

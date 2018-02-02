@@ -23,7 +23,7 @@ Maintainer: Miguel Luis ( Semtech ), Gregory Cristian ( Semtech ) and Daniel Jae
 #include "define.h"
 #include "aes.h"
 #include "cmac.h"
-
+#include "Define.h"
 #include "LoRaMacCrypto.h"
 
 /*!
@@ -210,7 +210,7 @@ void LoRaMacComputeAndAddMic(  uint8_t *buffer, uint16_t size, const uint8_t *ke
 {
     uint32_t mic;
     LoRaMacComputeMic(buffer,size, key, address,dir,  sequenceCounter,&mic );
-    pcf.printf("fcntup = %d\n",sequenceCounter);
+    DEBUG_PRINTF("fcntup = %d\n",sequenceCounter);
     memcpy(&buffer[size],(uint8_t *)&mic,4);
 }
 

@@ -143,7 +143,10 @@ public:
     
 /*  Timer */
     Timeout    TimerLora ;
-    void       IsrTimerRx( void );
+    //Timeout    TimerLora ;
+     void       IsrTimerRx( void );
+     static void test (void * obj){(reinterpret_cast<LoraWanContainer<NBCHANNEL>*>(obj))->IsrTimerRx();} ;
+
     int        StateTimer;
 /* Join Duty cycle management */
     uint32_t   RtcNextTimeJoinSecond ;

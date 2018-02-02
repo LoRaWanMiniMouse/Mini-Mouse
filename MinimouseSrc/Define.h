@@ -24,7 +24,7 @@ extern Serial pcf;
 #define DEBUG_TRACE  1
 #if DEBUG_TRACE == 1
 #define DEBUG_MSG(str)               pcf.printf(str)
-//#define DEBUG_PRINTF(fmt, args...)   pcf.printf("  %s:%d: "fmt, __FUNCTION__, __LINE__, args)
+//#define DEBUG_PRINTF(fmt, args...)   DEBUG_PRINTF("  %s:%d: "fmt, __FUNCTION__, __LINE__, args)
 #define DEBUG_PRINTF(fmt, args...)   pcf.printf(fmt, args)
 #define DEBUG_SPRINTF(fmt, args...)  pcf.printf("  %s:%d: "fmt, args)
 #define DEBUG_ARRAY(a,b,c)           for(a=0;a!=0;){}

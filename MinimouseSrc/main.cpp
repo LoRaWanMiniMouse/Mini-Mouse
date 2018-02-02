@@ -1,3 +1,17 @@
+/*
+
+  __  __ _       _                                 
+ |  \/  ( _)     ( _)                                
+ | \  / |_ _ __  _ _ __ ___   ___  _   _ ___  ___  
+ | |\/| | | '_ \| | '_ ` _ \ / _ \| | | / __|/ _ \
+ | |  | | | | | | | | | | | | ( _) | |_| \__ \  __/ 
+ |_|  |_|_|_| |_|_|_| |_| |_|\___/ \__,_|___/\___| 
+                                                   
+                                                   
+Description       : Example Main .  
+License           : Revised BSD License, see LICENSE.TXT file include in the project
+Maintainer        : Fabien Holin ( SEMTECH)
+*/
 #include "mbed.h"
 #include "ApiFlash.h"
 #include "LoraMacDataStoreInFlash.h"
@@ -5,7 +19,7 @@
 #include "Define.h"
 #include "rtc_api.h"
 #include "ApiRtc.h"
-
+#include "ApiSleep.h"
 
 
 
@@ -84,23 +98,23 @@ int  Certification ( bool NewCommand ){
     }
     return ( UserRxPayload[0] );
 }
-
 int main( ) {
     int i;
     int StatusCertification = 0;
     int StatusCertificationp = 0;
     my_rtc_init ( );
     pcf.baud( 115200 );
-    
     UserFport       = 3;
     UserPayloadSize = 14;
+    myalarm.AlarmInit();
+
     for (int i = 0; i < 14 ; i ++) {
         UserPayload[i]  = i;
     }
     MsgType = UNCONFDATAUP;
     uint8_t AvailableRxPacket = NOLORARXPACKETAVAILABLE ;
     eLoraWan_Process_States LpState = LWPSTATE_IDLE;    
-    
+
     /************************************************/
     /*          Configure Adr Mode                  */
     /************************************************/
@@ -111,11 +125,10 @@ int main( ) {
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
     //Lp.RestoreContext ( );
-    //Lp.NewJoin( );
-    
-
+    Lp.NewJoin( );
+   
     while(1) {
-        pcf.printf("\n\n\n\n ");
+        DEBUG_MSG("\n\n\n\n ");
 
         if ( Lp.IsJoined ( ) == JOINED ) {            
             LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
@@ -126,19 +139,19 @@ int main( ) {
         
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            wait_ms( 100 );
+            myalarm.SleepMs ( 100 );
         }
 
         if ( AvailableRxPacket == LORARXPACKETAVAILABLE ) { 
             Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
-            pcf.printf("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+            DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
             for ( i = 0 ; i < UserRxPayloadSize ; i++){
-                pcf.printf( "0x%.2x ",UserRxPayload[i]);
+                DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
                 
             }
-            pcf.printf("]\n");
+            DEBUG_MSG("]\n");
             if ( ( UserRxFport == 224 ) || ( UserRxPayloadSize == 0 ) ) {
-               pcf.printf("Receive Certification Payload \n"); 
+               DEBUG_MSG("Receive Certification Payload \n"); 
                StatusCertification = Certification ( true );
             } 
         } else {
@@ -146,7 +159,7 @@ int main( ) {
                 Certification ( false );
             }
         }
-
-        wait_s( 5 ); 
+        int cpt = 0;
+         myalarm.SleepSecond(5);
     }
 }

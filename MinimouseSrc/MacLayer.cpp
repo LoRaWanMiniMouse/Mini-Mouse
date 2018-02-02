@@ -907,7 +907,8 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::PrintMacContext ( ) {
 /*                               Called when Alarm expires                          */
 /************************************************************************************/
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SetAlarm (uint32_t alarmInMs) {
-    TimerLora.attach_us(this, &LoraWanContainer<NBCHANNEL>::IsrTimerRx, alarmInMs * 1000);
+
+    myalarm.AttachMsecond( &LoraWanContainer<NBCHANNEL>::test,this, alarmInMs);
 }
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::IsrTimerRx( void ) {

@@ -42,7 +42,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
 
     *AvailableRxPacket = NOLORARXPACKETAVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE
 //    if ( ( IsJoined ( ) == NOTJOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
-//        pcf.printf("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
+//        DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
 //        StateLoraWanProcess = LWPSTATE_IDLE ;
 //       //@notereview resortir status too soon
 //    }        
@@ -62,10 +62,10 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
                 
                 case  RADIOSTATE_IDLE : 
                     packet.ConfigureRadioAndSend( );
-                    pcf.printf( "\n" );
-                    pcf.printf( "  **************************\n " );
-                    pcf.printf( " *       Send Payload     *\n " );
-                    pcf.printf( " **************************\n " );
+                    DEBUG_MSG( "\n" );
+                    DEBUG_MSG( "  **************************\n " );
+                    DEBUG_MSG( " *       Send Payload     *\n " );
+                    DEBUG_MSG( " **************************\n " );
                     break ; 
             
                 case RADIOSTATE_TXFINISHED : 
@@ -86,16 +86,16 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
             if ( GetRadioState( ) == RADIOSTATE_RX1FINISHED ) {
                 if ( GetRadioIrqFlag ( ) == RECEIVEPACKETIRQFLAG) {
                     //@todo process downlink
-                    pcf.printf( "\n" );
-                    pcf.printf( "  **************************\n " );
-                    pcf.printf( " * Receive a downlink RX1 *\n " );
-                    pcf.printf( " **************************\n " );
+                    DEBUG_MSG( "\n" );
+                    DEBUG_MSG( "  **************************\n " );
+                    DEBUG_MSG( " * Receive a downlink RX1 *\n " );
+                    DEBUG_MSG( " **************************\n " );
                     StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK;
                 } else { // So rxtimeout case @note manage error case
-                    pcf.printf( "\n" );
-                    pcf.printf( "  **************************\n " );
-                    pcf.printf( " *      RX1 Timeout       *\n " );
-                    pcf.printf( " **************************\n " );
+                    DEBUG_MSG( "\n" );
+                    DEBUG_MSG( "  **************************\n " );
+                    DEBUG_MSG( " *      RX1 Timeout       *\n " );
+                    DEBUG_MSG( " **************************\n " );
                     packet.ConfigureRadioForRx2 ( );
                     packet.ConfigureTimerForRx ( RX2 );
                     StateLoraWanProcess = LWPSTATE_RX2;
@@ -109,16 +109,16 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
                             
             if ( GetRadioState( ) == RADIOSTATE_IDLE ) {
                 if ( GetRadioIrqFlag ( ) == RECEIVEPACKETIRQFLAG) {
-                    pcf.printf( "\n" );
-                    pcf.printf( "  **************************\n " );
-                    pcf.printf( " * Receive a downlink RX2 *\n " );
-                    pcf.printf( " **************************\n " );
+                    DEBUG_MSG( "\n" );
+                    DEBUG_MSG( "  **************************\n " );
+                    DEBUG_MSG( " * Receive a downlink RX2 *\n " );
+                    DEBUG_MSG( " **************************\n " );
                     StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK; //@note to be discuss if it is necessary to create a dedicated state?
                 } else {
-                    pcf.printf( "\n" );
-                    pcf.printf( "  **************************\n " );
-                    pcf.printf( " *      RX2 Timeout       *\n " );
-                    pcf.printf( " **************************\n " );
+                    DEBUG_MSG( "\n" );
+                    DEBUG_MSG( "  **************************\n " );
+                    DEBUG_MSG( " *      RX2 Timeout       *\n " );
+                    DEBUG_MSG( " **************************\n " );
                     StateLoraWanProcess = LWPSTATE_UPDATEMAC;
                 }
             }
@@ -134,10 +134,10 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
     /*    Step 6 : Extract Fport to select Between App/nwm Payload                      */
     /************************************************************************************/
         case LWPSTATE_PROCESSDOWNLINK:
-            pcf.printf( "\n" );
-            pcf.printf( "  **************************\n " );
-            pcf.printf( " * Process Downlink       *\n " );
-            pcf.printf( " **************************\n " );
+            DEBUG_MSG( "\n" );
+            DEBUG_MSG( "  **************************\n " );
+            DEBUG_MSG( " * Process Downlink       *\n " );
+            DEBUG_MSG( " **************************\n " );
             ValidRxPacket = packet.DecodeRxFrame( ); // return NOVALIDRXPACKET or  USERRX_FOPTSPACKET or NWKRXPACKET or JOINACCEPTPACKET.
             StateLoraWanProcess = LWPSTATE_UPDATEMAC;
             break;
@@ -148,10 +148,10 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
        //@notereview pensez a detacher propre en cas d'erreur et destructeur 
             DetachRadioIsr ( );
             packet.Phy.StateRadioProcess = RADIOSTATE_IDLE;  
-            pcf.printf( "\n" );
-            pcf.printf( "  **************************\n " );
-            pcf.printf( " *       UpdateMac        *\n " );
-            pcf.printf( " **************************\n " );
+            DEBUG_MSG( "\n" );
+            DEBUG_MSG( "  **************************\n " );
+            DEBUG_MSG( " *       UpdateMac        *\n " );
+            DEBUG_MSG( " **************************\n " );
             if ( ValidRxPacket == JOINACCEPTPACKET){
                 packet.UpdateJoinProcedure( );
                 packet.RegionSetDataRateDistribution( packet.AdrModeSelect );//@note because datarate Distribution has been changed during join
@@ -175,14 +175,14 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
     /*                              STATE TXWAIT MAC                                    */
     /************************************************************************************/
         case LWPSTATE_TXWAIT:
-            pcf.printf(".");
+            DEBUG_MSG(".");
             if ( RtcGetTimeSecond( ) > RtcTargetTimer) {
                 StateLoraWanProcess = LWPSTATE_SEND; //@note the frame have already been prepare in Upadate Mac Layer
             }
             break;
 
         default: 
-            pcf.printf( " Illegal state\n " );
+            DEBUG_MSG( " Illegal state\n " );
             break;
         }
     return ( StateLoraWanProcess );

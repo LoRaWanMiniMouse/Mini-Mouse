@@ -18,6 +18,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 #ifndef APIRTC_H
 #define APIRTC_H
 #include "mbed.h"
+#include "ApiFlash.h"
+#include "MacLayer.h"
 void     my_rtc_init     ( void ) ;
 uint32_t RtcGetTimeMs    ( uint64_t  *longTime64bits ) ;//uint32_t  *Seconds, uint16_t * SubSeconds);
 uint32_t RtcGetTimeSecond( void ) ;//uint32_t  *Seconds, uint16_t * SubSeconds);
@@ -30,8 +32,35 @@ int GetTime(void);
 void RtcSetAlarm( void );
 void RtcGetAlarm( void );
 void wait_s ( int t );
+void test ( void * func );
+ void test1(void);
+static void empty(void){};
+static void test2(void);
 
-  
+
+
+class AlarmRtc { 
+public: 
+    AlarmRtc();
+    ~AlarmRtc( ) { };
+    void AlarmInit( void );
+    static void DoNothing (void *) { };
+    void AttachMsecond ( void (* _Func) (void *) , void * _obj, int delay) ;
+    void AttachMsecond ( int delay) ;
+    void SleepMs (int delay);
+    void SleepSecond (int delay);
+    void run ( void ) {
+         Func(obj);
+        mutex = 0 ;
+    }
+private :
+    void (* Func) (void *);
+    void * obj;
+    int mutex;
+
+};
+    
+extern AlarmRtc myalarm;
 
 /* Specific implementation for STM32 . The following implementation is just to put in place
 a setalarm function as described on the architecture specification of minimouse */

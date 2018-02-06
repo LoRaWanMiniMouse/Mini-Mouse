@@ -111,7 +111,8 @@ int Flash::RestoreContext(uint8_t *buffer, uint32_t addr, uint32_t size){
      /* have to be implemented by mcu providers
     the following code propose a lite implementation without any error cases*/
     uint16_t sizet = size & 0xFFFF;
-     EepromMcuReadBuffer( 0, buffer, sizet );
+    EepromMcuReadBuffer( 0, buffer, sizet );
+    return ( 0 ); 
 }
 
 
@@ -122,10 +123,9 @@ int Flash::StoreContext(const void *buffer, uint32_t addr, uint32_t size){
     this section have to be very robust, have to support failure mode such as  power off during flash programmation    
     This basic implementation suppose that the addr is 4 Bytes aligned and suppose also that the size can be divide by 4.
     */
-     uint16_t sizet = size & 0xFFFF;
-        
-     EepromMcuWriteBuffer( 0,  (uint8_t*) buffer, sizet );    
-        
+    uint16_t sizet = size & 0xFFFF;    
+    EepromMcuWriteBuffer( 0,  (uint8_t*) buffer, sizet );    
+    return ( 0 ); 
 } 
    
 

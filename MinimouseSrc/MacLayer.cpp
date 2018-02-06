@@ -15,7 +15,7 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #include "MacLayer.h"
 #include "LoRaMacCrypto.h"
 #include "LoraWanProcess.h"
-#include "ApiRtc.h"
+#include "ApiTimers.h"
 #include "Define.h"
 #include "utilities.h"
 #include "PhyLayer.h"
@@ -515,7 +515,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::RXParamSetupParser( v
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::DutyCycleParser( void ) {
     DEBUG_PRINTF (" %x \n", MacNwkPayload[ NwkPayloadIndex + 1]);
-    uint8_t DutyCycleTemp = ( MacNwkPayload[ NwkPayloadIndex + 1] & 0xF );
+    //uint8_t DutyCycleTemp = ( MacNwkPayload[ NwkPayloadIndex + 1] & 0xF );//@ note Duty cycle isn't manage
        /* Prepare Ans*/
     FoptsTxData [ FoptsTxLength ] = DUTY_CYCLE_ANS ; // copy Cid
     FoptsTxLength   += DUTY_CYCLE_ANS_SIZE ;
@@ -541,7 +541,6 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::DevStatusParser( void
 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::NewChannelParser( void ) {
-    int i;
     DEBUG_PRINTF (" %x %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4], MacNwkPayload[NwkPayloadIndex + 5]);
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x3 ; // initilised for ans answer ok 
@@ -907,13 +906,17 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::PrintMacContext ( ) {
 /*                               Called when Alarm expires                          */
 /************************************************************************************/
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SetAlarm (uint32_t alarmInMs) {
+    //TimerLora.attach_us(this, &LoraWanContainer<NBCHANNEL>::IsrTimerRx, alarmInMs * 1000);
+    LowPowerTimerLora.AttachMsecond( &LoraWanContainer<NBCHANNEL>::test,this, alarmInMs);
+    //myalarm.AttachMsecond( &LoraWanContainer<NBCHANNEL>::test,this, alarmInMs);
 
-    myalarm.AttachMsecond( &LoraWanContainer<NBCHANNEL>::test,this, alarmInMs);
 }
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::IsrTimerRx( void ) {
+    TimerLora.detach();
     StateTimer = TIMERSTATE_SLEEP;
     Phy.Radio.Rx(0); //@note No More timeout FW on RX use only timeout impplement in the HW radio
+
 };
 
 /*********************************************************************************/

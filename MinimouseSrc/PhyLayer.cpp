@@ -20,7 +20,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "sx1276Regs-LoRa.h"
 #include "MacLayer.h"
 #include "LoraWanProcess.h"
-#include "ApiRtc.h"
+#include "ApiTimers.h"
 #include "Define.h"
 #include "math.h"
 //static RadioEvents_t RadioEvents;
@@ -49,8 +49,8 @@ RadioContainer::~RadioContainer( ) {
 /*          Set Radio in Sleep Mode                                  */
 /*******************Isr Radio  ***************************************/
 void RadioContainer::AttachIsr ( void ) {
-     TxInterrupt.rise( this,&RadioContainer::IsrRadio );
-     RxTimeoutInterrupt.rise( this,&RadioContainer::IsrRadio );
+     TxInterrupt.rise( callback ( this, &RadioContainer::IsrRadio ) );
+     RxTimeoutInterrupt.rise( callback ( this , &RadioContainer::IsrRadio ) );
 }
 void RadioContainer::DetachIsr ( void ) {
      TxInterrupt.rise( NULL );

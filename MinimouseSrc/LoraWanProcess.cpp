@@ -16,7 +16,7 @@ License           : Revised BSD License, see LICENSE.TXT file include in the pro
 Maintainer        : Fabien Holin (SEMTECH)
 */
 #include "LoraWanProcess.h"
-#include "ApiRtc.h"
+#include "ApiTimers.h"
 #include "utilities.h"
 #include "Define.h"
 Serial pcf( SERIAL_TX, SERIAL_RX );

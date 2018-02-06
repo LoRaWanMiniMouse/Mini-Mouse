@@ -15,6 +15,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #ifndef __UTILITIES_H__
 #define __UTILITIES_H__
 #include "mbed.h"
+#include "LoraWanProcess.h"
 /*!
  * \brief Returns the minimum value between a and b
  *
@@ -96,4 +97,8 @@ void memset1( uint8_t *dst, uint8_t value, uint16_t size );
  */
 int8_t Nibble2HexChar( uint8_t a );
 
+/*!
+ * \brief Certification apllication layer
+ *
+ */
 #endif // __UTILITIES_H__

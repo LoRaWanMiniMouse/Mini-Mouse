@@ -139,12 +139,12 @@ void SX1276MB1xAS::SpiInit( void )
 
 void SX1276MB1xAS::IoIrqInit( DioIrqHandler *irqHandlers )
 {
-    
-    dio0.rise( this, static_cast< TriggerMB1xAS > ( irqHandlers[0] ) );
-    dio1.rise( this, static_cast< TriggerMB1xAS > ( irqHandlers[1] ) );
-    dio2.rise( this, static_cast< TriggerMB1xAS > ( irqHandlers[2] ) );
-    dio3.rise( this, static_cast< TriggerMB1xAS > ( irqHandlers[3] ) );
-    dio4.rise( this, static_cast< TriggerMB1xAS > ( irqHandlers[4] ) );
+//    
+//    dio0.rise( this, static_cast< TriggerMB1xAS > ( irqHandlers[0] ) );
+//    dio1.rise( this, static_cast< TriggerMB1xAS > ( irqHandlers[1] ) );
+//    dio2.rise( this, static_cast< TriggerMB1xAS > ( irqHandlers[2] ) );
+//    dio3.rise( this, static_cast< TriggerMB1xAS > ( irqHandlers[3] ) );
+//    dio4.rise( this, static_cast< TriggerMB1xAS > ( irqHandlers[4] ) );
  
 }
 

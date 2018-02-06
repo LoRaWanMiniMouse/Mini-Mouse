@@ -18,8 +18,8 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #include "LoraWanProcess.h"
 #include "Define.h"
 #include "rtc_api.h"
-#include "ApiRtc.h"
-#include "ApiSleep.h"
+#include "ApiTimers.h"
+
 
 
 
@@ -39,6 +39,9 @@ uint8_t MsgType ;
 uint16_t FcntDwnCertif = 0;
 uint32_t MsgTypePrevious = UNCONFDATAUP ;
 LoraWanObjet<LoraRegionsEU> Lp( TX_RX_IT ); // shouldn't be glabal just easier for certification application
+void ttest (void){
+    pcf.printf("enter in test1 \n");
+}
 int  Certification ( bool NewCommand ){
     uint32_t temp ;
     int i ;
@@ -98,16 +101,17 @@ int  Certification ( bool NewCommand ){
     }
     return ( UserRxPayload[0] );
 }
+
+
 int main( ) {
     int i;
     int StatusCertification = 0;
-    int StatusCertificationp = 0;
-    my_rtc_init ( );
+    RtcInit ( );
+    WakeUpInit ( );
+    LowPowerTimerLora.LowPowerTimerLoRaInit();
     pcf.baud( 115200 );
     UserFport       = 3;
     UserPayloadSize = 14;
-    myalarm.AlarmInit();
-
     for (int i = 0; i < 14 ; i ++) {
         UserPayload[i]  = i;
     }
@@ -125,8 +129,9 @@ int main( ) {
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
     //Lp.RestoreContext ( );
-    Lp.NewJoin( );
-   
+    //Lp.NewJoin( );
+   wait(1);
+
     while(1) {
         DEBUG_MSG("\n\n\n\n ");
 
@@ -139,7 +144,8 @@ int main( ) {
         
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            myalarm.SleepMs ( 100 );
+            WakeUpAlarmMSecond ( 500 );
+            sleep ( );
         }
 
         if ( AvailableRxPacket == LORARXPACKETAVAILABLE ) { 
@@ -159,7 +165,7 @@ int main( ) {
                 Certification ( false );
             }
         }
-        int cpt = 0;
-         myalarm.SleepSecond(5);
+        WakeUpAlarmSecond(5);
+        sleep ( );
     }
 }

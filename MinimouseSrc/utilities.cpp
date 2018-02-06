@@ -16,7 +16,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include <stdio.h>
 
 #include "utilities.h"
-
+#include "LoraWanProcess.h"
 /*!
  * Redefinition of rand() and srand() standard C functions.
  * These functions are redefined in order to get the same behavior across

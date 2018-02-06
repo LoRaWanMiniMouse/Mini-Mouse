@@ -19,7 +19,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define APIFLASH_H
 #include "mbed.h"
 #include "Define.h"
-#include "ApiRtc.h"
+#include "ApiTimers.h"
 #define USERFLASHADRESS 0x8080000
 class Flash { 
 public: 

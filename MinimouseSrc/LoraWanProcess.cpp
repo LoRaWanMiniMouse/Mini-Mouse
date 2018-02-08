@@ -71,7 +71,6 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
                     break ; 
             
                 case RADIOSTATE_TXFINISHED : 
-                    packet.ConfigureRadioForRx1 ( );
                     packet.ConfigureTimerForRx ( RX1 );
                     StateLoraWanProcess = LWPSTATE_RX1;
                     break ;
@@ -98,7 +97,6 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
                     DEBUG_MSG( "  **************************\n " );
                     DEBUG_MSG( " *      RX1 Timeout       *\n " );
                     DEBUG_MSG( " **************************\n " );
-                    packet.ConfigureRadioForRx2 ( );
                     packet.ConfigureTimerForRx ( RX2 );
                     StateLoraWanProcess = LWPSTATE_RX2;
                 }

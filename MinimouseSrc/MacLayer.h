@@ -39,7 +39,7 @@ public:
     void ConfigureRadioAndSend( void );
     void ConfigureRadioForRx1 ( void );
     void ConfigureRadioForRx2 ( void );
-    void ConfigureTimerForRx  ( int type );
+    void ConfigureTimerForRx  ( eRxWinType type );
     void UpdateMacLayer       ( void );
     void UpdateJoinProcedure  ( void );
     uint8_t IsFrameToSend;
@@ -143,11 +143,11 @@ public:
     RadioContainer Phy;
     
 /*  Timer */
-    Timeout    TimerLora ;
-    //Timeout    TimerLora ;
-     void       IsrTimerRx( void );
-     static void test (void * obj){(reinterpret_cast<LoraWanContainer<NBCHANNEL>*>(obj))->IsrTimerRx();} ;
 
+    void       IsrTimerRx1( void );
+    void       IsrTimerRx2( void );
+    static void CallbackIsrTimerRx1 (void * obj){(reinterpret_cast<LoraWanContainer<NBCHANNEL>*>(obj))->IsrTimerRx1();} ;
+    static void CallbackIsrTimerRx2 (void * obj){(reinterpret_cast<LoraWanContainer<NBCHANNEL>*>(obj))->IsrTimerRx2();} ;
     int        StateTimer;
 /* Join Duty cycle management */
     uint32_t   RtcNextTimeJoinSecond ;
@@ -202,7 +202,7 @@ private :
     int CheckRxPayloadLength       ( void );
     int ExtractRxFhdr              ( uint16_t *FcntDwnTemp ) ; 
     int AcceptFcntDwn              ( uint16_t FcntDwnTmp ) ;
-    void SetAlarm                  ( uint32_t alarmInMs );
+    void SetAlarm                  ( uint32_t alarmInMs ,eRxWinType type );
     void LinkCheckParser           ( void );
     void LinkADRParser             ( uint8_t NbMultiLinkAdrReq );
     void DutyCycleParser           ( void );

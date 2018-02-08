@@ -135,8 +135,8 @@ int main( ) {
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
     //Lp.RestoreContext ( );
-    Lp.NewJoin( );
-    LpOrange.NewJoin( );
+    //Lp.NewJoin( );
+    //LpOrange.NewJoin( );
    wait(1);
 
     while(1) {
@@ -173,39 +173,7 @@ int main( ) {
             }
         }
         
-         if ( LpOrange.IsJoined ( ) == JOINED ) {            
-            LpStateOrange = LpOrange.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
-        } else {
-            LpStateOrange = LpOrange.Join( );
-        }
-        
-        
-        while ( LpStateOrange != LWPSTATE_IDLE ){
-            LpStateOrange = LpOrange.LoraWanProcess( &AvailableRxPacket );
-            WakeUpAlarmMSecond ( 500 );
-            GotoSleep ( );
-        }
-
-        if ( AvailableRxPacket == LORA_RX_PACKET_AVAILABLE ) { 
-            LpOrange.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
-            DEBUG_PRINTF("Receive on port %d  an Applicative Downlink from orange\n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
-            for ( i = 0 ; i < UserRxPayloadSize ; i++){
-                DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
-                
-            }
-            DEBUG_MSG("]\n");
-            if ( ( UserRxFport == 224 ) || ( UserRxPayloadSize == 0 ) ) {
-               DEBUG_MSG("Receive Certification Payload \n"); 
-               StatusCertification = Certification ( true );
-            } 
-        } else {
-            if ( StatusCertification > 0 ){
-                Certification ( false );
-            }
-        }
-        
-        
-        WakeUpAlarmSecond(120);
+        WakeUpAlarmSecond(5);
         GotoSleep ( );
     }
 }

@@ -118,17 +118,17 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioForRx2 
 };
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureTimerForRx ( int type ) {
+template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureTimerForRx ( eRxWinType type ) {
     uint32_t tCurrentMillisec;
     uint32_t tAlarmMillisec;
-    uint32_t toffset = 8;  // @note created a Define sf dependant without tcxo?  
+    uint32_t toffset = 13;  // @note created a Define sf dependant without tcxo?  
     tCurrentMillisec =  RtcGetTimeMs( );
     if (type == RX1) {
         tAlarmMillisec = ( ( MacRx1Delay * 1000 )+ Phy.TimestampRtcIsr )  - tCurrentMillisec  ;
         if ( tAlarmMillisec <= toffset ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_RX1FINISHED ;
         } else { 
-            SetAlarm( tAlarmMillisec - toffset );
+            SetAlarm( tAlarmMillisec - toffset, type );
         }
     } else {
         tAlarmMillisec = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - tCurrentMillisec  ;// @note Rx2 Dalay is alway RX1DELAY + 1 second
@@ -136,10 +136,10 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureTimerForRx (
             Phy.StateRadioProcess = RADIOSTATE_IDLE ;
             DEBUG_PRINTF( " error case negative Timer %d ms\n", tAlarmMillisec );
         } else { 
-            SetAlarm( tAlarmMillisec - toffset);
+            SetAlarm( tAlarmMillisec - toffset, type );
         }
     }
-    DEBUG_PRINTF( "  Timer will expire in %d ms\n", tAlarmMillisec );
+    DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - toffset ) );
 }
 /************************************************************************************************************************************/
 /*                                              DecodeRxFRame                                                                       */
@@ -905,18 +905,26 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::PrintMacContext ( ) {
 /*                                Rx1 Timer Isr Routine                             */
 /*                               Called when Alarm expires                          */
 /************************************************************************************/
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SetAlarm (uint32_t alarmInMs) {
+template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SetAlarm (uint32_t alarmInMs, eRxWinType type ) {
     //TimerLora.attach_us(this, &LoraWanContainer<NBCHANNEL>::IsrTimerRx, alarmInMs * 1000);
-    LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL>::test,this, alarmInMs);
-    //myalarm.AttachMsecond( &LoraWanContainer<NBCHANNEL>::test,this, alarmInMs);
+    if ( type == RX1 ) {
+        LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL>::CallbackIsrTimerRx1,this, alarmInMs);
+    } else {
+        LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL>::CallbackIsrTimerRx2,this, alarmInMs);
+    }
 
 }
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::IsrTimerRx( void ) {
-    TimerLora.detach();
+template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::IsrTimerRx1( void ) {
     StateTimer = TIMERSTATE_SLEEP;
+    ConfigureRadioForRx1 ( );
     Phy.Radio.Rx(0); //@note No More timeout FW on RX use only timeout impplement in the HW radio
+};
 
+template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::IsrTimerRx2( void ) {
+    StateTimer = TIMERSTATE_SLEEP;
+    ConfigureRadioForRx2 ( );
+    Phy.Radio.Rx(0); //@note No More timeout FW on RX use only timeout impplement in the HW radio
 };
 
 /*********************************************************************************/

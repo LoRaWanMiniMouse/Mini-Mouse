@@ -20,10 +20,9 @@ Maintainer: Miguel Luis ( Semtech ), Gregory Cristian ( Semtech ) and Daniel Jae
 #include <stdlib.h>
 #include <stdint.h>
 #include "utilities.h"
-#include "define.h"
+#include "Define.h"
 #include "aes.h"
 #include "cmac.h"
-#include "Define.h"
 #include "LoRaMacCrypto.h"
 
 /*!

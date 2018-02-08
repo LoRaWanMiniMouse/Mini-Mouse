@@ -22,7 +22,7 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*                     Constructors              */
 /*@note have to check init values                */
 /*************************************************/
-LoraRegionsEU :: LoraRegionsEU (  PinName interrupt ) : LoraWanContainer<16>  (interrupt){
+LoraRegionsEU :: LoraRegionsEU ( uint8_t* DevEui ) : LoraWanContainer<16>  ( DevEui){
     
     memset( MacChannelIndexEnabled, CHANNEL_DISABLED, NUMBER_OF_CHANNEL );
     memset( MacMinDataRateChannel, 0, NUMBER_OF_CHANNEL );
@@ -116,7 +116,7 @@ eStatusChannel LoraRegionsEU::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint1
             UnwrappedChannelMask = UnwrappedChannelMask ^ ChMask; //@note for EU UnwrappedChannelMask is still on 16 bits 
             for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i++) {
                 if ( ( ( ( UnwrappedChannelMask >> i) & 0x1 ) == 1 ) && ( MacTxFrequency[i] == 0) ) {  // test channel not defined
-                    status = ERRORCHANNELMASK ;   //@note this status is used only for the last multiple link adr req
+                    status = ERROR_CHANNEL_MASK ;   //@note this status is used only for the last multiple link adr req
                 }
             }
             break;
@@ -129,10 +129,10 @@ eStatusChannel LoraRegionsEU::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint1
             }
             break;
         default : 
-            status = ERRORCHANNELCNTL;
+            status = ERROR_CHANNEL_CNTL;
     }
     if ( UnwrappedChannelMask == 0 ) {
-        status = ERRORCHANNELMASK ; 
+        status = ERROR_CHANNEL_MASK ; 
     }        
     return ( status );
 };
@@ -152,7 +152,7 @@ void LoraRegionsEU::RegionSetMask ( void ) {
 /*                  Region MAx Payload SIze  Configuration          */
 /* Chapter 7.1.6 LoRaWan 1.0.1 specification                        */
 /********************************************************************/
-eStatusLoRaWan LoraRegionsEU ::RegionMaxPayloadSize ( uint16_t sizeIn ) {
+eStatusLoRaWan LoraRegionsEU ::RegionMaxPayloadSize ( uint8_t sizeIn ) {
     eStatusLoRaWan  status ;
     uint8_t M [ 8 ] = { 59, 59, 59, 123, 230, 230, 230, 230 };
     status = ( sizeIn >= M [MacTxDataRate] ) ? ERRORLORAWAN : OKLORAWAN ;

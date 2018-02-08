@@ -25,8 +25,7 @@ Maintainer        : Fabien Holin ( SEMTECH)
 
 
 struct sBackUpFlash BackUpFlash;
-//static LoraWanObjet<LoraRegionsEU> Lp( TX_RX_IT );
-//static LoraWanObjet Lp( TX_RX_IT );
+
 //@note set to board definition
 #define CHECKFCNTDOWN 1
 int UserPayloadSize = 14;
@@ -37,17 +36,23 @@ uint8_t UserFport = 3;
 uint8_t UserRxFport ;
 uint8_t MsgType ;
 uint16_t FcntDwnCertif = 0;
-uint32_t MsgTypePrevious = UNCONFDATAUP ;
-LoraWanObjet<LoraRegionsEU> Lp( TX_RX_IT ); // shouldn't be glabal just easier for certification application
-void ttest (void){
-    pcf.printf("enter in test1 \n");
-}
+uint32_t MsgTypePrevious = UNCONF_DATA_UP ;
+
+
+static uint8_t DevEuiOrange[] = 
+{ 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0x11 };    
+LoraWanObjet<LoraRegionsEU> LpOrange( DevEuiOrange ); // shouldn't be glabal just easier for certification application
+static uint8_t DevEui[] = 
+{ 0xAA, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0xAA };    
+LoraWanObjet<LoraRegionsEU> Lp( DevEui ); // shouldn't be glabal just easier for certification application
+
+
 int  Certification ( bool NewCommand ){
     uint32_t temp ;
     int i ;
     UserFport       = 224;
     UserPayloadSize = 2;
-    MsgType = UNCONFDATAUP ;
+    MsgType = UNCONF_DATA_UP ;
     if ( NewCommand == true) {
         switch ( UserRxPayload[0] ) {
             case 0 :  // end of test
@@ -67,13 +72,13 @@ int  Certification ( bool NewCommand ){
                 }
                 break;            
             case 2 :  // Confirmed Uplink
-                MsgType = CONFDATAUP ; 
+                MsgType = CONF_DATA_UP ; 
                 MsgTypePrevious = MsgType;
                 UserPayload[0]  = FcntDwnCertif >> 8;
                 UserPayload[1]  = FcntDwnCertif & 0xFF;
                 break;
             case 3 :  // UnConfirmed Uplink
-                MsgType = UNCONFDATAUP ;
+                MsgType = UNCONF_DATA_UP ;
                 MsgTypePrevious = MsgType;   
                 UserPayload[0]  = FcntDwnCertif >> 8;
                 UserPayload[1]  = FcntDwnCertif & 0xFF;            
@@ -115,21 +120,23 @@ int main( ) {
     for (int i = 0; i < 14 ; i ++) {
         UserPayload[i]  = i;
     }
-    MsgType = UNCONFDATAUP;
-    uint8_t AvailableRxPacket = NOLORARXPACKETAVAILABLE ;
+    MsgType = UNCONF_DATA_UP;
+    uint8_t AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE ;
     eLoraWan_Process_States LpState = LWPSTATE_IDLE;    
+    eLoraWan_Process_States LpStateOrange = LWPSTATE_IDLE;    
 
     /************************************************/
     /*          Configure Adr Mode                  */
     /************************************************/
     Lp.SetDataRateStrategy( MOBILE_LOWPER_DR_DISTRIBUTION );
-
+    LpOrange.SetDataRateStrategy( MOBILE_LOWPER_DR_DISTRIBUTION );
     /************************************************/
     /*           Restore Context from Flash         */
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */
     /************************************************/
     //Lp.RestoreContext ( );
-    //Lp.NewJoin( );
+    Lp.NewJoin( );
+    LpOrange.NewJoin( );
    wait(1);
 
     while(1) {
@@ -145,10 +152,10 @@ int main( ) {
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
             WakeUpAlarmMSecond ( 500 );
-            sleep ( );
+            GotoSleep ( );
         }
 
-        if ( AvailableRxPacket == LORARXPACKETAVAILABLE ) { 
+        if ( AvailableRxPacket == LORA_RX_PACKET_AVAILABLE ) { 
             Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
             DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
             for ( i = 0 ; i < UserRxPayloadSize ; i++){
@@ -165,7 +172,40 @@ int main( ) {
                 Certification ( false );
             }
         }
-        WakeUpAlarmSecond(5);
-        sleep ( );
+        
+         if ( LpOrange.IsJoined ( ) == JOINED ) {            
+            LpStateOrange = LpOrange.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
+        } else {
+            LpStateOrange = LpOrange.Join( );
+        }
+        
+        
+        while ( LpStateOrange != LWPSTATE_IDLE ){
+            LpStateOrange = LpOrange.LoraWanProcess( &AvailableRxPacket );
+            WakeUpAlarmMSecond ( 500 );
+            GotoSleep ( );
+        }
+
+        if ( AvailableRxPacket == LORA_RX_PACKET_AVAILABLE ) { 
+            LpOrange.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
+            DEBUG_PRINTF("Receive on port %d  an Applicative Downlink from orange\n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+            for ( i = 0 ; i < UserRxPayloadSize ; i++){
+                DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+                
+            }
+            DEBUG_MSG("]\n");
+            if ( ( UserRxFport == 224 ) || ( UserRxPayloadSize == 0 ) ) {
+               DEBUG_MSG("Receive Certification Payload \n"); 
+               StatusCertification = Certification ( true );
+            } 
+        } else {
+            if ( StatusCertification > 0 ){
+                Certification ( false );
+            }
+        }
+        
+        
+        WakeUpAlarmSecond(120);
+        GotoSleep ( );
     }
 }

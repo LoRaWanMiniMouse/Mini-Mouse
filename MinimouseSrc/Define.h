@@ -58,23 +58,17 @@ extern Serial pcf;
 /********************************************************************************/
 static uint8_t LoRaMacNwkSKey[] =
 { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-//{ 0xAA, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-/*!
- * AES encryption/decryption cipher application session key
- */
+
 static uint8_t LoRaMacAppSKey[] =
 { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
-//{ 0xAA, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+
 static uint8_t LoRaMacAppKey[] =
-{ 0x22, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-//{ 0xAA, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+{ 0xAA, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+
 static uint8_t AppEui[] = 
 { 0x70, 0xB3, 0xD5, 0x7E, 0xF0, 0x00, 0x36, 0x12 };
 
-static uint8_t DevEui[] = 
-{ 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0xAA };    
-//{ 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0xBB };    
-//{ 0xAA, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0xAA };    
+
 static uint32_t LoRaDevAddr = 0x26011918;
 
 
@@ -120,11 +114,11 @@ enum{
 enum{
     JOINREQUEST,
     JOINACCEPT,
-    UNCONFDATAUP,
-    UNCONFDATADOWN,
-    CONFDATAUP,
-    CONFDATADOWN,
-    REJOINREQUEST,
+    UNCONF_DATA_UP,
+    UNCONF_DATA_DOWN,
+    CONF_DATA_UP,
+    CONF_DATA_DOWN,
+    REJOIN_REQUEST,
     PROPRIETARY,
 };
 
@@ -175,7 +169,7 @@ enum {
 #define    TIMEONAIR_JOIN_SF7_MS      65 // ms  
 #define    MAX_RETRY_JOIN_DUTY_CYCLE_1000 10
 
-#define MINLORAWANPAYLOADSIZE 12
+#define MIN_LORAWAN_PAYLOAD_SIZE 12
 #define PORTNWK 0
 
 #define MAX_CONFUP_MSG 4
@@ -184,9 +178,9 @@ enum {
 /*****************************************************************************/
 
 enum{
-    RXTIMEOUTIRQFLAG     = 0x80,
-    RECEIVEPACKETIRQFLAG = 0x40,
-    BADPACKETIRQFLAG = 0x60,
+    RXTIMEOUT_IRQ_FLAG      = 0x80,
+    RECEIVE_PACKET_IRQ_FLAG = 0x40,
+    BAD_PACKET_IRQ_FLAG     = 0x60,
 };
 
 
@@ -195,7 +189,7 @@ enum{
 /********************************************************************************/
 #define MSB32FIRST( x ) ( ( ( x & 0x000000FF ) << 24 ) + ( ( x & 0x0000FF00 ) << 8 ) + ( ( x & 0x00FF0000 ) >> 8 ) + ( ( x & 0xFF000000 ) >> 24 ) )
 #define MSB16FIRST( x ) ( ( ( x & 0x00FF ) << 8 ) + ( ( x & 0xFF00 ) >> 8 ) )
-#define MAXTXPAYLOADSIZE 255
+#define MAX_TX_PAYLOAD_SIZE 255
 #define FHDROFFSET 9 // MHDR+FHDR offset if OPT = 0 + fport
 #define MICSIZE 4
 #define FLASH_UPDATE_PERIOD 4
@@ -221,9 +215,10 @@ enum {
 };
 
 typedef enum {
-    UNVALIDCHANNEL,
-    VALIDCHANNEL,
-}eValidChannel;
+    UNVALID_CHANNEL,
+    VALID_CHANNEL,
+}eVALID_CHANNEL;
+
 /*User Confi for Adr Mode select*/
 typedef enum eDataRateStrategy{
     STATIC_ADR_MODE,
@@ -238,15 +233,15 @@ typedef enum {
 }eStatusLoRaWan;
 
 typedef enum {
-    ERRORCHANNELCNTL = -2,    
-    ERRORCHANNELMASK = -1,
+    ERROR_CHANNEL_CNTL = -2,    
+    ERROR_CHANNEL_MASK = -1,
     OKCHANNEL    = 0,
 }eStatusChannel;
 typedef enum {
-    NOMOREVALIDRXPACKET,
+    NO_MORE_VALID_RX_PACKET,
     USERRX_FOPTSPACKET,
     NWKRXPACKET,
-    JOINACCEPTPACKET,
+    JOIN_ACCEPT_PACKET,
 } eRxPacketType;
 typedef enum {
     RX1,
@@ -256,12 +251,12 @@ typedef enum {
 /*    SHARE WITH USER    */
 /*************************/
 enum {
-    NOLORARXPACKETAVAILABLE,
-    LORARXPACKETAVAILABLE,
+    NO_LORA_RXPACKET_AVAILABLE,
+    LORA_RX_PACKET_AVAILABLE,
 };
 
 typedef enum { 
-    NOTJOINED,
+    NOT_JOINED,
     JOINED,
 } eJoinStatus;
 

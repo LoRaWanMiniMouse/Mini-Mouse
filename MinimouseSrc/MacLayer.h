@@ -30,7 +30,7 @@ template <int NBCHANNEL>
 class LoraWanContainer { 
 public: 
 
-    LoraWanContainer( PinName interrupt); 
+    LoraWanContainer( uint8_t * DevEui ); 
     ~LoraWanContainer( );
     static const uint8_t  NUMBER_OF_CHANNEL = NBCHANNEL; // @note this is an issue it is region dependant so move in region but tbd...
     void BuildTxLoraFrame     ( void );
@@ -87,6 +87,7 @@ public:
     uint32_t   DevAddr;
     uint8_t    nwkSKey[16];
     uint8_t    appSKey[16];
+    uint8_t    devEui [8];
     
     /*******************************************/
     /* what about keys: AppEUI:Nwskey:AppSkey  */

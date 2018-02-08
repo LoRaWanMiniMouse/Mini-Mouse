@@ -27,8 +27,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 
 
-RadioContainer::RadioContainer( PinName interrupt )
-                :Radio( NULL ), TxInterrupt( interrupt ), RxTimeoutInterrupt ( RX_TIMEOUT_IT ) {
+RadioContainer::RadioContainer( )
+                :Radio( NULL ) {
     StateRadioProcess = RADIOSTATE_IDLE;
     //TxInterrupt.rise( this,&RadioContainer::IsrRadio );
     //RxTimeoutInterrupt.rise( this,&RadioContainer::IsrRadio );
@@ -49,29 +49,29 @@ RadioContainer::~RadioContainer( ) {
 /*          Set Radio in Sleep Mode                                  */
 /*******************Isr Radio  ***************************************/
 void RadioContainer::AttachIsr ( void ) {
-     TxInterrupt.rise( callback ( this, &RadioContainer::IsrRadio ) );
-     RxTimeoutInterrupt.rise( callback ( this , &RadioContainer::IsrRadio ) );
+     //TxInterrupt.rise( callback ( this, &RadioContainer::IsrRadio ) );
+     RadioGlobalIt.rise( callback ( this, &RadioContainer::IsrRadio ) );
+     RadioTimeOutGlobalIt.rise( callback ( this , &RadioContainer::IsrRadio ) );
 }
 void RadioContainer::DetachIsr ( void ) {
-     TxInterrupt.rise( NULL );
-     RxTimeoutInterrupt.rise( NULL );
+     RadioGlobalIt.rise( NULL );
+     RadioTimeOutGlobalIt.rise( NULL );
 }
 void RadioContainer::IsrRadio( void ) {
-    uint64_t tAlarm64bits ;
     int status = OKLORAWAN;
     GetIrqRadioFlag ( );
     ClearIrqRadioFlag ( );
-    if ( RegIrqFlag == RECEIVEPACKETIRQFLAG ) {//@ note (important for phy ) remove all IT mask in config send or rx and check if regirqflag = rxdone + header crc valid 
+    if ( RegIrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {//@ note (important for phy ) remove all IT mask in config send or rx and check if regirqflag = rxdone + header crc valid 
         status = DumpRxPayloadAndMetadata ( );
         if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
-            RegIrqFlag = BADPACKETIRQFLAG ; // this case is exactly the same than the case of rx timeout
+            RegIrqFlag = BAD_PACKET_IRQ_FLAG ; // this case is exactly the same than the case of rx timeout
             DEBUG_MSG( "Receive a packet But rejected\n"); 
         }
     }
     Radio.Sleep ( );
     switch ( StateRadioProcess ) { 
         case RADIOSTATE_TXON :
-            TimestampRtcIsr = RtcGetTimeMs ( &tAlarm64bits ); //@info Timestamp only on txdone it
+            TimestampRtcIsr = RtcGetTimeMs ( ); //@info Timestamp only on txdone it
             StateRadioProcess = RADIOSTATE_TXFINISHED;
             break;
         
@@ -171,7 +171,7 @@ int RadioContainer::DumpRxPayloadAndMetadata ( void ) {
    /* check Mtype */
     int status = OKLORAWAN;
     uint8_t MtypeRxtmp = RxPhyPayload[0] >> 5 ;
-    if (( MtypeRxtmp == JOINREQUEST) || ( MtypeRxtmp == UNCONFDATAUP ) || ( MtypeRxtmp == CONFDATAUP) || ( MtypeRxtmp == REJOINREQUEST )) {
+    if (( MtypeRxtmp == JOINREQUEST) || ( MtypeRxtmp == UNCONF_DATA_UP ) || ( MtypeRxtmp == CONF_DATA_UP) || ( MtypeRxtmp == REJOIN_REQUEST )) {
         status += ERRORLORAWAN;
         DEBUG_PRINTF(" BAD Mtype = %d for RX Frame \n", MtypeRxtmp );
     }

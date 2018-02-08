@@ -25,7 +25,12 @@ static RTC_HandleTypeDef RtcHandle;
 //static int globalt ;
 //void (*globalfunc)(void);
 LowPowerTimerLoRa LowPowerTimerLora;
-
+/*!
+ * Irq Handler dedicated for wake up It
+ * 
+ * \param [IN]  void
+ * \param [OUT] void         
+ */
 static void RTC_IRQHandlerWakeUp (void)
 {
     RtcHandle.Instance = RTC;
@@ -34,7 +39,12 @@ static void RTC_IRQHandlerWakeUp (void)
     __HAL_RTC_WAKEUPTIMER_EXTI_ENABLE_EVENT();
 }
 
-
+/*!
+* WakeUpInit : Init the application wake up rtc timer.  
+ * \remark this timer is not used by the LoRaWAN object , only used to wake up from applciation's low power sleep mode.
+ * \param [IN]  void
+ * \param [OUT] void         
+ */
 
 void WakeUpInit ( void ) {
       RtcHandle.Instance = RTC;
@@ -44,18 +54,38 @@ void WakeUpInit ( void ) {
       NVIC_EnableIRQ(RTC_WKUP_IRQn);
 }
 
+/*!
+* WakeUpAlarmMSecond : Configures the application wake up timer with a delay duration in ms
+ * When the timer expires , the rtc block generates an It to wake up the Mcu 
+ * \remark this function is not used by the LoRaWAN object, only provided for application purposes.
+ * \param [IN]  int delay in ms
+ * \param [OUT] void         
+ */
+
 void WakeUpAlarmMSecond ( int delay) {
     int DelayMs2tick = delay * 2 + ( ( 6 * delay ) >> 7);
     HAL_RTCEx_SetWakeUpTimer_IT(&RtcHandle, DelayMs2tick, RTC_WAKEUPCLOCK_RTCCLK_DIV16);
 }
-
+/*!
+* WakeUpAlarmMecond : Configure the wake up timer with a delay duration in second
+ * \remark this function is not used by the LoRaWAN object, only provided for application purposes.
+ * When the timer expires , the rtc block generates an It to wake up the Mcu 
+ * 
+ * \param [IN]  int delay in s
+ * \param [OUT] void         
+ */
 void WakeUpAlarmSecond ( int delay) {
     HAL_RTCEx_SetWakeUpTimer_IT(&RtcHandle, delay, 4);
 }
 
-
-     
-uint32_t RtcGetTimeMs( uint64_t  *longTime64bits )//uint32_t  *Seconds, uint16_t * SubSeconds)
+/*!
+* RtcGetTimeMs : return the Current Rtc time in Ms 
+ * \remark is used to timestamp radio events (end of TX), will also be used for future classB
+* \remark this function may be used by the application.
+ * \param [IN]   void
+ * \param [OUT]  uint32_t Current RTC time in ms wraps every 49 days       
+ */
+uint32_t RtcGetTimeMs( void )
 {
     RTC_DateTypeDef dateStruct;
     RTC_TimeTypeDef timeStruct;
@@ -70,13 +100,20 @@ uint32_t RtcGetTimeMs( uint64_t  *longTime64bits )//uint32_t  *Seconds, uint16_t
     timeinfo.tm_hour = timeStruct.Hours;
     timeinfo.tm_min  = timeStruct.Minutes;
     timeinfo.tm_sec  = timeStruct.Seconds;
-    *longTime64bits =  cal_convertBCD_2_Cnt64( &dateStruct, &timeStruct );
     // Convert to timestamp
     time_t t = mktime(&timeinfo);
     return ( ( t * 1000 ) + ( 999 - ( ( timeStruct.SubSeconds *999) / 255 ) ) );  // get time en ms
 }
 
-uint32_t RtcGetTimeSecond( void )//uint32_t  *Seconds, uint16_t * SubSeconds)
+/*!
+* RtcGetTimeSecond : return the Current Rtc time in Second 
+* \remark is used for :
+* \remark scheduling autonomous retransmissions (for exemple NbTrans) , transmitting MAC answers , basically any delay without accurate time constraints
+* \remark also used to measure the time spent inside the LoRaWAN process for the integrated failsafe
+ * \param [IN]   void
+ * \param [OUT]  uint32_t RTC time in Second       
+ */
+uint32_t RtcGetTimeSecond( void )
 {
     RTC_DateTypeDef dateStruct;
     RTC_TimeTypeDef timeStruct;
@@ -95,6 +132,13 @@ uint32_t RtcGetTimeSecond( void )//uint32_t  *Seconds, uint16_t * SubSeconds)
     time_t t = mktime(&timeinfo);
     return ( t );
 }
+
+/*!
+* RtcInit Function
+ * \remark must be called before any call to initiliaze the timers
+ * \param [IN]   void
+ * \param [OUT]  void       
+ */
 void RtcInit (void)
 {
     uint32_t rtc_freq = 0;
@@ -156,20 +200,51 @@ void RtcInit (void)
 
 }
 
-LPTIM_HandleTypeDef hlptim1;
+/*!
+* A function to set the mcu in low power mode  
+ * \remark to be removed
+ * \param [IN]   void
+ * \param [OUT]  void       
+ */
+void GotoSleep (void ) {
+    sleep (); 
+}
 
+
+static LPTIM_HandleTypeDef hlptim1;
+/*!
+ * Irq Handler dedicated for Low power Timer reserved for lorawan layer
+ *\remark LowPowerTimerLora.timerISR() is used to callback the timer Interupt Service Routine of the current obj LoraWanObjet 
+ * \param [IN]  void
+ * \param [OUT] void         
+ */
 void LPTIM1_IRQHandler ( void ) {
     hlptim1.Instance = LPTIM1;
     HAL_LPTIM_IRQHandler(&hlptim1);
     HAL_LPTIM_TimeOut_Stop(&hlptim1);
-    LowPowerTimerLora.run();
+    LowPowerTimerLora.timerISR();
 }
 
+
+/**************************************************/
+/*        Class LowPowerTimerLoRa                 */
+/**************************************************/
+/*!
+ * Constructor of LowPowerTimerLoRa
+ *\remark This timer is dedicated to the LoraWanObjet. It CANNOT be used by the application. This timer must be able to wake up the mcu when it expires.
+ * \param [IN]  void
+ * \param [OUT] void         
+ */
  LowPowerTimerLoRa::LowPowerTimerLoRa ( ) {
     Func = DoNothing;
     obj = NULL;
 };
-
+/*!
+ * LowPowerTimerLoRa Init
+ *\remark initializes the dedicated LoRaWAN low power timer object. MCU specific.
+ * \param [IN]  void
+ * \param [OUT] void         
+ */
 void LowPowerTimerLoRa::LowPowerTimerLoRaInit ( ) {
     /* Peripheral clock enable */
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
@@ -196,9 +271,19 @@ void LowPowerTimerLoRa::LowPowerTimerLoRaInit ( ) {
     Func = DoNothing;
     obj = NULL;
 };
-void LowPowerTimerLoRa::AttachMsecond ( void (* _Func) (void *) , void * _obj, int delay){
+/*!
+ * LowPowerTimerLoRa AttachMsecond
+ *
+ * \param void (* _Func) (void *) a static method member of the current Obj
+ * \param *_obj a pointer to the current objet
+ * \param int delay in ms delay should be between 1ms and 16s.
+ * \param [OUT] void         
+ * \remark the code  Func =  _Func ; and obj  = _obj; isn't mcu dependent
+ * \remark starts the LoRaWAN dedicated timer and attaches the IRQ to the handling Interupt SErvice Routine in the LoRaWAN object.
+ */
+void LowPowerTimerLoRa::StartTimerMsecond ( void (* _Func) (void *) , void * _obj, int delay){
     Func =  _Func ;
     obj  = _obj;
     int DelayMs2tick = delay * 2 + ( ( 6 * delay ) >> 7);
-    HAL_LPTIM_TimeOut_Start_IT(&hlptim1, 65535, DelayMs2tick);
+    HAL_LPTIM_TimeOut_Start_IT(&hlptim1, 65535, DelayMs2tick); // MCU specific
 };

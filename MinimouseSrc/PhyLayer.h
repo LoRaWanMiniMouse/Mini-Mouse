@@ -24,7 +24,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 class RadioContainer { 
 public: 
-    RadioContainer( PinName interrupt ); 
+    RadioContainer( ); 
     ~RadioContainer( );
     SX1276MB1xAS Radio;
     void RadioContainerInit( void );
@@ -36,8 +36,8 @@ public:
     int GetRadioState      ( void );
     void SetRxConfig       (eModulationType RxModulation, uint32_t RxFrequencyMac, uint8_t RxSfMac, uint32_t RxBwMac );
     uint32_t GetTxFrequency ( void );
-    uint8_t    TxPhyPayload[MAXTXPAYLOADSIZE]; // @note should be private to be safer , in this case have to create a set function for send in lorawan process
-    uint8_t    RxPhyPayload[MAXTXPAYLOADSIZE]; 
+    uint8_t    TxPhyPayload[MAX_TX_PAYLOAD_SIZE]; // @note should be private to be safer , in this case have to create a set function for send in lorawan process
+    uint8_t    RxPhyPayload[MAX_TX_PAYLOAD_SIZE]; 
     uint16_t   RxPhyPayloadSize;
     int RxPhyPayloadSnr;
     int RxPhyPayloadRssi;
@@ -58,8 +58,6 @@ private :
     uint8_t      TxPower;
     uint8_t      TxSf;
     uint32_t     TxBw;
-    InterruptIn  TxInterrupt;
-    InterruptIn  RxTimeoutInterrupt;
     int DumpRxPayloadAndMetadata ( void );
     void ClearIrqRadioFlag ( void );
     void GetIrqRadioFlag ( void );

@@ -41,7 +41,7 @@ public:
      * \brief LoraWanObjet class constructor.
      * \param DevEui LoraWan Key for OTA Devices
      */    
-    LoraWanObjet( uint8_t * DevEui ); 
+    LoraWanObjet(  sLoRaWanKeys LoRaWanKeys  ); 
 
 
      /*!

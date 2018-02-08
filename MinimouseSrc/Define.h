@@ -56,22 +56,15 @@ extern Serial pcf;
 /********************************************************************************/
 /*                         LORA KEYS USER Specific                              */
 /********************************************************************************/
-static uint8_t LoRaMacNwkSKey[] =
-{ 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-
-static uint8_t LoRaMacAppSKey[] =
-{ 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
-
-static uint8_t LoRaMacAppKey[] =
-{ 0xAA, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-
-static uint8_t AppEui[] = 
-{ 0x70, 0xB3, 0xD5, 0x7E, 0xF0, 0x00, 0x36, 0x12 };
-
-
-static uint32_t LoRaDevAddr = 0x26011918;
-
-
+typedef struct sLoRaWanKeys {
+    
+    uint8_t * LoRaMacNwkSKey;
+    uint8_t * LoRaMacAppSKey;
+    uint8_t * LoRaMacAppKey;
+    uint8_t * AppEui;
+    uint8_t * DevEui;    
+    uint32_t LoRaDevAddr ;
+}sLoRaWanKeys;
 
 /********************************************************************************/
 /*                         LoraWan Process States                               */

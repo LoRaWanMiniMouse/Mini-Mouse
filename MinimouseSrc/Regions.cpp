@@ -22,7 +22,7 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*                     Constructors              */
 /*@note have to check init values                */
 /*************************************************/
-LoraRegionsEU :: LoraRegionsEU ( uint8_t* DevEui ) : LoraWanContainer<16>  ( DevEui){
+LoraRegionsEU :: LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys ) : LoraWanContainer<16>  ( LoRaWanKeys ){
     
     memset( MacChannelIndexEnabled, CHANNEL_DISABLED, NUMBER_OF_CHANNEL );
     memset( MacMinDataRateChannel, 0, NUMBER_OF_CHANNEL );

@@ -26,17 +26,19 @@ template class LoraWanContainer<16>;
 /*@note have to check init values                */
 /*************************************************/
 
-template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::LoraWanContainer( uint8_t * DevEui )
+template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys )
                     :Phy( ) { 
     Phy.RadioContainerInit( );
     StateTimer = TIMERSTATE_SLEEP;
     AvailableRxPacketForUser = NO_LORA_RXPACKET_AVAILABLE;
-    memcpy( appSKey, LoRaMacAppSKey, 16 );
-    memcpy( nwkSKey, LoRaMacNwkSKey, 16 );
-    memcpy( devEui, DevEui, 8 );
+    memcpy( appSKey, LoRaWanKeys.LoRaMacAppSKey, 16 );
+    memcpy( nwkSKey, LoRaWanKeys.LoRaMacNwkSKey, 16 );
+    memcpy( appKey, LoRaWanKeys.LoRaMacAppKey, 16 );
+    memcpy( devEui, LoRaWanKeys.DevEui, 8 );
+    memcpy( appEui, LoRaWanKeys.AppEui, 8 );
     FcntUp        = 0;
     FcntDwn       = 0;
-    DevAddr       = LoRaDevAddr ;
+    DevAddr       = LoRaWanKeys.LoRaDevAddr ;
     AdrAckCnt     = 0;
     AdrAckReq     = 0;
     MacNbTrans    = 1;
@@ -157,11 +159,11 @@ template <int NBCHANNEL> eRxPacketType LoraWanContainer<NBCHANNEL>::DecodeRxFram
         /*                 Case : the receive packet is a JoinResponse          */
         /************************************************************************/
     if ( MtypeRx == JOINACCEPT ) {
-        LoRaMacJoinDecrypt( &Phy.RxPhyPayload[1], Phy.RxPhyPayloadSize-1, LoRaMacAppKey, &MacRxPayload[1] );
+        LoRaMacJoinDecrypt( &Phy.RxPhyPayload[1], Phy.RxPhyPayloadSize-1, appKey, &MacRxPayload[1] );
         MacRxPayload[0] =  Phy.RxPhyPayload[0];
         MacRxPayloadSize = Phy.RxPhyPayloadSize - MICSIZE ;
         memcpy((uint8_t *)&micIn, &MacRxPayload[MacRxPayloadSize], MICSIZE);
-        status += LoRaMacCheckJoinMic( MacRxPayload, MacRxPayloadSize, LoRaMacAppKey, micIn);
+        status += LoRaMacCheckJoinMic( MacRxPayload, MacRxPayloadSize, appKey, micIn);
         if ( status == OKLORAWAN) {
             return JOIN_ACCEPT_PACKET;
         }
@@ -667,7 +669,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateJoinProcedure (
     uint8_t AppNonce[6];
     int i;
     memcpy( AppNonce, &MacRxPayload[1], 6 );
-    LoRaMacJoinComputeSKeys(LoRaMacAppKey, AppNonce, DevNonce,  nwkSKey, appSKey );
+    LoRaMacJoinComputeSKeys(appKey, AppNonce, DevNonce,  nwkSKey, appSKey );
     if ( MacRxPayloadSize > 13 ) { // cflist are presents
         for( i = 0 ; i < 16 ; i++) {
             CFList[i] = MacRxPayload[13 + i];
@@ -701,7 +703,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildJoinLoraFrame( v
     MType = JOINREQUEST ;
     SetMacHeader ( );
     for (int i = 0; i <8; i++){ 
-        Phy.TxPhyPayload[1+i] = AppEui[7-i];
+        Phy.TxPhyPayload[1+i] = appEui[7-i];
         Phy.TxPhyPayload[9+i] = devEui[7-i];
     }
     Phy.TxPhyPayload[17] = ( uint8_t )( ( DevNonce & 0x00FF ) );
@@ -709,7 +711,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildJoinLoraFrame( v
     MacPayloadSize = 19 ;
     uint32_t mic ; 
 //    FcntUp = 1; 
-    LoRaMacJoinComputeMic( &Phy.TxPhyPayload[0], MacPayloadSize, LoRaMacAppKey, &mic );
+    LoRaMacJoinComputeMic( &Phy.TxPhyPayload[0], MacPayloadSize, appKey, &mic );
     memcpy(&Phy.TxPhyPayload[MacPayloadSize], (uint8_t *)&mic, 4);
     MacPayloadSize = MacPayloadSize + 4;
 }

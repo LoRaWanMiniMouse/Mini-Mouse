@@ -24,7 +24,7 @@ InterruptIn RadioGlobalIt ( TX_RX_IT ) ;
 InterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
 template class LoraWanObjet<LoraRegionsEU>;
 template <class T> 
-LoraWanObjet <T> ::LoraWanObjet( uint8_t * DevEui ):packet(  DevEui ){
+LoraWanObjet <T> ::LoraWanObjet( sLoRaWanKeys LoRaWanKeys ):packet(  LoRaWanKeys ){
     StateLoraWanProcess=LWPSTATE_IDLE;
     packet.MajorBits= LORAWANR1;
 }; 

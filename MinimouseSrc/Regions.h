@@ -34,7 +34,7 @@ class LoraRegionsEU : public LoraWanContainer<16> {
 
     
 public: 
-    LoraRegionsEU ( uint8_t* DevEui ); 
+    LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys ); 
     eStatusLoRaWan RegionMaxPayloadSize ( uint8_t sizeIn ) ;
     void RegionSetDataRateDistribution    ( uint8_t adrMode );
     virtual void RegionGiveNextDataRate           ( void );

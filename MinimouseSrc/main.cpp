@@ -20,8 +20,13 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #include "rtc_api.h"
 #include "ApiTimers.h"
 
-
-
+uint8_t LoRaMacNwkSKeyInit[] = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+uint8_t LoRaMacAppSKeyInit[] = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
+uint8_t LoRaMacAppKeyInit[] =  { 0xAA, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+uint8_t AppEuiInit[] = { 0x70, 0xB3, 0xD5, 0x7E, 0xF0, 0x00, 0x36, 0x12 };
+uint8_t DevEuiInit[] = { 0xAA, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0xAA };    
+uint32_t LoRaDevAddrInit = 0x26011918;
+static  sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit};
 
 
 struct sBackUpFlash BackUpFlash;
@@ -38,13 +43,7 @@ uint8_t MsgType ;
 uint16_t FcntDwnCertif = 0;
 uint32_t MsgTypePrevious = UNCONF_DATA_UP ;
 
-
-static uint8_t DevEuiOrange[] = 
-{ 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0x11 };    
-LoraWanObjet<LoraRegionsEU> LpOrange( DevEuiOrange ); // shouldn't be glabal just easier for certification application
-static uint8_t DevEui[] = 
-{ 0xAA, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0xAA };    
-LoraWanObjet<LoraRegionsEU> Lp( DevEui ); // shouldn't be glabal just easier for certification application
+LoraWanObjet<LoraRegionsEU> Lp( LoraWanKeys ); // shouldn't be glabal just easier for certification application
 
 
 int  Certification ( bool NewCommand ){
@@ -129,7 +128,6 @@ int main( ) {
     /*          Configure Adr Mode                  */
     /************************************************/
     Lp.SetDataRateStrategy( MOBILE_LOWPER_DR_DISTRIBUTION );
-    LpOrange.SetDataRateStrategy( MOBILE_LOWPER_DR_DISTRIBUTION );
     /************************************************/
     /*           Restore Context from Flash         */
     /* fcnt up is incemented by FLASH_UPDATE_PERIOD */

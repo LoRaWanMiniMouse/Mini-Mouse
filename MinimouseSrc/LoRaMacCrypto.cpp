@@ -209,7 +209,6 @@ void LoRaMacComputeAndAddMic(  uint8_t *buffer, uint16_t size, const uint8_t *ke
 {
     uint32_t mic;
     LoRaMacComputeMic(buffer,size, key, address,dir,  sequenceCounter,&mic );
-    DEBUG_PRINTF("fcntup = %d\n",sequenceCounter);
     memcpy(&buffer[size],(uint8_t *)&mic,4);
 }
 

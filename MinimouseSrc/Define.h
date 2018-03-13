@@ -20,9 +20,10 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "mbed.h"
 
 
-extern Serial pcf;
-#define DEBUG_TRACE  1
+
+#define DEBUG_TRACE  0
 #if DEBUG_TRACE == 1
+extern Serial pcf;
 #define DEBUG_MSG(str)               pcf.printf(str)
 //#define DEBUG_PRINTF(fmt, args...)   DEBUG_PRINTF("  %s:%d: "fmt, __FUNCTION__, __LINE__, args)
 #define DEBUG_PRINTF(fmt, args...)   pcf.printf(fmt, args)

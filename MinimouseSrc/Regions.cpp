@@ -288,7 +288,6 @@ void LoraRegionsEU::RegionGiveNextDataRate( void ) {
     }
     MacTxDataRate = ( MacTxDataRate > 7 ) ? 7 : MacTxDataRate;
     TxDataRateToSfBw ( MacTxDataRate );
-    DEBUG_PRINTF("  Tx data rate = %d\n",MacTxDataRate );
 }
 
 /********************************************************************************/

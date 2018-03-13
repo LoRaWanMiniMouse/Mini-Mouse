@@ -71,9 +71,9 @@ int main( ) {
     RtcInit ( );
     WakeUpInit ( );
     LowPowerTimerLora.LowPowerTimerLoRaInit();
-    
+#if DEBUG_TRACE == 1
     pcf.baud( 115200 );
-    
+#endif    
         
     /*!
     * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 

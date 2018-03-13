@@ -80,11 +80,6 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildTxLoraFrame( voi
     MacPayloadSize = UserPayloadSize + FHDROFFSET + FoptsTxLengthCurrent; 
 };
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::EncryptTxFrame( void ) {
-    int i;
-    for (i = 0 ; i < 16; i++ )  {
-        DEBUG_PRINTF(" %.2x ", nwkSKey[i]);
-    }
-    pcf.printf("\n dev addr = %x \n",DevAddr);
     LoRaMacPayloadEncrypt( &Phy.TxPhyPayload[FHDROFFSET + FoptsTxLengthCurrent], UserPayloadSize, (fPort == PORTNWK)? nwkSKey :appSKey, DevAddr, UP_LINK, FcntUp, &Phy.TxPhyPayload[FHDROFFSET + FoptsTxLengthCurrent] );
     LoRaMacComputeAndAddMic( &Phy.TxPhyPayload[0], MacPayloadSize, nwkSKey, DevAddr, UP_LINK, FcntUp );
     MacPayloadSize = MacPayloadSize + 4;
@@ -693,14 +688,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateJoinProcedure (
     DEBUG_PRINTF("MacRx2DataRate= %d\n",MacRx2DataRate);
     DEBUG_PRINTF("MacRx1Delay= %d\n",MacRx1Delay);
     Phy.JoinedStatus = JOINED;
-    for (i = 0 ; i < 16; i++ )  {
-        DEBUG_PRINTF(" %.2x ", nwkSKey[i]);
-    }
-    pcf.printf("\n");
-        for (i = 0 ; i < 16; i++ )  {
-        DEBUG_PRINTF(" %.2x ", appSKey[i]);
-    }
-    pcf.printf("\n");
+
     FirstDwn = true;
     FcntDwn = 0; 
     FcntUp = 0; 

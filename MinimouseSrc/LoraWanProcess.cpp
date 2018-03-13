@@ -19,7 +19,9 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "ApiTimers.h"
 #include "utilities.h"
 #include "Define.h"
-Serial pcf( SERIAL_TX, SERIAL_RX );
+#if DEBUG_TRACE == 1
+    Serial pcf( SERIAL_TX, SERIAL_RX );
+#endif
 InterruptIn RadioGlobalIt ( TX_RX_IT ) ;
 InterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
 template class LoraWanObjet<LoraRegionsEU>;
@@ -44,10 +46,10 @@ template <class T>
 eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
 
     *AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE
-//    if ( ( IsJoined ( ) == NOT_JOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
-//        DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
-//        StateLoraWanProcess = LWPSTATE_IDLE ;
-//    }        
+    if ( ( IsJoined ( ) == NOT_JOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
+        DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
+        StateLoraWanProcess = LWPSTATE_IDLE ;
+    }        
     
     if ( ( RtcGetTimeSecond( ) - FailSafeTimestamp ) > 120 ) {
         RadioReset ( ) ;
@@ -64,11 +66,10 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
     /*                                    STATE TX                                      */
     /************************************************************************************/
         case LWPSTATE_SEND:
-            AttachRadioIsr ( );
             switch ( GetRadioState( ) ) {
                 
                 case  RADIOSTATE_IDLE :
-                                        
+                    AttachRadioIsr ( );                    
                     packet.ConfigureRadioAndSend( );
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
@@ -119,7 +120,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
                     DEBUG_MSG( "  **************************\n " );
                     DEBUG_MSG( " * Receive a downlink RX2 *\n " );
                     DEBUG_MSG( " **************************\n " );
-                    StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK; //@note to be discuss if it is necessary to create a dedicated state?
+                    StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK; 
                 } else {
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
@@ -151,7 +152,6 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
     /*                              STATE UPDATE MAC                                    */
     /************************************************************************************/
         case LWPSTATE_UPDATEMAC:
-       //@notereview pensez a detacher propre en cas d'erreur et destructeur 
             DetachRadioIsr ( );
             packet.Phy.StateRadioProcess = RADIOSTATE_IDLE;  
             DEBUG_MSG( "\n" );
@@ -169,7 +169,7 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
             *AvailableRxPacket = packet.AvailableRxPacketForUser;
             if ( ( packet.IsFrameToSend == NWKFRAME_TOSEND ) || ( packet.IsFrameToSend == USRFRAME_TORETRANSMIT) ) {// @note ack send during the next tx|| ( packet.IsFrameToSend == USERACK_TOSEND ) ) {
                 packet.IsFrameToSend = NOFRAME_TOSEND;
-                RtcTargetTimer = RtcGetTimeSecond( ) + randr( 3, 4 ); //@note RtcGetTime in s so no wrap before 136 year since 1970 discuss wait between 5s and 25s is ACK_TIMEOUT 
+                RtcTargetTimer = RtcGetTimeSecond( ) + randr( 2, 6 ); 
                 StateLoraWanProcess = LWPSTATE_TXWAIT;
             } else {
                 RadioReset ( ) ; 

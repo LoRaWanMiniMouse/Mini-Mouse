@@ -21,7 +21,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 
 
-#define DEBUG_TRACE  0
+#define DEBUG_TRACE  1
 #if DEBUG_TRACE == 1
 extern Serial pcf;
 #define DEBUG_MSG(str)               pcf.printf(str)

@@ -64,7 +64,10 @@ typedef struct sLoRaWanKeys {
     uint8_t * AppEui;
     uint8_t * DevEui;    
     uint32_t LoRaDevAddr ;
+    bool     OtaDevice;
 }sLoRaWanKeys;
+
+
 
 /********************************************************************************/
 /*                         LoraWan Process States                               */
@@ -120,6 +123,10 @@ enum{
     RFU,
 };
 
+enum {
+    OTA_DEVICE,
+    APB_DEVICE,
+};
 enum {
     LINK_CHECK_REQ = 2,
     LINK_ADR_REQ,
@@ -185,7 +192,7 @@ enum{
 #define MAX_TX_PAYLOAD_SIZE 255
 #define FHDROFFSET 9 // MHDR+FHDR offset if OPT = 0 + fport
 #define MICSIZE 4
-#define FLASH_UPDATE_PERIOD 4
+#define FLASH_UPDATE_PERIOD 128
 /*!
  * Frame direction definition for up-link communications
  */

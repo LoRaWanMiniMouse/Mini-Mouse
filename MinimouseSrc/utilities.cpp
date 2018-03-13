@@ -83,3 +83,66 @@ int8_t Nibble2HexChar( uint8_t a )
         return '?';
     }
 }
+
+
+int  Certification ( bool NewCommand , uint8_t * UserFport , uint8_t * UserPayloadSize,  uint8_t * UserRxPayloadSize, uint8_t * MsgType, uint8_t * UserRxPayload, uint8_t * UserPayload, LoraWanObjet<LoraRegionsEU> *Lp){
+    uint32_t temp ;
+    static uint16_t FcntDwnCertif = 0;
+    static uint32_t MsgTypePrevious = UNCONF_DATA_UP ;
+    int i ;
+    *UserFport       = 224;
+    *UserPayloadSize = 2;
+    *MsgType = UNCONF_DATA_UP ;
+    if ( NewCommand == true) {
+        switch ( UserRxPayload[0] ) {
+            case 0 :  // end of test
+                *UserFport       = 3;
+                *UserPayloadSize = 14;
+                for ( i = 0; i < 14 ; i ++) {
+                    UserPayload[i]  = i;
+                }
+                break;
+            case 1 :
+                temp =  ( UserRxPayload[0] << 24 ) + ( UserRxPayload[1] << 16 ) + ( UserRxPayload[2] << 8 ) + ( UserRxPayload[3] );
+                if ( temp == 0x01010101) {
+                     Lp->SetDataRateStrategy( STATIC_ADR_MODE );
+                     FcntDwnCertif   = 0;
+                     UserPayload[0]  = FcntDwnCertif >> 8;
+                     UserPayload[1]  = FcntDwnCertif & 0xFF;
+                }
+                break;            
+            case 2 :  // Confirmed Uplink
+                *MsgType = CONF_DATA_UP ; 
+                MsgTypePrevious = *MsgType;
+                UserPayload[0]  = FcntDwnCertif >> 8;
+                UserPayload[1]  = FcntDwnCertif & 0xFF;
+                break;
+            case 3 :  // UnConfirmed Uplink
+                *MsgType = UNCONF_DATA_UP ;
+                MsgTypePrevious = *MsgType;   
+                UserPayload[0]  = FcntDwnCertif >> 8;
+                UserPayload[1]  = FcntDwnCertif & 0xFF;            
+                break;
+            case 4 :  //echo payload
+                *UserPayloadSize = *UserRxPayloadSize;
+                UserPayload[0] = 4;
+                for ( i = 1 ; i < (*UserPayloadSize); i++ ) {
+                    UserPayload[i]  = UserRxPayload [i] + 1;
+                }
+                break;
+            case 5 :  // link check request 
+              *UserPayloadSize = 1;
+              UserPayload[0]  = 2;
+              UserFport       = 0;
+            case 6 :  // rejoin 
+               Lp->NewJoin( );
+               break;
+            default :
+                break;
+        }
+        FcntDwnCertif++;
+    } else { // for the case of echo cmd
+         *MsgType = MsgTypePrevious;
+    }
+    return ( UserRxPayload[0] );
+}

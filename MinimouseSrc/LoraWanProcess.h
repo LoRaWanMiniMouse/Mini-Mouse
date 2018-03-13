@@ -59,9 +59,9 @@ public:
      * \param [IN] const uint8_t     PacketType     User Packet Type : UNCONF_DATA_UP, CONF_DATA_UP,
 
      * \param [OUT] eLoraWan_Process_States         Current state of the LoraWan stack :
-     *                                                 => return LWPSATE_SEND if all is ok
-     *                                                 => return Error in case of payload too long
-     *                                                 => return Error In case of the Lorawan stack previous state is not equal to iddle
+     * \param                                            => return LWPSATE_SEND if all is ok
+     * \param                                            => return Error in case of payload too long
+     * \param                                            => return Error In case of the Lorawan stack previous state is not equal to iddle
      */  
     eLoraWan_Process_States    SendPayload             ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType );
     
@@ -206,13 +206,15 @@ private :
     T packet;
     eLoraWan_Process_States StateLoraWanProcess; // for debug not private
     void CopyUserPayload( const uint8_t* dataIn, const uint8_t sizeIn );
-    uint8_t GetStateTimer( void );
-    uint8_t GetRadioIrqFlag ( void );
-    uint8_t ValidRxPacket; 
+    uint8_t  GetStateTimer( void );
+    uint8_t  GetRadioIrqFlag ( void );
+    bool     GetIsOtaDevice (void);
+    uint8_t  ValidRxPacket; 
     uint32_t RtcTargetTimer;
     void RadioReset ( void ) ;
     void AttachRadioIsr ( void ) { packet.Phy.AttachIsr ( ); };
     void DetachRadioIsr ( void ) { packet.Phy.DetachIsr ( ); };
+    uint32_t FailSafeTimestamp;
 };
 
 extern InterruptIn RadioGlobalIt ;

@@ -123,7 +123,7 @@ void RadioContainer::SetRxConfig(eModulationType RxModulation ,uint32_t RxFreque
     RxBw        = RxBwMac;
     RxSf        = RxSfMac;
     Radio.SetChannel( RxFrequencyMac );
-    int nbSymbtimeout =  10;// @ rx timeot set to x symbols
+    int nbSymbtimeout =  15;// @ rx timeot set to x symbols
     if ( RxModulation == LORA ) {
         Radio.SetRxConfig( MODEM_LORA, RxBw, RxSf, 1, 0, 8, nbSymbtimeout, false, 0, false, 0, 0, true, false );//@note rxtimeout 400ms!!!!
     } else {

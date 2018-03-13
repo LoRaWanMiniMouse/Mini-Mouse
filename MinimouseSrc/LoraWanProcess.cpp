@@ -27,6 +27,7 @@ template <class T>
 LoraWanObjet <T> ::LoraWanObjet( sLoRaWanKeys LoRaWanKeys ):packet(  LoRaWanKeys ){
     StateLoraWanProcess=LWPSTATE_IDLE;
     packet.MajorBits= LORAWANR1;
+    FailSafeTimestamp = RtcGetTimeSecond( );
 }; 
 template <class T> LoraWanObjet <T> ::~LoraWanObjet() {
 };
@@ -46,9 +47,13 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
 //    if ( ( IsJoined ( ) == NOT_JOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
 //        DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
 //        StateLoraWanProcess = LWPSTATE_IDLE ;
-//       //@notereview resortir status too soon
 //    }        
-        
+    
+    if ( ( RtcGetTimeSecond( ) - FailSafeTimestamp ) > 120 ) {
+        RadioReset ( ) ;
+        StateLoraWanProcess = LWPSTATE_IDLE ;
+        DEBUG_MSG ( "ERROR : FAILSAFE EVENT OCCUR \n");
+    }        
     switch ( StateLoraWanProcess ) {
     /************************************************************************************/
     /*                                    STATE IDLE                                    */
@@ -62,7 +67,8 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
             AttachRadioIsr ( );
             switch ( GetRadioState( ) ) {
                 
-                case  RADIOSTATE_IDLE : 
+                case  RADIOSTATE_IDLE :
+                                        
                     packet.ConfigureRadioAndSend( );
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
@@ -202,6 +208,11 @@ eLoraWan_Process_States LoraWanObjet <T> ::Join ( void ) {
         DEBUG_MSG( " ERROR : LP STATE NOT EQUAL TO IDLE \n" );
         return ( LWPSTATE_ERROR );
     }
+//    if ( GetIsOtaDevice ( ) == APB_DEVICE ) {
+//        DEBUG_MSG( " ERROR : APB DEVICE CAN'T PROCCED A JOIN REQUEST\n" );
+//        return ( LWPSTATE_ERROR );
+//    }
+    FailSafeTimestamp = RtcGetTimeSecond( ) ;
     packet.Phy.JoinedStatus = NOT_JOINED;
     packet.MacNbTransCpt = packet.MacNbTrans = 1;
     packet.RegionSetDataRateDistribution( JOIN_DR_DISTRIBUTION ); 
@@ -237,12 +248,18 @@ void LoraWanObjet <T> ::NewJoin ( void ) {
 template <class T> 
 eLoraWan_Process_States LoraWanObjet <T> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType ) {
     eStatusLoRaWan status;
-
+    FailSafeTimestamp = RtcGetTimeSecond( ) ;
     packet.RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region )
     status = packet.RegionMaxPayloadSize ( sizeIn );
     if ( status == ERRORLORAWAN ) {
         DEBUG_MSG( " ERROR : PAYLOAD SIZE TOO HIGH \n" );
         return ( LWPSTATE_ERROR );
+    }
+    if ( GetIsOtaDevice ( ) == OTA_DEVICE ) {
+        if ( packet.Phy.JoinedStatus ==  NOT_JOINED ) {
+            DEBUG_MSG( " ERROR : OTA DEVICE NOT JOINED YET\n" );
+            return ( LWPSTATE_ERROR );
+        }
     }
     RadioReset ( ) ; 
     CopyUserPayload( dataIn,sizeIn );
@@ -371,5 +388,10 @@ uint8_t LoraWanObjet <T> ::GetRadioIrqFlag ( void ) {
 };
 template <class T>
 void LoraWanObjet <T> ::RadioReset ( void ) {
-    //NOT YET IMPLEMENTED
+//    packet.Phy.Radio.Reset();
+//    wait_ms ( 30 ) ;
+}
+template <class T>
+bool LoraWanObjet <T> ::GetIsOtaDevice (void){
+    return packet.otaDevice;
 }

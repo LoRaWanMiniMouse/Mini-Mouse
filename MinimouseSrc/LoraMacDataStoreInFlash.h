@@ -54,8 +54,9 @@ struct sBackUpFlash
     uint32_t     DevAddr;
     uint8_t      nwkSKey [16];
     uint8_t      appSKey [16];
-    uint8_t      JoinedStatus; 
-    uint8_t      Reserved [1]; 
+    uint8_t      JoinedStatus;
+    uint16_t     DevNonce;    
+    uint8_t      Reserved [7]; 
 } ;
 extern struct sBackUpFlash BackUpFlash;
 #endif

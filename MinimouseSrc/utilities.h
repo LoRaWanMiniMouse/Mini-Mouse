@@ -101,4 +101,7 @@ int8_t Nibble2HexChar( uint8_t a );
  * \brief Certification apllication layer
  *
  */
+ 
+int  Certification ( bool NewCommand , uint8_t * UserFport , uint8_t * UserPayloadSize, uint8_t * UserRxPayloadSize, uint8_t * MsgType, uint8_t * UserRxPayload, uint8_t * UserPayload, LoraWanObjet<LoraRegionsEU> *Lp);
+
 #endif // __UTILITIES_H__

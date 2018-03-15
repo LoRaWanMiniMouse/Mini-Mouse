@@ -122,8 +122,7 @@ int main( ) {
 
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            //GotoSleepMSecond ( 500 );
-            wait_ms(100);
+            GotoSleepMSecond ( 500 );
             WatchDogRelease ( );
         }
 
@@ -146,8 +145,8 @@ int main( ) {
         /*!
          * \brief Send a ¨Packet every 5 seconds and goto to sleep
         */
-         wait(5);
-        //GotoSleepSecond ( 5 );
+
+        GotoSleepSecond ( 5 );
     }
 }
 

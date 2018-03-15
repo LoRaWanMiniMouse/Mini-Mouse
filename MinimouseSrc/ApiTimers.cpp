@@ -201,16 +201,36 @@ void RtcInit (void)
 }
 
 /*!
-* A function to set the mcu in low power mode  
- * \remark to be removed
+* A function to set the mcu in low power mode  for duration seconds
+ * \remark inside this function watchdog has to be manage to not reset the mcu
  * \param [IN]   void
  * \param [OUT]  void       
  */
-void GotoSleep (void ) {
-    sleep (); 
+void GotoSleepSecond (int duration ) {
+    int cpt = duration ;
+    WatchDogRelease ( );
+    while ( cpt > ( WATCH_DOG_PERIOD_RELEASE ) ) {
+        cpt -= WATCH_DOG_PERIOD_RELEASE ;
+        WakeUpAlarmSecond( WATCH_DOG_PERIOD_RELEASE );
+        sleep();
+        WatchDogRelease ( );
+    }
+    WakeUpAlarmSecond( cpt );
+    sleep();
+    WatchDogRelease ( );
 }
 
 
+/*!
+* A function to set the mcu in low power mode  for duration in milliseconds
+ * \remark 
+ * \param [IN]   void
+ * \param [OUT]  void       
+ */
+void GotoSleepMSecond (int duration ) {
+    WakeUpAlarmMSecond ( duration );
+    sleep();
+}
 static LPTIM_HandleTypeDef hlptim1;
 /*!
  * Irq Handler dedicated for Low power Timer reserved for lorawan layer
@@ -287,3 +307,24 @@ void LowPowerTimerLoRa::StartTimerMsecond ( void (* _Func) (void *) , void * _ob
     int DelayMs2tick = delay * 2 + ( ( 6 * delay ) >> 7);
     HAL_LPTIM_TimeOut_Start_IT(&hlptim1, 65535, DelayMs2tick); // MCU specific
 };
+
+/*******************************/
+/*          Watch Dog API      */
+/*******************************/
+static IWDG_HandleTypeDef Iwdg;
+/*!
+ * Watch Dog Init And start with a period befor ereset set to 32 seconds
+*/
+void WatchDogStart ( void ) {
+    Iwdg.Instance = IWDG;
+    Iwdg.Init.Prescaler =  IWDG_PRESCALER_256;
+    Iwdg.Init.Window = IWDG_WINDOW_DISABLE;
+    Iwdg.Init.Reload = 0xFFF;
+    HAL_IWDG_Init(&Iwdg);
+}
+/*!
+ * Watch Dog Release
+*/
+void WatchDogRelease ( void ) {
+    HAL_IWDG_Refresh(&Iwdg);
+}

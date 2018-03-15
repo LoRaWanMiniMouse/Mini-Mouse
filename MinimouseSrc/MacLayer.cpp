@@ -48,7 +48,6 @@ template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::LoraWanContainer(sLoRaWanK
     RetryJoinCpt = 0 ;
     FoptsTxLengthCurrent = 0;
     FoptsTxLengthSticky  = 0;
-    FoptsTxLengthCurrent = 0;
     FirstDwn = true;
 }; 
 
@@ -69,7 +68,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildTxLoraFrame( voi
 
 
     if ( FoptsTxLengthCurrent > 15 ) {
-        DEBUG_MSG ( " ERROR FOPTS TOO LONG \n" );
+        DEBUG_PRINTF ( " ERROR FOPTS TOO LONG =  %d \n", FoptsTxLengthCurrent );
         FoptsTxLengthCurrent = 0;
     }
     Fctrl = 0;  // @todo in V1.0 Adr isn't manage and ack is done by an empty packet
@@ -810,6 +809,8 @@ template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::AcceptFcntDwn ( uint16
 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SaveInFlash ( ) {
+    uint32_t crcLow;
+    uint32_t crcHigh;
     BackUpFlash.MacTxDataRate           = MacTxDataRate;
     BackUpFlash.MacTxPower              = MacTxPower;
     BackUpFlash.MacChMask               = MacChMask;
@@ -832,55 +833,64 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SaveInFlash ( ) {
     }
     memcpy( &BackUpFlash.nwkSKey[0], &nwkSKey[0], 16);
     memcpy( &BackUpFlash.appSKey[0], &appSKey[0], 16);
+    Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
+    DEBUG_PRINTF ("\n crclow = %x ,crchigh = %x ",crcLow,crcHigh ) ;
+    BackUpFlash.CrcLow  = crcLow;
+    BackUpFlash.CrcHigh = crcHigh;
     gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, ( sizeof(sBackUpFlash) >> 3 ) );
-    wait_ms(25);    
+    wait_ms( 25 );    
 }
 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LoadFromFlash ( ) {
+    uint32_t crcLow;
+    uint32_t crcHigh;
     gFlash.RestoreContext((uint8_t *)(&BackUpFlash), USERFLASHADRESS, sizeof(sBackUpFlash));
-    BackUpFlash.FcntUp            +=  FLASH_UPDATE_PERIOD; //@note automatic increment
-    MacTxDataRate                 = BackUpFlash.MacTxDataRate;
-    MacTxPower                    = BackUpFlash.MacTxPower;
-    MacChMask                     = BackUpFlash.MacChMask;
-    MacNbTrans                    = BackUpFlash.MacNbTrans; 
-    MacRx2Frequency               = BackUpFlash.MacRx2Frequency; 
-    MacRx2DataRate                = BackUpFlash.MacRx2DataRate;
-    MacRx1DataRateOffset          = BackUpFlash.MacRx1DataRateOffset;
-    MacRx1Delay                   = BackUpFlash.MacRx1Delay ;
-    FcntUp                        = BackUpFlash.FcntUp ;
-    FcntDwn                       = BackUpFlash.FcntDwn ;
-    DevAddr                       = BackUpFlash.DevAddr;
-    DevNonce                      = BackUpFlash.DevNonce;
-    Phy.JoinedStatus              = ( eJoinStatus ) BackUpFlash.JoinedStatus;
-    for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
-        MacTxFrequency[i]         = BackUpFlash.MacTxFrequency[i] ;
-        MacRx1Frequency[i]        = BackUpFlash.MacRx1Frequency[i] ;
-        MacMaxDataRateChannel[i]  = BackUpFlash.MacMaxDataRateChannel[i] ;
-        MacMinDataRateChannel[i]  = BackUpFlash.MacMinDataRateChannel[i];
-        MacChannelIndexEnabled[i] = BackUpFlash.MacChannelIndexEnabled[i];
-    }
-    memcpy( &nwkSKey[0], &BackUpFlash.nwkSKey[0], 16);
-    memcpy( &appSKey[0], &BackUpFlash.appSKey[0], 16); 
-    gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, ( sizeof(sBackUpFlash) >> 3 ) );    
-    DEBUG_PRINTF ("\n MacTxDataRate = %d ", MacTxDataRate ) ;
-    DEBUG_PRINTF ("\n MacTxPower = %d ", MacTxPower ) ;
-    DEBUG_PRINTF ("\n MacChMask = 0x%x ", MacChMask ) ;
-    DEBUG_PRINTF ("\n MacRx2Frequency = %d ", MacRx2Frequency ) ;
-    DEBUG_PRINTF ("\n MacRx2DataRate = %d ", MacRx2DataRate ) ;
-    DEBUG_PRINTF ("\n MacRx1DataRateOffset = %d ", MacRx1DataRateOffset ) ;
-    DEBUG_PRINTF ("\n MacRx1Delay = %d ", MacRx1Delay ) ;
-    DEBUG_PRINTF ("\n FcntUp = %d ", FcntUp ) ;
-    DEBUG_PRINTF ("\n FcntDwn = %d ", FcntDwn ) ;
-    DEBUG_PRINTF ("\n DevAddr = 0x%x ", DevAddr ) ;
-    DEBUG_PRINTF ("\n DevNonce = 0x%x ", DevNonce ) ;
-    DEBUG_PRINTF ("\n JoinedStatus = %d ",Phy.JoinedStatus  ) ;
-    for (int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
-        DEBUG_PRINTF ("\n MacTxFrequency[%d]= %d ", i, MacTxFrequency[i] ) ;
-        DEBUG_PRINTF ("\n MacRx1Frequency[%d]= %d ", i, MacRx1Frequency[i] ) ;
-        DEBUG_PRINTF ("\n MacMaxDataRateChannel[%d]   = %d ", i, MacMaxDataRateChannel[i] ) ;
-        DEBUG_PRINTF ("\n MacMinDataRateChannel[%d]   = %d ", i, MacMinDataRateChannel[i] ) ;
-        DEBUG_PRINTF ("\n MacChannelIndexEnabled[%d]  = %d \n", i, MacChannelIndexEnabled[i] );
+    Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash)-8 , &crcLow, &crcHigh );    
+    if (( crcLow == BackUpFlash.CrcLow ) &&  ( crcHigh == BackUpFlash.CrcHigh ) ) { // explicit else = factory reset => the default value inside the constructor
+        BackUpFlash.FcntUp            +=  FLASH_UPDATE_PERIOD; //@note automatic increment
+        MacTxDataRate                 = BackUpFlash.MacTxDataRate;
+        MacTxPower                    = BackUpFlash.MacTxPower;
+        MacChMask                     = BackUpFlash.MacChMask;
+        MacNbTrans                    = BackUpFlash.MacNbTrans; 
+        MacRx2Frequency               = BackUpFlash.MacRx2Frequency; 
+        MacRx2DataRate                = BackUpFlash.MacRx2DataRate;
+        MacRx1DataRateOffset          = BackUpFlash.MacRx1DataRateOffset;
+        MacRx1Delay                   = BackUpFlash.MacRx1Delay ;
+        FcntUp                        = BackUpFlash.FcntUp ;
+        FcntDwn                       = BackUpFlash.FcntDwn ;
+        DevAddr                       = BackUpFlash.DevAddr;
+        DevNonce                      = BackUpFlash.DevNonce;
+        Phy.JoinedStatus              = ( eJoinStatus ) BackUpFlash.JoinedStatus;
+        for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+            MacTxFrequency[i]         = BackUpFlash.MacTxFrequency[i] ;
+            MacRx1Frequency[i]        = BackUpFlash.MacRx1Frequency[i] ;
+            MacMaxDataRateChannel[i]  = BackUpFlash.MacMaxDataRateChannel[i] ;
+            MacMinDataRateChannel[i]  = BackUpFlash.MacMinDataRateChannel[i];
+            MacChannelIndexEnabled[i] = BackUpFlash.MacChannelIndexEnabled[i];
+        }
+        memcpy( &nwkSKey[0], &BackUpFlash.nwkSKey[0], 16);
+        memcpy( &appSKey[0], &BackUpFlash.appSKey[0], 16);
+        gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, ( sizeof(sBackUpFlash) >> 3 ) );    
+        DEBUG_PRINTF ("\n MacTxDataRate = %d ", MacTxDataRate ) ;
+        DEBUG_PRINTF ("\n MacTxPower = %d ", MacTxPower ) ;
+        DEBUG_PRINTF ("\n MacChMask = 0x%x ", MacChMask ) ;
+        DEBUG_PRINTF ("\n MacRx2Frequency = %d ", MacRx2Frequency ) ;
+        DEBUG_PRINTF ("\n MacRx2DataRate = %d ", MacRx2DataRate ) ;
+        DEBUG_PRINTF ("\n MacRx1DataRateOffset = %d ", MacRx1DataRateOffset ) ;
+        DEBUG_PRINTF ("\n MacRx1Delay = %d ", MacRx1Delay ) ;
+        DEBUG_PRINTF ("\n FcntUp = %d ", FcntUp ) ;
+        DEBUG_PRINTF ("\n FcntDwn = %d ", FcntDwn ) ;
+        DEBUG_PRINTF ("\n DevAddr = 0x%x ", DevAddr ) ;
+        DEBUG_PRINTF ("\n DevNonce = 0x%x ", DevNonce ) ;
+        DEBUG_PRINTF ("\n JoinedStatus = %d ",Phy.JoinedStatus  ) ;
+        for (int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+            DEBUG_PRINTF ("\n MacTxFrequency[%d]= %d ", i, MacTxFrequency[i] ) ;
+            DEBUG_PRINTF ("\n MacRx1Frequency[%d]= %d ", i, MacRx1Frequency[i] ) ;
+            DEBUG_PRINTF ("\n MacMaxDataRateChannel[%d]   = %d ", i, MacMaxDataRateChannel[i] ) ;
+            DEBUG_PRINTF ("\n MacMinDataRateChannel[%d]   = %d ", i, MacMinDataRateChannel[i] ) ;
+            DEBUG_PRINTF ("\n MacChannelIndexEnabled[%d]  = %d \n", i, MacChannelIndexEnabled[i] );
+        }
     }
 }
 

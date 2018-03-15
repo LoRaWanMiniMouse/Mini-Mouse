@@ -52,9 +52,10 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
     }        
     
     if ( ( RtcGetTimeSecond( ) - FailSafeTimestamp ) > 120 ) {
-        RadioReset ( ) ;
+        //RadioReset ( ) ;
         StateLoraWanProcess = LWPSTATE_IDLE ;
         DEBUG_MSG ( "ERROR : FAILSAFE EVENT OCCUR \n");
+        NVIC_SystemReset();
     }        
     switch ( StateLoraWanProcess ) {
     /************************************************************************************/

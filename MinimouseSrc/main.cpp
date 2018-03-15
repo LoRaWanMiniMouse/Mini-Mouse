@@ -64,17 +64,20 @@ int main( ) {
     * \remark  On the future dev , the Radio Type will be a parameter of the LoraWan Objects
     */
     LoraWanObjet<LoraRegionsEU> Lp( LoraWanKeys ); 
-    
+
+   
+
     /*!
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
     */
     RtcInit ( );
     WakeUpInit ( );
+    WatchDogStart ( );
     LowPowerTimerLora.LowPowerTimerLoRaInit();
 #if DEBUG_TRACE == 1
     pcf.baud( 115200 );
 #endif    
-        
+
     /*!
     * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
     */
@@ -86,7 +89,6 @@ int main( ) {
     MsgType = UNCONF_DATA_UP;
     uint8_t AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE ;
     eLoraWan_Process_States LpState = LWPSTATE_IDLE;    
-
     /*!
     * \brief  Configure the DataRate Strategy 
     */
@@ -97,7 +99,7 @@ int main( ) {
     * \brief Restore the LoraWan Context
     */
     wait(2);
-    //Lp.RestoreContext ( );
+    Lp.RestoreContext ( );
     //Lp.NewJoin( );
 
 
@@ -120,8 +122,9 @@ int main( ) {
 
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            WakeUpAlarmMSecond ( 500 );
-            GotoSleep ( );
+            //GotoSleepMSecond ( 500 );
+            wait_ms(100);
+            WatchDogRelease ( );
         }
 
         if ( AvailableRxPacket == LORA_RX_PACKET_AVAILABLE ) { 
@@ -143,8 +146,8 @@ int main( ) {
         /*!
          * \brief Send a ¨Packet every 5 seconds and goto to sleep
         */
-        WakeUpAlarmSecond(5);
-        GotoSleep ( );
+         wait(5);
+        //GotoSleepSecond ( 5 );
     }
 }
 

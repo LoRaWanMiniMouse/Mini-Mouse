@@ -193,7 +193,7 @@ enum{
 #define MAX_TX_PAYLOAD_SIZE 255
 #define FHDROFFSET 9 // MHDR+FHDR offset if OPT = 0 + fport
 #define MICSIZE 4
-#define FLASH_UPDATE_PERIOD 128
+#define FLASH_UPDATE_PERIOD 2
 /*!
  * Frame direction definition for up-link communications
  */

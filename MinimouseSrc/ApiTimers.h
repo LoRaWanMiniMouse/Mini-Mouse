@@ -24,10 +24,10 @@ void     RtcInit            ( void ) ;
 uint32_t RtcGetTimeMs       ( void ) ;
 uint32_t RtcGetTimeSecond   ( void ) ;
 void     WakeUpInit         ( void ) ;
-void     WakeUpAlarmMSecond ( int delay) ;
-void     WakeUpAlarmSecond  ( int delay) ;
-void     GotoSleep          (void );
-
+void     WakeUpAlarmMSecond ( int delay ) ;
+void     WakeUpAlarmSecond  ( int delay ) ;
+void     GotoSleepSecond    ( int delay );
+void     GotoSleepMSecond   ( int delay );
 class LowPowerTimerLoRa {
 public : 
     LowPowerTimerLoRa          ( );
@@ -41,6 +41,8 @@ private :
     void * obj;
 };
 extern    LowPowerTimerLoRa LowPowerTimerLora;
-
+#define WATCH_DOG_PERIOD_RELEASE 30 // this period have to be lower than the Watch Dog period of 32 seconds
+void WatchDogStart ( void ) ;
+void WatchDogRelease ( void ) ;
 #endif
 

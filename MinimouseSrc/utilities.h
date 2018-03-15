@@ -104,4 +104,14 @@ int8_t Nibble2HexChar( uint8_t a );
  
 int  Certification ( bool NewCommand , uint8_t * UserFport , uint8_t * UserPayloadSize, uint8_t * UserRxPayloadSize, uint8_t * MsgType, uint8_t * UserRxPayload, uint8_t * UserPayload, LoraWanObjet<LoraRegionsEU> *Lp);
 
+
+/*!
+ * \brief Crc64 implementation for flash corruption
+ *
+ */
+
+#define POLY64REV     0x95AC9329AC4BC9B5
+#define INITIALCRC    0xFFFFFFFFFFFFFFFF
+void Crc64(uint8_t *dataIn, int size,uint32_t * crcLow, uint32_t * crcHigh );
+
 #endif // __UTILITIES_H__

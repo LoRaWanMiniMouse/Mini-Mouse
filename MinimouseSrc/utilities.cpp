@@ -85,6 +85,47 @@ int8_t Nibble2HexChar( uint8_t a )
 }
 
 
+
+#define POLY64REV     0x95AC9329AC4BC9B5
+#define INITIALCRC    0xFFFFFFFFFFFFFFFF
+
+void Crc64(uint8_t *dataIn, int size,uint32_t * crcLow, uint32_t * crcHigh )
+{
+    int i, j;
+    uint64_t crc = INITIALCRC, part;
+    static int init = 0;
+    static  uint64_t  CRCTable[256];
+    
+    if (!init)
+    {
+        init = 1;
+        for (i = 0; i < 256; i++)
+        {
+            part = i;
+            for (j = 0; j < 8; j++)
+            {
+               if (part & 1)
+                   part = (part >> 1) ^ POLY64REV;
+               else
+                   part >>= 1;
+            }
+            CRCTable[i] = part;
+        }
+    }
+    
+    for (i = 0 ; i < size ; i++)
+    {
+        crc = CRCTable[(crc ^ *dataIn++) & 0xff] ^ (crc >> 8);
+    }
+    /* 
+    The output is done in two parts to avoid problems with 
+    architecture-dependent word order
+    */
+    *crcLow = crc & 0xffffffff;
+    *crcHigh = (crc >> 32) & 0xffffffff ; 
+}
+
+
 int  Certification ( bool NewCommand , uint8_t * UserFport , uint8_t * UserPayloadSize,  uint8_t * UserRxPayloadSize, uint8_t * MsgType, uint8_t * UserRxPayload, uint8_t * UserPayload, LoraWanObjet<LoraRegionsEU> *Lp){
     uint32_t temp ;
     static uint16_t FcntDwnCertif = 0;
@@ -146,3 +187,5 @@ int  Certification ( bool NewCommand , uint8_t * UserFport , uint8_t * UserPaylo
     }
     return ( UserRxPayload[0] );
 }
+
+

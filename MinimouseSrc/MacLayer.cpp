@@ -46,6 +46,7 @@ template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::LoraWanContainer(sLoRaWanK
     IsFrameToSend = NOFRAME_TOSEND;
     RtcNextTimeJoinSecond = 0;
     RetryJoinCpt = 0 ;
+    FoptsTxLength = 0;
     FoptsTxLengthCurrent = 0;
     FoptsTxLengthSticky  = 0;
     FirstDwn = true;
@@ -106,8 +107,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioAndSend
 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioForRx1 ( void ) {
-    RegionSetRxConfig ( RX1 );
-    Phy.SetRxConfig(MacTxModulationCurrent,MacRx1FrequencyCurrent, MacRx1SfCurrent, MacRx1BwCurrent );
+    Phy.SetRxConfig(MacTxModulationCurrent,MacRx1FrequencyCurrent, MacRx1SfCurrent, MacRx1BwCurrent, MacRxWindowMs);
 };
 /************************************************************************************************************************************/
 /*                                              ConfigureRadioForRx2 +  ConfigureTimerForRx                                         */
@@ -116,33 +116,40 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioForRx1 
 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioForRx2 ( void ) {
-    RegionSetRxConfig ( RX2 );
-    Phy.SetRxConfig(MacTxModulationCurrent, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent );
+    Phy.SetRxConfig(MacTxModulationCurrent, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
 };
 
 
 template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureTimerForRx ( eRxWinType type ) {
     uint32_t tCurrentMillisec;
     uint32_t tAlarmMillisec;
-    uint32_t toffset = 15;  // @note created a Define sf dependant without tcxo?  
+    uint32_t tLastTimeForOpenWindowsMs;
     tCurrentMillisec =  RtcGetTimeMs( );
+
     if (type == RX1) {
+        RegionSetRxConfig ( RX1 );
+        ComputeRxWindowParameters ( MacRx1SfCurrent, MacRx1BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 , BOARD_DELAY_RX_SETTING_MS );
         tAlarmMillisec = ( ( MacRx1Delay * 1000 )+ Phy.TimestampRtcIsr )  - tCurrentMillisec  ;
-        if ( tAlarmMillisec <= toffset ) {// too late to launch a timer
+        if ( (int)(tAlarmMillisec - RxOffsetMs) < 0 ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_RX1FINISHED ;
         } else { 
-            SetAlarm( tAlarmMillisec - toffset, type );
+            SetAlarm( tAlarmMillisec - RxOffsetMs , type );
+            Phy.LastTimeRxWindowsMs =  ( ( MacRx1Delay * 1000 )+ Phy.TimestampRtcIsr ) - RxOffsetMs + MacRxWindowMs ; // timestamp of the end of rx1 windows
         }
     } else {
+        RegionSetRxConfig ( RX2 );
+        ComputeRxWindowParameters ( MacRx2SfCurrent, MacRx2BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 + 1000 , BOARD_DELAY_RX_SETTING_MS );
         tAlarmMillisec = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - tCurrentMillisec  ;// @note Rx2 Dalay is alway RX1DELAY + 1 second
-        if ( tAlarmMillisec <= toffset ) {// too late to launch a timer
+        if ( (int)(tAlarmMillisec - RxOffsetMs) < 0 ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_IDLE ;
             DEBUG_PRINTF( " error case negative Timer %d ms\n", tAlarmMillisec );
         } else { 
-            SetAlarm( tAlarmMillisec - toffset, type );
+            SetAlarm( tAlarmMillisec - RxOffsetMs, type );
+            Phy.LastTimeRxWindowsMs = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - RxOffsetMs + MacRxWindowMs ; // timestamp of the end of rx2 windows
         }
     }
-    DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - toffset ) );
+    DEBUG_PRINTF("rxtimeout = %d  offset = %d time = %u, timealarm = %u\n",MacRxWindowMs,RxOffsetMs,tCurrentMillisec,tAlarmMillisec);
+    DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
 }
 /************************************************************************************************************************************/
 /*                                              DecodeRxFRame                                                                       */
@@ -713,6 +720,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildJoinLoraFrame( v
     MacPayloadSize = 19 ;
     uint32_t mic ; 
 //    FcntUp = 1; 
+
     LoRaMacJoinComputeMic( &Phy.TxPhyPayload[0], MacPayloadSize, appKey, &mic );
     memcpy(&Phy.TxPhyPayload[MacPayloadSize], (uint8_t *)&mic, 4);
     MacPayloadSize = MacPayloadSize + 4;
@@ -849,6 +857,8 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LoadFromFlash ( ) {
     Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash)-8 , &crcLow, &crcHigh );    
     if (( crcLow == BackUpFlash.CrcLow ) &&  ( crcHigh == BackUpFlash.CrcHigh ) ) { // explicit else = factory reset => the default value inside the constructor
         BackUpFlash.FcntUp            +=  FLASH_UPDATE_PERIOD; //@note automatic increment
+        BackUpFlash.NbOfReset ++;
+        NbOfReset  = BackUpFlash.NbOfReset;
         MacTxDataRate                 = BackUpFlash.MacTxDataRate;
         MacTxPower                    = BackUpFlash.MacTxPower;
         MacChMask                     = BackUpFlash.MacChMask;
@@ -871,6 +881,9 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LoadFromFlash ( ) {
         }
         memcpy( &nwkSKey[0], &BackUpFlash.nwkSKey[0], 16);
         memcpy( &appSKey[0], &BackUpFlash.appSKey[0], 16);
+        Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
+        BackUpFlash.CrcLow  = crcLow;
+        BackUpFlash.CrcHigh = crcHigh;
         gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, ( sizeof(sBackUpFlash) >> 3 ) );    
         DEBUG_PRINTF ("\n MacTxDataRate = %d ", MacTxDataRate ) ;
         DEBUG_PRINTF ("\n MacTxPower = %d ", MacTxPower ) ;
@@ -884,6 +897,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LoadFromFlash ( ) {
         DEBUG_PRINTF ("\n DevAddr = 0x%x ", DevAddr ) ;
         DEBUG_PRINTF ("\n DevNonce = 0x%x ", DevNonce ) ;
         DEBUG_PRINTF ("\n JoinedStatus = %d ",Phy.JoinedStatus  ) ;
+        DEBUG_PRINTF ("\n NbOfReset = %d ",BackUpFlash.NbOfReset  ) ;
         for (int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
             DEBUG_PRINTF ("\n MacTxFrequency[%d]= %d ", i, MacTxFrequency[i] ) ;
             DEBUG_PRINTF ("\n MacRx1Frequency[%d]= %d ", i, MacRx1Frequency[i] ) ;
@@ -891,6 +905,11 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LoadFromFlash ( ) {
             DEBUG_PRINTF ("\n MacMinDataRateChannel[%d]   = %d ", i, MacMinDataRateChannel[i] ) ;
             DEBUG_PRINTF ("\n MacChannelIndexEnabled[%d]  = %d \n", i, MacChannelIndexEnabled[i] );
         }
+    } else {
+        BackUpFlash.NbOfReset = 0;
+        SaveInFlash ( );
+        DEBUG_MSG("WRONG CRC \n");
+        NVIC_SystemReset();
     }
 }
 
@@ -961,4 +980,15 @@ template <int NBCHANNEL> int  LoraWanContainer<NBCHANNEL>::FindEnabledChannel( u
         }
     }
     return (-1) ; // for error case 
+};
+template <int NBCHANNEL> void  LoraWanContainer<NBCHANNEL>::ComputeRxWindowParameters( uint8_t SF, eBandWidth BW, uint32_t ClockAccuracy, uint32_t RxDelayMs, uint8_t BoardDelayRxMs) {
+    // ClockAccuracy is set in Define.h, it is board dependent. It must be equal to error in per thousand
+    uint32_t RxErrorMs= ( ClockAccuracy * RxDelayMs ) / 1000; // for example with an clockaccuracy = 30 (3%)  and a rx windows set to 5s => rxerror = 150 ms 
+    int bwTemp = 125* ( BW + 1 );
+    double tSymbol = (double) (1<<SF) / (double) bwTemp;        
+    Phy.SymbolDuration = (uint32_t) tSymbol ;
+    uint8_t minRxSymbols = 6;
+    MacRxWindowSymb = (uint16_t) (MAX( ( 2 * minRxSymbols - 8 ) + (2 * RxErrorMs * bwTemp >> SF) + 1 , minRxSymbols ));
+    RxOffsetMs = ( int32_t )((ceil( ( 4.0 * tSymbol ) - ( ( MacRxWindowSymb * tSymbol ) / 2.0 ) - BoardDelayRxMs ))*(-1));
+    MacRxWindowMs = MacRxWindowSymb * tSymbol ;
 };

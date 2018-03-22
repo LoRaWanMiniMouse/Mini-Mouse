@@ -45,7 +45,7 @@ uint8_t AppEuiInit[]         = { 0x70, 0xB3, 0xD5, 0x7E, 0xF0, 0x00, 0x36, 0x12 
 uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0xBB };    
 uint32_t LoRaDevAddrInit     = 0x26011918;
 
-sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
+sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
 
 int main( ) {
     int i;
@@ -99,8 +99,8 @@ int main( ) {
     * \brief Restore the LoraWan Context
     */
     wait(2);
-    Lp.RestoreContext ( );
-    //Lp.NewJoin( );
+    //Lp.RestoreContext ( );
+
 
 
     while(1) {
@@ -112,7 +112,7 @@ int main( ) {
             LpState = Lp.Join( );
         }
         /*!
-         * \brief LpState = Lp.LoraWanProcess( &AvailableRxPacket )
+         * \brief 
          *        This function manages the state of the MAC and performs all the computation intensive (crypto) tasks of the MAC.
          *        This function is called periodically by the user’s application whenever the state of the MAC is not idle.
          *        The function is not timing critical, can be called at any time and can be interrupted by any IRQ (including the user’s IRQ).
@@ -122,7 +122,8 @@ int main( ) {
 
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            GotoSleepMSecond ( 500 );
+            wait_ms(100);
+           // GotoSleepMSecond ( 100 );
             WatchDogRelease ( );
         }
 
@@ -145,8 +146,13 @@ int main( ) {
         /*!
          * \brief Send a ¨Packet every 5 seconds and goto to sleep
         */
-
-        GotoSleepSecond ( 5 );
+        if ( Lp.IsJoined ( ) == JOINED ) {
+            //GotoSleepSecond ( AppTimeSleeping *100 );
+            wait(5);
+        } else {
+            wait(5);
+            //GotoSleepSecond ( 5 );
+        }
     }
 }
 

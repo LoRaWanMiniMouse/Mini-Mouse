@@ -227,7 +227,8 @@ void SX1276::SetRxConfig( RadioModems_t modem, uint32_t bandwidth,
                          bool iqInverted, bool rxContinuous )
 {
     SetModem( modem );
-
+    int bwTemp = 125* ( bandwidth + 1 );
+    uint16_t symbTimeouttemp = (uint16_t) ((symbTimeout * bwTemp ) >> datarate);        
     switch( modem )
     {
     case MODEM_FSK:
@@ -319,14 +320,14 @@ void SX1276::SetRxConfig( RadioModems_t modem, uint32_t bandwidth,
                            RFLR_MODEMCONFIG2_RXPAYLOADCRC_MASK &
                            RFLR_MODEMCONFIG2_SYMBTIMEOUTMSB_MASK ) |
                            ( datarate << 4 ) | ( crcOn << 2 ) |
-                           ( ( symbTimeout >> 8 ) & ~RFLR_MODEMCONFIG2_SYMBTIMEOUTMSB_MASK ) );
+                           ( ( symbTimeouttemp >> 8 ) & ~RFLR_MODEMCONFIG2_SYMBTIMEOUTMSB_MASK ) );
 
             Write( REG_LR_MODEMCONFIG3, 
                          ( Read( REG_LR_MODEMCONFIG3 ) &
                            RFLR_MODEMCONFIG3_LOWDATARATEOPTIMIZE_MASK ) |
                            ( this->settings.LoRa.LowDatarateOptimize << 3 ) );
 
-            Write( REG_LR_SYMBTIMEOUTLSB, ( uint8_t )( symbTimeout & 0xFF ) );
+            Write( REG_LR_SYMBTIMEOUTLSB, ( uint8_t )( symbTimeouttemp & 0xFF ) );
             
             Write( REG_LR_PREAMBLEMSB, ( uint8_t )( ( preambleLen >> 8 ) & 0xFF ) );
             Write( REG_LR_PREAMBLELSB, ( uint8_t )( preambleLen & 0xFF ) );
@@ -400,7 +401,7 @@ void SX1276::SetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 
     paConfig = ( paConfig & RF_PACONFIG_PASELECT_MASK ) | GetPaSelect( this->settings.Channel );
     paConfig = ( paConfig & RF_PACONFIG_MAX_POWER_MASK ) | 0x70;
-
+    paDac = ( paDac & RF_PADAC_20DBM_MASK ) | RF_PADAC_20DBM_OFF;
     if( ( paConfig & RF_PACONFIG_PASELECT_PABOOST ) == RF_PACONFIG_PASELECT_PABOOST )
     {
         if( power > 17 )
@@ -448,6 +449,7 @@ void SX1276::SetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
         }
         paConfig = ( paConfig & RF_PACONFIG_OUTPUTPOWER_MASK ) | ( uint8_t )( ( uint16_t )( power + 1 ) & 0x0F );
     }
+
     Write( REG_PACONFIG, paConfig );
     Write( REG_PADAC, paDac );
    //pcsx.printf("Send in lora mode pa = %d \n",power);

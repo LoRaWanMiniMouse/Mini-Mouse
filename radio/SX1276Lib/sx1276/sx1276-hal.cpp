@@ -58,7 +58,7 @@ SX1276MB1xAS::SX1276MB1xAS( RadioEvents_t *events )
                         
                         :   SX1276( events, LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ,LORA_CS, LORA_RESET, LORA_DIO5, LORA_DIO5, LORA_DIO5, LORA_DIO5, LORA_DIO5, LORA_DIO5 ),//SX1276( events, D11, D12, D13, D10, A0, D8, D9, D9, D9, D9, D9 )
                             antSwitch( PC_1 ), 
-                            fake( A3 )            
+                            fake( LORA_DIO5 )            
 {
     this->RadioEvents = events;
 

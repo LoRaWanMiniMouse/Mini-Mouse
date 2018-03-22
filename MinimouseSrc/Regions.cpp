@@ -163,7 +163,7 @@ eStatusLoRaWan LoraRegionsEU ::RegionMaxPayloadSize ( uint8_t sizeIn ) {
 /*                  Region Rx Window  Configuration                 */
 /* Chapter 7.1.7 LoRaWan 1.0.1 specification                        */
 /********************************************************************/
-//@notereview return statusjhfrekhfkje dre
+//@notereview return status
 void LoraRegionsEU::RegionSetRxConfig ( eRxWinType type ) {
     if ( type == RX1 ) {
         MacRx1SfCurrent =  ( MacTxSfCurrent < 12 - MacRx1DataRateOffset) ? MacTxSfCurrent + MacRx1DataRateOffset : 12;
@@ -244,15 +244,15 @@ void LoraRegionsEU::RegionSetDataRateDistribution( uint8_t adrMode ) {
     switch ( adrMode ) {
 
         case MOBILE_LONGRANGE_DR_DISTRIBUTION:  // in this example 4/7 dr2 2/7 dr1 and 1/7 dr0
-            DistriDataRateInit[2]    = 4; 
+            DistriDataRateInit[2]    = 1; 
             DistriDataRateInit[1]    = 2; 
-            DistriDataRateInit[0]    = 1; 
+            DistriDataRateInit[0]    = 4; 
             break;
         case MOBILE_LOWPER_DR_DISTRIBUTION://in this example 8/13 dr5 4/13 dr4 and 1/13 dr0
             DistriDataRateInit[7]    = 0; 
             DistriDataRateInit[5]    = 1; 
-            DistriDataRateInit[3]    = 0; 
-            DistriDataRateInit[0]    = 1; 
+            DistriDataRateInit[4]    = 1; 
+            DistriDataRateInit[0]    = 0; 
             break;
         case JOIN_DR_DISTRIBUTION: //in this example 1/3 dr5 1/3 dr4 and 1/3 dr0
             DistriDataRateInit[5]    = 0; 

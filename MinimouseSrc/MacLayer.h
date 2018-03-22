@@ -45,7 +45,7 @@ public:
     uint8_t IsFrameToSend;
     eRxPacketType   DecodeRxFrame            ( void );
     eStatusLoRaWan  ParseManagementPacket    ( void );
-
+    uint8_t NbOfReset;
 /* LoraWan Context */ 
 /* Only 16 ch mask => ChMaskCntl not used */
 /* Duty cycle is not managed */
@@ -157,7 +157,8 @@ public:
 
 /*  Flash */
     void LoadFromFlash             ( void );
-/***************************************************************/
+    void SaveInFlash               ( void );
+    /***************************************************************/
 /*  Virtual Method overwritten by the Class  of the region     */
 /***************************************************************/
     virtual void              RegionGiveNextChannel            ( void )                                 = 0; 
@@ -195,6 +196,7 @@ protected :
     eBandWidth   MacRx2BwCurrent;
     int          FindEnabledChannel ( uint8_t Index);
     void         PrintMacContext ( void ) ;
+
 private :
     static const uint16_t MAX_FCNT_GAP       = 16384 ;
     void SetMacHeader              ( void );
@@ -214,11 +216,15 @@ private :
     void RXTimingSetupParser       ( void );
     void DicChannelParser          ( void );
     void UpdateDataRateForAdr      ( void );
-    void SaveInFlash               ( void );
+    void ComputeRxWindowParameters ( uint8_t SF, eBandWidth BW, uint32_t ClockAccuracy, uint32_t RxDelayMs ,uint8_t BoardDelayRxMs );
     sBackUpFlash BackUpFlash;
     uint8_t NwkPayloadIndex ;
     uint8_t RxEmptyPayload ;
     bool FirstDwn;
+    uint16_t MacRxWindowSymb;
+    int32_t  RxOffsetMs;
+    uint32_t MacRxWindowMs;
+    uint32_t RxLateWindowMs ;
 
 }; 
 

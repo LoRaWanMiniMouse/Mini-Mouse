@@ -46,10 +46,10 @@ template <class T>
 eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
 
     *AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE
-    if ( ( IsJoined ( ) == NOT_JOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
-        DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
-        StateLoraWanProcess = LWPSTATE_IDLE ;
-    }        
+//    if ( ( IsJoined ( ) == NOT_JOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
+//        DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
+//        StateLoraWanProcess = LWPSTATE_IDLE ;
+//    }        
     
     if ( ( RtcGetTimeSecond( ) - FailSafeTimestamp ) > 120 ) {
         //RadioReset ( ) ;
@@ -363,7 +363,9 @@ uint8_t LoraWanObjet <T> ::GetNextDataRate ( void ) { // note return datareate i
 
 template <class T> 
  void  LoraWanObjet <T> :: MacFactoryReset ( void ) {
-     //@NOTE NOT YET IMPLEMENTED
+     packet.Phy.JoinedStatus = NOT_JOINED;
+     packet.SaveInFlash();
+     
  }
 /************************************************************************************************/
 /*                      Private  Methods                                                        */
@@ -395,4 +397,8 @@ void LoraWanObjet <T> ::RadioReset ( void ) {
 template <class T>
 bool LoraWanObjet <T> ::GetIsOtaDevice (void){
     return packet.otaDevice;
+}
+template <class T>
+uint8_t LoraWanObjet <T> ::GetNbOfReset (void){
+    return packet.NbOfReset;
 }

@@ -34,7 +34,7 @@ public:
     void AttachIsr         ( void ) ;
     void DetachIsr         ( void ); 
     int GetRadioState      ( void );
-    void SetRxConfig       (eModulationType RxModulation, uint32_t RxFrequencyMac, uint8_t RxSfMac, uint32_t RxBwMac );
+    void SetRxConfig       (eModulationType RxModulation, uint32_t RxFrequencyMac, uint8_t RxSfMac, uint32_t RxBwMac , uint32_t RxWindowMs);
     uint32_t GetTxFrequency ( void );
     uint8_t    TxPhyPayload[MAX_TX_PAYLOAD_SIZE]; // @note should be private to be safer , in this case have to create a set function for send in lorawan process
     uint8_t    RxPhyPayload[MAX_TX_PAYLOAD_SIZE]; 
@@ -50,10 +50,13 @@ public:
     //@note probably have to split with a timer objet
 
     uint32_t   TimestampRtcIsr;
+    uint32_t   LastTimeRxWindowsMs;
+    uint32_t   SymbolDuration;
 private :
     uint32_t     RxFrequency;
     uint32_t     RxBw;
     uint8_t      RxSf;
+    eModulationType      RxMod;
     uint32_t     TxFrequency;
     uint8_t      TxPower;
     uint8_t      TxSf;

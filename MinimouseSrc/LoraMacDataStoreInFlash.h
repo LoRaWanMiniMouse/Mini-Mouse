@@ -56,6 +56,7 @@ struct sBackUpFlash
     uint8_t      appSKey [16];
     uint8_t      JoinedStatus;
     uint16_t     DevNonce;    
+    uint8_t      NbOfReset;
     uint8_t      Reserved [7];
     uint32_t     CrcHigh;   
     uint32_t     CrcLow;    

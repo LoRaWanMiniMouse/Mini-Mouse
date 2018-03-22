@@ -59,16 +59,36 @@ void RadioContainer::DetachIsr ( void ) {
 }
 void RadioContainer::IsrRadio( void ) {
     int status = OKLORAWAN;
+    uint32_t tCurrentMillisec;
     GetIrqRadioFlag ( );
     ClearIrqRadioFlag ( );
     if ( RegIrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {//@ note (important for phy ) remove all IT mask in config send or rx and check if regirqflag = rxdone + header crc valid 
         status = DumpRxPayloadAndMetadata ( );
+        Radio.Sleep ( );
         if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
             RegIrqFlag = BAD_PACKET_IRQ_FLAG ; // this case is exactly the same than the case of rx timeout
-            DEBUG_MSG( "Receive a packet But rejected\n"); 
+            tCurrentMillisec =  RtcGetTimeMs( );
+            uint32_t timeoutMs = LastTimeRxWindowsMs - tCurrentMillisec ;
+            if ( (int)( LastTimeRxWindowsMs - tCurrentMillisec - 5 * SymbolDuration ) > 0 ) {
+                if ( RxMod == LORA ) {
+                    Radio.SetChannel( RxFrequency);
+                    Radio.SetRxConfig( MODEM_LORA, RxBw, RxSf, 1, 0, 8, timeoutMs, false, 0, false, 0, 0, true, false );
+                    Radio.Rx(0); 
+                } else {
+                    Radio.SetChannel( RxFrequency );
+                    Radio.SetRxConfig( MODEM_FSK, 50e3, 50e3, 0, 83.333e3, 5, 0, false, 0, true, 0, 0, true, false );
+                    Radio.Rx(0); 
+                }
+            DEBUG_MSG( "Receive a packet But rejected\n");
+            DEBUG_PRINTF( "tcurrent %u timeout = %d, end time %u \n ", tCurrentMillisec, timeoutMs, LastTimeRxWindowsMs);
+            return;
+            }
         }
+    } else {
+        Radio.Sleep ( );
     }
-    Radio.Sleep ( );
+
+    //Radio.Sleep ( );
     switch ( StateRadioProcess ) { 
         case RADIOSTATE_TXON :
             TimestampRtcIsr = RtcGetTimeMs ( ); //@info Timestamp only on txdone it
@@ -113,21 +133,21 @@ void RadioContainer::Send(eModulationType TxModulation , uint32_t TxFrequencyMac
 
         Radio.SetTxConfig( MODEM_FSK, TxPower, 25e3, 0, 50e3, 0, 5, false, true, 0, 0, false, 3e6 );
     }
-    
     wait_ms(1);
     Radio.Send( TxPhyPayload, TxPayloadSize );
 };
 
-void RadioContainer::SetRxConfig(eModulationType RxModulation ,uint32_t RxFrequencyMac, uint8_t RxSfMac, uint32_t RxBwMac ) {
-    RxFrequency = RxFrequencyMac;
-    RxBw        = RxBwMac;
-    RxSf        = RxSfMac;
+void RadioContainer::SetRxConfig(eModulationType RxModulation ,uint32_t RxFrequencyMac, uint8_t RxSfMac, uint32_t RxBwMac ,uint32_t RxWindowMs) {
+    RxFrequency  = RxFrequencyMac;
+    RxBw         = RxBwMac;
+    RxSf         = RxSfMac;
+    RxMod        = RxModulation;
     Radio.SetChannel( RxFrequencyMac );
-    int nbSymbtimeout =  15;// @ rx timeot set to x symbols
-    if ( RxModulation == LORA ) {
-        Radio.SetRxConfig( MODEM_LORA, RxBw, RxSf, 1, 0, 8, nbSymbtimeout, false, 0, false, 0, 0, true, false );//@note rxtimeout 400ms!!!!
+    int timeoutMs =  RxWindowMs;// @ rx timeot set to x symbols
+    if ( RxMod == LORA ) {
+        Radio.SetRxConfig( MODEM_LORA, RxBw, RxSf, 1, 0, 8, timeoutMs, false, 0, false, 0, 0, true, false );
     } else {
-        Radio.SetRxConfig( MODEM_FSK, 50e3, 50e3, 0, 83.333e3, 5, 0, false, 0, true, 0, 0, true, false );//@note rxtimeout 400ms!!!!
+        Radio.SetRxConfig( MODEM_FSK, 50e3, 50e3, 0, 83.333e3, 5, 0, false, 0, true, 0, 0, true, false );
     }
     DEBUG_PRINTF ( "  RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw ) ; 
 }

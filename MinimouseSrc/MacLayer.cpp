@@ -20,14 +20,14 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #include "utilities.h"
 #include "PhyLayer.h"
 #include "ApiFlash.h"
-template class LoraWanContainer<16>;
+#include "UserDefine.h"
 /*************************************************/
 /*                     Constructors              */
 /*@note have to check init values                */
 /*************************************************/
-
-template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys )
-                    :Phy( ) { 
+template class LoraWanContainer <16,SX1276>;
+template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys, R * RadioUser)
+                    :Phy( RadioUser ) { 
     Phy.RadioContainerInit( );
     StateTimer = TIMERSTATE_SLEEP;
     AvailableRxPacketForUser = NO_LORA_RXPACKET_AVAILABLE;
@@ -50,9 +50,10 @@ template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::LoraWanContainer(sLoRaWanK
     FoptsTxLengthCurrent = 0;
     FoptsTxLengthSticky  = 0;
     FirstDwn = true;
+    Phy.JoinedStatus = ( otaDevice == APB_DEVICE ) ? JOINED : NOT_JOINED;
 }; 
 
-template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::~LoraWanContainer( ) {
+template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::~LoraWanContainer( ) {
 };
 
 
@@ -65,7 +66,7 @@ template <int NBCHANNEL> LoraWanContainer<NBCHANNEL>::~LoraWanContainer( ) {
 /*                    Called During LP.Send ()                        */
 /**********************************************************************/
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildTxLoraFrame( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::BuildTxLoraFrame( void ) {
 
 
     if ( FoptsTxLengthCurrent > 15 ) {
@@ -79,7 +80,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildTxLoraFrame( voi
     SetFrameHeader( );
     MacPayloadSize = UserPayloadSize + FHDROFFSET + FoptsTxLengthCurrent; 
 };
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::EncryptTxFrame( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::EncryptTxFrame( void ) {
     LoRaMacPayloadEncrypt( &Phy.TxPhyPayload[FHDROFFSET + FoptsTxLengthCurrent], UserPayloadSize, (fPort == PORTNWK)? nwkSKey :appSKey, DevAddr, UP_LINK, FcntUp, &Phy.TxPhyPayload[FHDROFFSET + FoptsTxLengthCurrent] );
     LoRaMacComputeAndAddMic( &Phy.TxPhyPayload[0], MacPayloadSize, nwkSKey, DevAddr, UP_LINK, FcntUp );
     MacPayloadSize = MacPayloadSize + 4;
@@ -93,7 +94,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::EncryptTxFrame( void 
 /*                                              ConfigureRadioAndSend                                                               */
 /* Call in case of state = LWPSTATE_SEND                                                                                            */
 /************************************************************************************************************************************/
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioAndSend( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioAndSend( void ) {
 
     RegionGiveNextChannel ( );//@note have to be completed
     Phy.DevAddrIsr    = DevAddr ;  //@note copy of the mac devaddr in order to filter it in the radio isr routine.
@@ -106,7 +107,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioAndSend
 /************************************************************************************************************************************/
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioForRx1 ( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx1 ( void ) {
     Phy.SetRxConfig(MacTxModulationCurrent,MacRx1FrequencyCurrent, MacRx1SfCurrent, MacRx1BwCurrent, MacRxWindowMs);
 };
 /************************************************************************************************************************************/
@@ -115,15 +116,14 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioForRx1 
 /************************************************************************************************************************************/
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureRadioForRx2 ( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx2 ( void ) {
     Phy.SetRxConfig(MacTxModulationCurrent, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
 };
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureTimerForRx ( eRxWinType type ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureTimerForRx ( eRxWinType type ) {
     uint32_t tCurrentMillisec;
     uint32_t tAlarmMillisec;
-    uint32_t tLastTimeForOpenWindowsMs;
     tCurrentMillisec =  RtcGetTimeMs( );
 
     if (type == RX1) {
@@ -148,7 +148,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureTimerForRx (
             Phy.LastTimeRxWindowsMs = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - RxOffsetMs + MacRxWindowMs ; // timestamp of the end of rx2 windows
         }
     }
-    DEBUG_PRINTF("rxtimeout = %d  offset = %d time = %u, timealarm = %u\n",MacRxWindowMs,RxOffsetMs,tCurrentMillisec,tAlarmMillisec);
+//    DEBUG_PRINTF("rxtimeout = %d  offset = %d time = %u, timealarm = %u\n",MacRxWindowMs,RxOffsetMs,tCurrentMillisec,tAlarmMillisec);
     DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
 }
 /************************************************************************************************************************************/
@@ -156,7 +156,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::ConfigureTimerForRx (
 /* Call in case of state = LWPSTATE_PROCESSDOWNLINK                                                                                 */
 /************************************************************************************************************************************/
 
-template <int NBCHANNEL> eRxPacketType LoraWanContainer<NBCHANNEL>::DecodeRxFrame( void ) {
+template <int NBCHANNEL, class R> eRxPacketType LoraWanContainer<NBCHANNEL, R>::DecodeRxFrame( void ) {
 
     int status = OKLORAWAN ;
     eRxPacketType RxPacketType = NO_MORE_VALID_RX_PACKET ; 
@@ -234,7 +234,7 @@ template <int NBCHANNEL> eRxPacketType LoraWanContainer<NBCHANNEL>::DecodeRxFram
 /************************************************************************************************************************************/
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateMacLayer ( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateMacLayer ( void ) {
     AdrAckLimit = RegionGetAdrAckLimit ( );
     AdrAckDelay = RegionGetAdrAckDelay ( );
     if  ( Phy.JoinedStatus == NOT_JOINED ) {
@@ -304,7 +304,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateMacLayer ( void
 /************************************************************************************************************************************/
 
 
-template <int NBCHANNEL> eStatusLoRaWan LoraWanContainer<NBCHANNEL>::ParseManagementPacket( void ) {
+template <int NBCHANNEL, class R> eStatusLoRaWan LoraWanContainer<NBCHANNEL, R>::ParseManagementPacket( void ) {
     uint8_t CmdIdentifier;
     eStatusLoRaWan status = OKLORAWAN ;
     NwkPayloadIndex = 0;
@@ -363,7 +363,7 @@ template <int NBCHANNEL> eStatusLoRaWan LoraWanContainer<NBCHANNEL>::ParseManage
 /************************************************************************************************/
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LinkCheckParser( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LinkCheckParser( void ) {
     DEBUG_PRINTF(" Margin = %d , GwCnt = %d \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2]);
     NwkPayloadIndex += LINK_CHECK_ANS_SIZE;
     //@NOTE NOT YET IMPLEMENTED
@@ -387,7 +387,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LinkCheckParser( void
 /*                 5 : For the last adr cmd not valid datarate ( datarate > dRMax or datarate < dRMin for all active channel )  */
 /********************************************************************************************************************************/
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LinkADRParser( uint8_t NbMultiLinkAdrReq  ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LinkADRParser( uint8_t NbMultiLinkAdrReq  ) {
 
     DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4] );
     eStatusLoRaWan status = OKLORAWAN;
@@ -460,7 +460,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LinkADRParser( uint8_
 /*                                                 Private NWK MANAGEMENTS : RXParamSetupParser                                 */
 /********************************************************************************************************************************/
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::RXParamSetupParser( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::RXParamSetupParser( void ) {
     DEBUG_PRINTF (" %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4] );
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
@@ -523,7 +523,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::RXParamSetupParser( v
 /********************************************************************************************************************************/
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::DutyCycleParser( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::DutyCycleParser( void ) {
     DEBUG_PRINTF (" %x \n", MacNwkPayload[ NwkPayloadIndex + 1]);
     //uint8_t DutyCycleTemp = ( MacNwkPayload[ NwkPayloadIndex + 1] & 0xF );//@ note Duty cycle isn't manage
        /* Prepare Ans*/
@@ -536,7 +536,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::DutyCycleParser( void
 /********************************************************************************************************************************/
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::DevStatusParser( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::DevStatusParser( void ) {
     DEBUG_MSG ( "Receive a dev status req\n");
 
     FoptsTxData [ FoptsTxLength ] = DEV_STATUS_ANS ; // copy Cid
@@ -550,7 +550,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::DevStatusParser( void
 /********************************************************************************************************************************/
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::NewChannelParser( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::NewChannelParser( void ) {
     DEBUG_PRINTF (" %x %x %x %x %x \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4], MacNwkPayload[NwkPayloadIndex + 5]);
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x3 ; // initilised for ans answer ok 
@@ -618,7 +618,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::NewChannelParser( voi
 /********************************************************************************************************************************/
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::RXTimingSetupParser( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::RXTimingSetupParser( void ) {
     DEBUG_PRINTF (" %x \n", MacNwkPayload[ NwkPayloadIndex + 1]);
     MacRx1Delay = ( MacNwkPayload[ NwkPayloadIndex + 1] & 0xF );
        /* Prepare Ans*/
@@ -634,7 +634,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::RXTimingSetupParser( 
 /********************************************************************************************************************************/
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::DicChannelParser( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::DicChannelParser( void ) {
     DEBUG_PRINTF (" %x %x %x %x  \n", MacNwkPayload[ NwkPayloadIndex + 1], MacNwkPayload[NwkPayloadIndex + 2], MacNwkPayload[NwkPayloadIndex + 3], MacNwkPayload[NwkPayloadIndex + 4]);
     int status = OKLORAWAN;
     uint8_t StatusAns = 0x3 ; // initilised for ans answer ok 
@@ -673,7 +673,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::DicChannelParser( voi
 /*  Call in case of state = LWPSTATE_UPDATEMAC & Receivea Join Ans                                                              */
 /********************************************************************************************************************************/
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateJoinProcedure ( void ) { //@note tbd add valid test 
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateJoinProcedure ( void ) { //@note tbd add valid test 
     uint8_t AppNonce[6];
     int i;
     memcpy( AppNonce, &MacRxPayload[1], 6 );
@@ -707,7 +707,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::UpdateJoinProcedure (
 /********************************************************/
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildJoinLoraFrame( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::BuildJoinLoraFrame( void ) {
     DevNonce += randr( 0, 65535 );
     MType = JOINREQUEST ;
     SetMacHeader ( );
@@ -731,10 +731,10 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::BuildJoinLoraFrame( v
 /*                      Private  Methods                                                        */
 /************************************************************************************************/
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SetMacHeader( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetMacHeader( void ) {
     Phy.TxPhyPayload[0] = ( ( MType & 0x7 ) <<5 ) + ( MajorBits & 0x3 );
 };
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SetFrameHeader( ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetFrameHeader( ) {
 
     Phy.TxPhyPayload[1] = ( uint8_t )( ( DevAddr & 0x000000FF ) );
     Phy.TxPhyPayload[2] = ( uint8_t )( ( DevAddr & 0x0000FF00 ) >> 8 );
@@ -749,7 +749,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SetFrameHeader( ) {
     Phy.TxPhyPayload[ 8 + FoptsTxLengthCurrent ] = fPort;
 }
 
-template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::CheckRxPayloadLength ( void ) {
+template <int NBCHANNEL, class R> int LoraWanContainer<NBCHANNEL, R>::CheckRxPayloadLength ( void ) {
     int status = OKLORAWAN;
     if ( Phy.RxPhyPayloadSize < MIN_LORAWAN_PAYLOAD_SIZE ) {
         status = ERRORLORAWAN;
@@ -759,7 +759,7 @@ template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::CheckRxPayloadLength (
     return (status);
 }
 
-template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::ExtractRxMhdr ( void ) {
+template <int NBCHANNEL, class R> int LoraWanContainer<NBCHANNEL, R>::ExtractRxMhdr ( void ) {
     int status = OKLORAWAN; 
     MtypeRx = Phy.RxPhyPayload[0] >> 5 ;
     MajorRx =  Phy.RxPhyPayload[0] & 0x3 ;
@@ -772,7 +772,7 @@ template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::ExtractRxMhdr ( void )
     return (status);
 }
 
-template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::ExtractRxFhdr ( uint16_t *FcntDwnTmp ) { //@note Not yet at all finalized have to initiate action on each field
+template <int NBCHANNEL, class R> int LoraWanContainer<NBCHANNEL, R>::ExtractRxFhdr ( uint16_t *FcntDwnTmp ) { //@note Not yet at all finalized have to initiate action on each field
     int status = OKLORAWAN; 
     uint32_t DevAddrtmp = 0 ;
     DevAddrtmp = Phy.RxPhyPayload[1] + ( Phy.RxPhyPayload[2] << 8 ) + ( Phy.RxPhyPayload[3] << 16 )+ ( Phy.RxPhyPayload[4] << 24 );
@@ -797,7 +797,7 @@ template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::ExtractRxFhdr ( uint16
     }
     return (status);
 }
-template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::AcceptFcntDwn ( uint16_t FcntDwnTmp ) {
+template <int NBCHANNEL, class R> int LoraWanContainer<NBCHANNEL, R>::AcceptFcntDwn ( uint16_t FcntDwnTmp ) {
     int status = OKLORAWAN; 
     uint16_t FcntDwnLsb = ( FcntDwn & 0x0000FFFF );
     uint16_t FcntDwnMsb = ( FcntDwn & 0xFFFF0000 ) >> 16;
@@ -816,7 +816,7 @@ template <int NBCHANNEL> int LoraWanContainer<NBCHANNEL>::AcceptFcntDwn ( uint16
 
 
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SaveInFlash ( ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SaveInFlash ( ) {
     uint32_t crcLow;
     uint32_t crcHigh;
     BackUpFlash.MacTxDataRate           = MacTxDataRate;
@@ -849,8 +849,40 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SaveInFlash ( ) {
     wait_ms( 25 );    
 }
 
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetBadCrcInFlash ( ) {
+    uint32_t crcLow;
+    uint32_t crcHigh;
+    BackUpFlash.MacTxDataRate           = MacTxDataRate;
+    BackUpFlash.MacTxPower              = MacTxPower;
+    BackUpFlash.MacChMask               = MacChMask;
+    BackUpFlash.MacNbTrans   = MacNbTrans; 
+    BackUpFlash.MacRx2Frequency         = MacRx2Frequency; 
+    BackUpFlash.MacRx2DataRate          = MacRx2DataRate;
+    BackUpFlash.MacRx1DataRateOffset    = MacRx1DataRateOffset;
+    BackUpFlash.MacRx1Delay             = MacRx1Delay;
+    BackUpFlash.FcntUp                  = FcntUp;
+    BackUpFlash.FcntDwn                 = FcntDwn;
+    BackUpFlash.DevAddr                 = DevAddr;
+    BackUpFlash.DevNonce                = DevNonce;
+    BackUpFlash.JoinedStatus            = Phy.JoinedStatus;
+    for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
+        BackUpFlash.MacTxFrequency[i]         = MacTxFrequency[i];
+        BackUpFlash.MacRx1Frequency[i]        = MacRx1Frequency[i];
+        BackUpFlash.MacMaxDataRateChannel[i]  = MacMaxDataRateChannel[i];
+        BackUpFlash.MacMinDataRateChannel[i]  = MacMinDataRateChannel[i];
+        BackUpFlash.MacChannelIndexEnabled[i] = MacChannelIndexEnabled[i];
+    }
+    memcpy( &BackUpFlash.nwkSKey[0], &nwkSKey[0], 16);
+    memcpy( &BackUpFlash.appSKey[0], &appSKey[0], 16);
+    Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
+    DEBUG_PRINTF ("\n crclow = %x ,crchigh = %x ",crcLow,crcHigh ) ;
+    BackUpFlash.CrcLow  = crcLow + 1; // bad crc
+    BackUpFlash.CrcHigh = crcHigh + 1;
+    gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, ( sizeof(sBackUpFlash) >> 3 ) );
+    wait_ms( 25 );    
+}
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LoadFromFlash ( ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LoadFromFlash ( ) {
     uint32_t crcLow;
     uint32_t crcHigh;
     gFlash.RestoreContext((uint8_t *)(&BackUpFlash), USERFLASHADRESS, sizeof(sBackUpFlash));
@@ -913,7 +945,7 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::LoadFromFlash ( ) {
     }
 }
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::PrintMacContext ( ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::PrintMacContext ( ) {
     DEBUG_PRINTF ("\n MacTxDataRate = %d ", MacTxDataRate ) ;
     DEBUG_PRINTF ("\n MacTxPower = %d ", MacTxPower ) ;
     DEBUG_PRINTF ("\n MacChMask = 0x%x ", MacChMask ) ;
@@ -943,32 +975,32 @@ template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::PrintMacContext ( ) {
 /*                                Rx1 Timer Isr Routine                             */
 /*                               Called when Alarm expires                          */
 /************************************************************************************/
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::SetAlarm (uint32_t alarmInMs, eRxWinType type ) {
-    //TimerLora.attach_us(this, &LoraWanContainer<NBCHANNEL>::IsrTimerRx, alarmInMs * 1000);
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetAlarm (uint32_t alarmInMs, eRxWinType type ) {
+    //TimerLora.attach_us(this, &LoraWanContainer<NBCHANNEL, R>::IsrTimerRx, alarmInMs * 1000);
     if ( type == RX1 ) {
-        LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL>::CallbackIsrTimerRx1,this, alarmInMs);
+        LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL, R>::CallbackIsrTimerRx1,this, alarmInMs);
     } else {
-        LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL>::CallbackIsrTimerRx2,this, alarmInMs);
+        LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL, R>::CallbackIsrTimerRx2,this, alarmInMs);
     }
 
 }
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::IsrTimerRx1( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::IsrTimerRx1( void ) {
     StateTimer = TIMERSTATE_SLEEP;
     ConfigureRadioForRx1 ( );
-    Phy.Radio.Rx(0); //@note No More timeout FW on RX use only timeout impplement in the HW radio
+    //Phy.Radio.Rx(0); //@note No More timeout FW on RX use only timeout impplement in the HW radio
 };
 
-template <int NBCHANNEL> void LoraWanContainer<NBCHANNEL>::IsrTimerRx2( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::IsrTimerRx2( void ) {
     StateTimer = TIMERSTATE_SLEEP;
     ConfigureRadioForRx2 ( );
-    Phy.Radio.Rx(0); //@note No More timeout FW on RX use only timeout impplement in the HW radio
+    //Phy.Radio.Rx(0); //@note No More timeout FW on RX use only timeout impplement in the HW radio
 };
 
 /*********************************************************************************/
 /*                           Protected Methods                                   */
 /*********************************************************************************/
-template <int NBCHANNEL> int  LoraWanContainer<NBCHANNEL>::FindEnabledChannel( uint8_t Index) {
+template <int NBCHANNEL, class R> int  LoraWanContainer<NBCHANNEL, R>::FindEnabledChannel( uint8_t Index) {
     int i = 0;
     int cpt = 0;
     for ( i = 0 ; i < NUMBER_OF_CHANNEL; i ++ ) {
@@ -981,7 +1013,7 @@ template <int NBCHANNEL> int  LoraWanContainer<NBCHANNEL>::FindEnabledChannel( u
     }
     return (-1) ; // for error case 
 };
-template <int NBCHANNEL> void  LoraWanContainer<NBCHANNEL>::ComputeRxWindowParameters( uint8_t SF, eBandWidth BW, uint32_t ClockAccuracy, uint32_t RxDelayMs, uint8_t BoardDelayRxMs) {
+template <int NBCHANNEL, class R> void  LoraWanContainer<NBCHANNEL, R>::ComputeRxWindowParameters( uint8_t SF, eBandWidth BW, uint32_t ClockAccuracy, uint32_t RxDelayMs, uint8_t BoardDelayRxMs) {
     // ClockAccuracy is set in Define.h, it is board dependent. It must be equal to error in per thousand
     uint32_t RxErrorMs= ( ClockAccuracy * RxDelayMs ) / 1000; // for example with an clockaccuracy = 30 (3%)  and a rx windows set to 5s => rxerror = 150 ms 
     int bwTemp = 125* ( BW + 1 );

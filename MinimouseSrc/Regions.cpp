@@ -22,35 +22,37 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*                     Constructors              */
 /*@note have to check init values                */
 /*************************************************/
-LoraRegionsEU :: LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys ) : LoraWanContainer<16>  ( LoRaWanKeys ){
+template class LoraRegionsEU<SX1276>;
+
+template < class R > LoraRegionsEU<R>::LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys, R * RadioUser ) : LoraWanContainer<16,R>  ( LoRaWanKeys, RadioUser ){
     
-    memset( MacChannelIndexEnabled, CHANNEL_DISABLED, NUMBER_OF_CHANNEL );
-    memset( MacMinDataRateChannel, 0, NUMBER_OF_CHANNEL );
-    for (int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
-        MacTxFrequency [i] = 0;
-        MacRx1Frequency [i] = 0;
+    memset( this->MacChannelIndexEnabled, CHANNEL_DISABLED, this->NUMBER_OF_CHANNEL );
+    memset( this->MacMinDataRateChannel, 0, this->NUMBER_OF_CHANNEL );
+    for (int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
+        this->MacTxFrequency [i] = 0;
+        this->MacRx1Frequency [i] = 0;
     }
-    MacChannelIndexEnabled [0] = CHANNEL_ENABLED;
-    MacChannelIndexEnabled [1] = CHANNEL_ENABLED;
-    MacChannelIndexEnabled [2] = CHANNEL_ENABLED;
-    MacMinDataRateChannel [0] = 0;
-    MacMinDataRateChannel [1] = 0;
-    MacMinDataRateChannel [2] = 0;
-    MacMaxDataRateChannel [0] = 5;
-    MacMaxDataRateChannel [1] = 5;
-    MacMaxDataRateChannel [2] = 5;
-    MacTxFrequency[0]    = 868100000;
-    MacTxFrequency[1]    = 868300000;
-    MacTxFrequency[2]    = 868500000;
-    MacRx1Frequency[0]   = 868100000;
-    MacRx1Frequency[1]   = 868300000;
-    MacRx1Frequency[2]   = 868500000;
-    MacRx2Frequency      = 869525000; 
-    MacTxPower           = TX_POWER;
-    MacRx1DataRateOffset = 0;
-    MacRx2DataRate       = RX2DR_INIT;
-    MacRx1Delay          = RECEIVE_DELAY1;// @note replace by default setting regions
-    MacTxDataRateAdr     = 0 ;//@note tbdN if adr active , before the first adrReq datarate = 0  
+    this->MacChannelIndexEnabled [0] = CHANNEL_ENABLED;
+    this->MacChannelIndexEnabled [1] = CHANNEL_ENABLED;
+    this->MacChannelIndexEnabled [2] = CHANNEL_ENABLED;
+    this->MacMinDataRateChannel [0] = 0;
+    this->MacMinDataRateChannel [1] = 0;
+    this->MacMinDataRateChannel [2] = 0;
+    this->MacMaxDataRateChannel [0] = 5;
+    this->MacMaxDataRateChannel [1] = 5;
+    this->MacMaxDataRateChannel [2] = 5;
+    this->MacTxFrequency[0]    = 868100000;
+    this->MacTxFrequency[1]    = 868300000;
+    this->MacTxFrequency[2]    = 868500000;
+    this->MacRx1Frequency[0]   = 868100000;
+    this->MacRx1Frequency[1]   = 868300000;
+    this->MacRx1Frequency[2]   = 868500000;
+    this->MacRx2Frequency      = 869525000; 
+    this->MacTxPower           = TX_POWER;
+    this->MacRx1DataRateOffset = 0;
+    this->MacRx2DataRate       = RX2DR_INIT;
+    this->MacRx1Delay          = RECEIVE_DELAY1;// @note replace by default setting regions
+    this->MacTxDataRateAdr     = 0 ;//@note tbdN if adr active , before the first adrReq datarate = 0  
     memset(DistriDataRateInit,0,8);
 }
 
@@ -68,14 +70,14 @@ LoraRegionsEU :: LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys ) : LoraWanContainer<1
 /*                                                                  */
 /********************************************************************/
 
-void LoraRegionsEU::RegionSetPower ( uint8_t PowerCmd ) {
+template < class R >void LoraRegionsEU<R>::RegionSetPower ( uint8_t PowerCmd ) {
     //@note return error status ?
     uint8_t PowerTab [ 8 ] = { TX_POWER, TX_POWER-2, TX_POWER-4, TX_POWER-6, TX_POWER-8, TX_POWER-10, TX_POWER-12, TX_POWER-14 };
     if  ( PowerCmd > 7 ) {
-            MacTxPower = 14 ;
+            this->MacTxPower = 14 ;
             DEBUG_MSG ("INVALID POWER \n");
     } else {
-        MacTxPower = PowerTab [ PowerCmd ] ;
+        this->MacTxPower = PowerTab [ PowerCmd ] ;
     }
 }
 
@@ -83,21 +85,21 @@ void LoraRegionsEU::RegionSetPower ( uint8_t PowerCmd ) {
 /*                  Region Get Cf List                              */
 /* Chapter 7.1.4 LoRaWan 1.0.1 specification                        */
 /********************************************************************/
-void LoraRegionsEU::RegionGetCFList ( void ) {
+template < class R >void LoraRegionsEU<R>::RegionGetCFList ( void ) {
     for ( int i = 0 ; i < 5 ; i++ ) {
-        MacTxFrequency [3 + i] = 100 * ( ( CFList[0 + ( 3 * i )] ) + ( CFList[1 + ( 3 * i )] << 8 )+ ( CFList[2 + ( 3 * i )] << 16 ) );
-        MacRx1Frequency [3 + i] = 100 * ( ( CFList[0 + ( 3 * i )] ) + ( CFList[1 + ( 3 * i )] << 8 )+ ( CFList[2 + ( 3 * i )] << 16 ) );
-        if ( ( MacTxFrequency [3 + i] >= ( FREQMIN * 100 ) ) && ( MacTxFrequency [3 + i] <=( FREQMAX * 100 ) ) ) {
-            MacMinDataRateChannel [3 + i]  = 0;
-            MacMaxDataRateChannel [3 + i]  = 5;
-            MacChannelIndexEnabled [3 + i] = CHANNEL_ENABLED ;
-            DEBUG_PRINTF( " MacTxFrequency [%d] = %d \n",i,MacTxFrequency [3 + i]);
-            DEBUG_PRINTF( " MacMinDataRateChannel [%d] = %d \n",i,MacMinDataRateChannel [3 + i]);
-            DEBUG_PRINTF( " MacMaxDataRateChannel [%d] = %d \n",i,MacMaxDataRateChannel [3 + i]);
-            DEBUG_PRINTF( " MacChannelIndexEnabled [%d] = %d \n",i,MacChannelIndexEnabled [3 + i]);
+       this->MacTxFrequency [3 + i] = 100 * ( ( this->CFList[0 + ( 3 * i )] ) + ( this->CFList[1 + ( 3 * i )] << 8 )+ ( this->CFList[2 + ( 3 * i )] << 16 ) );
+       this->MacRx1Frequency [3 + i] = 100 * ( ( this->CFList[0 + ( 3 * i )] ) + ( this->CFList[1 + ( 3 * i )] << 8 )+ ( this->CFList[2 + ( 3 * i )] << 16 ) );
+        if ( ( this->MacTxFrequency [3 + i] >= ( FREQMIN * 100 ) ) && ( this->MacTxFrequency [3 + i] <=( FREQMAX * 100 ) ) ) {
+            this->MacMinDataRateChannel [3 + i]  = 0;
+            this->MacMaxDataRateChannel [3 + i]  = 5;
+            this->MacChannelIndexEnabled [3 + i] = CHANNEL_ENABLED ;
+            DEBUG_PRINTF( " MacTxFrequency [%d] = %d \n",i,this->MacTxFrequency [3 + i]);
+            DEBUG_PRINTF( " MacMinDataRateChannel [%d] = %d \n",i,this->MacMinDataRateChannel [3 + i]);
+            DEBUG_PRINTF( " MacMaxDataRateChannel [%d] = %d \n",i,this->MacMaxDataRateChannel [3 + i]);
+            DEBUG_PRINTF( " MacChannelIndexEnabled [%d] = %d \n",i,this->MacChannelIndexEnabled [3 + i]);
         } else {
-            MacTxFrequency  [3 + i] = 0;
-            MacRx1Frequency [3 + i] = 0;
+            this->MacTxFrequency  [3 + i] = 0;
+            this->MacRx1Frequency [3 + i] = 0;
             DEBUG_MSG ("INVALID TX FREQUENCY IN CFLIST \n");
         }
     }
@@ -108,22 +110,22 @@ void LoraRegionsEU::RegionGetCFList ( void ) {
 /* Chapter 7.1.5 LoRaWan 1.0.1 specification                        */
 /********************************************************************/
 
-eStatusChannel LoraRegionsEU::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMask ) {
+template < class R >eStatusChannel LoraRegionsEU<R>::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMask ) {
     eStatusChannel status = OKCHANNEL;
     //@notereview modif tab uint8
     switch ( ChMaskCntl ) {
         case 0 :
             UnwrappedChannelMask = UnwrappedChannelMask ^ ChMask; //@note for EU UnwrappedChannelMask is still on 16 bits 
-            for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i++) {
-                if ( ( ( ( UnwrappedChannelMask >> i) & 0x1 ) == 1 ) && ( MacTxFrequency[i] == 0) ) {  // test channel not defined
+            for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i++) {
+                if ( ( ( ( UnwrappedChannelMask >> i) & 0x1 ) == 1 ) && ( this->MacTxFrequency[i] == 0) ) {  // test channel not defined
                     status = ERROR_CHANNEL_MASK ;   //@note this status is used only for the last multiple link adr req
                 }
             }
             break;
         case 6 :
             UnwrappedChannelMask = 0;
-            for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i++) {
-                if ( MacTxFrequency[i] > 0 ) {
+            for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i++) {
+                if ( this->MacTxFrequency[i] > 0 ) {
                     UnwrappedChannelMask = UnwrappedChannelMask ^ (1 << i ) ;
                 }
             }
@@ -137,14 +139,14 @@ eStatusChannel LoraRegionsEU::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint1
     return ( status );
 };
 
-void LoraRegionsEU::RegionInitChannelMask ( void ) {
+template < class R >void LoraRegionsEU<R>::RegionInitChannelMask ( void ) {
     UnwrappedChannelMask = 0;
 };
-void LoraRegionsEU::RegionSetMask ( void ) {
+template < class R >void LoraRegionsEU<R>::RegionSetMask ( void ) {
     DEBUG_MSG(" \n Mask = ");
-    for (int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
-        MacChannelIndexEnabled [i] = ( UnwrappedChannelMask >> i ) & 0x1; // @note trade off between size and code simplification
-        DEBUG_PRINTF(" %d ",MacChannelIndexEnabled [i]);
+    for (int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
+        this->MacChannelIndexEnabled [i] = ( UnwrappedChannelMask >> i ) & 0x1; // @note trade off between size and code simplification
+        DEBUG_PRINTF(" %d ",this->MacChannelIndexEnabled [i]);
     }
     DEBUG_MSG(" \n");
 };
@@ -152,10 +154,10 @@ void LoraRegionsEU::RegionSetMask ( void ) {
 /*                  Region MAx Payload SIze  Configuration          */
 /* Chapter 7.1.6 LoRaWan 1.0.1 specification                        */
 /********************************************************************/
-eStatusLoRaWan LoraRegionsEU ::RegionMaxPayloadSize ( uint8_t sizeIn ) {
+template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionMaxPayloadSize ( uint8_t sizeIn ) {
     eStatusLoRaWan  status ;
     uint8_t M [ 8 ] = { 59, 59, 59, 123, 230, 230, 230, 230 };
-    status = ( sizeIn >= M [MacTxDataRate] ) ? ERRORLORAWAN : OKLORAWAN ;
+    status = ( sizeIn >= M [this->MacTxDataRate] ) ? ERRORLORAWAN : OKLORAWAN ;
     return ( status );
 }
 
@@ -164,12 +166,12 @@ eStatusLoRaWan LoraRegionsEU ::RegionMaxPayloadSize ( uint8_t sizeIn ) {
 /* Chapter 7.1.7 LoRaWan 1.0.1 specification                        */
 /********************************************************************/
 //@notereview return status
-void LoraRegionsEU::RegionSetRxConfig ( eRxWinType type ) {
+template < class R >void LoraRegionsEU<R>::RegionSetRxConfig ( eRxWinType type ) {
     if ( type == RX1 ) {
-        MacRx1SfCurrent =  ( MacTxSfCurrent < 12 - MacRx1DataRateOffset) ? MacTxSfCurrent + MacRx1DataRateOffset : 12;
-        MacRx1BwCurrent = MacTxBwCurrent;
+        this->MacRx1SfCurrent =  ( this->MacTxSfCurrent < 12 - this->MacRx1DataRateOffset) ? this->MacTxSfCurrent + this->MacRx1DataRateOffset : 12;
+        this->MacRx1BwCurrent = this->MacTxBwCurrent;
     } else if ( type == RX2 ) {
-        Rx2DataRateToSfBw ( MacRx2DataRate );
+        Rx2DataRateToSfBw ( this->MacRx2DataRate );
     } else {
         DEBUG_MSG ("INVALID RX TYPE \n");
     }
@@ -179,7 +181,7 @@ void LoraRegionsEU::RegionSetRxConfig ( eRxWinType type ) {
 /********************************************************************************/
 /*           Check parameter of received mac commands                           */
 /********************************************************************************/
-eStatusLoRaWan LoraRegionsEU::RegionIsValidRx1DrOffset ( uint8_t Rx1DataRateOffset ) {
+template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsValidRx1DrOffset ( uint8_t Rx1DataRateOffset ) {
     eStatusLoRaWan status = OKLORAWAN;
     if (Rx1DataRateOffset > 5) {
         status = ERRORLORAWAN ;
@@ -188,24 +190,24 @@ eStatusLoRaWan LoraRegionsEU::RegionIsValidRx1DrOffset ( uint8_t Rx1DataRateOffs
     return ( status );
 }
 
-eStatusLoRaWan LoraRegionsEU:: RegionIsValidDataRate ( uint8_t temp ) {
+template < class R >eStatusLoRaWan LoraRegionsEU<R>:: RegionIsValidDataRate ( uint8_t temp ) {
     eStatusLoRaWan status ;
     status = ( temp > 7) ? ERRORLORAWAN : OKLORAWAN;
     return ( status );
 }
     
-eStatusLoRaWan LoraRegionsEU::RegionIsAcceptableDataRate ( uint8_t DataRate ) {
+template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsAcceptableDataRate ( uint8_t DataRate ) {
     eStatusLoRaWan status = ERRORLORAWAN;
-    for ( int i = 0 ; i < NUMBER_OF_CHANNEL; i++) {
+    for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL; i++) {
         if ( ( ( UnwrappedChannelMask >> i) & 0x1) == 1 ) {
-            if ( ( DataRate >= MacMinDataRateChannel [i] ) && ( DataRate <= MacMaxDataRateChannel [i] ) ) {
+            if ( ( DataRate >= this->MacMinDataRateChannel [i] ) && ( DataRate <= this->MacMaxDataRateChannel [i] ) ) {
                 return ( OKLORAWAN );
             }
         }
     }
     return ( status );
 }
-eStatusLoRaWan LoraRegionsEU::RegionIsValidMacFrequency ( uint32_t Frequency) {
+template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsValidMacFrequency ( uint32_t Frequency) {
     eStatusLoRaWan status = OKLORAWAN;
     if ( Frequency == 0) {
         return ( status );
@@ -216,7 +218,7 @@ eStatusLoRaWan LoraRegionsEU::RegionIsValidMacFrequency ( uint32_t Frequency) {
     }
     return ( status );
 }
-eStatusLoRaWan LoraRegionsEU::RegionIsValidTxPower ( uint8_t Power) {
+template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsValidTxPower ( uint8_t Power) {
     eStatusLoRaWan status = OKLORAWAN;
     if ( ( Power > 7 ) ) {
         status = ERRORLORAWAN ;
@@ -224,7 +226,7 @@ eStatusLoRaWan LoraRegionsEU::RegionIsValidTxPower ( uint8_t Power) {
     }
     return ( status );
 }
-eStatusLoRaWan LoraRegionsEU::RegionIsValidChannelIndex ( uint8_t ChannelIndex) {
+template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsValidChannelIndex ( uint8_t ChannelIndex) {
     eStatusLoRaWan status = OKLORAWAN;
     if ( ( ChannelIndex  < 3 ) || ( ChannelIndex  > 15 ) ) {
         status = ERRORLORAWAN ;
@@ -239,7 +241,7 @@ eStatusLoRaWan LoraRegionsEU::RegionIsValidChannelIndex ( uint8_t ChannelIndex) 
 /*    method to set the next data Rate in different mode                        */
 /********************************************************************************/
 
-void LoraRegionsEU::RegionSetDataRateDistribution( uint8_t adrMode ) {
+template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_t adrMode ) {
     memset(DistriDataRateInit,0 , 8);
     switch ( adrMode ) {
 
@@ -265,10 +267,10 @@ void LoraRegionsEU::RegionSetDataRateDistribution( uint8_t adrMode ) {
     memcpy(DistriDataRate, DistriDataRateInit, 8);
 }
 
-void LoraRegionsEU::RegionGiveNextDataRate( void ) {
-    if ( AdrModeSelect == STATIC_ADR_MODE ) {
-        MacTxDataRate = MacTxDataRateAdr;
-        AdrEnable = 1;
+template < class R >void LoraRegionsEU<R>::RegionGiveNextDataRate( void ) {
+    if ( this->AdrModeSelect == STATIC_ADR_MODE ) {
+        this->MacTxDataRate = this->MacTxDataRateAdr;
+        this->AdrEnable = 1;
     } else {
         int i;
         uint8_t DistriSum = 0;
@@ -282,35 +284,35 @@ void LoraRegionsEU::RegionGiveNextDataRate( void ) {
         while (DistriDataRate[Newdr] == 0) {
             Newdr = randr(0,7);
         }
-        MacTxDataRate = Newdr;
+        this->MacTxDataRate = Newdr;
         DistriDataRate[Newdr] -- ;
-        AdrEnable = 0;
+        this->AdrEnable = 0;
     }
-    MacTxDataRate = ( MacTxDataRate > 7 ) ? 7 : MacTxDataRate;
-    TxDataRateToSfBw ( MacTxDataRate );
+    this->MacTxDataRate = ( this->MacTxDataRate > 7 ) ? 7 : this->MacTxDataRate;
+    TxDataRateToSfBw ( this->MacTxDataRate );
 }
 
 /********************************************************************************/
 /*           RegionDecreaseDataRate                                             */
 /*    method to update Datarate in ADR Mode                                     */
 /********************************************************************************/
-void LoraRegionsEU::RegionDecreaseDataRate ( void ) {
+template < class R >void LoraRegionsEU<R>::RegionDecreaseDataRate ( void ) {
     uint8_t ValidTemp = 0;//@notereview boolfjerrek
-    while ( ( MacTxDataRateAdr > 0 ) && ( ValidTemp == 0 ) ) {
-        MacTxDataRateAdr --;
-        for ( int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
-            if ( MacChannelIndexEnabled [i] == CHANNEL_ENABLED ) {
-                if ( ( MacTxDataRateAdr <= MacMaxDataRateChannel [i] ) && ( MacTxDataRateAdr >= MacMinDataRateChannel [i] ) ) {
+    while ( ( this->MacTxDataRateAdr > 0 ) && ( ValidTemp == 0 ) ) {
+        this->MacTxDataRateAdr --;
+        for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
+            if ( this->MacChannelIndexEnabled [i] == CHANNEL_ENABLED ) {
+                if ( ( this->MacTxDataRateAdr <= this->MacMaxDataRateChannel [i] ) && ( this->MacTxDataRateAdr >= this->MacMinDataRateChannel [i] ) ) {
                     ValidTemp ++;
                 }
             }
         }
     }
     /* if adr DR = 0 enable the default channel*/
-    if ( ( MacTxDataRateAdr == 0 ) && ( ValidTemp == 0) ) {
-        MacChannelIndexEnabled [0] = CHANNEL_ENABLED ;
-        MacChannelIndexEnabled [1] = CHANNEL_ENABLED ;
-        MacChannelIndexEnabled [2] = CHANNEL_ENABLED ;;
+    if ( ( this->MacTxDataRateAdr == 0 ) && ( ValidTemp == 0) ) {
+        this->MacChannelIndexEnabled [0] = CHANNEL_ENABLED ;
+        this->MacChannelIndexEnabled [1] = CHANNEL_ENABLED ;
+        this->MacChannelIndexEnabled [2] = CHANNEL_ENABLED ;;
     }
 //@notereview    join continuer flag 
 }
@@ -320,64 +322,64 @@ void LoraRegionsEU::RegionDecreaseDataRate ( void ) {
 /*           RegionGiveNextChannel                                              */
 /*    method to set the next enable channel                                     */
 /********************************************************************************/
-void  LoraRegionsEU::RegionGiveNextChannel( void ) {
+template < class R >void  LoraRegionsEU<R>::RegionGiveNextChannel( void ) {
     uint8_t NbOfActiveChannel = 0 ;
-    for (int i = 0 ; i < NUMBER_OF_CHANNEL ; i ++ ) {
-        if ( MacChannelIndexEnabled [i] == CHANNEL_ENABLED ) { 
+    for (int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
+        if ( this->MacChannelIndexEnabled [i] == CHANNEL_ENABLED ) { 
             NbOfActiveChannel++;
         }
     }
     uint8_t temp = randr ( 0, ( NbOfActiveChannel - 1 ) );
     int ChannelIndex = 0;
-    ChannelIndex = FindEnabledChannel ( temp ); // @note datarate valid not yett tested
+    ChannelIndex = this->FindEnabledChannel ( temp ); // @note datarate valid not yett tested
     if ( ChannelIndex == -1 ) {
         DEBUG_PRINTF ("INVALID CHANNEL  active channel = %d and random channel = %d \n",NbOfActiveChannel,temp);
     } else {
-        MacTxFrequencyCurrent = MacTxFrequency[ChannelIndex];
-        MacRx1FrequencyCurrent = MacRx1Frequency[ChannelIndex];
+        this->MacTxFrequencyCurrent = this->MacTxFrequency[ChannelIndex];
+        this->MacRx1FrequencyCurrent = this->MacRx1Frequency[ChannelIndex];
     }
 
 };
 
-uint8_t  LoraRegionsEU::RegionGetAdrAckLimit( void ) {
+template < class R >uint8_t  LoraRegionsEU<R>::RegionGetAdrAckLimit( void ) {
     return ( ADR_ACK_LIMIT );
 }
-uint8_t  LoraRegionsEU::RegionGetAdrAckDelay( void ) {
+template < class R >uint8_t  LoraRegionsEU<R>::RegionGetAdrAckDelay( void ) {
     return ( ADR_ACK_DELAY );
 }
 /***********************************************************************************************/
 /*                      Private  Methods                                                        */
 /***********************************************************************************************/
 //@notereview function a commun
-void LoraRegionsEU :: TxDataRateToSfBw ( uint8_t dataRate ) {
-    MacTxModulationCurrent = LORA ;
+template < class R >void LoraRegionsEU<R>:: TxDataRateToSfBw ( uint8_t dataRate ) {
+    this->MacTxModulationCurrent = LORA ;
     if ( dataRate < 6 ){ 
-        MacTxSfCurrent = 12 - dataRate ;
-        MacTxBwCurrent = BW125 ;
+        this->MacTxSfCurrent = 12 - dataRate ;
+        this->MacTxBwCurrent = BW125 ;
     } else if ( dataRate == 6 ){ 
-        MacTxSfCurrent = 7;
-        MacTxBwCurrent = BW250 ;}
+        this->MacTxSfCurrent = 7;
+        this->MacTxBwCurrent = BW250 ;}
     else if ( dataRate == 7 ) {
-        MacTxModulationCurrent = FSK ;
+        this->MacTxModulationCurrent = FSK ;
     } else {
-        MacTxSfCurrent = 12 ;
-        MacTxBwCurrent = BW125 ;
+        this->MacTxSfCurrent = 12 ;
+        this->MacTxBwCurrent = BW125 ;
         DEBUG_MSG( " Invalid Datarate \n" ) ; 
     }
 }
-void LoraRegionsEU :: Rx2DataRateToSfBw ( uint8_t dataRate ) {
+template < class R >void LoraRegionsEU<R>:: Rx2DataRateToSfBw ( uint8_t dataRate ) {
     if ( dataRate < 6 ){ 
-        MacRx2SfCurrent = 12 - dataRate ;
-        MacRx2BwCurrent = BW125 ;
+        this->MacRx2SfCurrent = 12 - dataRate ;
+        this->MacRx2BwCurrent = BW125 ;
     } else if ( dataRate== 6 ){ 
-        MacRx2SfCurrent = 7;
-        MacRx2BwCurrent = BW250 ;}
+        this->MacRx2SfCurrent = 7;
+        this->MacRx2BwCurrent = BW250 ;}
     else if ( dataRate == 7 ) {
         //@note tbd manage fsk case }
     }
     else {
-        MacRx2SfCurrent = 12 ;
-        MacRx2BwCurrent = BW125 ;
+        this->MacRx2SfCurrent = 12 ;
+        this->MacRx2BwCurrent = BW125 ;
         DEBUG_MSG( " Invalid Datarate \n" ) ; 
     }
 }

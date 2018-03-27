@@ -27,14 +27,14 @@ Maintainer        : Fabien Holin ( SEMTECH)
 
 
 
-
-
-class LoraRegionsEU : public LoraWanContainer<16> { 
+//template class LoraWanContainer<16,SX1276>;
+template < class R >
+class LoraRegionsEU : public LoraWanContainer<16,R> { 
     
 
     
 public: 
-    LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys ); 
+    LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys, R * RadioUser ); 
     eStatusLoRaWan RegionMaxPayloadSize ( uint8_t sizeIn ) ;
     void RegionSetDataRateDistribution    ( uint8_t adrMode );
     virtual void RegionGiveNextDataRate           ( void );
@@ -78,5 +78,6 @@ private :
     
 
 };
+
 #endif
 

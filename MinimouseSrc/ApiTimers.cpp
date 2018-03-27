@@ -207,6 +207,7 @@ void RtcInit (void)
  * \param [OUT]  void       
  */
 void GotoSleepSecond (int duration ) {
+#if LOW_POWER_MODE == 1
     int cpt = duration ;
     WatchDogRelease ( );
     while ( cpt > ( WATCH_DOG_PERIOD_RELEASE ) ) {
@@ -218,6 +219,9 @@ void GotoSleepSecond (int duration ) {
     WakeUpAlarmSecond( cpt );
     sleep();
     WatchDogRelease ( );
+# else
+    wait ( duration ) ;
+#endif
 }
 
 
@@ -228,8 +232,12 @@ void GotoSleepSecond (int duration ) {
  * \param [OUT]  void       
  */
 void GotoSleepMSecond (int duration ) {
+#if LOW_POWER_MODE == 1
     WakeUpAlarmMSecond ( duration );
     sleep();
+# else
+    wait_ms ( duration ) ;
+#endif
 }
 static LPTIM_HandleTypeDef hlptim1;
 /*!

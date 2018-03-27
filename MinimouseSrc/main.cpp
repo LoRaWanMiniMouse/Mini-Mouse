@@ -1,7 +1,7 @@
 /*!
- * \file      Main.c
+ * \file      Main4certification.c
  *
- * \brief     Description : Example main of LoRaWan MiniMouse stack
+ * \brief     Description : Replace  main of LoRaWan MiniMouse stack  by this file in case of certification tests
  *
  * \copyright Revised BSD License, see section \ref LICENSE.
  *
@@ -26,11 +26,18 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "rtc_api.h"
 #include "ApiTimers.h"
 #include "utilities.h"
-
+#include "UserDefine.h"
+#include "appli.h"
 /*!
- * \brief   sBackUpFlash BackUpFlash The LoraWan parameters save into the flash memory for failsafe restauration.
+ * \brief   BackUpFlash The LoraWan structure parameters save into the flash memory for failsafe restauration.
  */
 struct sBackUpFlash BackUpFlash;
+
+/*!
+ * \brief   Radio Interrupt Pin declarations
+ */
+InterruptIn RadioGlobalIt        ( TX_RX_IT ) ;
+InterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
 
 
 /*!
@@ -45,27 +52,25 @@ uint8_t AppEuiInit[]         = { 0x70, 0xB3, 0xD5, 0x7E, 0xF0, 0x00, 0x36, 0x12 
 uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0xBB };    
 uint32_t LoRaDevAddrInit     = 0x26011918;
 
-sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
+SX1276  RadioUser( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET );
+
+/* ISR routine specific of this example */
+void UserIsr ( void ) {
+    DEBUG_MSG( "\n\n\n Demo : use radio both in lorawan mode and in specific user mode \n receive isr radio \n\n\n" );
+    RadioGlobalIt.rise( NULL );// Release ISR 
+}
 
 int main( ) {
     int i;
-    int StatusCertification = 0;
-    uint8_t UserPayloadSize = 14;
-    uint8_t UserPayload[255];
+    uint8_t UserPayloadSize ;
+    uint8_t UserPayload [14];
     uint8_t UserRxPayloadSize;
     uint8_t UserRxPayload [255];
-    uint8_t UserFport = 3;
+    uint8_t UserFport ;
     uint8_t UserRxFport ;
     uint8_t MsgType ;
-    
-    /*!
-    * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
-    * \remark  The Current implementation doesn't yet support different radio (only SX1276) 
-    * \remark  On the future dev , the Radio Type will be a parameter of the LoraWan Objects
-    */
-    LoraWanObjet<LoraRegionsEU> Lp( LoraWanKeys ); 
-
-   
+    eDataRateStrategy AppDataRate = MOBILE_LOWPER_DR_DISTRIBUTION;
+    uint8_t AppTimeSleeping = 3 ;
 
     /*!
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
@@ -77,39 +82,42 @@ int main( ) {
 #if DEBUG_TRACE == 1
     pcf.baud( 115200 );
 #endif    
-
+    SetDevEui ( DevEuiInit );
+    sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
+    /*!
+    * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
+    * \remark  The Current implementation doesn't yet support different radio (only SX1276) 
+    * \remark  On the future dev , the Radio Type will be a parameter of the LoraWan Objects
+    */
+    LoraWanObjet<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser); 
     /*!
     * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
     */
     UserFport       = 3;
     UserPayloadSize = 14;
-    for (uint8_t i = 0; i < 14 ; i ++) {
-        UserPayload[i]  = i;
-    }
     MsgType = UNCONF_DATA_UP;
     uint8_t AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE ;
     eLoraWan_Process_States LpState = LWPSTATE_IDLE;    
-    /*!
-    * \brief  Configure the DataRate Strategy 
-    */
-    Lp.SetDataRateStrategy( MOBILE_LOWPER_DR_DISTRIBUTION );
 
-    
     /*!
     * \brief Restore the LoraWan Context
     */
     wait(2);
-    //Lp.RestoreContext ( );
-
-
-
+    Lp.RestoreContext ( );
     while(1) {
         DEBUG_MSG("\n\n\n\n ");
-
-        if ( Lp.IsJoined ( ) == JOINED ) {            
-            LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
-        } else {
+        UserFport       = 3;
+        UserPayloadSize = 9;
+        PrepareFrame ( UserPayload );
+        UserPayload[8]  = Lp.GetNbOfReset(); // in this example adding number of reset inside the applicatif payload
+        /*!
+         * \brief  Configure the DataRate Strategy 
+        */
+        Lp.SetDataRateStrategy( AppDataRate );
+        if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice() == OTA_DEVICE ) ) {            
             LpState = Lp.Join( );
+        } else {
+            LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
         }
         /*!
          * \brief 
@@ -126,7 +134,6 @@ int main( ) {
            // GotoSleepMSecond ( 100 );
             WatchDogRelease ( );
         }
-
         if ( AvailableRxPacket == LORA_RX_PACKET_AVAILABLE ) { 
             Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
             DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
@@ -134,25 +141,22 @@ int main( ) {
                 DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
             }
             DEBUG_MSG("]\n");
-            if ( ( UserRxFport == 224 ) || ( UserRxPayloadSize == 0 ) ) {
-               DEBUG_MSG("Receive Certification Payload \n"); 
-               StatusCertification = Certification (true , &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
-            } 
-        } else {
-            if ( StatusCertification > 0 ){
-                Certification ( false ,  &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
-            }
-        }
+            // call the application layer to manage the application downlink
+        } 
         /*!
-         * \brief Send a ¨Packet every 5 seconds and goto to sleep
-        */
+         * \brief Send a ¨Packet every 120 seconds in case of join 
+         *        Send a packet every AppTimeSleeping seconds in normal mode
+         */
         if ( Lp.IsJoined ( ) == JOINED ) {
-            //GotoSleepSecond ( AppTimeSleeping *100 );
+            //GotoSleepSecond ( AppTimeSleeping );
             wait(5);
         } else {
             wait(5);
             //GotoSleepSecond ( 5 );
         }
+        RadioGlobalIt.rise( &UserIsr ); // attach ISR
+        RadioUser.SendLora( UserPayload, 14, 10, BW500, 868000000,14);
+        wait ( 5 );
     }
 }
 

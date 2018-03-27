@@ -34,14 +34,14 @@ Maintainer        : Fabien Holin (SEMTECH)
  *            OTA or APB Flag.
  *         In future implementation A Radio objet will be also a parameter of this class.
  */
-template <class T>
+template < template <class R> class T, class RADIOTYPE>
 class LoraWanObjet { 
 public:
     /*!
      * \brief LoraWanObjet class constructor.
      * \param DevEui LoraWan Key for OTA Devices
      */    
-    LoraWanObjet(  sLoRaWanKeys LoRaWanKeys  ); 
+    LoraWanObjet(  sLoRaWanKeys LoRaWanKeys,SX1276* RadioUser ); 
 
 
      /*!
@@ -142,12 +142,17 @@ public:
     
      /*!
      * \brief   Reload the factory Config in the LoraWAN Stack 
-     * \remark  NOT YET IMPLEMENTED
      * \param [IN]  none
      * \param [OUT] none
      */  
-     void                       MacFactoryReset         ( void );  // load factory MAC context from constructor
-   
+     void                       FactoryReset         ( void );  // load factory MAC context from constructor
+     
+     /*!
+     * \brief   Get Device type : OTA or APB
+     * \param [IN]  none
+     * \param [OUT] enum Ota Device Type     OTA_DEVICE or APB_DEVICE,
+     */  
+       eDeviceTypeOTA_APB     GetIsOtaDevice (void);
    
     /*!
      * \brief   Return the Max payload length allowed for the next transmit 
@@ -203,12 +208,11 @@ public:
      uint8_t  GetNbOfReset (void);
 private :
     //int StateLoraWanProcess;
-    T packet;
+    T<RADIOTYPE> packet;
     eLoraWan_Process_States StateLoraWanProcess; // for debug not private
     void CopyUserPayload( const uint8_t* dataIn, const uint8_t sizeIn );
     uint8_t  GetStateTimer( void );
     uint8_t  GetRadioIrqFlag ( void );
-    bool     GetIsOtaDevice (void);
     uint8_t  ValidRxPacket; 
     uint32_t RtcTargetTimer;
     void RadioReset ( void ) ;
@@ -217,6 +221,4 @@ private :
     uint32_t FailSafeTimestamp;
 };
 
-extern InterruptIn RadioGlobalIt ;
-extern InterruptIn RadioTimeOutGlobalIt ;
 #endif

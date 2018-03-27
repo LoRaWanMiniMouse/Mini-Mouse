@@ -18,7 +18,7 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #include "mbed.h"
 #include  "Define.h"
 #include "PhyLayer.h"
-#include "sx1276-hal.h"
+#include "sx1276.h"
 #include "LoraMacDataStoreInFlash.h"
 #ifndef MAC_LAYER_H
 #define MAC_LAYER_H
@@ -26,11 +26,11 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #define LORA_MAC_SYNCWORD                           0x34
 
 
-template <int NBCHANNEL>
+template <int NBCHANNEL, class R>
 class LoraWanContainer { 
 public: 
 
-    LoraWanContainer( sLoRaWanKeys LoRaWanKeys ); 
+    LoraWanContainer( sLoRaWanKeys LoRaWanKeys, R * RadioUser ); 
     ~LoraWanContainer( );
     static const uint8_t  NUMBER_OF_CHANNEL = NBCHANNEL; // @note this is an issue it is region dependant so move in region but tbd...
     void BuildTxLoraFrame     ( void );
@@ -142,14 +142,14 @@ public:
     
     
 /* Objet RadioContainer*/
-    RadioContainer Phy;
+    RadioContainer<R>  Phy;
     
 /*  Timer */
 
     void       IsrTimerRx1( void );
     void       IsrTimerRx2( void );
-    static void CallbackIsrTimerRx1 (void * obj){(reinterpret_cast<LoraWanContainer<NBCHANNEL>*>(obj))->IsrTimerRx1();} ;
-    static void CallbackIsrTimerRx2 (void * obj){(reinterpret_cast<LoraWanContainer<NBCHANNEL>*>(obj))->IsrTimerRx2();} ;
+    static void CallbackIsrTimerRx1 (void * obj){(reinterpret_cast<LoraWanContainer<NBCHANNEL, R>*>(obj))->IsrTimerRx1();} ;
+    static void CallbackIsrTimerRx2 (void * obj){(reinterpret_cast<LoraWanContainer<NBCHANNEL, R>*>(obj))->IsrTimerRx2();} ;
     int        StateTimer;
 /* Join Duty cycle management */
     uint32_t   RtcNextTimeJoinSecond ;
@@ -158,7 +158,8 @@ public:
 /*  Flash */
     void LoadFromFlash             ( void );
     void SaveInFlash               ( void );
-    /***************************************************************/
+    void SetBadCrcInFlash          ( void );
+/***************************************************************/
 /*  Virtual Method overwritten by the Class  of the region     */
 /***************************************************************/
     virtual void              RegionGiveNextChannel            ( void )                                 = 0; 

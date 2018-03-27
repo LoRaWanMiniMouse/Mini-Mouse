@@ -22,16 +22,18 @@ Maintainer        : Fabien Holin (SEMTECH)
 #if DEBUG_TRACE == 1
     Serial pcf( SERIAL_TX, SERIAL_RX );
 #endif
-InterruptIn RadioGlobalIt ( TX_RX_IT ) ;
-InterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
-template class LoraWanObjet<LoraRegionsEU>;
-template <class T> 
-LoraWanObjet <T> ::LoraWanObjet( sLoRaWanKeys LoRaWanKeys ):packet(  LoRaWanKeys ){
+
+template class LoraWanObjet< LoraRegionsEU, SX1276 >;
+
+
+template <template <class R> class T, class RADIOTYPE>
+LoraWanObjet<T,RADIOTYPE>::LoraWanObjet( sLoRaWanKeys LoRaWanKeys, SX1276 * RadioUser ):packet(  LoRaWanKeys, RadioUser ) {
     StateLoraWanProcess=LWPSTATE_IDLE;
     packet.MajorBits= LORAWANR1;
     FailSafeTimestamp = RtcGetTimeSecond( );
 }; 
-template <class T> LoraWanObjet <T> ::~LoraWanObjet() {
+template <template <class R> class T, class RADIOTYPE> 
+LoraWanObjet <T,RADIOTYPE> ::~LoraWanObjet() {
 };
 /************************************************************************************************/
 /*                      Public  Methods                                                         */
@@ -42,8 +44,8 @@ template <class T> LoraWanObjet <T> ::~LoraWanObjet() {
 /*    LoraWanProcess Method                                                                    */
 /***********************************************************************************************/
 
-template <class T> 
-eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
+template <template <class R> class T, class RADIOTYPE> 
+eLoraWan_Process_States LoraWanObjet <T,RADIOTYPE> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
 
     *AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE
 //    if ( ( IsJoined ( ) == NOT_JOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
@@ -203,16 +205,16 @@ eLoraWan_Process_States LoraWanObjet <T> ::LoraWanProcess( uint8_t* AvailableRxP
 /**************************************************/
 /*            LoraWan  Join  Method               */
 /**************************************************/
-template <class T> 
-eLoraWan_Process_States LoraWanObjet <T> ::Join ( void ) {
+template <template <class R> class T, class RADIOTYPE> 
+eLoraWan_Process_States LoraWanObjet <T,RADIOTYPE> ::Join ( void ) {
     if ( StateLoraWanProcess != LWPSTATE_IDLE ) {
         DEBUG_MSG( " ERROR : LP STATE NOT EQUAL TO IDLE \n" );
         return ( LWPSTATE_ERROR );
     }
-//    if ( GetIsOtaDevice ( ) == APB_DEVICE ) {
-//        DEBUG_MSG( " ERROR : APB DEVICE CAN'T PROCCED A JOIN REQUEST\n" );
-//        return ( LWPSTATE_ERROR );
-//    }
+    if ( GetIsOtaDevice ( ) == APB_DEVICE ) {
+        DEBUG_MSG( " ERROR : APB DEVICE CAN'T PROCCED A JOIN REQUEST\n" );
+        return ( LWPSTATE_ERROR );
+    }
     FailSafeTimestamp = RtcGetTimeSecond( ) ;
     packet.Phy.JoinedStatus = NOT_JOINED;
     packet.MacNbTransCpt = packet.MacNbTrans = 1;
@@ -229,8 +231,8 @@ eLoraWan_Process_States LoraWanObjet <T> ::Join ( void ) {
 /**************************************************/
 /*          LoraWan  IsJoined  Method             */
 /**************************************************/
-template <class T> 
-eJoinStatus LoraWanObjet <T> ::IsJoined( void ) {
+template <template <class R> class T, class RADIOTYPE> 
+eJoinStatus LoraWanObjet <T,RADIOTYPE> ::IsJoined( void ) {
     eJoinStatus status = NOT_JOINED;
     status = packet.Phy.JoinedStatus;
     return ( status );
@@ -239,15 +241,15 @@ eJoinStatus LoraWanObjet <T> ::IsJoined( void ) {
 /**************************************************/
 /*          LoraWan  IsJoined  Method             */
 /**************************************************/
-template <class T> 
-void LoraWanObjet <T> ::NewJoin ( void ) {
+template <template <class R> class T, class RADIOTYPE> 
+void LoraWanObjet <T,RADIOTYPE> ::NewJoin ( void ) {
     packet.Phy.JoinedStatus = NOT_JOINED; 
 }
 /**************************************************/
 /*         LoraWan  SendPayload  Method           */
 /**************************************************/
-template <class T> 
-eLoraWan_Process_States LoraWanObjet <T> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType ) {
+template <template <class R> class T, class RADIOTYPE> 
+eLoraWan_Process_States LoraWanObjet <T,RADIOTYPE> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType ) {
     eStatusLoRaWan status;
     FailSafeTimestamp = RtcGetTimeSecond( ) ;
     packet.RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region )
@@ -282,8 +284,8 @@ eLoraWan_Process_States LoraWanObjet <T> ::SendPayload ( uint8_t fPort, const ui
 /**************************************************/
 /*        LoraWan  Receive  Method                */
 /**************************************************/
-template <class T> 
-eStatusLoRaWan LoraWanObjet <T> ::ReceivePayload ( uint8_t* UserRxFport, uint8_t* UserRxPayload, uint8_t* UserRxPayloadSize ) {
+template <template <class R> class T, class RADIOTYPE> 
+eStatusLoRaWan LoraWanObjet <T,RADIOTYPE> ::ReceivePayload ( uint8_t* UserRxFport, uint8_t* UserRxPayload, uint8_t* UserRxPayloadSize ) {
     eStatusLoRaWan status = OKLORAWAN; 
     if (packet.AvailableRxPacketForUser == NO_LORA_RXPACKET_AVAILABLE) {
         status = ERRORLORAWAN ;
@@ -299,8 +301,8 @@ eStatusLoRaWan LoraWanObjet <T> ::ReceivePayload ( uint8_t* UserRxFport, uint8_t
 /**************************************************/
 /*       LoraWan  AdrModeSelect  Method           */
 /**************************************************/
-template <class T>
-void LoraWanObjet <T> ::SetDataRateStrategy( eDataRateStrategy adrModeSelect ) {
+template <template <class R> class T, class RADIOTYPE>
+void LoraWanObjet <T,RADIOTYPE> ::SetDataRateStrategy( eDataRateStrategy adrModeSelect ) {
     packet.AdrModeSelect = adrModeSelect;
     packet.RegionSetDataRateDistribution( adrModeSelect );
 };
@@ -309,32 +311,32 @@ void LoraWanObjet <T> ::SetDataRateStrategy( eDataRateStrategy adrModeSelect ) {
 /**************************************************/
 /*         LoraWan  GetDevAddr  Method            */
 /**************************************************/
-template <class T> 
-uint32_t LoraWanObjet <T> ::GetDevAddr ( void ) {
+template <template <class R> class T, class RADIOTYPE> 
+uint32_t LoraWanObjet <T,RADIOTYPE> ::GetDevAddr ( void ) {
     return(packet.DevAddr);
 }
 
 /**************************************************/
 /*         LoraWan  GetNextPower  Method          */
 /**************************************************/
-template <class T>
-uint8_t LoraWanObjet <T> ::GetNextPower ( void ) {
+template <template <class R> class T, class RADIOTYPE>
+uint8_t LoraWanObjet <T,RADIOTYPE> ::GetNextPower ( void ) {
     return(packet.MacTxPower);
 }
 
 /**************************************************/
 /*    LoraWan  GetLorawanProcessState  Method     */
 /**************************************************/
-template <class T> 
-eLoraWan_Process_States LoraWanObjet <T> ::GetLorawanProcessState ( void ) {
+template <template <class R> class T, class RADIOTYPE> 
+eLoraWan_Process_States LoraWanObjet <T,RADIOTYPE> ::GetLorawanProcessState ( void ) {
     return(StateLoraWanProcess);
 }
  
 /**************************************************/
 /*    LoraWan  RestoreContext  Method     */
 /**************************************************/
-template <class T> 
-void LoraWanObjet <T> ::RestoreContext ( void ) {
+template <template <class R> class T, class RADIOTYPE> 
+void LoraWanObjet <T,RADIOTYPE> ::RestoreContext ( void ) {
     packet.LoadFromFlash ( );
 }; 
 
@@ -346,8 +348,8 @@ void LoraWanObjet <T> ::RestoreContext ( void ) {
 /**************************************************/
 /*   LoraWan  GetNextMaxPayloadLength  Method     */
 /**************************************************/
-template <class T>
-uint32_t LoraWanObjet <T> ::GetNextMaxPayloadLength ( void ) {// error return during tx send to be replace by get datarate?
+template <template <class R> class T, class RADIOTYPE>
+uint32_t LoraWanObjet <T,RADIOTYPE> ::GetNextMaxPayloadLength ( void ) {// error return during tx send to be replace by get datarate?
     return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
@@ -355,50 +357,49 @@ uint32_t LoraWanObjet <T> ::GetNextMaxPayloadLength ( void ) {// error return du
 /**************************************************/
 /*        LoraWan  GetNextDataRate  Method        */
 /**************************************************/
-template <class T> 
-uint8_t LoraWanObjet <T> ::GetNextDataRate ( void ) { // note return datareate in case of adr
+template <template <class R> class T, class RADIOTYPE> 
+uint8_t LoraWanObjet <T,RADIOTYPE> ::GetNextDataRate ( void ) { // note return datareate in case of adr
     return(0);//@NOTE NOT YET IMPLEMENTED
 }
 
 
-template <class T> 
- void  LoraWanObjet <T> :: MacFactoryReset ( void ) {
-     packet.Phy.JoinedStatus = NOT_JOINED;
-     packet.SaveInFlash();
-     
+template <template <class R> class T, class RADIOTYPE> 
+ void  LoraWanObjet <T,RADIOTYPE> :: FactoryReset ( void ) {
+     packet.SetBadCrcInFlash ( ) ;
  }
+ 
+template <template <class R> class T, class RADIOTYPE> 
+eDeviceTypeOTA_APB LoraWanObjet <T,RADIOTYPE> ::GetIsOtaDevice (void){
+    return (eDeviceTypeOTA_APB)packet.otaDevice;
+}
 /************************************************************************************************/
 /*                      Private  Methods                                                        */
 /************************************************************************************************/
-template <class T> 
-void LoraWanObjet <T> ::CopyUserPayload( const uint8_t* dataIn, const uint8_t sizeIn ) {
+template <template <class R> class T, class RADIOTYPE> 
+void LoraWanObjet <T,RADIOTYPE> ::CopyUserPayload( const uint8_t* dataIn, const uint8_t sizeIn ) {
     memcpy( &packet.Phy.TxPhyPayload[ FHDROFFSET + packet.FoptsTxLengthCurrent ], dataIn, sizeIn );
 };
  
-template <class T> 
-uint8_t LoraWanObjet <T> ::GetStateTimer(void) {
+template <template <class R> class T, class RADIOTYPE> 
+uint8_t LoraWanObjet <T,RADIOTYPE> ::GetStateTimer(void) {
     return (packet.StateTimer);
 }
 
-template <class T> 
-uint8_t LoraWanObjet <T> ::GetRadioState ( void ) {
+template <template <class R> class T, class RADIOTYPE> 
+uint8_t LoraWanObjet <T,RADIOTYPE> ::GetRadioState ( void ) {
     return packet.Phy.GetRadioState( );
 };
  
-template <class T> 
-uint8_t LoraWanObjet <T> ::GetRadioIrqFlag ( void ) {
+template <template <class R> class T, class RADIOTYPE> 
+uint8_t LoraWanObjet <T,RADIOTYPE> ::GetRadioIrqFlag ( void ) {
     return packet.Phy.RegIrqFlag;
 };
-template <class T>
-void LoraWanObjet <T> ::RadioReset ( void ) {
+template <template <class R> class T, class RADIOTYPE> 
+void LoraWanObjet <T,RADIOTYPE> ::RadioReset ( void ) {
 //    packet.Phy.Radio.Reset();
 //    wait_ms ( 30 ) ;
 }
-template <class T>
-bool LoraWanObjet <T> ::GetIsOtaDevice (void){
-    return packet.otaDevice;
-}
-template <class T>
-uint8_t LoraWanObjet <T> ::GetNbOfReset (void){
+template <template <class R> class T, class RADIOTYPE> 
+uint8_t LoraWanObjet <T,RADIOTYPE> ::GetNbOfReset (void){
     return packet.NbOfReset;
 }

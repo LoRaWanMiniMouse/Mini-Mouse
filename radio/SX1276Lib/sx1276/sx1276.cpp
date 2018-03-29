@@ -102,7 +102,7 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
 
 }
 
-void SX1276::Sleep( void ) {
+void SX1276::Sleep(  bool coldStart ) {
     // @TODO
 }
 

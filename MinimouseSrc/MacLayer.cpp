@@ -26,7 +26,8 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*@note have to check init values                */
 /*************************************************/
 template class LoraWanContainer <16,SX1276>;
-template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys, R * RadioUser)
+template class LoraWanContainer <16,SX126x>;
+template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys, R * RadioUser,uint32_t FlashAdress)
                     :Phy( RadioUser ) { 
     Phy.RadioContainerInit( );
     StateTimer = TIMERSTATE_SLEEP;
@@ -51,6 +52,7 @@ template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContain
     FoptsTxLengthSticky  = 0;
     FirstDwn = true;
     Phy.JoinedStatus = ( otaDevice == APB_DEVICE ) ? JOINED : NOT_JOINED;
+    UserFlashAdress = FlashAdress;
 }; 
 
 template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::~LoraWanContainer( ) {
@@ -79,6 +81,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::BuildTxLo
     SetMacHeader( );
     SetFrameHeader( );
     MacPayloadSize = UserPayloadSize + FHDROFFSET + FoptsTxLengthCurrent; 
+    DEBUG_PRINTF("  Devaddr = %x\n",DevAddr);
 };
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::EncryptTxFrame( void ) {
     LoRaMacPayloadEncrypt( &Phy.TxPhyPayload[FHDROFFSET + FoptsTxLengthCurrent], UserPayloadSize, (fPort == PORTNWK)? nwkSKey :appSKey, DevAddr, UP_LINK, FcntUp, &Phy.TxPhyPayload[FHDROFFSET + FoptsTxLengthCurrent] );
@@ -148,7 +151,6 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
             Phy.LastTimeRxWindowsMs = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - RxOffsetMs + MacRxWindowMs ; // timestamp of the end of rx2 windows
         }
     }
-//    DEBUG_PRINTF("rxtimeout = %d  offset = %d time = %u, timealarm = %u\n",MacRxWindowMs,RxOffsetMs,tCurrentMillisec,tAlarmMillisec);
     DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
 }
 /************************************************************************************************************************************/
@@ -842,10 +844,9 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SaveInFla
     memcpy( &BackUpFlash.nwkSKey[0], &nwkSKey[0], 16);
     memcpy( &BackUpFlash.appSKey[0], &appSKey[0], 16);
     Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
-    DEBUG_PRINTF ("\n crclow = %x ,crchigh = %x ",crcLow,crcHigh ) ;
     BackUpFlash.CrcLow  = crcLow;
     BackUpFlash.CrcHigh = crcHigh;
-    gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, ( sizeof(sBackUpFlash) >> 3 ) );
+    gFlash.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
     wait_ms( 25 );    
 }
 
@@ -875,17 +876,16 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetBadCrc
     memcpy( &BackUpFlash.nwkSKey[0], &nwkSKey[0], 16);
     memcpy( &BackUpFlash.appSKey[0], &appSKey[0], 16);
     Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
-    DEBUG_PRINTF ("\n crclow = %x ,crchigh = %x ",crcLow,crcHigh ) ;
     BackUpFlash.CrcLow  = crcLow + 1; // bad crc
     BackUpFlash.CrcHigh = crcHigh + 1;
-    gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, ( sizeof(sBackUpFlash) >> 3 ) );
+    gFlash.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
     wait_ms( 25 );    
 }
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LoadFromFlash ( ) {
     uint32_t crcLow;
     uint32_t crcHigh;
-    gFlash.RestoreContext((uint8_t *)(&BackUpFlash), USERFLASHADRESS, sizeof(sBackUpFlash));
+    gFlash.RestoreContext((uint8_t *)(&BackUpFlash), UserFlashAdress, sizeof(sBackUpFlash));
     Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash)-8 , &crcLow, &crcHigh );    
     if (( crcLow == BackUpFlash.CrcLow ) &&  ( crcHigh == BackUpFlash.CrcHigh ) ) { // explicit else = factory reset => the default value inside the constructor
         BackUpFlash.FcntUp            +=  FLASH_UPDATE_PERIOD; //@note automatic increment
@@ -916,7 +916,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LoadFromF
         Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
         BackUpFlash.CrcLow  = crcLow;
         BackUpFlash.CrcHigh = crcHigh;
-        gFlash.StoreContext( &BackUpFlash, USERFLASHADRESS, ( sizeof(sBackUpFlash) >> 3 ) );    
+        gFlash.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );    
         DEBUG_PRINTF ("\n MacTxDataRate = %d ", MacTxDataRate ) ;
         DEBUG_PRINTF ("\n MacTxPower = %d ", MacTxPower ) ;
         DEBUG_PRINTF ("\n MacChMask = 0x%x ", MacChMask ) ;
@@ -936,6 +936,12 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LoadFromF
             DEBUG_PRINTF ("\n MacMaxDataRateChannel[%d]   = %d ", i, MacMaxDataRateChannel[i] ) ;
             DEBUG_PRINTF ("\n MacMinDataRateChannel[%d]   = %d ", i, MacMinDataRateChannel[i] ) ;
             DEBUG_PRINTF ("\n MacChannelIndexEnabled[%d]  = %d \n", i, MacChannelIndexEnabled[i] );
+        }
+         for (int i = 0 ; i < 16 ; i ++ ) {
+            DEBUG_PRINTF ("\n appSKey[%d]= %x ", i, appSKey[i] ) ;
+        }
+        for (int i = 0 ; i < 16 ; i ++ ) {
+            DEBUG_PRINTF ("\n nwkSKey[%d]= %x ", i, nwkSKey[i] ) ;
         }
     } else {
         BackUpFlash.NbOfReset = 0;

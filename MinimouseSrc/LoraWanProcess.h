@@ -41,7 +41,7 @@ public:
      * \brief LoraWanObjet class constructor.
      * \param DevEui LoraWan Key for OTA Devices
      */    
-    LoraWanObjet(  sLoRaWanKeys LoRaWanKeys,SX1276* RadioUser ); 
+    LoraWanObjet(  sLoRaWanKeys LoRaWanKeys,RADIOTYPE* RadioUser, uint32_t FlashAdress ); 
 
 
      /*!
@@ -153,6 +153,13 @@ public:
      * \param [OUT] enum Ota Device Type     OTA_DEVICE or APB_DEVICE,
      */  
        eDeviceTypeOTA_APB     GetIsOtaDevice (void);
+       
+     /*!
+     * \brief Set Device type : OTA or APB
+     * \param [IN]  none
+     * \param [OUT] enum Ota Device Type     OTA_DEVICE or APB_DEVICE useful for certification,
+     */  
+       void     SetOtaDevice (eDeviceTypeOTA_APB  deviceType);
    
     /*!
      * \brief   Return the Max payload length allowed for the next transmit 

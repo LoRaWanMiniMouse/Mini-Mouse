@@ -24,10 +24,10 @@ Maintainer        : Fabien Holin (SEMTECH)
 #endif
 
 template class LoraWanObjet< LoraRegionsEU, SX1276 >;
-
+template class LoraWanObjet< LoraRegionsEU, SX126x >;
 
 template <template <class R> class T, class RADIOTYPE>
-LoraWanObjet<T,RADIOTYPE>::LoraWanObjet( sLoRaWanKeys LoRaWanKeys, SX1276 * RadioUser ):packet(  LoRaWanKeys, RadioUser ) {
+LoraWanObjet<T,RADIOTYPE>::LoraWanObjet( sLoRaWanKeys LoRaWanKeys, RADIOTYPE * RadioUser,uint32_t FlashAdress ):packet(  LoRaWanKeys, RadioUser,FlashAdress ) {
     StateLoraWanProcess=LWPSTATE_IDLE;
     packet.MajorBits= LORAWANR1;
     FailSafeTimestamp = RtcGetTimeSecond( );
@@ -372,6 +372,11 @@ template <template <class R> class T, class RADIOTYPE>
 eDeviceTypeOTA_APB LoraWanObjet <T,RADIOTYPE> ::GetIsOtaDevice (void){
     return (eDeviceTypeOTA_APB)packet.otaDevice;
 }
+template <template <class R> class T, class RADIOTYPE> 
+void LoraWanObjet <T,RADIOTYPE> ::SetOtaDevice (eDeviceTypeOTA_APB  deviceType){
+    packet.otaDevice = deviceType;
+}
+
 /************************************************************************************************/
 /*                      Private  Methods                                                        */
 /************************************************************************************************/

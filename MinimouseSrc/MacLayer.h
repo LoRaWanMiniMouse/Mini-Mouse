@@ -30,7 +30,7 @@ template <int NBCHANNEL, class R>
 class LoraWanContainer { 
 public: 
 
-    LoraWanContainer( sLoRaWanKeys LoRaWanKeys, R * RadioUser ); 
+    LoraWanContainer( sLoRaWanKeys LoRaWanKeys, R * RadioUser,uint32_t FlashAdress ); 
     ~LoraWanContainer( );
     static const uint8_t  NUMBER_OF_CHANNEL = NBCHANNEL; // @note this is an issue it is region dependant so move in region but tbd...
     void BuildTxLoraFrame     ( void );
@@ -226,6 +226,7 @@ private :
     int32_t  RxOffsetMs;
     uint32_t MacRxWindowMs;
     uint32_t RxLateWindowMs ;
+    uint32_t UserFlashAdress;
 
 }; 
 

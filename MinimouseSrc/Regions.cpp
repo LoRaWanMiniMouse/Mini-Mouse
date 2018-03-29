@@ -23,8 +23,8 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*@note have to check init values                */
 /*************************************************/
 template class LoraRegionsEU<SX1276>;
-
-template < class R > LoraRegionsEU<R>::LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys, R * RadioUser ) : LoraWanContainer<16,R>  ( LoRaWanKeys, RadioUser ){
+template class LoraRegionsEU<SX126x>;
+template < class R > LoraRegionsEU<R>::LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys, R * RadioUser, uint32_t FlashAdress) : LoraWanContainer<16,R>  ( LoRaWanKeys, RadioUser, FlashAdress ){
     
     memset( this->MacChannelIndexEnabled, CHANNEL_DISABLED, this->NUMBER_OF_CHANNEL );
     memset( this->MacMinDataRateChannel, 0, this->NUMBER_OF_CHANNEL );

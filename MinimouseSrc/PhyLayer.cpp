@@ -26,8 +26,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "UserDefine.h"
 //static RadioEvents_t RadioEvents;
 template class RadioContainer<SX1276>;
-
-
+template class RadioContainer<SX126x>;
 template <class R> RadioContainer <R>::RadioContainer( R * RadioUser ){
     StateRadioProcess = RADIOSTATE_IDLE;
     TimestampRtcIsr =0;
@@ -62,7 +61,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     Radio->ClearIrqFlags( ); 
     if ( RegIrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {//@ note (important for phy ) remove all IT mask in config send or rx and check if regirqflag = rxdone + header crc valid 
         status = DumpRxPayloadAndMetadata ( );
-        Radio->Sleep ( );
+        Radio->Sleep ( false );
         if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
             RegIrqFlag = BAD_PACKET_IRQ_FLAG ; // this case is exactly the same than the case of rx timeout
             tCurrentMillisec =  RtcGetTimeMs( );
@@ -85,7 +84,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
             }
         }
     } else {
-        Radio->Sleep ( );
+        Radio->Sleep ( false );
     }
 
     //Radio.Sleep ( );
@@ -156,7 +155,6 @@ template <class R>int RadioContainer<R>::GetRadioState( void ) {
 
 template <class R> void RadioContainer <R>::RadioContainerInit( void ) {
 
-    Radio->Sleep( );
 };
 
 

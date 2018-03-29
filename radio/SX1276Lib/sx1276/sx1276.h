@@ -15,8 +15,8 @@ License           : Revised BSD License, see LICENSE.TXT file include in the pro
 
 Maintainer        : Olivier Gimenez (SEMTECH)
 */
-#ifndef SX126X_H
-#define SX126X_H
+#ifndef SX1276_H
+#define SX1276_H
 #include <stdint.h>
 #include "Define.h"
 
@@ -39,13 +39,14 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 class SX1276  {
 public:
     SX1276( PinName mosi, PinName miso, PinName sclk, PinName nss, PinName reset );
+    ~SX1276(){};
     void ClearIrqFlags( void );
     uint8_t GetIrqFlags( void );
     void FetchPayload( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
     void Reset( void );
     void SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power);
     void RxLora( eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
-    void Sleep( void );
+    void Sleep(  bool coldStart );
 
 private:
 

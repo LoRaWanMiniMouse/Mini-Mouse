@@ -151,11 +151,13 @@ enum {
 /*                   Lora Phy Irg Flags Parameters                           */
 /*****************************************************************************/
 
-enum{
+typedef enum{
+    RADIO_IRQ_NONE,
     RXTIMEOUT_IRQ_FLAG      = 0x80,
     RECEIVE_PACKET_IRQ_FLAG = 0x40,
     BAD_PACKET_IRQ_FLAG     = 0x60,
-};
+    
+}IrqFlags_t;
 
 
 /********************************************************************************/

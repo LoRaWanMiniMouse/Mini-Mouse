@@ -19,7 +19,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 
 #define DATA_EEPROM_BASE       ( ( uint32_t )0x807F800U )              /*!< DATA_EEPROM base address in the alias region */
-#define DATA_EEPROM_END        ( ( uint32_t )DATA_EEPROM_BASE + 2048 ) /*!< DATA EEPROM end address in the alias region */
+#define DATA_EEPROM_END        ( ( uint32_t )DATA_EEPROM_BASE + 4096 ) /*!< DATA EEPROM end address in the alias region */
 
 void FlashPageErase( uint32_t page, uint32_t banks )
 {
@@ -42,7 +42,7 @@ void FlashPageErase( uint32_t page, uint32_t banks )
     SET_BIT( FLASH->CR, FLASH_CR_STRT );
 }
 
-uint8_t EepromMcuWriteBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
+uint8_t EepromMcuWriteBuffer( uint32_t addr, uint8_t *buffer, uint16_t size )
 {
     uint64_t *flash = ( uint64_t* )buffer;
     
@@ -58,7 +58,7 @@ uint8_t EepromMcuWriteBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
 
     for( uint32_t i = 0; i < size; i++ )
     {
-        HAL_FLASH_Program( FLASH_TYPEPROGRAM_DOUBLEWORD, DATA_EEPROM_BASE + ( 8 * i ), flash[i] );
+        HAL_FLASH_Program( FLASH_TYPEPROGRAM_DOUBLEWORD, addr + ( 8 * i ), flash[i] );
     }
 
     HAL_FLASH_Lock( );
@@ -66,7 +66,7 @@ uint8_t EepromMcuWriteBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
     return SUCCESS;
 }
 
-uint8_t EepromMcuReadBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
+uint8_t EepromMcuReadBuffer( uint32_t addr, uint8_t *buffer, uint16_t size )
 {
     assert_param( buffer != NULL );
 
@@ -75,7 +75,7 @@ uint8_t EepromMcuReadBuffer( uint16_t addr, uint8_t *buffer, uint16_t size )
     assert_param( size < ( DATA_EEPROM_END - DATA_EEPROM_BASE ) );
 for( uint32_t i = 0; i < size; i++ )
     {
-     buffer[i]= *(( uint8_t* )DATA_EEPROM_BASE+i);
+     buffer[i]= *((( uint8_t* )addr)+i);
     }     
     return SUCCESS;
 }
@@ -111,7 +111,7 @@ int Flash::RestoreContext(uint8_t *buffer, uint32_t addr, uint32_t size){
      /* have to be implemented by mcu providers
     the following code propose a lite implementation without any error cases*/
     uint16_t sizet = size & 0xFFFF;
-    EepromMcuReadBuffer( 0, buffer, sizet );
+    EepromMcuReadBuffer( addr, buffer, sizet );
     return ( 0 ); 
 }
 
@@ -124,7 +124,7 @@ int Flash::StoreContext(const void *buffer, uint32_t addr, uint32_t size){
     This basic implementation suppose that the addr is 4 Bytes aligned and suppose also that the size can be divide by 4.
     */
     uint16_t sizet = size & 0xFFFF;    
-    EepromMcuWriteBuffer( 0,  (uint8_t*) buffer, sizet );    
+    EepromMcuWriteBuffer( addr,  (uint8_t*) buffer, sizet );    
     return ( 0 ); 
 } 
    

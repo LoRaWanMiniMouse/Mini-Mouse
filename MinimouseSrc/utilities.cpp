@@ -176,6 +176,7 @@ int  Certification ( bool NewCommand , uint8_t * UserFport , uint8_t * UserPaylo
               UserPayload[0]  = 2;
               UserFport       = 0;
             case 6 :  // rejoin 
+               Lp->SetOtaDevice (OTA_DEVICE);
                Lp->NewJoin( );
                break;
             default :

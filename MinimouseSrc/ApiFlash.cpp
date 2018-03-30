@@ -18,7 +18,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "mbed.h"
 
 
-#define DATA_EEPROM_BASE       ( ( uint32_t )0x807F800U )              /*!< DATA_EEPROM base address in the alias region */
+#define DATA_EEPROM_BASE       ( ( uint32_t )0x8000000 )              /*!< DATA_EEPROM base address in the alias region */
 #define DATA_EEPROM_END        ( ( uint32_t )DATA_EEPROM_BASE + 4096 ) /*!< DATA EEPROM end address in the alias region */
 
 void FlashPageErase( uint32_t page, uint32_t banks )
@@ -46,13 +46,12 @@ uint8_t EepromMcuWriteBuffer( uint32_t addr, uint8_t *buffer, uint16_t size )
 {
     uint64_t *flash = ( uint64_t* )buffer;
     
-    //assert_param( addr >= DATA_EEPROM_BASE );
-    assert_param( buffer != NULL );
-    assert_param( size < ( DATA_EEPROM_END - DATA_EEPROM_BASE ) );
-
-    HAL_FLASH_Unlock( );
-    
-    FlashPageErase( 255, 1 );
+   uint32_t Findpage = (addr - 0x8000000 )>>11;
+   uint32_t NumberOfPage = (size >> 11)+1; 
+   HAL_FLASH_Unlock( );
+    for (int i = 0 ; i < NumberOfPage; i ++){
+    FlashPageErase( Findpage + i, 1 );
+    }
     
     WRITE_REG( FLASH->CR, 0x40000000 );
 

@@ -220,7 +220,15 @@ void GotoSleepSecond (int duration ) {
     sleep();
     WatchDogRelease ( );
 # else
-    wait ( duration ) ;
+    int cpt = duration ;
+    WatchDogRelease ( );
+    while ( cpt > ( WATCH_DOG_PERIOD_RELEASE ) ) {
+        cpt -= WATCH_DOG_PERIOD_RELEASE ;
+        wait( WATCH_DOG_PERIOD_RELEASE );
+        WatchDogRelease ( );
+    }
+    wait( cpt );
+    WatchDogRelease ( );
 #endif
 }
 

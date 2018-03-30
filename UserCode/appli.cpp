@@ -90,21 +90,7 @@ void PrepareFrame (uint8_t *Buffer) {
     Buffer[8] = BackUpFlash.NbOfReset;
 }
 
-void SetDevEui (uint8_t *DevEui){
-uint32_t uid1, uid2, uid3;
-        const char* UID = (char*)0x1FFF7590;
-        memcpy(&uid1, UID, 4);
-        memcpy(&uid2, UID + 4, 4);
-        memcpy(&uid3, UID + 8, 4);
-        DevEui[7] =(uint8_t)(uid1&0xff);
-        DevEui[6] =(uint8_t)((uid1>8)&0xFF);
-        DevEui[5] =(uint8_t)((uid1>16)&0xFF);
-        DevEui[4] =(uint8_t)((uid1>24)&0xFF);
-        DevEui[3] =(uint8_t)(uid2&0xFF);
-        DevEui[2] =(uint8_t)((uid2>8)&0xFF);
-        DevEui[1] =(uint8_t)((uid2>16)&0xFF);
-        DevEui[0] =(uint8_t)((uid2>24)&0xFF);
-}
+
 /**************************************************************/
 /*              SHT21 CLASS                                   */
 /**************************************************************/

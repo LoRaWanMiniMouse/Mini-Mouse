@@ -937,12 +937,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LoadFromF
             DEBUG_PRINTF ("\n MacMinDataRateChannel[%d]   = %d ", i, MacMinDataRateChannel[i] ) ;
             DEBUG_PRINTF ("\n MacChannelIndexEnabled[%d]  = %d \n", i, MacChannelIndexEnabled[i] );
         }
-         for (int i = 0 ; i < 16 ; i ++ ) {
-            DEBUG_PRINTF ("\n appSKey[%d]= %x ", i, appSKey[i] ) ;
-        }
-        for (int i = 0 ; i < 16 ; i ++ ) {
-            DEBUG_PRINTF ("\n nwkSKey[%d]= %x ", i, nwkSKey[i] ) ;
-        }
+
     } else {
         BackUpFlash.NbOfReset = 0;
         SaveInFlash ( );

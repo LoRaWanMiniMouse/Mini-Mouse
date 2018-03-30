@@ -80,6 +80,6 @@ typedef struct {
     uint8_t  Hygro;
 } payload;
 void PrepareFrame (uint8_t *Buffer);
-void SetDevEui    (uint8_t *DevEui);
+
 #endif
 

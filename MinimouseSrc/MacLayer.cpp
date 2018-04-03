@@ -684,11 +684,11 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateJoi
         for( i = 0 ; i < 16 ; i++) {
             CFList[i] = MacRxPayload[13 + i];
         }
+        RegionGetCFList ( ) ; 
     }
-    RegionGetCFList ( ) ; 
     DevAddr              = MacRxPayload[7] + ( MacRxPayload[8] << 8 ) + ( MacRxPayload[9] << 16 )+ ( MacRxPayload[10] << 24 );
     Phy.DevAddrIsr       = DevAddr ; 
-    MacRx1DataRateOffset = ( MacRxPayload[11] & 0x70 ) >> 3;
+    MacRx1DataRateOffset = ( MacRxPayload[11] & 0x70 ) >> 4;
     MacRx2DataRate       = ( MacRxPayload[11] & 0x0F );
     MacRx1Delay          = MacRxPayload[12];
     DEBUG_PRINTF("DevAddr= %x\n",DevAddr);

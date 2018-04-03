@@ -84,7 +84,7 @@ int main( ) {
     pcf.baud( 115200 );
 #endif    
     //SetDevEui ( DevEuiInit );
-    sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
+    sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
 
     /*!
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
@@ -92,7 +92,7 @@ int main( ) {
     * \remark  On the future dev , the Radio Type will be a parameter of the LoraWan Objects
     */
 
-    LoraWanObjet<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 
     /*!
     * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
@@ -107,7 +107,7 @@ int main( ) {
     * \brief Restore the LoraWan Context
     */
     wait(2);
-    Lp.RestoreContext  ( );
+    //Lp.RestoreContext  ( );
 
     while(1) {
         

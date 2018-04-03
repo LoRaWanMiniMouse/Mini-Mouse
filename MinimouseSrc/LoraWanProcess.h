@@ -26,7 +26,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "Regions.h"
 
 /*!
- * \class LoraWanObjet 
+ * \class LoraWanObject 
  * \brief An absolutely minimalistic LoRaWAN Class A stack implementation .
  * \remark  In future implementation the constructor will contain :
  *            APPSKey, NWSKey, DevAdrr mandatory for APB devices
@@ -35,20 +35,20 @@ Maintainer        : Fabien Holin (SEMTECH)
  *         In future implementation A Radio objet will be also a parameter of this class.
  */
 template < template <class R> class T, class RADIOTYPE>
-class LoraWanObjet { 
+class LoraWanObject { 
 public:
     /*!
-     * \brief LoraWanObjet class constructor.
+     * \brief LoraWanObject class constructor.
      * \param DevEui LoraWan Key for OTA Devices
      */    
-    LoraWanObjet(  sLoRaWanKeys LoRaWanKeys,RADIOTYPE* RadioUser, uint32_t FlashAdress ); 
+    LoraWanObject(  sLoRaWanKeys LoRaWanKeys,RADIOTYPE* RadioUser, uint32_t FlashAdress ); 
 
 
      /*!
-     * \brief LoraWanObjet class destructor.
+     * \brief LoraWanObject class destructor.
      * \param None
      */    
-    ~LoraWanObjet();
+    ~LoraWanObject();
 
 
      /*!

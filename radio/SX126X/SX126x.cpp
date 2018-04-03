@@ -18,7 +18,6 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 
 #include "SX126x.h"
 #include <string.h>
-#include <math.h>
 #include "Define.h"
 #include "mbed.h"
 

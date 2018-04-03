@@ -244,21 +244,20 @@ template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsValidChannelIndex (
 template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_t adrMode ) {
     memset(DistriDataRateInit,0 , 8);
     switch ( adrMode ) {
-
-        case MOBILE_LONGRANGE_DR_DISTRIBUTION:  // in this example 4/7 dr2 2/7 dr1 and 1/7 dr0
+        case MOBILE_LONGRANGE_DR_DISTRIBUTION:  // in this example 4/7 dr0 2/7 dr1 and 1/7 dr2
             DistriDataRateInit[2]    = 1; 
             DistriDataRateInit[1]    = 2; 
             DistriDataRateInit[0]    = 4; 
             break;
-        case MOBILE_LOWPER_DR_DISTRIBUTION://in this example 8/13 dr5 4/13 dr4 and 1/13 dr0
+        case MOBILE_LOWPER_DR_DISTRIBUTION://in this example 5/10 dr5 4/10 dr4 and 1/10 dr0
             DistriDataRateInit[7]    = 0; 
-            DistriDataRateInit[5]    = 1; 
-            DistriDataRateInit[4]    = 1; 
-            DistriDataRateInit[0]    = 0; 
+            DistriDataRateInit[5]    = 5; 
+            DistriDataRateInit[4]    = 4; 
+            DistriDataRateInit[0]    = 1; 
             break;
         case JOIN_DR_DISTRIBUTION: //in this example 1/3 dr5 1/3 dr4 and 1/3 dr0
-            DistriDataRateInit[5]    = 0; 
-            DistriDataRateInit[4]    = 0; 
+            DistriDataRateInit[5]    = 1; 
+            DistriDataRateInit[4]    = 1; 
             DistriDataRateInit[0]    = 1; 
             break;
         default: 

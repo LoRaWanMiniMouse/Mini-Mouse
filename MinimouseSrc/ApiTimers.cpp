@@ -250,7 +250,7 @@ void GotoSleepMSecond (int duration ) {
 static LPTIM_HandleTypeDef hlptim1;
 /*!
  * Irq Handler dedicated for Low power Timer reserved for lorawan layer
- *\remark LowPowerTimerLora.timerISR() is used to callback the timer Interupt Service Routine of the current obj LoraWanObjet 
+ *\remark LowPowerTimerLora.timerISR() is used to callback the timer Interupt Service Routine of the current obj LoraWanObject 
  * \param [IN]  void
  * \param [OUT] void         
  */
@@ -267,7 +267,7 @@ void LPTIM1_IRQHandler ( void ) {
 /**************************************************/
 /*!
  * Constructor of LowPowerTimerLoRa
- *\remark This timer is dedicated to the LoraWanObjet. It CANNOT be used by the application. This timer must be able to wake up the mcu when it expires.
+ *\remark This timer is dedicated to the LoraWanObject. It CANNOT be used by the application. This timer must be able to wake up the mcu when it expires.
  * \param [IN]  void
  * \param [OUT] void         
  */

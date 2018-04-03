@@ -92,8 +92,8 @@
 //    * \remark  On the future dev , the Radio Type will be a parameter of the LoraWan Objects
 //    */
 
-//    LoraWanObjet<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
-//    LoraWanObjet<LoraRegionsEU,SX1276> Lp2( LoraWanKeys2,&RadioUser,USERFLASHADRESS-4096); 
+//    LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+//    LoraWanObject<LoraRegionsEU,SX1276> Lp2( LoraWanKeys2,&RadioUser,USERFLASHADRESS-4096); 
 //    /*!
 //    * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
 //    */

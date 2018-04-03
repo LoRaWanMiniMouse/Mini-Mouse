@@ -17,7 +17,6 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 */
 #ifndef SX126X_H
 #define SX126X_H
-#include <math.h>
 #include <stdint.h>
 #include "Define.h"
 
@@ -50,7 +49,7 @@ class SX126x {
         
         void Reset( void );
         
-       void SendLora(
+        void SendLora(
                         uint8_t    *payload,
                         uint8_t    payloadSize,
                         uint8_t    SF,

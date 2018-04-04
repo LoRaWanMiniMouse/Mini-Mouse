@@ -49,7 +49,7 @@ uint8_t EepromMcuWriteBuffer( uint32_t addr, uint8_t *buffer, uint16_t size )
    uint32_t Findpage = (addr - 0x8000000 )>>11;
    uint32_t NumberOfPage = (size >> 11)+1; 
    HAL_FLASH_Unlock( );
-    for (int i = 0 ; i < NumberOfPage; i ++){
+    for (uint32_t i = 0 ; i < NumberOfPage; i ++){
     FlashPageErase( Findpage + i, 1 );
     }
     

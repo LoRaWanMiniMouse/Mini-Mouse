@@ -109,7 +109,7 @@ int SHT21::requestTemp()
 {
     int res;
     int rx_bytes = 3;
-    char rx[rx_bytes];
+    char rx[3];
     res = _i2c->read(SHT_I2C_ADDR,rx,rx_bytes);
     unsigned short msb = (rx[0] << 8);
     unsigned short lsb = (rx[1] << 0);

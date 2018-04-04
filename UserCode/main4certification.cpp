@@ -65,7 +65,7 @@
 //    * \remark  The Current implementation doesn't yet support different radio (only SX1276) 
 //    * \remark  On the future dev , the Radio Type will be a parameter of the LoraWan Objects
 //    */
-//    LoraWanObject< LoraRegionsEU , SX1276> Lp( LoraWanKeys, &RadioUser ); 
+//     LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 
 //   
 
@@ -94,7 +94,7 @@
 //    /*!
 //    * \brief  Configure the DataRate Strategy 
 //    */
-//    Lp.SetDataRateStrategy( MOBILE_LOWPER_DR_DISTRIBUTION );
+//    Lp.SetDataRateStrategy( MOBILE_LONGRANGE_DR_DISTRIBUTION );
 
 //    
 //    /*!

@@ -160,6 +160,7 @@ void LoRaMacPayloadDecrypt( const uint8_t *buffer, uint16_t size, const uint8_t 
 
 void LoRaMacJoinComputeMic( const uint8_t *buffer, uint16_t size, const uint8_t *key, uint32_t *mic )
 {
+
     AES_CMAC_Init( AesCmacCtx );
 
     AES_CMAC_SetKey( AesCmacCtx, key );

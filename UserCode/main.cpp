@@ -49,8 +49,8 @@ InterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT );
 uint8_t LoRaMacNwkSKeyInit[] = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
 uint8_t LoRaMacAppSKeyInit[] = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
 uint8_t LoRaMacAppKeyInit[]  = { 0xBB, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-uint8_t AppEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0x22 };
-uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
+uint8_t AppEuiInit[]         = { 0x70, 0xb3, 0xd5, 0x7e, 0xf0, 0x00, 0x36, 0x12 };
+uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0xbb };    
 uint32_t LoRaDevAddrInit     = 0x26011918;
 
 //SX126x  RadioUser( LORA_BUSY, LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET );
@@ -83,8 +83,7 @@ int main( ) {
 #if DEBUG_TRACE == 1
     pcf.baud( 115200 );
 #endif    
-    //SetDevEui ( DevEuiInit );
-    sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
+    sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
 
     /*!
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
@@ -107,7 +106,8 @@ int main( ) {
     * \brief Restore the LoraWan Context
     */
     wait(2);
-    //Lp.RestoreContext  ( );
+    
+    Lp.RestoreContext  ( );
 
     while(1) {
         
@@ -154,7 +154,7 @@ int main( ) {
          */
 
         if ( Lp.IsJoined ( ) == NOT_JOINED ) {
-            GotoSleepSecond(120);
+            GotoSleepSecond(5);
         } else {
             GotoSleepSecond ( AppTimeSleeping );
         }

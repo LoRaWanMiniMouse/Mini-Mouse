@@ -334,22 +334,26 @@ template <int NBCHANNEL, class R> eStatusLoRaWan LoraWanContainer<NBCHANNEL, R>:
                 LinkADRParser( NbMultiLinkAdrReq );
                 break;
             case DUTY_CYCLE_REQ :
-                DutyCycleParser( ); //@note send answer but do nothong
+                DutyCycleParser( ); //@note send answer but do nothing
                 break;
             case RXPARRAM_SETUP_REQ :
-                RXParamSetupParser( ); 
+                RXParamSetupParser( );
+                SaveInFlash ( );            
                 break;
             case DEV_STATUS_REQ :
                 DevStatusParser( ); //@note  Done but margin have no sense tbimplemented
                 break;
             case NEW_CHANNEL_REQ :
                 NewChannelParser( );
+                SaveInFlash ( );
                 break;
             case RXTIMING_SETUP_REQ :
                 RXTimingSetupParser( ); 
+                SaveInFlash ( );
                 break;
             case DIC_CHANNEL_REQ :
                 DicChannelParser ( ); 
+                SaveInFlash ( );
                 break;
             default: 
                 DEBUG_MSG( " Illegal state\n " );

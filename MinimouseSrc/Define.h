@@ -201,6 +201,7 @@ typedef enum eDataRateStrategy{
     MOBILE_LONGRANGE_DR_DISTRIBUTION,
     MOBILE_LOWPER_DR_DISTRIBUTION,
     JOIN_DR_DISTRIBUTION,
+    USER_DR_DISTRIBUTION,
 } eDataRateStrategy;
 
 typedef enum { 

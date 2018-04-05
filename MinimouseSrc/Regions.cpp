@@ -241,27 +241,63 @@ template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsValidChannelIndex (
 /*    method to set the next data Rate in different mode                        */
 /********************************************************************************/
 
-template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_t adrMode ) {
+template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_t adrMode) {
     memset(DistriDataRateInit,0 , 8);
     switch ( adrMode ) {
         case MOBILE_LONGRANGE_DR_DISTRIBUTION:  // in this example 4/7 dr0 2/7 dr1 and 1/7 dr2
+            DistriDataRateInit[7]    = 0; 
+            DistriDataRateInit[6]    = 0; 
+            DistriDataRateInit[5]    = 0; 
+            DistriDataRateInit[4]    = 0;
+            DistriDataRateInit[3]    = 0;
             DistriDataRateInit[2]    = 1; 
             DistriDataRateInit[1]    = 2; 
             DistriDataRateInit[0]    = 4; 
+            this->MacNbTrans         = 3;
             break;
         case MOBILE_LOWPER_DR_DISTRIBUTION://in this example 5/10 dr5 4/10 dr4 and 1/10 dr0
             DistriDataRateInit[7]    = 0; 
+            DistriDataRateInit[6]    = 0; 
             DistriDataRateInit[5]    = 5; 
-            DistriDataRateInit[4]    = 4; 
+            DistriDataRateInit[4]    = 4;
+            DistriDataRateInit[3]    = 0;
+            DistriDataRateInit[2]    = 0; 
+            DistriDataRateInit[1]    = 0;         
             DistriDataRateInit[0]    = 1; 
+            this->MacNbTrans         = 1;
             break;
         case JOIN_DR_DISTRIBUTION: //in this example 1/3 dr5 1/3 dr4 and 1/3 dr0
+            DistriDataRateInit[7]    = 0; 
+            DistriDataRateInit[6]    = 0;
             DistriDataRateInit[5]    = 1; 
             DistriDataRateInit[4]    = 1; 
+            DistriDataRateInit[3]    = 0;
+            DistriDataRateInit[2]    = 0; 
+            DistriDataRateInit[1]    = 0; 
             DistriDataRateInit[0]    = 1; 
+            this->MacNbTrans         = 1;
+            break;
+        case USER_DR_DISTRIBUTION: //in this example 1/3 dr5 1/3 dr4 and 1/3 dr0
+            DistriDataRateInit[7]    = 0; 
+            DistriDataRateInit[6]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x000000F0 ) >> 4; //fsk 
+            DistriDataRateInit[5]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x00000F00 ) >> 8; 
+            DistriDataRateInit[4]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x0000F000 ) >> 12; 
+            DistriDataRateInit[3]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x000F0000 ) >> 16; 
+            DistriDataRateInit[2]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x00F00000 ) >> 20; 
+            DistriDataRateInit[1]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x0F000000 ) >> 24; 
+            DistriDataRateInit[0]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0xF0000000 ) >> 28; 
+            this->MacNbTrans         = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x0000000F );
             break;
         default: 
             DistriDataRateInit[0]    = 1; 
+            DistriDataRateInit[1]    = 0; 
+            DistriDataRateInit[2]    = 0; 
+            DistriDataRateInit[3]    = 0; 
+            DistriDataRateInit[4]    = 0; 
+            DistriDataRateInit[5]    = 0; 
+            DistriDataRateInit[6]    = 0; 
+            DistriDataRateInit[7]    = 0; 
+            this->MacNbTrans         = 0;
     }
     memcpy(DistriDataRate, DistriDataRateInit, 8);
 }

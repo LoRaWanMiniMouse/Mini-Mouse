@@ -163,7 +163,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
             DEBUG_MSG( " **************************\n " );
             if ( ValidRxPacket == JOIN_ACCEPT_PACKET){
                 packet.UpdateJoinProcedure( );
-                packet.RegionSetDataRateDistribution( packet.AdrModeSelect );//@note because datarate Distribution has been changed during join
+                packet.RegionSetDataRateDistribution( packet.AdrModeSelect);//@note because datarate Distribution has been changed during join
             }
             if ( ( ValidRxPacket == NWKRXPACKET) || ( ValidRxPacket == USERRX_FOPTSPACKET) ) {
                 packet.ParseManagementPacket( );

@@ -184,7 +184,6 @@ int  Certification ( bool NewCommand , uint8_t * UserFport , uint8_t * UserPaylo
                     UserPayload[i]  = i;
                 }
                 return(0);
-               break;
             default :
                 break;
         }

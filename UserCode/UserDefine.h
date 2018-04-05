@@ -56,6 +56,9 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define BOARD_DELAY_RX_SETTING_MS  4  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
 #define PA_BOOST_CONNECTED         1 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
 
-#define FLASH_UPDATE_PERIOD 1      // Lorawan store contaxt in flash with a period equal to FLASH_UPDATE_PERIOD transmit packets
+#define FLASH_UPDATE_PERIOD 128      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted
 #define USERFLASHADRESS 0x807F800U - 2048  // start flash adress to store lorawan context
+
+#define USER_NUMBER_OF_RETRANSMISSION   2 // Only used in case of user defined darate distribution strategy
+#define USER_DR_DISTRIBUTION_PARAMETERS 0x11003300 + USER_NUMBER_OF_RETRANSMISSION // Only used in case of user defined darate distribution strategy refered to doc that explain this value
 #endif

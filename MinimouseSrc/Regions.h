@@ -35,9 +35,7 @@ class LoraRegionsEU : public LoraWanContainer<16,R> {
     
 public: 
     LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys, R * RadioUser, uint32_t FlashAdress ); 
-    eStatusLoRaWan RegionMaxPayloadSize ( uint8_t sizeIn ) ;
-    void RegionSetDataRateDistribution    ( uint8_t adrMode );
-    virtual void RegionGiveNextDataRate           ( void );
+    ~LoraRegionsEU ( void ) {};
 /*********************************************************************/
 /*            Define Regional parameter                              */
 /*********************************************************************/
@@ -52,6 +50,10 @@ public:
     static const uint32_t FREQMAX            = 8700000 ;// MHz/100 coded over 24 bits
     static const int      RX2DR_INIT         = 0;
     uint8_t DistriDataRate[8];
+
+    eStatusLoRaWan RegionMaxPayloadSize   ( uint8_t sizeIn ) ;
+    void RegionSetDataRateDistribution    ( uint8_t adrMode );
+    virtual void RegionGiveNextDataRate           ( void );
 protected : 
     virtual void RegionGetCFList                  ( void );
     virtual void RegionGiveNextChannel            ( void ); 

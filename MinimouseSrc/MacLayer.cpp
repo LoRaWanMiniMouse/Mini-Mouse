@@ -29,7 +29,6 @@ template class LoraWanContainer <16,SX1276>;
 template class LoraWanContainer <16,SX126x>;
 template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys, R * RadioUser,uint32_t FlashAdress)
                     :Phy( RadioUser ) { 
-    Phy.RadioContainerInit( );
     StateTimer = TIMERSTATE_SLEEP;
     AvailableRxPacketForUser = NO_LORA_RXPACKET_AVAILABLE;
     memcpy( appSKey, LoRaWanKeys.LoRaMacAppSKey, 16 );

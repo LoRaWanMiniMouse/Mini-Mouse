@@ -22,11 +22,11 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "LoraWanProcess.h"
 #include "ApiTimers.h"
 #include "Define.h"
-//#include "math.h"
 #include "UserDefine.h"
-//static RadioEvents_t RadioEvents;
+
 template class RadioContainer<SX1276>;
 template class RadioContainer<SX126x>;
+
 template <class R> RadioContainer <R>::RadioContainer( R * RadioUser ){
     StateRadioProcess = RADIOSTATE_IDLE;
     TimestampRtcIsr =0;
@@ -46,7 +46,7 @@ template <class R> RadioContainer<R>::~RadioContainer( ) {
 /*          Set Radio in Sleep Mode                                  */
 /*******************Isr Radio  ***************************************/
 template <class R> void RadioContainer <R>::AttachIsr ( void ) {
-     //TxInterrupt.rise( callback ( this, &RadioContainer::IsrRadio ) );
+    
      RadioGlobalIt.rise( callback ( this, &RadioContainer::IsrRadio ) );
      RadioTimeOutGlobalIt.rise( callback ( this , &RadioContainer::IsrRadio ) );
 }
@@ -68,17 +68,15 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     TxBw          = TxBwMac;
     TxPayloadSize    = TxPayloadSizeMac ;
     StateRadioProcess = RADIOSTATE_TXON;
-    Radio->Reset( ); // @TODO: Should be called by the stack
+    Radio->Reset( ); 
     if ( TxModulation == LORA ) {
         DEBUG_PRINTF ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
         Radio->SendLora( TxPhyPayload, TxPayloadSize, TxSf, TxBw, TxFrequency, TxPower );
     } else {
         DEBUG_MSG("FSK TRANSMISSION \n");
-
-        //Radio.SetTxConfig( MODEM_FSK, TxPower, 25e3, 0, 50e3, 0, 5, false, true, 0, 0, false, 3e6 );
+        //@TODO FSK
     }
     wait_ms(1);
-
 };
 
 template <class R> void RadioContainer <R>::SetRxConfig(eModulationType RxModulation ,uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac ,uint32_t RxWindowMs) {
@@ -99,25 +97,11 @@ template <class R>int RadioContainer<R>::GetRadioState( void ) {
     return StateRadioProcess;
 };
 
-template <class R> void RadioContainer <R>::RadioContainerInit( void ) {
-
-};
-
 
 template <class R> uint32_t RadioContainer<R>::GetTxFrequency ( void ) {
     return( TxFrequency );
 };
-//template <class R> void RadioContainer <R>::SetTxPower ( uint8_t TxPower )
-//{
-//    TxPower = TxPower;
-//};
 
-//template <class R> void RadioContainer <R>::SetTxSf ( uint8_t TxSf ){
-//    TxSf = TxSf;
-//};
-//template <class R> void RadioContainer <R>::SetTxBw ( uint8_t TxBw ){
-//   TxBw = TxBw;
-//};
 
 /************************************************************************************************/
 /*                      Private  Methods                                                         */
@@ -126,12 +110,9 @@ template <class R> uint32_t RadioContainer<R>::GetTxFrequency ( void ) {
 
 
 template <class R> int RadioContainer<R>::DumpRxPayloadAndMetadata ( void ) {
-    // @TODO: snr & rssi type
     int16_t snr;
     int16_t rssi;
-    
     Radio->FetchPayload( &RxPhyPayloadSize, RxPhyPayload, &snr, &rssi );
-    // @ TODO: snr & rssi type
     RxPhyPayloadSnr = (int) snr;
     RxPhyPayloadRssi= (int) rssi;
    /* check Mtype */
@@ -143,7 +124,6 @@ template <class R> int RadioContainer<R>::DumpRxPayloadAndMetadata ( void ) {
     }
     /* check devaddr */
     if ( JoinedStatus == JOINED ){
-            
         uint32_t DevAddrtmp = RxPhyPayload[1] + ( RxPhyPayload[2] << 8 ) + ( RxPhyPayload[3] << 16 )+ ( RxPhyPayload[4] << 24 );
         if ( DevAddrtmp != DevAddrIsr ) {
             status += ERRORLORAWAN;

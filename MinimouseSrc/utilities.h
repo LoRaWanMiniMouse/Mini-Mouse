@@ -14,7 +14,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 */
 #ifndef __UTILITIES_H__
 #define __UTILITIES_H__
-#include "mbed.h"
+#include "stdint.h"
 #include "LoraWanProcess.h"
 /*!
  * \brief Returns the minimum value between a and b

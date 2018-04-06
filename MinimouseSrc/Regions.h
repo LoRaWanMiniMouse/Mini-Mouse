@@ -17,7 +17,7 @@ Maintainer        : Fabien Holin ( SEMTECH)
 */
 #ifndef REGIONS_H
 #define REGIONS_H
-#include "mbed.h"
+#include "stdint.h"
 #include  "Define.h"
 #include "MacLayer.h"
 

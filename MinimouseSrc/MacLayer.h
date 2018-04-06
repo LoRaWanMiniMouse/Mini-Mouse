@@ -15,7 +15,7 @@ License           : Revised BSD License, see LICENSE.TXT file include in the pro
 
 Maintainer        : Fabien Holin ( SEMTECH)
 */
-#include "mbed.h"
+#include "stdint.h"
 #include  "Define.h"
 #include "PhyLayer.h"
 #include "sx1276.h"

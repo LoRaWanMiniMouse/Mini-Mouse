@@ -298,7 +298,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             DistriDataRateInit[5]    = 0; 
             DistriDataRateInit[6]    = 0; 
             DistriDataRateInit[7]    = 0; 
-            this->MacNbTrans         = 0;
+            this->MacNbTrans         = 1;
     }
     this->MacTxPower                 = 14;
     this->MacChannelIndexEnabled [0] = CHANNEL_ENABLED;

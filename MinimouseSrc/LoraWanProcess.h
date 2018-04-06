@@ -20,7 +20,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 */
 #ifndef LORAWANPROCESS_H
 #define LORAWANPROCESS_H
-#include "mbed.h"
+#include "stdint.h"
 #include "Define.h"
 #include "MacLayer.h"
 #include "Regions.h"

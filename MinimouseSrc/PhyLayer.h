@@ -21,49 +21,43 @@ Maintainer        : Fabien Holin (SEMTECH)
 #ifndef PHY_LAYER_H
 #define PHY_LAYER_H
 
-/*   BW enum for LoRa */
+
 template < class R >
 class RadioContainer { 
 public: 
     RadioContainer( R * RadioUser  ); 
     ~RadioContainer( );
     R* Radio;
-    void RadioContainerInit( void );
     void Send              (eModulationType MacTxModulationCurrent, uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, eBandWidth TxBwMac, uint16_t TxPayloadSizeMac );
     void Receive           ( void );
-    void IsrRadio          ( void ); // call back it tx done
+    void IsrRadio          ( void ); // Isr routine implemented in IsrRoutine.cpp file
     void AttachIsr         ( void ) ;
     void DetachIsr         ( void ); 
     int GetRadioState      ( void );
     void SetRxConfig       (eModulationType RxModulation, uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac , uint32_t RxWindowMs);
-    uint32_t GetTxFrequency ( void );
-    uint8_t    TxPhyPayload[MAX_TX_PAYLOAD_SIZE]; // @note should be private to be safer , in this case have to create a set function for send in lorawan process
-    uint8_t    RxPhyPayload[MAX_TX_PAYLOAD_SIZE]; 
-    uint8_t   RxPhyPayloadSize;
-    int RxPhyPayloadSnr;
-    int RxPhyPayloadRssi;
-    uint16_t   TxPayloadSize;
-    uint32_t   DevAddrIsr ; // copy of the devaddr to be tested in the isr routine
-    uint8_t    RegIrqFlag;
-    eJoinStatus  JoinedStatus; //@note used in isr routine to filter or not on devaddr
-    int StateRadioProcess;
-    
-    //@note probably have to split with a timer objet
-
-    uint32_t   TimestampRtcIsr;
-    uint32_t   LastTimeRxWindowsMs;
-    uint32_t   SymbolDuration;
+    uint32_t               GetTxFrequency ( void );
+    uint8_t                TxPhyPayload[MAX_TX_PAYLOAD_SIZE]; 
+    uint8_t                RxPhyPayload[MAX_TX_PAYLOAD_SIZE]; 
+    uint8_t                RxPhyPayloadSize;
+    int                    RxPhyPayloadSnr;
+    int                    RxPhyPayloadRssi;
+    uint16_t               TxPayloadSize;
+    uint32_t               DevAddrIsr ; // a copy of the devaddr to be tested in the isr routine
+    uint8_t                RegIrqFlag;
+    eJoinStatus            JoinedStatus; // used in isr routine to not filter on devaddr
+    int                    StateRadioProcess;
+    uint32_t               TimestampRtcIsr;
+    uint32_t               LastTimeRxWindowsMs;
+    uint32_t               SymbolDuration;
 private :
-    uint32_t     RxFrequency;
-    eBandWidth     RxBw;
-    uint8_t      RxSf;
+    uint32_t             RxFrequency;
+    eBandWidth           RxBw;
+    uint8_t              RxSf;
     eModulationType      RxMod;
-    uint32_t     TxFrequency;
-    uint8_t      TxPower;
-    uint8_t      TxSf;
-    eBandWidth     TxBw;
-//    InterruptIn  TxInterrupt;
-//    InterruptIn  RxTimeoutInterrupt;
-    int DumpRxPayloadAndMetadata ( void );
+    uint32_t             TxFrequency;
+    uint8_t              TxPower;
+    uint8_t              TxSf;
+    eBandWidth           TxBw;
+    int                  DumpRxPayloadAndMetadata ( void );
 };
 #endif

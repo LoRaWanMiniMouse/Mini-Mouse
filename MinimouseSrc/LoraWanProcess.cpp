@@ -47,17 +47,18 @@ LoraWanObject <T,RADIOTYPE> ::~LoraWanObject() {
 template <template <class R> class T, class RADIOTYPE> 
 eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
 
-    *AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE; //@note AvailableRxPacket should be set to "yes" only in Last state before to return to LWPSTATE_IDLE
-//    if ( ( IsJoined ( ) == NOT_JOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
-//        DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
-//        StateLoraWanProcess = LWPSTATE_IDLE ;
-//    }        
-    
-    if ( ( RtcGetTimeSecond( ) - FailSafeTimestamp ) > 120 ) {
-        //RadioReset ( ) ;
+    *AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE;
+    #if LOW_POWER_MODE == 1
+    if ( ( IsJoined ( ) == NOT_JOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
+        DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
         StateLoraWanProcess = LWPSTATE_IDLE ;
+    }        
+    #endif
+    if ( ( RtcGetTimeSecond( ) - FailSafeTimestamp ) > 120 ) {
+        RadioReset ( ) ;
+        StateLoraWanProcess = LWPSTATE_ERROR ;
         DEBUG_MSG ( "ERROR : FAILSAFE EVENT OCCUR \n");
-        NVIC_SystemReset();
+        // NVIC_SystemReset() move into the user main;
     }        
     switch ( StateLoraWanProcess ) {
     /************************************************************************************/
@@ -340,9 +341,7 @@ void LoraWanObject <T,RADIOTYPE> ::RestoreContext ( void ) {
     packet.LoadFromFlash ( );
 }; 
 
-/***************************************************************************************/
-/* NOT yet implemented */
-/***************************************************************************************/
+
 
 
 /**************************************************/
@@ -401,8 +400,7 @@ uint8_t LoraWanObject <T,RADIOTYPE> ::GetRadioIrqFlag ( void ) {
 };
 template <template <class R> class T, class RADIOTYPE> 
 void LoraWanObject <T,RADIOTYPE> ::RadioReset ( void ) {
-//    packet.Phy.Radio.Reset();
-//    wait_ms ( 30 ) ;
+    packet.Phy.Radio->Reset();
 }
 template <template <class R> class T, class RADIOTYPE> 
 uint8_t LoraWanObject <T,RADIOTYPE> ::GetNbOfReset (void){

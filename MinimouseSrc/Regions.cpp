@@ -253,7 +253,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             DistriDataRateInit[2]    = 1; 
             DistriDataRateInit[1]    = 2; 
             DistriDataRateInit[0]    = 4; 
-            this->MacNbTrans         = 3;
+            this->MacNbTrans         = 3;   
             break;
         case MOBILE_LOWPER_DR_DISTRIBUTION://in this example 5/10 dr5 4/10 dr4 and 1/10 dr0
             DistriDataRateInit[7]    = 0; 
@@ -287,6 +287,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             DistriDataRateInit[1]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x0F000000 ) >> 24; 
             DistriDataRateInit[0]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0xF0000000 ) >> 28; 
             this->MacNbTrans         = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x0000000F );
+        
             break;
         default: 
             DistriDataRateInit[0]    = 1; 
@@ -299,6 +300,10 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             DistriDataRateInit[7]    = 0; 
             this->MacNbTrans         = 0;
     }
+    this->MacTxPower                 = 14;
+    this->MacChannelIndexEnabled [0] = CHANNEL_ENABLED;
+    this->MacChannelIndexEnabled [1] = CHANNEL_ENABLED;
+    this->MacChannelIndexEnabled [2] = CHANNEL_ENABLED;
     memcpy(DistriDataRate, DistriDataRateInit, 8);
 }
 

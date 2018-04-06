@@ -141,6 +141,10 @@
 //            GotoSleepMSecond ( 100 );
 //            WatchDogRelease ( );
 //        }
+//        if ( LpState == LWPSTATE_ERROR ) {
+//        // user application have to save all the need
+//            NVIC_SystemReset();
+//        }
 //        if ( AvailableRxPacket == LORA_RX_PACKET_AVAILABLE ) { 
 //            Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
 //            DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
@@ -196,6 +200,10 @@
 //            Lp2State = Lp2.LoraWanProcess( &AvailableRxPacket );
 //            GotoSleepMSecond ( 100 );
 //            WatchDogRelease ( );
+//        }
+//        if ( LpState == LWPSTATE_ERROR ) {
+//        // user application have to save all the need
+//            NVIC_SystemReset();
 //        }
 //        if ( AvailableRxPacket == LORA_RX_PACKET_AVAILABLE ) { 
 //            Lp2.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );

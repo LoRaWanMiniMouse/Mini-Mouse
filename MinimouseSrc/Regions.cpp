@@ -279,14 +279,14 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             break;
         case USER_DR_DISTRIBUTION: //in this example 1/3 dr5 1/3 dr4 and 1/3 dr0
             DistriDataRateInit[7]    = 0; 
-            DistriDataRateInit[6]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x000000F0 ) >> 4; //fsk 
-            DistriDataRateInit[5]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x00000F00 ) >> 8; 
-            DistriDataRateInit[4]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x0000F000 ) >> 12; 
-            DistriDataRateInit[3]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x000F0000 ) >> 16; 
-            DistriDataRateInit[2]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x00F00000 ) >> 20; 
-            DistriDataRateInit[1]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x0F000000 ) >> 24; 
-            DistriDataRateInit[0]    = ( USER_DR_DISTRIBUTION_PARAMETERS & 0xF0000000 ) >> 28; 
-            this->MacNbTrans         = ( USER_DR_DISTRIBUTION_PARAMETERS & 0x0000000F );
+            DistriDataRateInit[6]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x000000F0 ) ) >> 4; //fsk 
+            DistriDataRateInit[5]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x00000F00 ) ) >> 8; 
+            DistriDataRateInit[4]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x0000F000 ) ) >> 12; 
+            DistriDataRateInit[3]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x000F0000 ) ) >> 16; 
+            DistriDataRateInit[2]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x00F00000 ) ) >> 20; 
+            DistriDataRateInit[1]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x0F000000 ) ) >> 24; 
+            DistriDataRateInit[0]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0xF0000000 ) ) >> 28; 
+            this->MacNbTrans         = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x0000000F ) );
         
             break;
         default: 

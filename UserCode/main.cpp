@@ -37,8 +37,8 @@
 ///*!
 // * \brief   Radio Interrupt Pin declarations
 // */
-//InterruptIn RadioGlobalIt        ( TX_RX_IT ) ;
-//InterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
+//MMInterruptIn RadioGlobalIt        ( TX_RX_IT ) ;
+//MMInterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
 
 
 ///*!

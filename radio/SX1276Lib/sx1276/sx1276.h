@@ -19,7 +19,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define SX1276_H
 #include <stdint.h>
 #include "Define.h"
-
+#include "ApiSpi.h"
 /*!
  * SX1276 definitions
  */
@@ -149,9 +149,9 @@ private:
     * \return Read byte
     */
     void Write( uint8_t addr, uint8_t data );
-    SPI spi;
-    DigitalOut pinCS;
-    DigitalOut pinReset;
+    MMspi spi;
+    MMDigitalOut pinCS;
+    MMDigitalOut pinReset;
 };
 #endif
 

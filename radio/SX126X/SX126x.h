@@ -19,8 +19,8 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define SX126X_H
 #include <stdint.h>
 #include "Define.h"
-
-
+#include "ApiSpi.h"
+#include "ApiGpio.h"
 /*!
  * \brief Provides the frequency of the chip running on the radio and the frequency step
  * \remark These defines are used for computing the frequency divider to set the RF frequency
@@ -133,11 +133,11 @@ class SX126x {
         static const uint8_t LoraSyncword[2];
         
         // Attributes
-        SPI spi;
+        MMspi spi;
         radioModes_t radioMode;
-        DigitalIn pinBusy;
-        DigitalOut pinReset;
-        DigitalOut pinCS;
+        MMDigitalIn pinBusy;
+        MMDigitalOut pinReset;
+        MMDigitalOut pinCS;
         
         /*!
          * \brief Calibrates the Image rejection depending of the frequency

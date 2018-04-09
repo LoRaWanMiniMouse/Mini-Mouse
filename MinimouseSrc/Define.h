@@ -19,12 +19,13 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define DEFINE_H
 #include "mbed.h"
 #include "UserDefine.h"
-
+#include "ApiSpi.h"
+#include "ApiGpio.h"
 /********************************************************************************/
 /*             The section behind haven't to be modified by user                */
 /********************************************************************************/
-extern InterruptIn RadioGlobalIt ;
-extern InterruptIn RadioTimeOutGlobalIt ;
+extern MMInterruptIn RadioGlobalIt ;
+extern MMInterruptIn RadioTimeOutGlobalIt ;
 
 #if DEBUG_TRACE == 1
 extern Serial pcf;

@@ -27,12 +27,13 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "ApiTimers.h"
 #include "utilities.h"
 #include "UserDefine.h"
+#include "ApiSpi.h"
 /*!
  * \brief   sBackUpFlash BackUpFlash The LoraWan parameters save into the flash memory for failsafe restauration.
  */
 struct sBackUpFlash BackUpFlash;
-InterruptIn RadioGlobalIt        ( TX_RX_IT ) ;
-InterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
+MMInterruptIn RadioGlobalIt        ( TX_RX_IT ) ;
+MMInterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
 
 
 /*!

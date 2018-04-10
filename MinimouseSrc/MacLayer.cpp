@@ -972,34 +972,21 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::PrintMacC
 
 /**************************************TIMER PART**********************************************************/
 /**********************************************************************************************************/
-/*@Note Probably to create a new directory or may be an timer Object to be discuss                        */
+
 
  
 /************************************************************************************/
-/*                                Rx1 Timer Isr Routine                             */
+/*                                 Timer Isr Routine                             */
 /*                               Called when Alarm expires                          */
 /************************************************************************************/
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetAlarm (uint32_t alarmInMs, eRxWinType type ) {
-    //TimerLora.attach_us(this, &LoraWanContainer<NBCHANNEL, R>::IsrTimerRx, alarmInMs * 1000);
     if ( type == RX1 ) {
         LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL, R>::CallbackIsrTimerRx1,this, alarmInMs);
     } else {
         LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL, R>::CallbackIsrTimerRx2,this, alarmInMs);
     }
-
 }
 
-template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::IsrTimerRx1( void ) {
-    StateTimer = TIMERSTATE_SLEEP;
-    ConfigureRadioForRx1 ( );
-    //Phy.Radio.Rx(0); //@note No More timeout FW on RX use only timeout impplement in the HW radio
-};
-
-template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::IsrTimerRx2( void ) {
-    StateTimer = TIMERSTATE_SLEEP;
-    ConfigureRadioForRx2 ( );
-    //Phy.Radio.Rx(0); //@note No More timeout FW on RX use only timeout impplement in the HW radio
-};
 
 /*********************************************************************************/
 /*                           Protected Methods                                   */

@@ -21,9 +21,14 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 class MMDigitalOut {
 public :
-    
+    /** Create a DigitalOut connected to the specified pin
+    *
+    *  @param pin DigitalOut pin to connect to
+    */
     MMDigitalOut(PinName pin) : DigOutMbed(pin) {};
         
+    /** A shorthand for write the Pin value
+    */
     MMDigitalOut& operator= (int value) {
         DigOutMbed = value;
         return *this;
@@ -37,8 +42,14 @@ protected :
 
 class MMDigitalIn {
 public :
-    
+    /** Create a DigitalIn connected to the specified pin
+    *
+    *  @param pin DigitalIn pin to connect to
+    */
     MMDigitalIn(PinName pin) : DigInMbed(pin) {};
+        
+    /** An operator shorthand for read the pin value
+    */
     operator int() {
         return ( DigInMbed );
     }
@@ -51,9 +62,16 @@ protected :
 
 class MMInterruptIn {
 public:
-
+    /** Create an InterruptIn connected to the specified pin
+    *
+    *  @param pin InterruptIn pin to connect to
+    */
     MMInterruptIn(PinName pin) : InterruptInMbed ( pin ) { };
     
+    /** Attach a function to call when a rising edge occurs on the input
+    *
+    *  @param func A pointer to a void function, or 0 to set as none
+    */
     void rise(Callback<void()> func) {
         InterruptInMbed.rise(func);
     }

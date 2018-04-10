@@ -203,7 +203,7 @@ void RtcInit (void)
 /*!
 * A function to set the mcu in low power mode  for duration seconds
  * \remark inside this function watchdog has to be manage to not reset the mcu
- * \param [IN]   void
+ * \param [IN]   int duration
  * \param [OUT]  void       
  */
 void GotoSleepSecond (int duration ) {
@@ -236,7 +236,7 @@ void GotoSleepSecond (int duration ) {
 /*!
 * A function to set the mcu in low power mode  for duration in milliseconds
  * \remark 
- * \param [IN]   void
+ * \param [IN]   int duration
  * \param [OUT]  void       
  */
 void GotoSleepMSecond (int duration ) {

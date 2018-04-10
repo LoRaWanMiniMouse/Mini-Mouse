@@ -8,7 +8,7 @@
  |_|  |_|_|_| |_|_|_| |_| |_|\___/ \__,_|___/\___| 
                                                    
                                                    
-Description       : LoraWan ISR Routine.  
+Description       : LoraWan Radio ISR Routine.  
 Note              : the isr routine isn't a global function , it is a method of RadioContainer template class. 
                   : It could be inside the PhyLayer.cpp file but for more readibility , it is choose to create a .cpp file for this method
 License           : Revised BSD License, see LICENSE.TXT file include in the project

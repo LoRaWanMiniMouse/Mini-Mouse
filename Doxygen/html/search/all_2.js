@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['erase',['erase',['../class_flash.html#ad945ea521e5880ecb20f369be6753c28',1,'Flash']]]
+  ['factoryreset',['FactoryReset',['../class_lora_wan_object.html#ae3a51c4f4f4e9cbac50f65f77ad8b9cc',1,'LoraWanObject']]]
 ];

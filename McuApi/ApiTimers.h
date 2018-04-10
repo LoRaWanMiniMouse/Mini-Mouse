@@ -89,11 +89,39 @@ Maintainer        : Fabien Holin (SEMTECH)
     void     GotoSleepMSecond   ( int delay );
     
 class LowPowerTimerLoRa {
-public : 
+public :
+    /*!
+     * Constructor of LowPowerTimerLoRa
+     *\remark This timer is dedicated to the LoraWanObject. It CANNOT be used by the application. This timer must be able to wake up the mcu when it expires.
+     * \param [IN]  void
+     * \param [OUT] void         
+     */    
     LowPowerTimerLoRa          ( );
     ~LowPowerTimerLoRa         ( ){};
+        
+    /*!
+    * LowPowerTimerLoRa Init
+    *\remark initializes the dedicated LoRaWAN low power timer object. MCU specific.
+    * \param [IN]  void
+    * \param [OUT] void         
+    */
     void LowPowerTimerLoRaInit ( void );
+    /*!
+    * LowPowerTimerLoRa AttachMsecond
+    *
+    * \param void (* _Func) (void *) a static method member of the current Obj
+    * \param *_obj a pointer to the current objet
+    * \param int delay in ms delay should be between 1ms and 16s.
+    * \param [OUT] void         
+    * \remark the code  Func =  _Func ; and obj  = _obj; isn't mcu dependent , and could be keep as already implemented
+    * \remark starts the LoRaWAN dedicated timer and attaches the IRQ to the handling Interupt Service Routine in the LoRaWAN object.
+    */
     void StartTimerMsecond     ( void (* _Func) (void *) , void * _obj, int delay) ;
+        
+    /*!
+    *  timerISR
+    * \remark    Do Not Modify 
+    */
     void timerISR              ( void ) { Func(obj); };
 private :
     static void DoNothing (void *) { };

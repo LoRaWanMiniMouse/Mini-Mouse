@@ -5,18 +5,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MiniMouse: LoraWanContainer&lt; NBCHANNEL &gt; Class Template Reference</title>
+<title>MM stack: LoraWanContainer&lt; NBCHANNEL, R &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
-<link href="navtree.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="resize.js"></script>
-<script type="text/javascript" src="navtreedata.js"></script>
-<script type="text/javascript" src="navtree.js"></script>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
-  $(document).ready(initResizable);
-/* @license-end */</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -29,8 +21,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">MiniMouse
-   &#160;<span id="projectnumber">V0.0.1</span>
+   <div id="projectname">MM stack
    </div>
   </td>
  </tr>
@@ -54,23 +45,6 @@ $(function() {
 });
 /* @license-end */</script>
 <div id="main-nav"></div>
-</div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
-  <div id="nav-tree">
-    <div id="nav-tree-contents">
-      <div id="nav-sync" class="sync"></div>
-    </div>
-  </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
-       class="ui-resizable-handle">
-  </div>
-</div>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
-$(document).ready(function(){initNavTree('class_lora_wan_container.html','');});
-/* @license-end */
-</script>
-<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -85,6 +59,7 @@ $(document).ready(function(){initNavTree('class_lora_wan_container.html','');});
 </iframe>
 </div>
 
+</div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
@@ -95,372 +70,378 @@ $(document).ready(function(){initNavTree('class_lora_wan_container.html','');});
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_lora_wan_container-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">LoraWanContainer&lt; NBCHANNEL &gt; Class Template Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
+<div class="title">LoraWanContainer&lt; NBCHANNEL, R &gt; Class Template Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a62b16e1530b67ac4111e95d6c97f2c91"><td class="memItemLeft" align="right" valign="top"><a id="a62b16e1530b67ac4111e95d6c97f2c91"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>LoraWanContainer</b> (<a class="el" href="structs_lo_ra_wan_keys.html">sLoRaWanKeys</a> LoRaWanKeys)</td></tr>
-<tr class="separator:a62b16e1530b67ac4111e95d6c97f2c91"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acbe33c15225e1bf03283f87d09c323b5"><td class="memItemLeft" align="right" valign="top"><a id="acbe33c15225e1bf03283f87d09c323b5"></a>
+<tr class="memitem:a44404ff31803a6c55ffc152c023a7db8"><td class="memItemLeft" align="right" valign="top"><a id="a44404ff31803a6c55ffc152c023a7db8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LoraWanContainer</b> (<a class="el" href="structs_lo_ra_wan_keys.html">sLoRaWanKeys</a> LoRaWanKeys, R *RadioUser, uint32_t FlashAdress)</td></tr>
+<tr class="separator:a44404ff31803a6c55ffc152c023a7db8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f0a9f6cddbd54a1fc5dd4c6de790d88"><td class="memItemLeft" align="right" valign="top"><a id="a6f0a9f6cddbd54a1fc5dd4c6de790d88"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>BuildTxLoraFrame</b> (void)</td></tr>
-<tr class="separator:acbe33c15225e1bf03283f87d09c323b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3fbaf5bc86c2be27a0f54e3d9f2ab0d0"><td class="memItemLeft" align="right" valign="top"><a id="a3fbaf5bc86c2be27a0f54e3d9f2ab0d0"></a>
+<tr class="separator:a6f0a9f6cddbd54a1fc5dd4c6de790d88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ae2e50f7bc0eb014745ac1e2f48d0af"><td class="memItemLeft" align="right" valign="top"><a id="a6ae2e50f7bc0eb014745ac1e2f48d0af"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>BuildJoinLoraFrame</b> (void)</td></tr>
-<tr class="separator:a3fbaf5bc86c2be27a0f54e3d9f2ab0d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9b0a325223a479735dae92b87784333b"><td class="memItemLeft" align="right" valign="top"><a id="a9b0a325223a479735dae92b87784333b"></a>
+<tr class="separator:a6ae2e50f7bc0eb014745ac1e2f48d0af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9bc11031f33b9bc4928b021a6a34cbd"><td class="memItemLeft" align="right" valign="top"><a id="ae9bc11031f33b9bc4928b021a6a34cbd"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>EncryptTxFrame</b> (void)</td></tr>
-<tr class="separator:a9b0a325223a479735dae92b87784333b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afbcf5df295c922833d643147056670e6"><td class="memItemLeft" align="right" valign="top"><a id="afbcf5df295c922833d643147056670e6"></a>
+<tr class="separator:ae9bc11031f33b9bc4928b021a6a34cbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9a6098c71b551eccdea9b1f29f50c96"><td class="memItemLeft" align="right" valign="top"><a id="ac9a6098c71b551eccdea9b1f29f50c96"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>ConfigureRadioAndSend</b> (void)</td></tr>
-<tr class="separator:afbcf5df295c922833d643147056670e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba4e7fd7da40f195f43fcc572a3c8a7f"><td class="memItemLeft" align="right" valign="top"><a id="aba4e7fd7da40f195f43fcc572a3c8a7f"></a>
+<tr class="separator:ac9a6098c71b551eccdea9b1f29f50c96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c438e86f462a461cbc244054a2c27bb"><td class="memItemLeft" align="right" valign="top"><a id="a5c438e86f462a461cbc244054a2c27bb"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>ConfigureRadioForRx1</b> (void)</td></tr>
-<tr class="separator:aba4e7fd7da40f195f43fcc572a3c8a7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3bd5bb7dedc5bcd91b254f683a250f94"><td class="memItemLeft" align="right" valign="top"><a id="a3bd5bb7dedc5bcd91b254f683a250f94"></a>
+<tr class="separator:a5c438e86f462a461cbc244054a2c27bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f189640ccae4f4b1e11c4671c88b6c0"><td class="memItemLeft" align="right" valign="top"><a id="a9f189640ccae4f4b1e11c4671c88b6c0"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>ConfigureRadioForRx2</b> (void)</td></tr>
-<tr class="separator:a3bd5bb7dedc5bcd91b254f683a250f94"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8b5d7649f4022af95636aaf5d1302032"><td class="memItemLeft" align="right" valign="top"><a id="a8b5d7649f4022af95636aaf5d1302032"></a>
+<tr class="separator:a9f189640ccae4f4b1e11c4671c88b6c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a077db278808a15326893610820e26b22"><td class="memItemLeft" align="right" valign="top"><a id="a077db278808a15326893610820e26b22"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>ConfigureTimerForRx</b> (eRxWinType type)</td></tr>
-<tr class="separator:a8b5d7649f4022af95636aaf5d1302032"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24647ce6d85aadddc54e6308dcd369b7"><td class="memItemLeft" align="right" valign="top"><a id="a24647ce6d85aadddc54e6308dcd369b7"></a>
+<tr class="separator:a077db278808a15326893610820e26b22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99e0d080f7a2bd65252d688e2a4befa1"><td class="memItemLeft" align="right" valign="top"><a id="a99e0d080f7a2bd65252d688e2a4befa1"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>UpdateMacLayer</b> (void)</td></tr>
-<tr class="separator:a24647ce6d85aadddc54e6308dcd369b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48560007363ab051c532011b700c063c"><td class="memItemLeft" align="right" valign="top"><a id="a48560007363ab051c532011b700c063c"></a>
+<tr class="separator:a99e0d080f7a2bd65252d688e2a4befa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e3a03ff91ae1ebca993206fc9d18c2d"><td class="memItemLeft" align="right" valign="top"><a id="a4e3a03ff91ae1ebca993206fc9d18c2d"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>UpdateJoinProcedure</b> (void)</td></tr>
-<tr class="separator:a48560007363ab051c532011b700c063c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeff6e98ade260d2e5d9f818de430d1f4"><td class="memItemLeft" align="right" valign="top"><a id="aeff6e98ade260d2e5d9f818de430d1f4"></a>
+<tr class="separator:a4e3a03ff91ae1ebca993206fc9d18c2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a757fc71b5986280b6702febbf7bd87f3"><td class="memItemLeft" align="right" valign="top"><a id="a757fc71b5986280b6702febbf7bd87f3"></a>
 eRxPacketType&#160;</td><td class="memItemRight" valign="bottom"><b>DecodeRxFrame</b> (void)</td></tr>
-<tr class="separator:aeff6e98ade260d2e5d9f818de430d1f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b7aa993a8ce02396c4fa3378c1e58b0"><td class="memItemLeft" align="right" valign="top"><a id="a2b7aa993a8ce02396c4fa3378c1e58b0"></a>
+<tr class="separator:a757fc71b5986280b6702febbf7bd87f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b040b7c680d7fa3998a37cb462c74f7"><td class="memItemLeft" align="right" valign="top"><a id="a8b040b7c680d7fa3998a37cb462c74f7"></a>
 eStatusLoRaWan&#160;</td><td class="memItemRight" valign="bottom"><b>ParseManagementPacket</b> (void)</td></tr>
-<tr class="separator:a2b7aa993a8ce02396c4fa3378c1e58b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d38c964c69045536aa9ca314fcc8092"><td class="memItemLeft" align="right" valign="top"><a id="a0d38c964c69045536aa9ca314fcc8092"></a>
+<tr class="separator:a8b040b7c680d7fa3998a37cb462c74f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c319cd6644631008aaa3e600e66d2a4"><td class="memItemLeft" align="right" valign="top"><a id="a0c319cd6644631008aaa3e600e66d2a4"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>IsrTimerRx1</b> (void)</td></tr>
-<tr class="separator:a0d38c964c69045536aa9ca314fcc8092"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a530aca37b07fb2489f7b34bc365bacb1"><td class="memItemLeft" align="right" valign="top"><a id="a530aca37b07fb2489f7b34bc365bacb1"></a>
+<tr class="separator:a0c319cd6644631008aaa3e600e66d2a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a787bbbf8efd3d85e2938c0bf46b22bfd"><td class="memItemLeft" align="right" valign="top"><a id="a787bbbf8efd3d85e2938c0bf46b22bfd"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>IsrTimerRx2</b> (void)</td></tr>
-<tr class="separator:a530aca37b07fb2489f7b34bc365bacb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6bf27594308e3b92029d0cb18ffcfba7"><td class="memItemLeft" align="right" valign="top"><a id="a6bf27594308e3b92029d0cb18ffcfba7"></a>
+<tr class="separator:a787bbbf8efd3d85e2938c0bf46b22bfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc16aeda3958e34b81e72752e6331be3"><td class="memItemLeft" align="right" valign="top"><a id="abc16aeda3958e34b81e72752e6331be3"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadFromFlash</b> (void)</td></tr>
-<tr class="separator:a6bf27594308e3b92029d0cb18ffcfba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2a08470681fb0cff15374b2218f3202"><td class="memItemLeft" align="right" valign="top"><a id="ac2a08470681fb0cff15374b2218f3202"></a>
+<tr class="separator:abc16aeda3958e34b81e72752e6331be3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91e8c03b02a6672fe5f0342129618bb3"><td class="memItemLeft" align="right" valign="top"><a id="a91e8c03b02a6672fe5f0342129618bb3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SaveInFlash</b> (void)</td></tr>
+<tr class="separator:a91e8c03b02a6672fe5f0342129618bb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a488791458e4b9098607d2f502da9d633"><td class="memItemLeft" align="right" valign="top"><a id="a488791458e4b9098607d2f502da9d633"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetBadCrcInFlash</b> (void)</td></tr>
+<tr class="separator:a488791458e4b9098607d2f502da9d633"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ced7ed5217292b17d3f554fdc12c45e"><td class="memItemLeft" align="right" valign="top"><a id="a3ced7ed5217292b17d3f554fdc12c45e"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RegionGiveNextChannel</b> (void)=0</td></tr>
-<tr class="separator:ac2a08470681fb0cff15374b2218f3202"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1098b7ff2646c4e253c1501a81da7b63"><td class="memItemLeft" align="right" valign="top"><a id="a1098b7ff2646c4e253c1501a81da7b63"></a>
+<tr class="separator:a3ced7ed5217292b17d3f554fdc12c45e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d9c6a90a373153f95897951b877d826"><td class="memItemLeft" align="right" valign="top"><a id="a6d9c6a90a373153f95897951b877d826"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RegionSetRxConfig</b> (eRxWinType type)=0</td></tr>
-<tr class="separator:a1098b7ff2646c4e253c1501a81da7b63"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad20532ae46c4586b5bf8fb5f48709684"><td class="memItemLeft" align="right" valign="top"><a id="ad20532ae46c4586b5bf8fb5f48709684"></a>
+<tr class="separator:a6d9c6a90a373153f95897951b877d826"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f489634d893e32270ded4b471f93080"><td class="memItemLeft" align="right" valign="top"><a id="a6f489634d893e32270ded4b471f93080"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RegionSetPower</b> (uint8_t PowerCmd)=0</td></tr>
-<tr class="separator:ad20532ae46c4586b5bf8fb5f48709684"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab67d402e373e36fa04f03f4b7bc1ed60"><td class="memItemLeft" align="right" valign="top"><a id="ab67d402e373e36fa04f03f4b7bc1ed60"></a>
+<tr class="separator:a6f489634d893e32270ded4b471f93080"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1256cfca2973d3cb9114a3f25dfa9aca"><td class="memItemLeft" align="right" valign="top"><a id="a1256cfca2973d3cb9114a3f25dfa9aca"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RegionSetMask</b> (void)=0</td></tr>
-<tr class="separator:ab67d402e373e36fa04f03f4b7bc1ed60"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fd5ea1c59f0893341d98e27028b010f"><td class="memItemLeft" align="right" valign="top"><a id="a9fd5ea1c59f0893341d98e27028b010f"></a>
+<tr class="separator:a1256cfca2973d3cb9114a3f25dfa9aca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeacbb5b9a6ca06708c095c2f67aae93e"><td class="memItemLeft" align="right" valign="top"><a id="aeacbb5b9a6ca06708c095c2f67aae93e"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RegionInitChannelMask</b> (void)=0</td></tr>
-<tr class="separator:a9fd5ea1c59f0893341d98e27028b010f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a1e3cdeaec853133e9510f8b2764f33"><td class="memItemLeft" align="right" valign="top"><a id="a8a1e3cdeaec853133e9510f8b2764f33"></a>
+<tr class="separator:aeacbb5b9a6ca06708c095c2f67aae93e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6603ef368fea1cf2d1e4de2120c1dff6"><td class="memItemLeft" align="right" valign="top"><a id="a6603ef368fea1cf2d1e4de2120c1dff6"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RegionGetCFList</b> (void)=0</td></tr>
-<tr class="separator:a8a1e3cdeaec853133e9510f8b2764f33"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acaddb035dc418f36616d866a047c9a46"><td class="memItemLeft" align="right" valign="top"><a id="acaddb035dc418f36616d866a047c9a46"></a>
+<tr class="separator:a6603ef368fea1cf2d1e4de2120c1dff6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a198e46f5b6358987f6ec0b91fdc8eab9"><td class="memItemLeft" align="right" valign="top"><a id="a198e46f5b6358987f6ec0b91fdc8eab9"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RegionDecreaseDataRate</b> (void)=0</td></tr>
-<tr class="separator:acaddb035dc418f36616d866a047c9a46"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb6e940cad8882219c5a613bdc2983b7"><td class="memItemLeft" align="right" valign="top"><a id="abb6e940cad8882219c5a613bdc2983b7"></a>
+<tr class="separator:a198e46f5b6358987f6ec0b91fdc8eab9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32179d92bac6a7daea1bd39e84dec2a6"><td class="memItemLeft" align="right" valign="top"><a id="a32179d92bac6a7daea1bd39e84dec2a6"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RegionGiveNextDataRate</b> (void)=0</td></tr>
-<tr class="separator:abb6e940cad8882219c5a613bdc2983b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b00e02bbdb462d77fd4c24b80c1dfd3"><td class="memItemLeft" align="right" valign="top"><a id="a5b00e02bbdb462d77fd4c24b80c1dfd3"></a>
+<tr class="separator:a32179d92bac6a7daea1bd39e84dec2a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f0fbbcc4652885003a1db83aa28e507"><td class="memItemLeft" align="right" valign="top"><a id="a7f0fbbcc4652885003a1db83aa28e507"></a>
 virtual eStatusChannel&#160;</td><td class="memItemRight" valign="bottom"><b>RegionBuildChannelMask</b> (uint8_t ChMaskCntl, uint16_t ChMaskIn)=0</td></tr>
-<tr class="separator:a5b00e02bbdb462d77fd4c24b80c1dfd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a57d0ffff98238da02f92f3c7744e6a0d"><td class="memItemLeft" align="right" valign="top"><a id="a57d0ffff98238da02f92f3c7744e6a0d"></a>
+<tr class="separator:a7f0fbbcc4652885003a1db83aa28e507"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5d3abcc857b6b1f0535e12915dd2bfb"><td class="memItemLeft" align="right" valign="top"><a id="ac5d3abcc857b6b1f0535e12915dd2bfb"></a>
 virtual eStatusLoRaWan&#160;</td><td class="memItemRight" valign="bottom"><b>RegionIsValidRx1DrOffset</b> (uint8_t Rx1DataRateOffset)=0</td></tr>
-<tr class="separator:a57d0ffff98238da02f92f3c7744e6a0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6e4202544502705d950969f30483247e"><td class="memItemLeft" align="right" valign="top"><a id="a6e4202544502705d950969f30483247e"></a>
+<tr class="separator:ac5d3abcc857b6b1f0535e12915dd2bfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeec0ea6c3979df30b2d9b27bdb8ea043"><td class="memItemLeft" align="right" valign="top"><a id="aeec0ea6c3979df30b2d9b27bdb8ea043"></a>
 virtual eStatusLoRaWan&#160;</td><td class="memItemRight" valign="bottom"><b>RegionIsValidDataRate</b> (uint8_t temp)=0</td></tr>
-<tr class="separator:a6e4202544502705d950969f30483247e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc9f6f0fd47d3a63bd87f8c58898010d"><td class="memItemLeft" align="right" valign="top"><a id="adc9f6f0fd47d3a63bd87f8c58898010d"></a>
+<tr class="separator:aeec0ea6c3979df30b2d9b27bdb8ea043"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8316ea2c314c3809fa7c6b8e72e25df0"><td class="memItemLeft" align="right" valign="top"><a id="a8316ea2c314c3809fa7c6b8e72e25df0"></a>
 virtual eStatusLoRaWan&#160;</td><td class="memItemRight" valign="bottom"><b>RegionIsAcceptableDataRate</b> (uint8_t DataRate)=0</td></tr>
-<tr class="separator:adc9f6f0fd47d3a63bd87f8c58898010d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af9a022dc4c74e202773a837d0d48859b"><td class="memItemLeft" align="right" valign="top"><a id="af9a022dc4c74e202773a837d0d48859b"></a>
+<tr class="separator:a8316ea2c314c3809fa7c6b8e72e25df0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14be092c3440b0bbfe9683f14c648eb2"><td class="memItemLeft" align="right" valign="top"><a id="a14be092c3440b0bbfe9683f14c648eb2"></a>
 virtual eStatusLoRaWan&#160;</td><td class="memItemRight" valign="bottom"><b>RegionIsValidMacFrequency</b> (uint32_t Frequency)=0</td></tr>
-<tr class="separator:af9a022dc4c74e202773a837d0d48859b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8ff1de8ef1664d6c057bb1f9b4db9d70"><td class="memItemLeft" align="right" valign="top"><a id="a8ff1de8ef1664d6c057bb1f9b4db9d70"></a>
+<tr class="separator:a14be092c3440b0bbfe9683f14c648eb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a481b6761bc4743086db57fb0adfb4d88"><td class="memItemLeft" align="right" valign="top"><a id="a481b6761bc4743086db57fb0adfb4d88"></a>
 virtual eStatusLoRaWan&#160;</td><td class="memItemRight" valign="bottom"><b>RegionIsValidTxPower</b> (uint8_t Power)=0</td></tr>
-<tr class="separator:a8ff1de8ef1664d6c057bb1f9b4db9d70"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5656e91ead26393244da48b3fbe3d229"><td class="memItemLeft" align="right" valign="top"><a id="a5656e91ead26393244da48b3fbe3d229"></a>
+<tr class="separator:a481b6761bc4743086db57fb0adfb4d88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2eea298e891240d3367f2405b852964a"><td class="memItemLeft" align="right" valign="top"><a id="a2eea298e891240d3367f2405b852964a"></a>
 virtual eStatusLoRaWan&#160;</td><td class="memItemRight" valign="bottom"><b>RegionIsValidChannelIndex</b> (uint8_t ChannelIndex)=0</td></tr>
-<tr class="separator:a5656e91ead26393244da48b3fbe3d229"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a709be809ad2234be10e6fae174ac418d"><td class="memItemLeft" align="right" valign="top"><a id="a709be809ad2234be10e6fae174ac418d"></a>
+<tr class="separator:a2eea298e891240d3367f2405b852964a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab68ac169b3edd9aacc7a9c40976dc231"><td class="memItemLeft" align="right" valign="top"><a id="ab68ac169b3edd9aacc7a9c40976dc231"></a>
 virtual uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>RegionGetAdrAckLimit</b> (void)=0</td></tr>
-<tr class="separator:a709be809ad2234be10e6fae174ac418d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac212a8d494145b51c010494d90e4dc1d"><td class="memItemLeft" align="right" valign="top"><a id="ac212a8d494145b51c010494d90e4dc1d"></a>
+<tr class="separator:ab68ac169b3edd9aacc7a9c40976dc231"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad90b5c47b794730a1027a548f20fd63c"><td class="memItemLeft" align="right" valign="top"><a id="ad90b5c47b794730a1027a548f20fd63c"></a>
 virtual uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>RegionGetAdrAckDelay</b> (void)=0</td></tr>
-<tr class="separator:ac212a8d494145b51c010494d90e4dc1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:ad90b5c47b794730a1027a548f20fd63c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a84b66332b11668044883fb8977febaaf"><td class="memItemLeft" align="right" valign="top"><a id="a84b66332b11668044883fb8977febaaf"></a>
+<tr class="memitem:a9fd5d073c605e78e404c4aa7caa6a228"><td class="memItemLeft" align="right" valign="top"><a id="a9fd5d073c605e78e404c4aa7caa6a228"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>CallbackIsrTimerRx1</b> (void *obj)</td></tr>
-<tr class="separator:a84b66332b11668044883fb8977febaaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaed153db0a55058be843e0a44960f85a"><td class="memItemLeft" align="right" valign="top"><a id="aaed153db0a55058be843e0a44960f85a"></a>
+<tr class="separator:a9fd5d073c605e78e404c4aa7caa6a228"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49723c3a1e4fbff723372d8f097c45e9"><td class="memItemLeft" align="right" valign="top"><a id="a49723c3a1e4fbff723372d8f097c45e9"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>CallbackIsrTimerRx2</b> (void *obj)</td></tr>
-<tr class="separator:aaed153db0a55058be843e0a44960f85a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a49723c3a1e4fbff723372d8f097c45e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a10b5279c1cec4e9ced4d2ae70c13f127"><td class="memItemLeft" align="right" valign="top"><a id="a10b5279c1cec4e9ced4d2ae70c13f127"></a>
+<tr class="memitem:af3427d177dc92611f2da1507c147d317"><td class="memItemLeft" align="right" valign="top"><a id="af3427d177dc92611f2da1507c147d317"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>IsFrameToSend</b></td></tr>
-<tr class="separator:a10b5279c1cec4e9ced4d2ae70c13f127"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6ebc1038624a295d46126b80a3353338"><td class="memItemLeft" align="right" valign="top"><a id="a6ebc1038624a295d46126b80a3353338"></a>
+<tr class="separator:af3427d177dc92611f2da1507c147d317"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4148486bd1d64010191075e267ee538"><td class="memItemLeft" align="right" valign="top"><a id="aa4148486bd1d64010191075e267ee538"></a>
+uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>NbOfReset</b></td></tr>
+<tr class="separator:aa4148486bd1d64010191075e267ee538"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4233437d7d4772f63973fafede72f4b5"><td class="memItemLeft" align="right" valign="top"><a id="a4233437d7d4772f63973fafede72f4b5"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacTxDataRate</b></td></tr>
-<tr class="separator:a6ebc1038624a295d46126b80a3353338"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8c6ac8a589b02185c279a169cbb99a4e"><td class="memItemLeft" align="right" valign="top"><a id="a8c6ac8a589b02185c279a169cbb99a4e"></a>
+<tr class="separator:a4233437d7d4772f63973fafede72f4b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90a66a8b7888673e0568c1202d1d3421"><td class="memItemLeft" align="right" valign="top"><a id="a90a66a8b7888673e0568c1202d1d3421"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacTxDataRateAdr</b></td></tr>
-<tr class="separator:a8c6ac8a589b02185c279a169cbb99a4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa84d50dbfecfba3fd0aa0337f7dd2d85"><td class="memItemLeft" align="right" valign="top"><a id="aa84d50dbfecfba3fd0aa0337f7dd2d85"></a>
+<tr class="separator:a90a66a8b7888673e0568c1202d1d3421"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae294fd8611d2487aeb9a8b1185daf8ea"><td class="memItemLeft" align="right" valign="top"><a id="ae294fd8611d2487aeb9a8b1185daf8ea"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacTxPower</b></td></tr>
-<tr class="separator:aa84d50dbfecfba3fd0aa0337f7dd2d85"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a036dc96101f928876162a0be00d16716"><td class="memItemLeft" align="right" valign="top"><a id="a036dc96101f928876162a0be00d16716"></a>
+<tr class="separator:ae294fd8611d2487aeb9a8b1185daf8ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64acd2df6bc04cce4d6a54a6a2ff8332"><td class="memItemLeft" align="right" valign="top"><a id="a64acd2df6bc04cce4d6a54a6a2ff8332"></a>
 uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacChMask</b></td></tr>
-<tr class="separator:a036dc96101f928876162a0be00d16716"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad52841d04a1bbb1ca52ab483db20516b"><td class="memItemLeft" align="right" valign="top"><a id="ad52841d04a1bbb1ca52ab483db20516b"></a>
+<tr class="separator:a64acd2df6bc04cce4d6a54a6a2ff8332"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a429285e901085c2f0a9b5ddf59f0dc65"><td class="memItemLeft" align="right" valign="top"><a id="a429285e901085c2f0a9b5ddf59f0dc65"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacNbTrans</b></td></tr>
-<tr class="separator:ad52841d04a1bbb1ca52ab483db20516b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a678e1323e01e1be16588d70b662573a6"><td class="memItemLeft" align="right" valign="top"><a id="a678e1323e01e1be16588d70b662573a6"></a>
+<tr class="separator:a429285e901085c2f0a9b5ddf59f0dc65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9d590d00503086b62b52a233dc790ed"><td class="memItemLeft" align="right" valign="top"><a id="af9d590d00503086b62b52a233dc790ed"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacNbTransCpt</b></td></tr>
-<tr class="separator:a678e1323e01e1be16588d70b662573a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acebfc9b126a9abd9f47907b32b2ef635"><td class="memItemLeft" align="right" valign="top"><a id="acebfc9b126a9abd9f47907b32b2ef635"></a>
+<tr class="separator:af9d590d00503086b62b52a233dc790ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca87f947d0988768d234f64be6ad55b7"><td class="memItemLeft" align="right" valign="top"><a id="aca87f947d0988768d234f64be6ad55b7"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacRx2DataRate</b></td></tr>
-<tr class="separator:acebfc9b126a9abd9f47907b32b2ef635"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73ceb8482f349192c0974e5db9c321e1"><td class="memItemLeft" align="right" valign="top"><a id="a73ceb8482f349192c0974e5db9c321e1"></a>
+<tr class="separator:aca87f947d0988768d234f64be6ad55b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4018ef9a538f389d20f9c720fcf8ce1"><td class="memItemLeft" align="right" valign="top"><a id="af4018ef9a538f389d20f9c720fcf8ce1"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacRx2Frequency</b></td></tr>
-<tr class="separator:a73ceb8482f349192c0974e5db9c321e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac88bcc32a2987ce0e2cd1d849de6ee55"><td class="memItemLeft" align="right" valign="top"><a id="ac88bcc32a2987ce0e2cd1d849de6ee55"></a>
+<tr class="separator:af4018ef9a538f389d20f9c720fcf8ce1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26d187a951c769d9419527583d70ee3c"><td class="memItemLeft" align="right" valign="top"><a id="a26d187a951c769d9419527583d70ee3c"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacRx1DataRateOffset</b></td></tr>
-<tr class="separator:ac88bcc32a2987ce0e2cd1d849de6ee55"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba62ccef83f9b74f582481afc9b6f4a8"><td class="memItemLeft" align="right" valign="top"><a id="aba62ccef83f9b74f582481afc9b6f4a8"></a>
+<tr class="separator:a26d187a951c769d9419527583d70ee3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cae0887d6a3475147858cd713ab0784"><td class="memItemLeft" align="right" valign="top"><a id="a4cae0887d6a3475147858cd713ab0784"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacTxFrequency</b> [NBCHANNEL]</td></tr>
-<tr class="separator:aba62ccef83f9b74f582481afc9b6f4a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8b1d0d057ea618b1a33578820d48912b"><td class="memItemLeft" align="right" valign="top"><a id="a8b1d0d057ea618b1a33578820d48912b"></a>
+<tr class="separator:a4cae0887d6a3475147858cd713ab0784"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad78558332c51d4dc8cc4fde0e85a9c71"><td class="memItemLeft" align="right" valign="top"><a id="ad78558332c51d4dc8cc4fde0e85a9c71"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacRx1Frequency</b> [NBCHANNEL]</td></tr>
-<tr class="separator:a8b1d0d057ea618b1a33578820d48912b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a947cf1d4a88e50f5af3d2f09a74d66b0"><td class="memItemLeft" align="right" valign="top"><a id="a947cf1d4a88e50f5af3d2f09a74d66b0"></a>
+<tr class="separator:ad78558332c51d4dc8cc4fde0e85a9c71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f32e42a487c751f736af790b98aece8"><td class="memItemLeft" align="right" valign="top"><a id="a2f32e42a487c751f736af790b98aece8"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacMinDataRateChannel</b> [NBCHANNEL]</td></tr>
-<tr class="separator:a947cf1d4a88e50f5af3d2f09a74d66b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb256c251e80342bc870927acf7bc993"><td class="memItemLeft" align="right" valign="top"><a id="acb256c251e80342bc870927acf7bc993"></a>
+<tr class="separator:a2f32e42a487c751f736af790b98aece8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7af736bad42311bdfba5a67fd2701140"><td class="memItemLeft" align="right" valign="top"><a id="a7af736bad42311bdfba5a67fd2701140"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacMaxDataRateChannel</b> [NBCHANNEL]</td></tr>
-<tr class="separator:acb256c251e80342bc870927acf7bc993"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adcd7df812d6777ba74f9dcc22603fabc"><td class="memItemLeft" align="right" valign="top"><a id="adcd7df812d6777ba74f9dcc22603fabc"></a>
+<tr class="separator:a7af736bad42311bdfba5a67fd2701140"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd49152da70498fc82299e77b2ede009"><td class="memItemLeft" align="right" valign="top"><a id="acd49152da70498fc82299e77b2ede009"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacChannelIndexEnabled</b> [NBCHANNEL]</td></tr>
-<tr class="separator:adcd7df812d6777ba74f9dcc22603fabc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2614ad9378d60bb519f9029ac03c4de"><td class="memItemLeft" align="right" valign="top"><a id="ae2614ad9378d60bb519f9029ac03c4de"></a>
+<tr class="separator:acd49152da70498fc82299e77b2ede009"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af547f45dbe7cc0255396cfa85ba9533a"><td class="memItemLeft" align="right" valign="top"><a id="af547f45dbe7cc0255396cfa85ba9533a"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>MacRx1Delay</b></td></tr>
-<tr class="separator:ae2614ad9378d60bb519f9029ac03c4de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeaf796f971e5f0303aaaa9fd8ff4ef88"><td class="memItemLeft" align="right" valign="top"><a id="aeaf796f971e5f0303aaaa9fd8ff4ef88"></a>
+<tr class="separator:af547f45dbe7cc0255396cfa85ba9533a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57741eeabfb00a58e90368f2134ce7f8"><td class="memItemLeft" align="right" valign="top"><a id="a57741eeabfb00a58e90368f2134ce7f8"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>FcntUp</b></td></tr>
-<tr class="separator:aeaf796f971e5f0303aaaa9fd8ff4ef88"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a463db46e95ebb87da0f1a39299988bb9"><td class="memItemLeft" align="right" valign="top"><a id="a463db46e95ebb87da0f1a39299988bb9"></a>
+<tr class="separator:a57741eeabfb00a58e90368f2134ce7f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab64c8697dcf132852ff7f326f2a806a"><td class="memItemLeft" align="right" valign="top"><a id="aab64c8697dcf132852ff7f326f2a806a"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>FcntDwn</b></td></tr>
-<tr class="separator:a463db46e95ebb87da0f1a39299988bb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af03252bb397ebd1556b0f71dc8a72e44"><td class="memItemLeft" align="right" valign="top"><a id="af03252bb397ebd1556b0f71dc8a72e44"></a>
+<tr class="separator:aab64c8697dcf132852ff7f326f2a806a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae352b955ec64652c64084de67d6309f"><td class="memItemLeft" align="right" valign="top"><a id="aae352b955ec64652c64084de67d6309f"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>DevAddr</b></td></tr>
-<tr class="separator:af03252bb397ebd1556b0f71dc8a72e44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae4ccb951e96fa2148c5062134a86df7c"><td class="memItemLeft" align="right" valign="top"><a id="ae4ccb951e96fa2148c5062134a86df7c"></a>
+<tr class="separator:aae352b955ec64652c64084de67d6309f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93c94009fe081053ce73e0b10e05625b"><td class="memItemLeft" align="right" valign="top"><a id="a93c94009fe081053ce73e0b10e05625b"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>nwkSKey</b> [16]</td></tr>
-<tr class="separator:ae4ccb951e96fa2148c5062134a86df7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5c23baeebcd752c9395d2afda9209d01"><td class="memItemLeft" align="right" valign="top"><a id="a5c23baeebcd752c9395d2afda9209d01"></a>
+<tr class="separator:a93c94009fe081053ce73e0b10e05625b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc0d832ba6477333a41e558704acc4e9"><td class="memItemLeft" align="right" valign="top"><a id="abc0d832ba6477333a41e558704acc4e9"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>appSKey</b> [16]</td></tr>
-<tr class="separator:a5c23baeebcd752c9395d2afda9209d01"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec453793ccc6269a5dfe9d7fa1404663"><td class="memItemLeft" align="right" valign="top"><a id="aec453793ccc6269a5dfe9d7fa1404663"></a>
+<tr class="separator:abc0d832ba6477333a41e558704acc4e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0453cc125759e3b32f8b6e28548dee84"><td class="memItemLeft" align="right" valign="top"><a id="a0453cc125759e3b32f8b6e28548dee84"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>appKey</b> [16]</td></tr>
-<tr class="separator:aec453793ccc6269a5dfe9d7fa1404663"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b91d6563944eeb25d9464787d3c75f7"><td class="memItemLeft" align="right" valign="top"><a id="a5b91d6563944eeb25d9464787d3c75f7"></a>
+<tr class="separator:a0453cc125759e3b32f8b6e28548dee84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4daef996cdb75fe3b0d33076b73dd2f"><td class="memItemLeft" align="right" valign="top"><a id="ad4daef996cdb75fe3b0d33076b73dd2f"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>devEui</b> [8]</td></tr>
-<tr class="separator:a5b91d6563944eeb25d9464787d3c75f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aecfe7f97da678fb03426a8286f8672ad"><td class="memItemLeft" align="right" valign="top"><a id="aecfe7f97da678fb03426a8286f8672ad"></a>
+<tr class="separator:ad4daef996cdb75fe3b0d33076b73dd2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cf3acd6dbeebd4bd11f79326fcf5047"><td class="memItemLeft" align="right" valign="top"><a id="a4cf3acd6dbeebd4bd11f79326fcf5047"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>appEui</b> [8]</td></tr>
-<tr class="separator:aecfe7f97da678fb03426a8286f8672ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae46caf33b7214924e022c81f02c5118d"><td class="memItemLeft" align="right" valign="top"><a id="ae46caf33b7214924e022c81f02c5118d"></a>
+<tr class="separator:a4cf3acd6dbeebd4bd11f79326fcf5047"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41cc43d7525d3c7fca17d06261d3f1f3"><td class="memItemLeft" align="right" valign="top"><a id="a41cc43d7525d3c7fca17d06261d3f1f3"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>otaDevice</b></td></tr>
-<tr class="separator:ae46caf33b7214924e022c81f02c5118d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad95287035fcdfdaa44643c0ce9016cdc"><td class="memItemLeft" align="right" valign="top"><a id="ad95287035fcdfdaa44643c0ce9016cdc"></a>
+<tr class="separator:a41cc43d7525d3c7fca17d06261d3f1f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefbb9daa1fdad56b7b3a7cd24d55d45f"><td class="memItemLeft" align="right" valign="top"><a id="aefbb9daa1fdad56b7b3a7cd24d55d45f"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>fPort</b></td></tr>
-<tr class="separator:ad95287035fcdfdaa44643c0ce9016cdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a91211909f14c2b595f746c001e41ad00"><td class="memItemLeft" align="right" valign="top"><a id="a91211909f14c2b595f746c001e41ad00"></a>
+<tr class="separator:aefbb9daa1fdad56b7b3a7cd24d55d45f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3381c216b989d3df72caee46d96d439a"><td class="memItemLeft" align="right" valign="top"><a id="a3381c216b989d3df72caee46d96d439a"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MType</b></td></tr>
-<tr class="separator:a91211909f14c2b595f746c001e41ad00"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94bd277c55cfeecff0272ccb24872707"><td class="memItemLeft" align="right" valign="top"><a id="a94bd277c55cfeecff0272ccb24872707"></a>
+<tr class="separator:a3381c216b989d3df72caee46d96d439a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75a3db621a664daa6dbc0264ccc5d3fd"><td class="memItemLeft" align="right" valign="top"><a id="a75a3db621a664daa6dbc0264ccc5d3fd"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MajorBits</b></td></tr>
-<tr class="separator:a94bd277c55cfeecff0272ccb24872707"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6cbf54e746190f2c3cd4eaa713cf0bf4"><td class="memItemLeft" align="right" valign="top"><a id="a6cbf54e746190f2c3cd4eaa713cf0bf4"></a>
+<tr class="separator:a75a3db621a664daa6dbc0264ccc5d3fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4892444ed5c7fa20cbf9c45a5da7ed22"><td class="memItemLeft" align="right" valign="top"><a id="a4892444ed5c7fa20cbf9c45a5da7ed22"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>Fctrl</b></td></tr>
-<tr class="separator:a6cbf54e746190f2c3cd4eaa713cf0bf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a4d6187ec1ae3698b566ae4637a5adc"><td class="memItemLeft" align="right" valign="top"><a id="a1a4d6187ec1ae3698b566ae4637a5adc"></a>
+<tr class="separator:a4892444ed5c7fa20cbf9c45a5da7ed22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac150bed1ff68289d9eb4dcefdd840629"><td class="memItemLeft" align="right" valign="top"><a id="ac150bed1ff68289d9eb4dcefdd840629"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>AckBitForTx</b></td></tr>
-<tr class="separator:a1a4d6187ec1ae3698b566ae4637a5adc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ef757024bbcabd1d779cedbcc04eced"><td class="memItemLeft" align="right" valign="top"><a id="a2ef757024bbcabd1d779cedbcc04eced"></a>
+<tr class="separator:ac150bed1ff68289d9eb4dcefdd840629"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0d2069ce7801e053b0c18c7bcb99461"><td class="memItemLeft" align="right" valign="top"><a id="ac0d2069ce7801e053b0c18c7bcb99461"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>UserPayloadSize</b></td></tr>
-<tr class="separator:a2ef757024bbcabd1d779cedbcc04eced"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a01719dc4fe242d8602bf1df3033eec78"><td class="memItemLeft" align="right" valign="top"><a id="a01719dc4fe242d8602bf1df3033eec78"></a>
+<tr class="separator:ac0d2069ce7801e053b0c18c7bcb99461"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a5629712138aea035101727cefe9932"><td class="memItemLeft" align="right" valign="top"><a id="a7a5629712138aea035101727cefe9932"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacPayloadSize</b></td></tr>
-<tr class="separator:a01719dc4fe242d8602bf1df3033eec78"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a126160720f59c7da6099552927b52aaa"><td class="memItemLeft" align="right" valign="top"><a id="a126160720f59c7da6099552927b52aaa"></a>
+<tr class="separator:a7a5629712138aea035101727cefe9932"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab30ac450a53d4591f9555e081c1e6f25"><td class="memItemLeft" align="right" valign="top"><a id="ab30ac450a53d4591f9555e081c1e6f25"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>FoptsTxLength</b></td></tr>
-<tr class="separator:a126160720f59c7da6099552927b52aaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa08aad5e7b5ddb187c58e33922e8fc9b"><td class="memItemLeft" align="right" valign="top"><a id="aa08aad5e7b5ddb187c58e33922e8fc9b"></a>
+<tr class="separator:ab30ac450a53d4591f9555e081c1e6f25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec4a26086022915f815f3ae0d03a8886"><td class="memItemLeft" align="right" valign="top"><a id="aec4a26086022915f815f3ae0d03a8886"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>FoptsTxData</b> [15]</td></tr>
-<tr class="separator:aa08aad5e7b5ddb187c58e33922e8fc9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a17cb493841e59c52e7651eb6f96348f6"><td class="memItemLeft" align="right" valign="top"><a id="a17cb493841e59c52e7651eb6f96348f6"></a>
+<tr class="separator:aec4a26086022915f815f3ae0d03a8886"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4263086bb1fcf19feb2fdeeeecac82c"><td class="memItemLeft" align="right" valign="top"><a id="ac4263086bb1fcf19feb2fdeeeecac82c"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>FoptsTxLengthSticky</b></td></tr>
-<tr class="separator:a17cb493841e59c52e7651eb6f96348f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adf45e0fe71b902545782312412f104bb"><td class="memItemLeft" align="right" valign="top"><a id="adf45e0fe71b902545782312412f104bb"></a>
+<tr class="separator:ac4263086bb1fcf19feb2fdeeeecac82c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad9ee7e5a686fea5aac63e7fd0b4d3b2"><td class="memItemLeft" align="right" valign="top"><a id="aad9ee7e5a686fea5aac63e7fd0b4d3b2"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>FoptsTxDataSticky</b> [15]</td></tr>
-<tr class="separator:adf45e0fe71b902545782312412f104bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15a02e6e356e4e94964b19ad32887e4b"><td class="memItemLeft" align="right" valign="top"><a id="a15a02e6e356e4e94964b19ad32887e4b"></a>
+<tr class="separator:aad9ee7e5a686fea5aac63e7fd0b4d3b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9cc778ff97f8fb9182d9b8a99f6d08b"><td class="memItemLeft" align="right" valign="top"><a id="ac9cc778ff97f8fb9182d9b8a99f6d08b"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>FoptsTxLengthCurrent</b></td></tr>
-<tr class="separator:a15a02e6e356e4e94964b19ad32887e4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a492b312c270a40407e9b524eafc90bf1"><td class="memItemLeft" align="right" valign="top"><a id="a492b312c270a40407e9b524eafc90bf1"></a>
+<tr class="separator:ac9cc778ff97f8fb9182d9b8a99f6d08b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55fd2a924f9e9c32a2567c4f6f8fe661"><td class="memItemLeft" align="right" valign="top"><a id="a55fd2a924f9e9c32a2567c4f6f8fe661"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>FoptsTxDataCurrent</b> [15]</td></tr>
-<tr class="separator:a492b312c270a40407e9b524eafc90bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa5923f65f676ada287afa1ec22415ed"><td class="memItemLeft" align="right" valign="top"><a id="aaa5923f65f676ada287afa1ec22415ed"></a>
+<tr class="separator:a55fd2a924f9e9c32a2567c4f6f8fe661"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2659e1c21772c4948ed6669e6b8c1773"><td class="memItemLeft" align="right" valign="top"><a id="a2659e1c21772c4948ed6669e6b8c1773"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>fRxPort</b></td></tr>
-<tr class="separator:aaa5923f65f676ada287afa1ec22415ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a0a8dffff571d98c9c83964233b8ac6"><td class="memItemLeft" align="right" valign="top"><a id="a9a0a8dffff571d98c9c83964233b8ac6"></a>
+<tr class="separator:a2659e1c21772c4948ed6669e6b8c1773"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4899d6960d72697cdcba3471bb371c1"><td class="memItemLeft" align="right" valign="top"><a id="af4899d6960d72697cdcba3471bb371c1"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MtypeRx</b></td></tr>
-<tr class="separator:a9a0a8dffff571d98c9c83964233b8ac6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a117e943e636d6e72717ecd1484c64695"><td class="memItemLeft" align="right" valign="top"><a id="a117e943e636d6e72717ecd1484c64695"></a>
+<tr class="separator:af4899d6960d72697cdcba3471bb371c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7098243d9141419c21369840c5852d3f"><td class="memItemLeft" align="right" valign="top"><a id="a7098243d9141419c21369840c5852d3f"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MajorRx</b></td></tr>
-<tr class="separator:a117e943e636d6e72717ecd1484c64695"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10e6eb29bc95a9256b15c169724b49e5"><td class="memItemLeft" align="right" valign="top"><a id="a10e6eb29bc95a9256b15c169724b49e5"></a>
+<tr class="separator:a7098243d9141419c21369840c5852d3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adeacbc1d6a4a97256e0e35e9c72799f6"><td class="memItemLeft" align="right" valign="top"><a id="adeacbc1d6a4a97256e0e35e9c72799f6"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>FctrlRx</b></td></tr>
-<tr class="separator:a10e6eb29bc95a9256b15c169724b49e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2fd17abf3056fef3c0e6229484f8984"><td class="memItemLeft" align="right" valign="top"><a id="aa2fd17abf3056fef3c0e6229484f8984"></a>
+<tr class="separator:adeacbc1d6a4a97256e0e35e9c72799f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89564c8c68d7f3067c804c2d1034cd48"><td class="memItemLeft" align="right" valign="top"><a id="a89564c8c68d7f3067c804c2d1034cd48"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>FoptsLength</b></td></tr>
-<tr class="separator:aa2fd17abf3056fef3c0e6229484f8984"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07898e700515c29c44571df450e04d51"><td class="memItemLeft" align="right" valign="top"><a id="a07898e700515c29c44571df450e04d51"></a>
+<tr class="separator:a89564c8c68d7f3067c804c2d1034cd48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a747eaf56824bd60202ffbd3126541e6a"><td class="memItemLeft" align="right" valign="top"><a id="a747eaf56824bd60202ffbd3126541e6a"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>Fopts</b> [16]</td></tr>
-<tr class="separator:a07898e700515c29c44571df450e04d51"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2cfa0e1a3e6fe50dd067d4154e6811b7"><td class="memItemLeft" align="right" valign="top"><a id="a2cfa0e1a3e6fe50dd067d4154e6811b7"></a>
+<tr class="separator:a747eaf56824bd60202ffbd3126541e6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90fd2bfb7df32ce225e2860c920e58d6"><td class="memItemLeft" align="right" valign="top"><a id="a90fd2bfb7df32ce225e2860c920e58d6"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>FportRx</b></td></tr>
-<tr class="separator:a2cfa0e1a3e6fe50dd067d4154e6811b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b087e76f27253d34f282adea531ccbc"><td class="memItemLeft" align="right" valign="top"><a id="a4b087e76f27253d34f282adea531ccbc"></a>
+<tr class="separator:a90fd2bfb7df32ce225e2860c920e58d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a481588e4fef130cf21d6be3a3812d776"><td class="memItemLeft" align="right" valign="top"><a id="a481588e4fef130cf21d6be3a3812d776"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacRxPayloadSize</b></td></tr>
-<tr class="separator:a4b087e76f27253d34f282adea531ccbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d53b0e513fd557b14e387fa41503bbe"><td class="memItemLeft" align="right" valign="top"><a id="a6d53b0e513fd557b14e387fa41503bbe"></a>
+<tr class="separator:a481588e4fef130cf21d6be3a3812d776"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1181f001c9b5ff0d95099e65c2a36f4d"><td class="memItemLeft" align="right" valign="top"><a id="a1181f001c9b5ff0d95099e65c2a36f4d"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacRxPayload</b> [255]</td></tr>
-<tr class="separator:a6d53b0e513fd557b14e387fa41503bbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a90980937f3f8059893647e938bb168d3"><td class="memItemLeft" align="right" valign="top"><a id="a90980937f3f8059893647e938bb168d3"></a>
+<tr class="separator:a1181f001c9b5ff0d95099e65c2a36f4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a736200328d8ff1538edfed3293e02ca9"><td class="memItemLeft" align="right" valign="top"><a id="a736200328d8ff1538edfed3293e02ca9"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>AvailableRxPacketForUser</b></td></tr>
-<tr class="separator:a90980937f3f8059893647e938bb168d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe8d114682f05aeff89eaca2a9367f69"><td class="memItemLeft" align="right" valign="top"><a id="afe8d114682f05aeff89eaca2a9367f69"></a>
+<tr class="separator:a736200328d8ff1538edfed3293e02ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a690b98b15d06ffcd16dc09aeacba25fc"><td class="memItemLeft" align="right" valign="top"><a id="a690b98b15d06ffcd16dc09aeacba25fc"></a>
 uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>DevNonce</b></td></tr>
-<tr class="separator:afe8d114682f05aeff89eaca2a9367f69"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0c36441dba7db2e569e8939f4220930"><td class="memItemLeft" align="right" valign="top"><a id="ad0c36441dba7db2e569e8939f4220930"></a>
+<tr class="separator:a690b98b15d06ffcd16dc09aeacba25fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1d51b822467332f07b94fcb17189ced"><td class="memItemLeft" align="right" valign="top"><a id="ad1d51b822467332f07b94fcb17189ced"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>CFList</b> [16]</td></tr>
-<tr class="separator:ad0c36441dba7db2e569e8939f4220930"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95bc59575277c7b7460de57e6cdec484"><td class="memItemLeft" align="right" valign="top"><a id="a95bc59575277c7b7460de57e6cdec484"></a>
+<tr class="separator:ad1d51b822467332f07b94fcb17189ced"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1aa41109a8f67940d645666709a3c12b"><td class="memItemLeft" align="right" valign="top"><a id="a1aa41109a8f67940d645666709a3c12b"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacNwkPayload</b> [255]</td></tr>
-<tr class="separator:a95bc59575277c7b7460de57e6cdec484"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a5500d11f34e4f896c1192c77bfc82d"><td class="memItemLeft" align="right" valign="top"><a id="a6a5500d11f34e4f896c1192c77bfc82d"></a>
+<tr class="separator:a1aa41109a8f67940d645666709a3c12b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecdf27c0dbb1e17533574ed76ec62e49"><td class="memItemLeft" align="right" valign="top"><a id="aecdf27c0dbb1e17533574ed76ec62e49"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacNwkPayloadSize</b></td></tr>
-<tr class="separator:a6a5500d11f34e4f896c1192c77bfc82d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7de959c4f0487ea9967815b56cc45eb1"><td class="memItemLeft" align="right" valign="top"><a id="a7de959c4f0487ea9967815b56cc45eb1"></a>
+<tr class="separator:aecdf27c0dbb1e17533574ed76ec62e49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1ae71177292139650127c17088a6337"><td class="memItemLeft" align="right" valign="top"><a id="ac1ae71177292139650127c17088a6337"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacNwkAns</b> [255]</td></tr>
-<tr class="separator:a7de959c4f0487ea9967815b56cc45eb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a280138b532bb2f61b41113cc078b2207"><td class="memItemLeft" align="right" valign="top"><a id="a280138b532bb2f61b41113cc078b2207"></a>
+<tr class="separator:ac1ae71177292139650127c17088a6337"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76713cb99312f54ec3bf3057c2a0e798"><td class="memItemLeft" align="right" valign="top"><a id="a76713cb99312f54ec3bf3057c2a0e798"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacNwkAnsSize</b></td></tr>
-<tr class="separator:a280138b532bb2f61b41113cc078b2207"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a183837740902045fca74a799b6b7c008"><td class="memItemLeft" align="right" valign="top"><a id="a183837740902045fca74a799b6b7c008"></a>
+<tr class="separator:a76713cb99312f54ec3bf3057c2a0e798"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a020a7c766b4791fde846cc634f4ce577"><td class="memItemLeft" align="right" valign="top"><a id="a020a7c766b4791fde846cc634f4ce577"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>AdrModeSelect</b></td></tr>
-<tr class="separator:a183837740902045fca74a799b6b7c008"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f114bbd9a384bb12dc0fead7104edc1"><td class="memItemLeft" align="right" valign="top"><a id="a8f114bbd9a384bb12dc0fead7104edc1"></a>
+<tr class="separator:a020a7c766b4791fde846cc634f4ce577"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa92da5fb24a992b90c3bf9b1c8974643"><td class="memItemLeft" align="right" valign="top"><a id="aa92da5fb24a992b90c3bf9b1c8974643"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>AdrAckCnt</b></td></tr>
-<tr class="separator:a8f114bbd9a384bb12dc0fead7104edc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa5c87fc1930f88dde5b9004a8415f74"><td class="memItemLeft" align="right" valign="top"><a id="afa5c87fc1930f88dde5b9004a8415f74"></a>
+<tr class="separator:aa92da5fb24a992b90c3bf9b1c8974643"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89d2412d983e7027ef346f55b6b1ecf2"><td class="memItemLeft" align="right" valign="top"><a id="a89d2412d983e7027ef346f55b6b1ecf2"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>AdrAckLimit</b></td></tr>
-<tr class="separator:afa5c87fc1930f88dde5b9004a8415f74"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a325946769e5f251cbc69296731a29812"><td class="memItemLeft" align="right" valign="top"><a id="a325946769e5f251cbc69296731a29812"></a>
+<tr class="separator:a89d2412d983e7027ef346f55b6b1ecf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1106c7156c06f2f38ebb7abda72524bf"><td class="memItemLeft" align="right" valign="top"><a id="a1106c7156c06f2f38ebb7abda72524bf"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>AdrAckDelay</b></td></tr>
-<tr class="separator:a325946769e5f251cbc69296731a29812"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f2f9d0fdccf54dd1528713cfe91217e"><td class="memItemLeft" align="right" valign="top"><a id="a8f2f9d0fdccf54dd1528713cfe91217e"></a>
+<tr class="separator:a1106c7156c06f2f38ebb7abda72524bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a439b4f69a284db6eba911792a41c767a"><td class="memItemLeft" align="right" valign="top"><a id="a439b4f69a284db6eba911792a41c767a"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>AdrAckReq</b></td></tr>
-<tr class="separator:a8f2f9d0fdccf54dd1528713cfe91217e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e29b5e3995d7bfda07e77fe6eaadd31"><td class="memItemLeft" align="right" valign="top"><a id="a3e29b5e3995d7bfda07e77fe6eaadd31"></a>
+<tr class="separator:a439b4f69a284db6eba911792a41c767a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a886dfe29c3f405f8fcd7943da9b5285f"><td class="memItemLeft" align="right" valign="top"><a id="a886dfe29c3f405f8fcd7943da9b5285f"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>AdrEnable</b></td></tr>
-<tr class="separator:a3e29b5e3995d7bfda07e77fe6eaadd31"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac99b01a0a8c89115b6b631e33c9198ef"><td class="memItemLeft" align="right" valign="top"><a id="ac99b01a0a8c89115b6b631e33c9198ef"></a>
-<a class="el" href="class_radio_container.html">RadioContainer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Phy</b></td></tr>
-<tr class="separator:ac99b01a0a8c89115b6b631e33c9198ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2e263bded7d6b00a2e7c75a6ce7a4c05"><td class="memItemLeft" align="right" valign="top"><a id="a2e263bded7d6b00a2e7c75a6ce7a4c05"></a>
+<tr class="separator:a886dfe29c3f405f8fcd7943da9b5285f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a022c395b2c5a3829c14168a52a187a61"><td class="memItemLeft" align="right" valign="top"><a id="a022c395b2c5a3829c14168a52a187a61"></a>
+<a class="el" href="class_radio_container.html">RadioContainer</a>&lt; R &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Phy</b></td></tr>
+<tr class="separator:a022c395b2c5a3829c14168a52a187a61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fd80f37a0842928631d917de271cfe9"><td class="memItemLeft" align="right" valign="top"><a id="a1fd80f37a0842928631d917de271cfe9"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>StateTimer</b></td></tr>
-<tr class="separator:a2e263bded7d6b00a2e7c75a6ce7a4c05"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06d2acccf2d9989315b8ac21a1303fb2"><td class="memItemLeft" align="right" valign="top"><a id="a06d2acccf2d9989315b8ac21a1303fb2"></a>
+<tr class="separator:a1fd80f37a0842928631d917de271cfe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b25f6e36173b50f63d594afe560d4d6"><td class="memItemLeft" align="right" valign="top"><a id="a9b25f6e36173b50f63d594afe560d4d6"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>RtcNextTimeJoinSecond</b></td></tr>
-<tr class="separator:a06d2acccf2d9989315b8ac21a1303fb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4fd09077464006fd630cae76c71d946d"><td class="memItemLeft" align="right" valign="top"><a id="a4fd09077464006fd630cae76c71d946d"></a>
+<tr class="separator:a9b25f6e36173b50f63d594afe560d4d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf9bed2385f02a1396f1e3bf68a71494"><td class="memItemLeft" align="right" valign="top"><a id="aaf9bed2385f02a1396f1e3bf68a71494"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>RetryJoinCpt</b></td></tr>
-<tr class="separator:a4fd09077464006fd630cae76c71d946d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:aaf9bed2385f02a1396f1e3bf68a71494"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
-<tr class="memitem:ad544ca356d092e7166689d217385ef2b"><td class="memItemLeft" align="right" valign="top"><a id="ad544ca356d092e7166689d217385ef2b"></a>
+<tr class="memitem:aa9219b0dc784ae044e3e1a0dcd305e53"><td class="memItemLeft" align="right" valign="top"><a id="aa9219b0dc784ae044e3e1a0dcd305e53"></a>
 static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>NUMBER_OF_CHANNEL</b> = NBCHANNEL</td></tr>
-<tr class="separator:ad544ca356d092e7166689d217385ef2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:aa9219b0dc784ae044e3e1a0dcd305e53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a18e9ca60ae3b9dbd229b0559acd172c2"><td class="memItemLeft" align="right" valign="top"><a id="a18e9ca60ae3b9dbd229b0559acd172c2"></a>
+<tr class="memitem:af7ea3417212b3e06475635e3d392baf2"><td class="memItemLeft" align="right" valign="top"><a id="af7ea3417212b3e06475635e3d392baf2"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>FindEnabledChannel</b> (uint8_t Index)</td></tr>
-<tr class="separator:a18e9ca60ae3b9dbd229b0559acd172c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf08f3d75b97a573eda1ce2b44f6795e"><td class="memItemLeft" align="right" valign="top"><a id="abf08f3d75b97a573eda1ce2b44f6795e"></a>
+<tr class="separator:af7ea3417212b3e06475635e3d392baf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d38cb16e6bf161520e396457d7194c4"><td class="memItemLeft" align="right" valign="top"><a id="a8d38cb16e6bf161520e396457d7194c4"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>PrintMacContext</b> (void)</td></tr>
-<tr class="separator:abf08f3d75b97a573eda1ce2b44f6795e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a8d38cb16e6bf161520e396457d7194c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a10a49664bc9fb5debf5e23e742e58af6"><td class="memItemLeft" align="right" valign="top"><a id="a10a49664bc9fb5debf5e23e742e58af6"></a>
+<tr class="memitem:a22b5a7290fac2cc6886d22ef153770f4"><td class="memItemLeft" align="right" valign="top"><a id="a22b5a7290fac2cc6886d22ef153770f4"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacTxSfCurrent</b></td></tr>
-<tr class="separator:a10a49664bc9fb5debf5e23e742e58af6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d75d29787633ee930c0b81b4db919a9"><td class="memItemLeft" align="right" valign="top"><a id="a3d75d29787633ee930c0b81b4db919a9"></a>
+<tr class="separator:a22b5a7290fac2cc6886d22ef153770f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad89ce469ad5978798e5c518755b6d005"><td class="memItemLeft" align="right" valign="top"><a id="ad89ce469ad5978798e5c518755b6d005"></a>
 eModulationType&#160;</td><td class="memItemRight" valign="bottom"><b>MacTxModulationCurrent</b></td></tr>
-<tr class="separator:a3d75d29787633ee930c0b81b4db919a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7decbbcbc291e135c582d8d4572d030e"><td class="memItemLeft" align="right" valign="top"><a id="a7decbbcbc291e135c582d8d4572d030e"></a>
+<tr class="separator:ad89ce469ad5978798e5c518755b6d005"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b6a8445c09566ca796131333befeaa4"><td class="memItemLeft" align="right" valign="top"><a id="a4b6a8445c09566ca796131333befeaa4"></a>
 eBandWidth&#160;</td><td class="memItemRight" valign="bottom"><b>MacTxBwCurrent</b></td></tr>
-<tr class="separator:a7decbbcbc291e135c582d8d4572d030e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af30a7b85e780c3124992c153b7e3a723"><td class="memItemLeft" align="right" valign="top"><a id="af30a7b85e780c3124992c153b7e3a723"></a>
+<tr class="separator:a4b6a8445c09566ca796131333befeaa4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7ca1638efc2891332a2fe863ea1c8b3"><td class="memItemLeft" align="right" valign="top"><a id="af7ca1638efc2891332a2fe863ea1c8b3"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacTxFrequencyCurrent</b></td></tr>
-<tr class="separator:af30a7b85e780c3124992c153b7e3a723"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acdce2a7f94bdee727802bffcce706920"><td class="memItemLeft" align="right" valign="top"><a id="acdce2a7f94bdee727802bffcce706920"></a>
+<tr class="separator:af7ca1638efc2891332a2fe863ea1c8b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64f1c2eaa197dc30eb86d13560aabb32"><td class="memItemLeft" align="right" valign="top"><a id="a64f1c2eaa197dc30eb86d13560aabb32"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacRx1FrequencyCurrent</b></td></tr>
-<tr class="separator:acdce2a7f94bdee727802bffcce706920"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a963cae307bc11126f18c230ba79b482e"><td class="memItemLeft" align="right" valign="top"><a id="a963cae307bc11126f18c230ba79b482e"></a>
+<tr class="separator:a64f1c2eaa197dc30eb86d13560aabb32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f5c5940cbc0181dc85138b609200c93"><td class="memItemLeft" align="right" valign="top"><a id="a7f5c5940cbc0181dc85138b609200c93"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacRx1SfCurrent</b></td></tr>
-<tr class="separator:a963cae307bc11126f18c230ba79b482e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66e149f9aaaf4998713365122149461a"><td class="memItemLeft" align="right" valign="top"><a id="a66e149f9aaaf4998713365122149461a"></a>
+<tr class="separator:a7f5c5940cbc0181dc85138b609200c93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a9873a1e1bde19470d537abf936e30c"><td class="memItemLeft" align="right" valign="top"><a id="a8a9873a1e1bde19470d537abf936e30c"></a>
 eBandWidth&#160;</td><td class="memItemRight" valign="bottom"><b>MacRx1BwCurrent</b></td></tr>
-<tr class="separator:a66e149f9aaaf4998713365122149461a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a036259b968350978aa6751fa75b91141"><td class="memItemLeft" align="right" valign="top"><a id="a036259b968350978aa6751fa75b91141"></a>
+<tr class="separator:a8a9873a1e1bde19470d537abf936e30c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a513daf6bfa05b4f3bac7b9c8184f41cd"><td class="memItemLeft" align="right" valign="top"><a id="a513daf6bfa05b4f3bac7b9c8184f41cd"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>MacRx2SfCurrent</b></td></tr>
-<tr class="separator:a036259b968350978aa6751fa75b91141"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9614c5bbd481bd693616e3aedab07b16"><td class="memItemLeft" align="right" valign="top"><a id="a9614c5bbd481bd693616e3aedab07b16"></a>
+<tr class="separator:a513daf6bfa05b4f3bac7b9c8184f41cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46ef5fbb867c21b657be7071a6413923"><td class="memItemLeft" align="right" valign="top"><a id="a46ef5fbb867c21b657be7071a6413923"></a>
 eBandWidth&#160;</td><td class="memItemRight" valign="bottom"><b>MacRx2BwCurrent</b></td></tr>
-<tr class="separator:a9614c5bbd481bd693616e3aedab07b16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a46ef5fbb867c21b657be7071a6413923"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>MinimouseSrc/<a class="el" href="_mac_layer_8h_source.html">MacLayer.h</a></li>
 <li>MinimouseSrc/MacLayer.cpp</li>
+<li>MinimouseSrc/TimerIsrRoutine.cpp</li>
 </ul>
 </div><!-- contents -->
-</div><!-- doc-content -->
 <!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="navelem"><a class="el" href="class_lora_wan_container.html">LoraWanContainer</a></li>
-    <li class="footer">Generated by
-    <a href="http://www.doxygen.org/index.html">
-    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.14 </li>
-  </ul>
-</div>
+<hr class="footer"/><address class="footer"><small>
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.14
+</small></address>
 </body>
 </html>

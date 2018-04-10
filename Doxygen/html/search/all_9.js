@@ -1,4 +1,8 @@
 var searchData=
 [
-  ['newjoin',['NewJoin',['../class_lora_wan_objet.html#a0990e9e3bee90958077355ec6b75e89a',1,'LoraWanObjet']]]
+  ['sbackupflash',['sBackUpFlash',['../structs_back_up_flash.html',1,'']]],
+  ['sendpayload',['SendPayload',['../class_lora_wan_object.html#af5ed07270b8db6c03b6afeb9265fd2c1',1,'LoraWanObject']]],
+  ['setdataratestrategy',['SetDataRateStrategy',['../class_lora_wan_object.html#abcb65e077d41cd395030e7679d8c4e3c',1,'LoraWanObject']]],
+  ['setotadevice',['SetOtaDevice',['../class_lora_wan_object.html#a0a8c97531cab1e5610e54f9c1c416185',1,'LoraWanObject']]],
+  ['slorawankeys',['sLoRaWanKeys',['../structs_lo_ra_wan_keys.html',1,'']]]
 ];

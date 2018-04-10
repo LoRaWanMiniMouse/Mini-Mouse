@@ -1,11 +1,10 @@
 var searchData=
 [
-  ['get_5fflash_5fsize',['get_flash_size',['../class_flash.html#af6dba74feb242e266aa05ab32d830700',1,'Flash']]],
-  ['get_5fflash_5fstart',['get_flash_start',['../class_flash.html#ade26fa83aa29d165c7a6d22aff9424b3',1,'Flash']]],
-  ['getdevaddr',['GetDevAddr',['../class_lora_wan_objet.html#a8991ff9555f325cdc9a2f9c85c979c1f',1,'LoraWanObjet']]],
-  ['getlorawanprocessstate',['GetLorawanProcessState',['../class_lora_wan_objet.html#ae527d6b7e2ca090b203cea26a385454d',1,'LoraWanObjet']]],
-  ['getnextdatarate',['GetNextDataRate',['../class_lora_wan_objet.html#a06c167b4d22df09b2116118b3c340e47',1,'LoraWanObjet']]],
-  ['getnextmaxpayloadlength',['GetNextMaxPayloadLength',['../class_lora_wan_objet.html#a16ec865a50fe68c0ca5ed9afeb22c902',1,'LoraWanObjet']]],
-  ['getnextpower',['GetNextPower',['../class_lora_wan_objet.html#a24c07b617e56859b0636d9bf7d2bd687',1,'LoraWanObjet']]],
-  ['getradiostate',['GetRadioState',['../class_lora_wan_objet.html#abf1cab7a379a8b7e4022a4586cb49ddb',1,'LoraWanObjet']]]
+  ['getdevaddr',['GetDevAddr',['../class_lora_wan_object.html#ac6cb84ba9ccb3197382280abc72d453c',1,'LoraWanObject']]],
+  ['getisotadevice',['GetIsOtaDevice',['../class_lora_wan_object.html#a15850f3c7c700edaed5f780d34bff4a8',1,'LoraWanObject']]],
+  ['getlorawanprocessstate',['GetLorawanProcessState',['../class_lora_wan_object.html#add21dc9bc142938b0b37f958f6874100',1,'LoraWanObject']]],
+  ['getnextdatarate',['GetNextDataRate',['../class_lora_wan_object.html#a4e9211e749e9d12bc6a044a7381efcb8',1,'LoraWanObject']]],
+  ['getnextmaxpayloadlength',['GetNextMaxPayloadLength',['../class_lora_wan_object.html#a5a43bf270bf1b0b3642d7989d8746023',1,'LoraWanObject']]],
+  ['getnextpower',['GetNextPower',['../class_lora_wan_object.html#ac833ad6ffd937e093709f6fc309e2276',1,'LoraWanObject']]],
+  ['getradiostate',['GetRadioState',['../class_lora_wan_object.html#a3f4c1635a946635fdffa4af569ce5f27',1,'LoraWanObject']]]
 ];

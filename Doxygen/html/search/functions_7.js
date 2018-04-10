@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['receivepayload',['ReceivePayload',['../class_lora_wan_objet.html#a2929d68879df432b0c44642327f2c926',1,'LoraWanObjet']]],
-  ['restorecontext',['RestoreContext',['../class_flash.html#aab891fa4e7fc49c77eca31752835b03a',1,'Flash::RestoreContext()'],['../class_lora_wan_objet.html#a1875acf1a56bf8bf3827068831add8f4',1,'LoraWanObjet::RestoreContext()']]]
+  ['sendpayload',['SendPayload',['../class_lora_wan_object.html#af5ed07270b8db6c03b6afeb9265fd2c1',1,'LoraWanObject']]],
+  ['setdataratestrategy',['SetDataRateStrategy',['../class_lora_wan_object.html#abcb65e077d41cd395030e7679d8c4e3c',1,'LoraWanObject']]],
+  ['setotadevice',['SetOtaDevice',['../class_lora_wan_object.html#a0a8c97531cab1e5610e54f9c1c416185',1,'LoraWanObject']]]
 ];

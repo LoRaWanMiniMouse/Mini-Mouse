@@ -5,18 +5,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MiniMouse: RadioContainer Class Reference</title>
+<title>MM stack: RadioContainer&lt; R &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
-<link href="navtree.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="resize.js"></script>
-<script type="text/javascript" src="navtreedata.js"></script>
-<script type="text/javascript" src="navtree.js"></script>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
-  $(document).ready(initResizable);
-/* @license-end */</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -29,8 +21,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">MiniMouse
-   &#160;<span id="projectnumber">V0.0.1</span>
+   <div id="projectname">MM stack
    </div>
   </td>
  </tr>
@@ -54,23 +45,6 @@ $(function() {
 });
 /* @license-end */</script>
 <div id="main-nav"></div>
-</div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
-  <div id="nav-tree">
-    <div id="nav-tree-contents">
-      <div id="nav-sync" class="sync"></div>
-    </div>
-  </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
-       class="ui-resizable-handle">
-  </div>
-</div>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
-$(document).ready(function(){initNavTree('class_radio_container.html','');});
-/* @license-end */
-</script>
-<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -85,99 +59,103 @@ $(document).ready(function(){initNavTree('class_radio_container.html','');});
 </iframe>
 </div>
 
+</div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="class_radio_container-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">RadioContainer Class Reference</div>  </div>
+<div class="title">RadioContainer&lt; R &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aeb40d1f8fadfced93c83f0c02a7a25f0"><td class="memItemLeft" align="right" valign="top"><a id="aeb40d1f8fadfced93c83f0c02a7a25f0"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>RadioContainerInit</b> (void)</td></tr>
-<tr class="separator:aeb40d1f8fadfced93c83f0c02a7a25f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4998a3b5177a01158021f24dac4e0687"><td class="memItemLeft" align="right" valign="top"><a id="a4998a3b5177a01158021f24dac4e0687"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Send</b> (eModulationType MacTxModulationCurrent, uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, uint32_t TxBwMac, uint16_t TxPayloadSizeMac)</td></tr>
-<tr class="separator:a4998a3b5177a01158021f24dac4e0687"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39e6d619a7b879de5dd59158c07b8f7e"><td class="memItemLeft" align="right" valign="top"><a id="a39e6d619a7b879de5dd59158c07b8f7e"></a>
+<tr class="memitem:acba7b3f419573dc72a58e000072b1d15"><td class="memItemLeft" align="right" valign="top"><a id="acba7b3f419573dc72a58e000072b1d15"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RadioContainer</b> (R *RadioUser)</td></tr>
+<tr class="separator:acba7b3f419573dc72a58e000072b1d15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefcc86fb08cd1857cf6dcd8ba1bd7c90"><td class="memItemLeft" align="right" valign="top"><a id="aefcc86fb08cd1857cf6dcd8ba1bd7c90"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Send</b> (eModulationType MacTxModulationCurrent, uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, eBandWidth TxBwMac, uint16_t TxPayloadSizeMac)</td></tr>
+<tr class="separator:aefcc86fb08cd1857cf6dcd8ba1bd7c90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a7e676f1735ea1f67898d6e3014ded1"><td class="memItemLeft" align="right" valign="top"><a id="a9a7e676f1735ea1f67898d6e3014ded1"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Receive</b> (void)</td></tr>
-<tr class="separator:a39e6d619a7b879de5dd59158c07b8f7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aced9d0826f450bb395acf66a2fd37cd3"><td class="memItemLeft" align="right" valign="top"><a id="aced9d0826f450bb395acf66a2fd37cd3"></a>
+<tr class="separator:a9a7e676f1735ea1f67898d6e3014ded1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ea6769301a5aaa8e33e22562e024619"><td class="memItemLeft" align="right" valign="top"><a id="a4ea6769301a5aaa8e33e22562e024619"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>IsrRadio</b> (void)</td></tr>
-<tr class="separator:aced9d0826f450bb395acf66a2fd37cd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14682f5f2deb7f2239dbba297dc8e1f9"><td class="memItemLeft" align="right" valign="top"><a id="a14682f5f2deb7f2239dbba297dc8e1f9"></a>
+<tr class="separator:a4ea6769301a5aaa8e33e22562e024619"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4ae2d79a43dca2bdf0900cc2e3aac5c"><td class="memItemLeft" align="right" valign="top"><a id="ab4ae2d79a43dca2bdf0900cc2e3aac5c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>AttachIsr</b> (void)</td></tr>
-<tr class="separator:a14682f5f2deb7f2239dbba297dc8e1f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa48fff727fbc4a1e19500bbe0c980d25"><td class="memItemLeft" align="right" valign="top"><a id="aa48fff727fbc4a1e19500bbe0c980d25"></a>
+<tr class="separator:ab4ae2d79a43dca2bdf0900cc2e3aac5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8819af2363c07fc158989c57a45e5e48"><td class="memItemLeft" align="right" valign="top"><a id="a8819af2363c07fc158989c57a45e5e48"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>DetachIsr</b> (void)</td></tr>
-<tr class="separator:aa48fff727fbc4a1e19500bbe0c980d25"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a5c72be077c4a328be99ea0a10eda9c"><td class="memItemLeft" align="right" valign="top"><a id="a9a5c72be077c4a328be99ea0a10eda9c"></a>
+<tr class="separator:a8819af2363c07fc158989c57a45e5e48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ffe014538d877752663a6f747247554"><td class="memItemLeft" align="right" valign="top"><a id="a3ffe014538d877752663a6f747247554"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>GetRadioState</b> (void)</td></tr>
-<tr class="separator:a9a5c72be077c4a328be99ea0a10eda9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b0f6ace871e8046abb2c4f399c5896f"><td class="memItemLeft" align="right" valign="top"><a id="a4b0f6ace871e8046abb2c4f399c5896f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetRxConfig</b> (eModulationType RxModulation, uint32_t RxFrequencyMac, uint8_t RxSfMac, uint32_t RxBwMac)</td></tr>
-<tr class="separator:a4b0f6ace871e8046abb2c4f399c5896f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc0eaeb8f3f8baf719b43de63a288623"><td class="memItemLeft" align="right" valign="top"><a id="adc0eaeb8f3f8baf719b43de63a288623"></a>
+<tr class="separator:a3ffe014538d877752663a6f747247554"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ca1eae7a18c37aefa507b59ad1bcbef"><td class="memItemLeft" align="right" valign="top"><a id="a2ca1eae7a18c37aefa507b59ad1bcbef"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetRxConfig</b> (eModulationType RxModulation, uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac, uint32_t RxWindowMs)</td></tr>
+<tr class="separator:a2ca1eae7a18c37aefa507b59ad1bcbef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59cf65c721a176fdd0cf2d0039a18242"><td class="memItemLeft" align="right" valign="top"><a id="a59cf65c721a176fdd0cf2d0039a18242"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>GetTxFrequency</b> (void)</td></tr>
-<tr class="separator:adc0eaeb8f3f8baf719b43de63a288623"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a59cf65c721a176fdd0cf2d0039a18242"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:aee3f22da0a590492007fc1cfdb101860"><td class="memItemLeft" align="right" valign="top"><a id="aee3f22da0a590492007fc1cfdb101860"></a>
-SX1276MB1xAS&#160;</td><td class="memItemRight" valign="bottom"><b>Radio</b></td></tr>
-<tr class="separator:aee3f22da0a590492007fc1cfdb101860"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6301a81d674d80cfc2dbe5f4a6a2cd60"><td class="memItemLeft" align="right" valign="top"><a id="a6301a81d674d80cfc2dbe5f4a6a2cd60"></a>
+<tr class="memitem:a30b5b1397632040096b08e56e2ec1d47"><td class="memItemLeft" align="right" valign="top"><a id="a30b5b1397632040096b08e56e2ec1d47"></a>
+R *&#160;</td><td class="memItemRight" valign="bottom"><b>Radio</b></td></tr>
+<tr class="separator:a30b5b1397632040096b08e56e2ec1d47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad91ae082ac2890e7b71546c4b7efb5ba"><td class="memItemLeft" align="right" valign="top"><a id="ad91ae082ac2890e7b71546c4b7efb5ba"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>TxPhyPayload</b> [MAX_TX_PAYLOAD_SIZE]</td></tr>
-<tr class="separator:a6301a81d674d80cfc2dbe5f4a6a2cd60"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad6c70e6f348f99b91670be7d343def94"><td class="memItemLeft" align="right" valign="top"><a id="ad6c70e6f348f99b91670be7d343def94"></a>
+<tr class="separator:ad91ae082ac2890e7b71546c4b7efb5ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a100c2c3e3d71652fca93d8ee0a5ecc9c"><td class="memItemLeft" align="right" valign="top"><a id="a100c2c3e3d71652fca93d8ee0a5ecc9c"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>RxPhyPayload</b> [MAX_TX_PAYLOAD_SIZE]</td></tr>
-<tr class="separator:ad6c70e6f348f99b91670be7d343def94"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2843cb949527c2a154c8cc3127ce9087"><td class="memItemLeft" align="right" valign="top"><a id="a2843cb949527c2a154c8cc3127ce9087"></a>
-uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>RxPhyPayloadSize</b></td></tr>
-<tr class="separator:a2843cb949527c2a154c8cc3127ce9087"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adcf2940f07471f396652a58053c99643"><td class="memItemLeft" align="right" valign="top"><a id="adcf2940f07471f396652a58053c99643"></a>
+<tr class="separator:a100c2c3e3d71652fca93d8ee0a5ecc9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b84534ef69df6313c3c7cf9edcb234d"><td class="memItemLeft" align="right" valign="top"><a id="a2b84534ef69df6313c3c7cf9edcb234d"></a>
+uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>RxPhyPayloadSize</b></td></tr>
+<tr class="separator:a2b84534ef69df6313c3c7cf9edcb234d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8814f4b3203f8f9fac24e77291f41dd3"><td class="memItemLeft" align="right" valign="top"><a id="a8814f4b3203f8f9fac24e77291f41dd3"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>RxPhyPayloadSnr</b></td></tr>
-<tr class="separator:adcf2940f07471f396652a58053c99643"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a574af5574c26cdb407963d4dba51c8cd"><td class="memItemLeft" align="right" valign="top"><a id="a574af5574c26cdb407963d4dba51c8cd"></a>
+<tr class="separator:a8814f4b3203f8f9fac24e77291f41dd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a198c252436c6a365cb07d9d073d9d50d"><td class="memItemLeft" align="right" valign="top"><a id="a198c252436c6a365cb07d9d073d9d50d"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>RxPhyPayloadRssi</b></td></tr>
-<tr class="separator:a574af5574c26cdb407963d4dba51c8cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae0294ee6328878f6b3b67618156d8388"><td class="memItemLeft" align="right" valign="top"><a id="ae0294ee6328878f6b3b67618156d8388"></a>
+<tr class="separator:a198c252436c6a365cb07d9d073d9d50d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb44acd5f52b34e0a1ffaa3a1dec0bbd"><td class="memItemLeft" align="right" valign="top"><a id="abb44acd5f52b34e0a1ffaa3a1dec0bbd"></a>
 uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>TxPayloadSize</b></td></tr>
-<tr class="separator:ae0294ee6328878f6b3b67618156d8388"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad870a491555334877c6408e042311d0d"><td class="memItemLeft" align="right" valign="top"><a id="ad870a491555334877c6408e042311d0d"></a>
+<tr class="separator:abb44acd5f52b34e0a1ffaa3a1dec0bbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fce662f22e5d0beaf3b25df353c0bae"><td class="memItemLeft" align="right" valign="top"><a id="a3fce662f22e5d0beaf3b25df353c0bae"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>DevAddrIsr</b></td></tr>
-<tr class="separator:ad870a491555334877c6408e042311d0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4a59205ad4e7176f68f2039e17c5d573"><td class="memItemLeft" align="right" valign="top"><a id="a4a59205ad4e7176f68f2039e17c5d573"></a>
+<tr class="separator:a3fce662f22e5d0beaf3b25df353c0bae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbb1e0ef33a7fdeeb2e27b54a4808220"><td class="memItemLeft" align="right" valign="top"><a id="adbb1e0ef33a7fdeeb2e27b54a4808220"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>RegIrqFlag</b></td></tr>
-<tr class="separator:a4a59205ad4e7176f68f2039e17c5d573"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a82bb5845275c841dad9b05cbe7ddf447"><td class="memItemLeft" align="right" valign="top"><a id="a82bb5845275c841dad9b05cbe7ddf447"></a>
+<tr class="separator:adbb1e0ef33a7fdeeb2e27b54a4808220"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c19319bc32e8f18dc42b70f852cd24e"><td class="memItemLeft" align="right" valign="top"><a id="a4c19319bc32e8f18dc42b70f852cd24e"></a>
 eJoinStatus&#160;</td><td class="memItemRight" valign="bottom"><b>JoinedStatus</b></td></tr>
-<tr class="separator:a82bb5845275c841dad9b05cbe7ddf447"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a28fcf18c912fad0545a870fa6ea576c3"><td class="memItemLeft" align="right" valign="top"><a id="a28fcf18c912fad0545a870fa6ea576c3"></a>
+<tr class="separator:a4c19319bc32e8f18dc42b70f852cd24e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaeabc6b1b8012038246bc14e1da1462f"><td class="memItemLeft" align="right" valign="top"><a id="aaeabc6b1b8012038246bc14e1da1462f"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>StateRadioProcess</b></td></tr>
-<tr class="separator:a28fcf18c912fad0545a870fa6ea576c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5305c6fd044b6b5ac2ba1e568145ab67"><td class="memItemLeft" align="right" valign="top"><a id="a5305c6fd044b6b5ac2ba1e568145ab67"></a>
+<tr class="separator:aaeabc6b1b8012038246bc14e1da1462f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82ecd21f7fb6701a66037821c6175e44"><td class="memItemLeft" align="right" valign="top"><a id="a82ecd21f7fb6701a66037821c6175e44"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>TimestampRtcIsr</b></td></tr>
-<tr class="separator:a5305c6fd044b6b5ac2ba1e568145ab67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a82ecd21f7fb6701a66037821c6175e44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a087adc0271190a23c893774d1a9f9dc0"><td class="memItemLeft" align="right" valign="top"><a id="a087adc0271190a23c893774d1a9f9dc0"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>LastTimeRxWindowsMs</b></td></tr>
+<tr class="separator:a087adc0271190a23c893774d1a9f9dc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26d15cb55aa6f8b4f0bb977f3c4a4b38"><td class="memItemLeft" align="right" valign="top"><a id="a26d15cb55aa6f8b4f0bb977f3c4a4b38"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>SymbolDuration</b></td></tr>
+<tr class="separator:a26d15cb55aa6f8b4f0bb977f3c4a4b38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>MinimouseSrc/<a class="el" href="_phy_layer_8h_source.html">PhyLayer.h</a></li>
 <li>MinimouseSrc/PhyLayer.cpp</li>
+<li>MinimouseSrc/RadioIsrRoutine.cpp</li>
 </ul>
 </div><!-- contents -->
-</div><!-- doc-content -->
 <!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="navelem"><a class="el" href="class_radio_container.html">RadioContainer</a></li>
-    <li class="footer">Generated by
-    <a href="http://www.doxygen.org/index.html">
-    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.14 </li>
-  </ul>
-</div>
+<hr class="footer"/><address class="footer"><small>
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.14
+</small></address>
 </body>
 </html>

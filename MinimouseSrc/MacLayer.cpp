@@ -15,12 +15,12 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #include "MacLayer.h"
 #include "LoRaMacCrypto.h"
 #include "LoraWanProcess.h"
-#include "ApiTimers.h"
 #include "Define.h"
 #include "utilities.h"
 #include "PhyLayer.h"
-#include "ApiFlash.h"
+#include "ApiMcu.h"
 #include "UserDefine.h"
+
 /*************************************************/
 /*                     Constructors              */
 /*@note have to check init values                */
@@ -126,7 +126,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureTimerForRx ( eRxWinType type ) {
     uint32_t tCurrentMillisec;
     uint32_t tAlarmMillisec;
-    tCurrentMillisec =  RtcGetTimeMs( );
+    tCurrentMillisec =  mcu.RtcGetTimeMs( );
 
     if (type == RX1) {
         RegionSetRxConfig ( RX1 );
@@ -242,9 +242,9 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateMac
         RetryJoinCpt ++ ; // reset when join ok
   //@notereview      safe join time sf7 rojoutaer case 10000
         if ( RetryJoinCpt < MAX_RETRY_JOIN_DUTY_CYCLE_1000 ) {
-            RtcNextTimeJoinSecond = RtcGetTimeSecond( ) + ( ( TIMEONAIR_JOIN_SF7_MS << ( MacTxSfCurrent - 7 ) ) )/10 ; //@note 1/100 duty cycle fix
+            RtcNextTimeJoinSecond = mcu.RtcGetTimeSecond( ) + ( ( TIMEONAIR_JOIN_SF7_MS << ( MacTxSfCurrent - 7 ) ) )/10 ; //@note 1/100 duty cycle fix
         } else {
-            RtcNextTimeJoinSecond = RtcGetTimeSecond( ) + ( ( TIMEONAIR_JOIN_SF7_MS << ( MacTxSfCurrent - 7 ) ) )/1 ; //@note 1/1000 duty cycle fix
+            RtcNextTimeJoinSecond = mcu.RtcGetTimeSecond( ) + ( ( TIMEONAIR_JOIN_SF7_MS << ( MacTxSfCurrent - 7 ) ) )/1 ; //@note 1/1000 duty cycle fix
         }
     }
     if ( ( AdrAckCnt >= AdrAckLimit) &&  ( AdrAckCnt < ( AdrAckLimit + AdrAckDelay ) ) ) {
@@ -849,7 +849,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SaveInFla
     Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
     BackUpFlash.CrcLow  = crcLow;
     BackUpFlash.CrcHigh = crcHigh;
-    gFlash.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
+    mcu.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
     wait_ms( 25 );    
 }
 
@@ -881,14 +881,14 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetBadCrc
     Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
     BackUpFlash.CrcLow  = crcLow + 1; // bad crc
     BackUpFlash.CrcHigh = crcHigh + 1;
-    gFlash.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
+    mcu.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
     wait_ms( 25 );    
 }
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LoadFromFlash ( ) {
     uint32_t crcLow;
     uint32_t crcHigh;
-    gFlash.RestoreContext((uint8_t *)(&BackUpFlash), UserFlashAdress, sizeof(sBackUpFlash));
+    mcu.RestoreContext((uint8_t *)(&BackUpFlash), UserFlashAdress, sizeof(sBackUpFlash));
     Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash)-8 , &crcLow, &crcHigh );    
     if (( crcLow == BackUpFlash.CrcLow ) &&  ( crcHigh == BackUpFlash.CrcHigh ) ) { // explicit else = factory reset => the default value inside the constructor
         BackUpFlash.FcntUp            +=  FLASH_UPDATE_PERIOD; //@note automatic increment
@@ -919,7 +919,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LoadFromF
         Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
         BackUpFlash.CrcLow  = crcLow;
         BackUpFlash.CrcHigh = crcHigh;
-        gFlash.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );    
+        mcu.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );    
         DEBUG_PRINTF ("\n MacTxDataRate = %d ", MacTxDataRate ) ;
         DEBUG_PRINTF ("\n MacTxPower = %d ", MacTxPower ) ;
         DEBUG_PRINTF ("\n MacChMask = 0x%x ", MacChMask ) ;
@@ -981,9 +981,9 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::PrintMacC
 /************************************************************************************/
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetAlarm (uint32_t alarmInMs, eRxWinType type ) {
     if ( type == RX1 ) {
-        LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL, R>::CallbackIsrTimerRx1,this, alarmInMs);
+        mcu.StartTimerMsecond( &LoraWanContainer<NBCHANNEL, R>::CallbackIsrTimerRx1,this, alarmInMs);
     } else {
-        LowPowerTimerLora.StartTimerMsecond( &LoraWanContainer<NBCHANNEL, R>::CallbackIsrTimerRx2,this, alarmInMs);
+        mcu.StartTimerMsecond( &LoraWanContainer<NBCHANNEL, R>::CallbackIsrTimerRx2,this, alarmInMs);
     }
 }
 

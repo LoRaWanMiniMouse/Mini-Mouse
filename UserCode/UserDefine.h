@@ -24,7 +24,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 /*                         Application     dependant                            */
 /********************************************************************************/
 #define DEBUG_TRACE    1      // set to 1 to activate debug traces
-#define LOW_POWER_MODE 0      // set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
+#define LOW_POWER_MODE 1      // set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 
 #define SERIAL_TX       USBTX
 #define SERIAL_RX       USBRX

@@ -16,9 +16,9 @@ License           : Revised BSD License, see LICENSE.TXT file include in the pro
 Maintainer        : Fabien Holin (SEMTECH)
 */
 #include "LoraWanProcess.h"
-#include "ApiTimers.h"
 #include "utilities.h"
 #include "Define.h"
+#include "ApiMcu.h"
 #if DEBUG_TRACE == 1
     Serial pcf( SERIAL_TX, SERIAL_RX );
 #endif
@@ -30,7 +30,7 @@ template <template <class R> class T, class RADIOTYPE>
 LoraWanObject<T,RADIOTYPE>::LoraWanObject( sLoRaWanKeys LoRaWanKeys, RADIOTYPE * RadioUser,uint32_t FlashAdress ):packet(  LoRaWanKeys, RadioUser,FlashAdress ) {
     StateLoraWanProcess=LWPSTATE_IDLE;
     packet.MajorBits= LORAWANR1;
-    FailSafeTimestamp = RtcGetTimeSecond( );
+    FailSafeTimestamp = mcu.RtcGetTimeSecond( );
 }; 
 template <template <class R> class T, class RADIOTYPE> 
 LoraWanObject <T,RADIOTYPE> ::~LoraWanObject() {
@@ -49,12 +49,12 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
 
     *AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE;
     #if LOW_POWER_MODE == 1
-    if ( ( IsJoined ( ) == NOT_JOINED ) && ( RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
-        DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
+    if ( ( IsJoined ( ) == NOT_JOINED ) && ( mcu.RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
+        DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",mcu.RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
         StateLoraWanProcess = LWPSTATE_IDLE ;
     }        
     #endif
-    if ( ( RtcGetTimeSecond( ) - FailSafeTimestamp ) > 120 ) {
+    if ( ( mcu.RtcGetTimeSecond( ) - FailSafeTimestamp ) > 120 ) {
         RadioReset ( ) ;
         StateLoraWanProcess = LWPSTATE_ERROR ;
         DEBUG_MSG ( "ERROR : FAILSAFE EVENT OCCUR \n");
@@ -173,7 +173,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
             *AvailableRxPacket = packet.AvailableRxPacketForUser;
             if ( ( packet.IsFrameToSend == NWKFRAME_TOSEND ) || ( packet.IsFrameToSend == USRFRAME_TORETRANSMIT) ) {// @note ack send during the next tx|| ( packet.IsFrameToSend == USERACK_TOSEND ) ) {
                 packet.IsFrameToSend = NOFRAME_TOSEND;
-                RtcTargetTimer = RtcGetTimeSecond( ) + randr( 2, 6 ); 
+                RtcTargetTimer = mcu.RtcGetTimeSecond( ) + randr( 2, 6 ); 
                 StateLoraWanProcess = LWPSTATE_TXWAIT;
             } else {
                 RadioReset ( ) ; 
@@ -186,7 +186,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     /************************************************************************************/
         case LWPSTATE_TXWAIT:
             DEBUG_MSG(".");
-            if ( RtcGetTimeSecond( ) > RtcTargetTimer) {
+            if ( mcu.RtcGetTimeSecond( ) > RtcTargetTimer) {
                 StateLoraWanProcess = LWPSTATE_SEND; //@note the frame have already been prepare in Upadate Mac Layer
             }
             break;
@@ -216,7 +216,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::Join ( void ) {
         DEBUG_MSG( " ERROR : APB DEVICE CAN'T PROCCED A JOIN REQUEST\n" );
         return ( LWPSTATE_ERROR );
     }
-    FailSafeTimestamp = RtcGetTimeSecond( ) ;
+    FailSafeTimestamp = mcu.RtcGetTimeSecond( ) ;
     packet.Phy.JoinedStatus = NOT_JOINED;
     packet.MacNbTransCpt = packet.MacNbTrans = 1;
     packet.RegionSetDataRateDistribution( JOIN_DR_DISTRIBUTION ); 
@@ -252,7 +252,7 @@ void LoraWanObject <T,RADIOTYPE> ::NewJoin ( void ) {
 template <template <class R> class T, class RADIOTYPE> 
 eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType ) {
     eStatusLoRaWan status;
-    FailSafeTimestamp = RtcGetTimeSecond( ) ;
+    FailSafeTimestamp = mcu.RtcGetTimeSecond( ) ;
     packet.RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region )
     status = packet.RegionMaxPayloadSize ( sizeIn );
     if ( status == ERRORLORAWAN ) {

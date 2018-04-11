@@ -17,7 +17,6 @@ Maintainer        : Fabien Holin (SEMTECH)
 */
 
 #include "PhyLayer.h"
-#include "ApiTimers.h"
 #include "Define.h"
 #include "MacLayer.h"
 

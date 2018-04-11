@@ -20,7 +20,6 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "sx1276Regs-LoRa.h"
 #include "MacLayer.h"
 #include "LoraWanProcess.h"
-#include "ApiTimers.h"
 #include "Define.h"
 #include "UserDefine.h"
 

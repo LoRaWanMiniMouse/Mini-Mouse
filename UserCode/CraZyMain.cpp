@@ -19,12 +19,10 @@
 //Maintainer        : Fabien Holin (SEMTECH)
 //*/
 //#include "mbed.h"
-//#include "ApiFlash.h"
+//#include "ApiMcu.h"
 //#include "LoraMacDataStoreInFlash.h"
 //#include "LoraWanProcess.h"
 //#include "Define.h"
-//#include "rtc_api.h"
-//#include "ApiTimers.h"
 //#include "utilities.h"
 //#include "UserDefine.h"
 //#include "appli.h"
@@ -39,7 +37,7 @@
 // */
 //MMInterruptIn RadioGlobalIt        ( TX_RX_IT ) ;
 //MMInterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
-
+//McuSTM32L4 mcu ;
 
 ///*!
 // * \brief   Parameters of the LoraWanKeys structure. 
@@ -76,10 +74,10 @@
 //    /*!
 //    * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
 //    */
-//    RtcInit ( );
-//    WakeUpInit ( );
-//    WatchDogStart ( );
-//    LowPowerTimerLora.LowPowerTimerLoRaInit();
+//    mcu.InitMcu ( );
+//    mcu.RtcInit ( );
+//    mcu.WatchDogStart ( );
+//    mcu.LowPowerTimerLoRaInit();
 //#if DEBUG_TRACE == 1
 //    pcf.baud( 115200 );
 //#endif    
@@ -107,8 +105,8 @@
 //    * \brief Restore the LoraWan Context
 //    */
 //    wait(2);
-////    Lp.FactoryReset ();
-////    Lp2.FactoryReset ();
+//    //Lp.FactoryReset ();
+//    //Lp2.FactoryReset ();
 //    Lp.RestoreContext  ( );
 //    Lp2.RestoreContext ( );
 //    while(1) {
@@ -138,8 +136,8 @@
 
 //        while ( LpState != LWPSTATE_IDLE ){
 //            LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-//            GotoSleepMSecond ( 100 );
-//            WatchDogRelease ( );
+//            mcu.GotoSleepMSecond ( 100 );
+//            mcu.WatchDogRelease ( );
 //        }
 //        if ( LpState == LWPSTATE_ERROR ) {
 //        // user application have to save all the need
@@ -158,7 +156,7 @@
 //         * \brief Send a ¨Packet every 5 seconds in case of join 
 //         *        Send a packet every AppTimeSleeping seconds in normal mode
 //         */
-//            GotoSleepSecond ( 1 );
+//            mcu.GotoSleepSecond ( 1 );
 
 ///*!
 //* \brief 
@@ -167,10 +165,9 @@
 //*    to attach callback (void) UserIsr (void) on It TX done set : call RadioGlobalIt.rise( &UserIsr ); // attach ISR
 //*    Don't forget to "detach" it . On this example it is done inside the function UserIsr with : RadioGlobalIt.rise( NULL );
 //*/        
-//        
 //        RadioGlobalIt.rise( &UserIsr ); // attach ISR
 //        RadioUser.SendLora( UserPayload, 13, 10, BW500, 868000000, 11 ); // send a buffer of 13 bytes , SF = 10, BW = 500 , freq = 868 MHz, Power = 11 dbm
-//        GotoSleepSecond ( 1 );
+//        mcu.GotoSleepSecond ( 1 );
 ///*!
 //* \brief 
 //*  In this example the payload is sent over two different lorawan networks
@@ -198,8 +195,8 @@
 
 //        while ( Lp2State != LWPSTATE_IDLE ){
 //            Lp2State = Lp2.LoraWanProcess( &AvailableRxPacket );
-//            GotoSleepMSecond ( 100 );
-//            WatchDogRelease ( );
+//            mcu.GotoSleepMSecond ( 100 );
+//            mcu.WatchDogRelease ( );
 //        }
 //        if ( LpState == LWPSTATE_ERROR ) {
 //        // user application have to save all the need
@@ -219,9 +216,9 @@
 //         *        Send a packet every AppTimeSleeping seconds in normal mode
 //         */
 //        if ( Lp.IsJoined ( ) == NOT_JOINED ) {
-//            GotoSleepSecond(5);
+//            mcu.GotoSleepSecond(5);
 //        } else {
-//            GotoSleepSecond ( AppTimeSleeping );
+//            mcu.GotoSleepSecond ( AppTimeSleeping );
 //        }
 //        
 //    }

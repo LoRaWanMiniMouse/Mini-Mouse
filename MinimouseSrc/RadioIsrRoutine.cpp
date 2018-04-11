@@ -16,8 +16,8 @@ License           : Revised BSD License, see LICENSE.TXT file include in the pro
 Maintainer        : Fabien Holin (SEMTECH)
 */
 #include "PhyLayer.h"
-#include "ApiTimers.h"
 #include "Define.h"
+#include "ApiMcu.h"
 template class RadioContainer<SX1276>;
 template class RadioContainer<SX126x>;
 template <class R> void RadioContainer <R>::IsrRadio( void ) {
@@ -30,7 +30,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
         Radio->Sleep ( false );
         if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
             RegIrqFlag = BAD_PACKET_IRQ_FLAG ; // this case is exactly the same than the case of rx timeout
-            tCurrentMillisec =  RtcGetTimeMs( );
+            tCurrentMillisec =  mcu.RtcGetTimeMs( );
             uint32_t timeoutMs = LastTimeRxWindowsMs - tCurrentMillisec ;
             if ( (int)( LastTimeRxWindowsMs - tCurrentMillisec - 5 * SymbolDuration ) > 0 ) {
                 if ( RxMod == LORA ) {
@@ -50,7 +50,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     //Radio.Sleep ( );
     switch ( StateRadioProcess ) { 
         case RADIOSTATE_TXON :
-            TimestampRtcIsr = RtcGetTimeMs ( ); //@info Timestamp only on txdone it
+            TimestampRtcIsr = mcu.RtcGetTimeMs ( ); //@info Timestamp only on txdone it
             StateRadioProcess = RADIOSTATE_TXFINISHED;
             break;
         

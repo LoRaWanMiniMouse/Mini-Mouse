@@ -25,7 +25,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     uint32_t tCurrentMillisec;
     RegIrqFlag = Radio->GetIrqFlags( );
     Radio->ClearIrqFlags( ); 
-    if ( RegIrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {//@ note (important for phy ) remove all IT mask in config send or rx and check if regirqflag = rxdone + header crc valid 
+    if ( RegIrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {
         status = DumpRxPayloadAndMetadata ( );
         Radio->Sleep ( false );
         if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
@@ -47,7 +47,6 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
         Radio->Sleep ( false );
     }
 
-    //Radio.Sleep ( );
     switch ( StateRadioProcess ) { 
         case RADIOSTATE_TXON :
             TimestampRtcIsr = mcu.RtcGetTimeMs ( ); //@info Timestamp only on txdone it

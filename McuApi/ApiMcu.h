@@ -8,7 +8,7 @@
  |_|  |_|_|_| |_|_|_| |_| |_|\___/ \__,_|___/\___| 
                                                    
                                                    
-Description       : Flash Api.  
+Description       : Mcu Api.  
 
 
 License           : Revised BSD License, see LICENSE.TXT file include in the project
@@ -26,6 +26,13 @@ class McuXX {
 public :    
      McuXX ( );
     ~McuXX ( );
+     /** Int Mcu .  
+     * 
+     *  This method configure the mcu such as clock, gpio etc ...
+     * 
+     *  @param        void
+     *  @return       void
+     */ 
     void InitMcu ( void );
 
 /******************************************************************************/

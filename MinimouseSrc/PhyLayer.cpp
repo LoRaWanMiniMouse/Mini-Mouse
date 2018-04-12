@@ -61,11 +61,11 @@ template <class R> void RadioContainer <R>::DetachIsr ( void ) {
  
 
 template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, eBandWidth TxBwMac, uint16_t TxPayloadSizeMac ) { //@note could/should be merge with tx config
-    TxFrequency   = TxFrequencyMac; 
-    TxPower       = TxPowerMac;
-    TxSf          = TxSfMac;
-    TxBw          = TxBwMac;
-    TxPayloadSize    = TxPayloadSizeMac ;
+    TxFrequency       = TxFrequencyMac; 
+    TxPower           = TxPowerMac;
+    TxSf              = TxSfMac;
+    TxBw              = TxBwMac;
+    TxPayloadSize     = TxPayloadSizeMac ;
     StateRadioProcess = RADIOSTATE_TXON;
     Radio->Reset( ); 
     if ( TxModulation == LORA ) {

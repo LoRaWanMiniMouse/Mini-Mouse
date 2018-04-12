@@ -36,22 +36,22 @@ template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContain
     memcpy( appKey, LoRaWanKeys.LoRaMacAppKey, 16 );
     memcpy( devEui, LoRaWanKeys.DevEui, 8 );
     memcpy( appEui, LoRaWanKeys.AppEui, 8 );
-    otaDevice     = LoRaWanKeys.OtaDevice;
-    FcntUp        = 0;
-    FcntDwn       = 0;
-    DevAddr       = LoRaWanKeys.LoRaDevAddr ;
-    AdrAckCnt     = 0;
-    AdrAckReq     = 0;
-    MacNbTrans    = 1;
-    IsFrameToSend = NOFRAME_TOSEND;
+    otaDevice             = LoRaWanKeys.OtaDevice;
+    FcntUp                = 0;
+    FcntDwn               = 0;
+    DevAddr               = LoRaWanKeys.LoRaDevAddr ;
+    AdrAckCnt             = 0;
+    AdrAckReq             = 0;
+    MacNbTrans            = 1;
+    IsFrameToSend         = NOFRAME_TOSEND;
     RtcNextTimeJoinSecond = 0;
-    RetryJoinCpt = 0 ;
-    FoptsTxLength = 0;
-    FoptsTxLengthCurrent = 0;
-    FoptsTxLengthSticky  = 0;
-    FirstDwn = true;
-    Phy.JoinedStatus = ( otaDevice == APB_DEVICE ) ? JOINED : NOT_JOINED;
-    UserFlashAdress = FlashAdress;
+    RetryJoinCpt          = 0 ;
+    FoptsTxLength         = 0;
+    FoptsTxLengthCurrent  = 0;
+    FoptsTxLengthSticky   = 0;
+    FirstDwn              = true;
+    Phy.JoinedStatus      = ( otaDevice == APB_DEVICE ) ? JOINED : NOT_JOINED;
+    UserFlashAdress       = FlashAdress;
 }; 
 
 template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::~LoraWanContainer( ) {
@@ -74,7 +74,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::BuildTxLo
         DEBUG_PRINTF ( " ERROR FOPTS TOO LONG =  %d \n", FoptsTxLengthCurrent );
         FoptsTxLengthCurrent = 0;
     }
-    Fctrl = 0;  // @todo in V1.0 Adr isn't manage and ack is done by an empty packet
+    Fctrl = 0;  
     Fctrl = ( AdrEnable << 7 ) + ( AdrAckReq << 6 ) + ( AckBitForTx << 5 ) + FoptsTxLengthCurrent;
     AckBitForTx = 0;
     SetMacHeader( );
@@ -98,7 +98,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::EncryptTx
 /************************************************************************************************************************************/
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioAndSend( void ) {
 
-    RegionGiveNextChannel ( );//@note have to be completed
+    RegionGiveNextChannel ( );  
     Phy.DevAddrIsr    = DevAddr ;  //@note copy of the mac devaddr in order to filter it in the radio isr routine.
     Phy.Send(MacTxModulationCurrent, MacTxFrequencyCurrent, MacTxPower, MacTxSfCurrent, MacTxBwCurrent, MacPayloadSize);
     AdrAckCnt ++ ; // increment adr counter each uplink frame;
@@ -190,7 +190,7 @@ template <int NBCHANNEL, class R> eRxPacketType LoraWanContainer<NBCHANNEL, R>::
             memcpy((uint8_t *)&micIn, &Phy.RxPhyPayload[MacRxPayloadSize], MICSIZE);
             status += LoRaMacCheckMic(&Phy.RxPhyPayload[0], MacRxPayloadSize, nwkSKey, DevAddr, FcntDownTmp, micIn ); // @note api discussion see at the end of this file
         }
-        if ( status == OKLORAWAN) { // @note check if it is possible to reduce the if  if  if
+        if ( status == OKLORAWAN) {     
             AdrAckCnt = 0 ; // reset adr counter , receive a valid frame.
             MacNbTransCpt = 1 ; // reset retransmission counter
             FoptsTxLengthSticky = 0 ; // reset the fopts of the sticky cmd receive a valide frame
@@ -240,7 +240,6 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateMac
     AdrAckDelay = RegionGetAdrAckDelay ( );
     if  ( Phy.JoinedStatus == NOT_JOINED ) {
         RetryJoinCpt ++ ; // reset when join ok
-  //@notereview      safe join time sf7 rojoutaer case 10000
         if ( RetryJoinCpt < MAX_RETRY_JOIN_DUTY_CYCLE_1000 ) {
             RtcNextTimeJoinSecond = mcu.RtcGetTimeSecond( ) + ( ( TIMEONAIR_JOIN_SF7_MS << ( MacTxSfCurrent - 7 ) ) )/10 ; //@note 1/100 duty cycle fix
         } else {
@@ -266,7 +265,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateMac
         MacNbTransCpt -- ;
     }
 
-    /*Store Context In ROM */
+    /*Store Context In EEPROM */
     if (( FcntUp % FLASH_UPDATE_PERIOD ) == 0 ){
         SaveInFlash ( );
     }
@@ -321,7 +320,7 @@ template <int NBCHANNEL, class R> eStatusLoRaWan LoraWanContainer<NBCHANNEL, R>:
         }
         CmdIdentifier = MacNwkPayload[NwkPayloadIndex];
         switch ( CmdIdentifier ) {
-            case LINK_CHECK_ANS :  //@note NOT YET IMPLEMENTED
+            case LINK_CHECK_ANS :  
                 LinkCheckParser( );
                 break;
             case LINK_ADR_REQ :
@@ -340,7 +339,7 @@ template <int NBCHANNEL, class R> eStatusLoRaWan LoraWanContainer<NBCHANNEL, R>:
                 SaveInFlash ( );            
                 break;
             case DEV_STATUS_REQ :
-                DevStatusParser( ); //@note  Done but margin have no sense tbimplemented
+                DevStatusParser( ); //@note  Done but margin have no sense tb implemented
                 break;
             case NEW_CHANNEL_REQ :
                 NewChannelParser( );
@@ -359,7 +358,6 @@ template <int NBCHANNEL, class R> eStatusLoRaWan LoraWanContainer<NBCHANNEL, R>:
                 break;
         }
     }
-    //PrintMacContext ( );
     return ( status ); 
 }
 

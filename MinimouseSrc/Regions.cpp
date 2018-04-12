@@ -20,7 +20,6 @@ Maintainer        : Fabien Holin ( SEMTECH)
 
 /*************************************************/
 /*                     Constructors              */
-/*@note have to check init values                */
 /*************************************************/
 template class LoraRegionsEU<SX1276>;
 template class LoraRegionsEU<SX126x>;
@@ -51,15 +50,14 @@ template < class R > LoraRegionsEU<R>::LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys,
     this->MacTxPower           = TX_POWER;
     this->MacRx1DataRateOffset = 0;
     this->MacRx2DataRate       = RX2DR_INIT;
-    this->MacRx1Delay          = RECEIVE_DELAY1;// @note replace by default setting regions
-    this->MacTxDataRateAdr     = 0 ;//@note tbdN if adr active , before the first adrReq datarate = 0  
+    this->MacRx1Delay          = RECEIVE_DELAY1;
+    this->MacTxDataRateAdr     = 0 ;
     memset(DistriDataRateInit,0,8);
 }
 
 /***********************************************************************************************/
 /*                      Protected  Methods                                                     */
 /***********************************************************************************************/
-//@note Partionning Public/private not yet finalized
 
 
 /********************************************************************/
@@ -71,7 +69,7 @@ template < class R > LoraRegionsEU<R>::LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys,
 /********************************************************************/
 
 template < class R >void LoraRegionsEU<R>::RegionSetPower ( uint8_t PowerCmd ) {
-    //@note return error status ?
+
     uint8_t PowerTab [ 8 ] = { TX_POWER, TX_POWER-2, TX_POWER-4, TX_POWER-6, TX_POWER-8, TX_POWER-10, TX_POWER-12, TX_POWER-14 };
     if  ( PowerCmd > 7 ) {
             this->MacTxPower = 14 ;
@@ -112,13 +110,12 @@ template < class R >void LoraRegionsEU<R>::RegionGetCFList ( void ) {
 
 template < class R >eStatusChannel LoraRegionsEU<R>::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMask ) {
     eStatusChannel status = OKCHANNEL;
-    //@notereview modif tab uint8
     switch ( ChMaskCntl ) {
         case 0 :
-            UnwrappedChannelMask = UnwrappedChannelMask ^ ChMask; //@note for EU UnwrappedChannelMask is still on 16 bits 
+            UnwrappedChannelMask = UnwrappedChannelMask ^ ChMask; 
             for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i++) {
-                if ( ( ( ( UnwrappedChannelMask >> i) & 0x1 ) == 1 ) && ( this->MacTxFrequency[i] == 0) ) {  // test channel not defined
-                    status = ERROR_CHANNEL_MASK ;   //@note this status is used only for the last multiple link adr req
+                if ( ( ( ( UnwrappedChannelMask >> i) & 0x1 ) == 1 ) && ( this->MacTxFrequency[i] == 0) ) {  
+                    status = ERROR_CHANNEL_MASK ;   // this status is used only for the last multiple link adr req
                 }
             }
             break;

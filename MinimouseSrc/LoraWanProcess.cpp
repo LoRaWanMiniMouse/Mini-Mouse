@@ -97,13 +97,12 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
         case LWPSTATE_RX1:
             if ( GetRadioState( ) == RADIOSTATE_RX1FINISHED ) {
                 if ( GetRadioIrqFlag ( ) == RECEIVE_PACKET_IRQ_FLAG) {
-                    //@todo process downlink
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
                     DEBUG_MSG( " * Receive a downlink RX1 *\n " );
                     DEBUG_MSG( " **************************\n " );
                     StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK;
-                } else { // So rxtimeout case @note manage error case
+                } else { 
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
                     DEBUG_MSG( " *      RX1 Timeout       *\n " );

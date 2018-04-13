@@ -62,6 +62,7 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
                         uint32_t   channel,
                         int8_t     power
                     ) {
+    Channel = channel;
     Reset( );
     CalibrateImage( );
     SetOpMode( RF_OPMODE_SLEEP );
@@ -83,6 +84,7 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
 
 // @TODO: SetRxBoosted ?
 void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs ) {
+    Channel = channel;
 /* Configure Lora Rx */
     SetOpMode( RF_OPMODE_SLEEP );
     SetStandby( );
@@ -147,7 +149,12 @@ void SX1276::CalibrateImage( void )
 
 
 void SX1276::GetPacketStatusLora( int16_t *pktRssi, int16_t *snr, int16_t *signalRssi ) {
-
+    
+    *snr = ((int16_t) Read( REG_LR_PKTSNRVALUE ))/4; 
+    int16_t rssi = (int16_t) Read( REG_LR_PKTRSSIVALUE );
+    rssi += rssi / 16; 
+    rssi = (Channel > RF_MID_BAND_THRESH ) ? RSSI_OFFSET_HF + rssi : RSSI_OFFSET_LF + rssi;
+    *signalRssi = (*snr < 0 ) ? *snr + rssi : rssi;
 }
 
 
@@ -235,7 +242,7 @@ void SX1276::SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTime
     Write( REG_LR_DETECTOPTIMIZE,( Read( REG_LR_DETECTOPTIMIZE ) & RFLR_DETECTIONOPTIMIZE_MASK ) | RFLR_DETECTIONOPTIMIZE_SF7_TO_SF12 );
     Write( REG_LR_DETECTIONTHRESHOLD, RFLR_DETECTIONTHRESH_SF7_TO_SF12 );
 
-    if( ( BW == 2 ) && ( RF_MID_BAND_THRESH ) )
+    if( ( BW == 2 ) && ( Channel > RF_MID_BAND_THRESH ) )
     {
         // ERRATA 2.1 - Sensitivity Optimization with a 500 kHz Bandwidth 
         Write( REG_LR_TEST36, 0x02 );

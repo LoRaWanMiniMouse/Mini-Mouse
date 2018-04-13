@@ -47,7 +47,7 @@ public:
     void SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power);
     void RxLora( eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
     void Sleep(  bool coldStart );
-
+    uint32_t Channel;
 private:
 
     /*!

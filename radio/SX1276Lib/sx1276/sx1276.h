@@ -19,7 +19,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define SX1276_H
 #include <stdint.h>
 #include "Define.h"
-#include "ApiSpi.h"
+#include "ApiMcu.h"
 /*!
  * SX1276 definitions
  */
@@ -38,7 +38,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 
 class SX1276  {
 public:
-    SX1276( PinName mosi, PinName miso, PinName sclk, PinName nss, PinName reset );
+    SX1276( PinName nss, PinName reset );
     ~SX1276(){};
     void ClearIrqFlags( void );
     uint8_t GetIrqFlags( void );
@@ -48,7 +48,7 @@ public:
     void RxLora( eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
     void Sleep(  bool coldStart );
 
-private:
+//private:
 
     /*!
     * \brief Calibrates the Image rejection depending of the frequency
@@ -149,9 +149,8 @@ private:
     * \return Read byte
     */
     void Write( uint8_t addr, uint8_t data );
-    MMspi spi;
-    MMDigitalOut pinCS;
-    MMDigitalOut pinReset;
+    PinName pinCS;
+    PinName pinReset;
 };
 #endif
 

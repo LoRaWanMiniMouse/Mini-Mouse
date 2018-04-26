@@ -8,9 +8,8 @@
  |_|  |_|_|_| |_|_|_| |_| |_|\___/ \__,_|___/\___| 
                                                    
                                                    
-Description       : Flash Api.  
-
-
+Description       : STM32L4 MCU .   
+                    Example of MCU class implementation based on stm32L4 + mbed library
 License           : Revised BSD License, see LICENSE.TXT file include in the project
 
 Maintainer        : Fabien Holin (SEMTECH)
@@ -19,14 +18,56 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define McuSTM32L4_H
 #include "mbed.h"
 #include "Define.h"
-
-
+#include "stm32l4xx_ll_utils.h"
 
 class McuSTM32L4 {
 public :    
-     McuSTM32L4 ( );
+     McuSTM32L4 ( PinName mosi, PinName miso, PinName sclk );
     ~McuSTM32L4 ( );
     void InitMcu ( void );
+/******************************************************************************/
+/*                                Mcu Spi Api                                 */
+/******************************************************************************/
+    /** Create a SPI master connected to the specified pins
+    *
+    *  @param mosi SPI Master Out, Slave In pin
+    *  @param miso SPI Master In, Slave Out pin
+    *  @param sclk SPI Clock pin
+    */
+    void InitSpi ( );
+    /** Write to the SPI Slave and return the response
+    *
+    *  @param value Data to be sent to the SPI slave
+    *
+    *  @returns
+    *    Response from the SPI slave
+    */
+    uint8_t SpiWrite(int value);
+    
+    /** Configure the data transmission format
+    *
+    *  @param bits Number of bits per SPI frame (4 - 16)
+    *  @param mode Clock polarity and phase mode (0 - 3)
+    *
+    * @code
+    * mode | POL PHA
+    * -----+--------
+    *   0  |  0   0
+    *   1  |  0   1
+    *   2  |  1   0
+    *   3  |  1   1
+    * @endcode
+    */
+    void Spiformat(int bits, int mode = 0) { } ;
+        
+    /** Set the spi bus clock frequency
+    *
+    *  @param hz SCLK frequency in hz (default = 1MHz)
+    */
+    void SetSpiFrequency(int hz = 1000000) { } ;
+    PinName McuMosi;
+    PinName McuMiso;
+    PinName McuSclk;
 
 /******************************************************************************/
 /*                                Mcu Flash Api                               */
@@ -148,6 +189,26 @@ public :
     * \remark    Do Not Modify 
     */
     void timerISR              ( void ) { Func(obj); };
+
+/******************************************************************************/
+/*                           Mcu Gpio Api                                     */
+/******************************************************************************/
+    void SetValueDigitalOutPin ( PinName Pin, int Value );
+    int  GetValueDigitalInPin  ( PinName Pin );
+    void AttachInterruptIn     (  void (* _Funcext) (void *) , void * _objext) ;
+    void AttachInterruptIn     (  void (* _Funcext) ( void ) ) { _UserFuncext = _Funcext; userIt = 1 ; };
+    void DetachInterruptIn     (  void (* _Funcext) ( void ) ) { userIt = 0 ; };
+    /*!
+    *  ExtISR
+    * \remark    Do Not Modify 
+    */
+    void ExtISR                ( void ) { if (userIt == 0 ) { Funcext(objext); } else { _UserFuncext ();}; };
+    
+/******************************************************************************/
+/*                           Mcu wait                                         */
+/******************************************************************************/   
+//    void mwait   (uint16_t value) { wait ( value );};
+//    void mwait_ms (uint32_t value){ wait_ms ( value );};
 private :
     /*!
     *  Low power timer
@@ -156,6 +217,11 @@ private :
     static void DoNothing (void *) { };
     void (* Func) (void *);
     void * obj;
+    void (* Funcext) (void *);
+    void * objext;
+    void (* _UserFuncext) ( void );
+    int userIt;
+
 };
 
 #endif

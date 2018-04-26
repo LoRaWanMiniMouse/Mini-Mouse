@@ -19,8 +19,9 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define SX126X_H
 #include <stdint.h>
 #include "Define.h"
-#include "ApiSpi.h"
-#include "ApiGpio.h"
+#include "ApiMcu.h"
+#include "stdio.h"
+#include "math.h"
 /*!
  * \brief Provides the frequency of the chip running on the radio and the frequency step
  * \remark These defines are used for computing the frequency divider to set the RF frequency
@@ -33,7 +34,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 
 class SX126x {
     public:
-        SX126x(  PinName Busy, PinName mosi, PinName miso, PinName sclk, PinName nss, PinName reset );
+        SX126x( PinName Busy, PinName nss, PinName reset );
         ~SX126x(){}; 
         
        void ClearIrqFlags( void );
@@ -133,11 +134,10 @@ class SX126x {
         static const uint8_t LoraSyncword[2];
         
         // Attributes
-        MMspi spi;
         radioModes_t radioMode;
-        MMDigitalIn pinBusy;
-        MMDigitalOut pinReset;
-        MMDigitalOut pinCS;
+        PinName pinBusy;
+        PinName pinReset;
+        PinName pinCS;
         
         /*!
          * \brief Calibrates the Image rejection depending of the frequency
@@ -314,7 +314,7 @@ class SX126x {
         /*!
          * \brief Blocking loop to wait while the Busy pin in high
          */
-        void WaitOnBusy( void );
+        void waitOnBusy( void );
         
         /*!
          * \brief Write data to the buffer holding the payload in the radio

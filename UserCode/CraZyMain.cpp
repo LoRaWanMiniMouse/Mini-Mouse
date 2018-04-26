@@ -18,7 +18,7 @@
 
 //Maintainer        : Fabien Holin (SEMTECH)
 //*/
-//#include "mbed.h"
+
 //#include "ApiMcu.h"
 //#include "LoraMacDataStoreInFlash.h"
 //#include "LoraWanProcess.h"
@@ -35,9 +35,8 @@
 ///*!
 // * \brief   Radio Interrupt Pin declarations
 // */
-//MMInterruptIn RadioGlobalIt        ( TX_RX_IT ) ;
-//MMInterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
-//McuSTM32L4 mcu ;
+
+//McuXX<McuSTM32L4> mcu ( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ) ;
 
 ///*!
 // * \brief   Parameters of the LoraWanKeys structure. 
@@ -51,12 +50,11 @@
 //uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
 //uint32_t LoRaDevAddrInit     = 0x26011918;
 
-////SX126x  RadioUser( LORA_BUSY, LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET );
-//SX1276  RadioUser( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET );
+
+//SX1276  RadioUser( LORA_CS, LORA_RESET );
 ///* ISR routine specific of this example */
 //void UserIsr ( void ) {
 //    DEBUG_MSG( "\n\n\n Demo : use radio both in lorawan mode and in specific user mode \n receive isr radio \n\n\n" );
-//    RadioGlobalIt.rise( NULL );// Release ISR 
 //}
 
 //int main( ) {
@@ -109,6 +107,8 @@
 //    //Lp2.FactoryReset ();
 //    Lp.RestoreContext  ( );
 //    Lp2.RestoreContext ( );
+
+
 //    while(1) {
 //        
 //        DEBUG_MSG("\n\n\n\n Lp1 OBJECT\n");
@@ -165,7 +165,7 @@
 //*    to attach callback (void) UserIsr (void) on It TX done set : call RadioGlobalIt.rise( &UserIsr ); // attach ISR
 //*    Don't forget to "detach" it . On this example it is done inside the function UserIsr with : RadioGlobalIt.rise( NULL );
 //*/        
-//        RadioGlobalIt.rise( &UserIsr ); // attach ISR
+//        mcu.AttachInterruptIn( &UserIsr ); // attach ISR
 //        RadioUser.SendLora( UserPayload, 13, 10, BW500, 868000000, 11 ); // send a buffer of 13 bytes , SF = 10, BW = 500 , freq = 868 MHz, Power = 11 dbm
 //        mcu.GotoSleepSecond ( 1 );
 ///*!

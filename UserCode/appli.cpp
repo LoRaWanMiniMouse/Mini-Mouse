@@ -24,7 +24,7 @@
 Maintainer        : Fabien Holin (SEMTECH)
 */
 
-#include "mbed.h"
+
 #include "appli.h"
 #include "Define.h"
 #include "LoraMacDataStoreInFlash.h"
@@ -33,42 +33,19 @@ Maintainer        : Fabien Holin (SEMTECH)
 payload ppayload;
 int8_t TempMeas (void)
 {
-    wait_ms(100);
-    I2C i2c(D14, D15);
-    SHT21 sht(&i2c);
-    int8_t ttemp=(int8_t)(sht.readTemp());
-    return(ttemp);
+
+    return(20);
 }
 
 uint8_t HydroMeas (void)
 {
-    uint8_t humidity;
-    I2C i2c(D14, D15);
-    SHT21 sht(&i2c);
-    wait_ms(1);
-    humidity=(uint8_t)(sht.readHumidity());
-    humidity = 94;
-    if ( (humidity > 0 ) && ( humidity < 100 )){
-        return(humidity);
-    } else {
-        return (100);
-    }
+    return (80);
 }
 
-AnalogIn Vbat_value(A2);
 uint8_t VbatMeas (void)
 {
-    float vbat=0;
-    for (int j =0; j<256; j++) {
-        vbat = vbat +Vbat_value.read();
-    }
-    vbat=vbat/256;
-    vbat=((vbat*7)-3); 
-    vbat=100*vbat;
-    if (vbat>100) {
-        vbat=100;
-    }
-    return((uint8_t)vbat);
+
+    return(95);
 }
 void PrepareFrame (uint8_t *Buffer) {
     ppayload.Temp       =  TempMeas  ();
@@ -95,115 +72,3 @@ void PrepareFrame (uint8_t *Buffer) {
 /*              SHT21 CLASS                                   */
 /**************************************************************/
 
-SHT21::SHT21(I2C *i2c) :
-_i2c(i2c)
-{
-}
-
-int SHT21::triggerTemp()
-{
-    return wr(SHT_TRIG_TEMP);
-}
- 
-int SHT21::requestTemp()
-{
-    int res;
-    int rx_bytes = 3;
-    char rx[3];
-    res = _i2c->read(SHT_I2C_ADDR,rx,rx_bytes);
-    unsigned short msb = (rx[0] << 8);
-    unsigned short lsb = (rx[1] << 0);
-    temperature = msb + lsb;
-    return res;
-}
- 
-float SHT21::readTemp()
-{
-    //First of all trigger the temperature reading
-    //process on the sensor
-    int trig = triggerTemp();
-    
-    if(trig != SHT_SUCCESS)
-    {
-        //if this has failed, exit function with specific error condition
-        return SHT_TRIG_FAIL;
-    }
-    
-    //else pause whilst sensor is measuring
-    //maximum measuring time is: 85ms
-    wait_ms(100);
-    
-    //Now request the temperature
-    if(requestTemp() != SHT_SUCCESS)
-    {
-        //if this has failed, exit function with specific error condition
-        return SHT_READ_FAIL;
-    }    
-    float realtemp;
-    realtemp = -46 + 175 * ( ((float) temperature) / 65536 );
-    return realtemp;
-} 
- 
-int SHT21::triggerRH()
-{
-    return wr(SHT_TRIG_RH);
-}
-
-int SHT21::requestRH()
-{
-    int res;
-    char rx[3];
-    res = _i2c->read(SHT_I2C_ADDR,rx,3);
-    humidity = (rx[0]<<8) + rx[1];
-    return res;
-}
- 
-float SHT21::readHumidity()
-{
-    //First of all trigger the temperature reading
-    //process on the sensor
-    if(triggerRH() != SHT_SUCCESS)
-    {
-        //if this has failed, exit function with specific error condition
-        return SHT_TRIG_FAIL;
-    }
-    
-    //else pause whilst sensor is measuring
-    //maximum measuring time is: 85ms
-    wait_ms(100);
-    
-    //Now request the temperature
-    if(requestRH() != SHT_SUCCESS)
-    {
-        //if this has failed, exit function with specific error condition
-        return SHT_READ_FAIL;
-    }
-    float realhum;
-    realhum = -6 + 125 * ( ((float) humidity) / 65536 );
-    return realhum;
-} 
- 
-int SHT21::reset()
-{
-    return wr(SHT_SOFT_RESET);
-}
-
-
-int SHT21::setPrecision(char precision)
-{
-    int res;
-    char command[2];
-    command[0] = SHT_WRITE_REG;
-    command[1] = precision;
-    res = _i2c->write(SHT_I2C_ADDR,command,2);
-    return res;
-}
-
-int SHT21::wr(int cmd)
-{
-    int res;
-    char command[1];
-    command[0] = cmd;
-    res = _i2c->write(SHT_I2C_ADDR,command,1);    
-    return res;
-}

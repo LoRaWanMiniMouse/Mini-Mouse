@@ -21,6 +21,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "MacLayer.h"
 #include "LoraWanProcess.h"
 #include "Define.h"
+#include "ApiMcu.h"
 #include "UserDefine.h"
 
 template class RadioContainer<SX1276>;
@@ -46,12 +47,10 @@ template <class R> RadioContainer<R>::~RadioContainer( ) {
 /*******************Isr Radio  ***************************************/
 template <class R> void RadioContainer <R>::AttachIsr ( void ) {
     
-     RadioGlobalIt.rise( callback ( this, &RadioContainer::IsrRadio ) );
-     RadioTimeOutGlobalIt.rise( callback ( this , &RadioContainer::IsrRadio ) );
+   //  RadioGlobalIt.rise( callback ( this, &RadioContainer::IsrRadio ) );
+    mcu.AttachInterruptIn( &RadioContainer< R >::CallbackIsrRadio,this);
 }
 template <class R> void RadioContainer <R>::DetachIsr ( void ) {
-     RadioGlobalIt.rise( NULL );
-     RadioTimeOutGlobalIt.rise( NULL );
 }
 
 /************************************************************************************************/

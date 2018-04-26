@@ -19,19 +19,18 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #include "SX126x.h"
 #include <string.h>
 #include "Define.h"
-#include "mbed.h"
+
 
 /************************************************************************************************
  *                                 Public  Methods                                              *
  ************************************************************************************************/
 const uint8_t SX126x::LoraSyncword[2] = {0x34, 0x44};
 
-SX126x::SX126x( PinName Busy, PinName mosi, PinName miso, PinName sclk, PinName nss, PinName reset )
-      : spi( mosi, miso, sclk ),
+SX126x::SX126x( PinName Busy, PinName nss, PinName reset ):
         pinBusy( Busy ),
         pinReset( reset ),
         pinCS( nss ) {
-        pinCS = 1;
+        mcu.SetValueDigitalOutPin ( pinCS, 1);
 }
 
 void SX126x::ClearIrqFlags( void ) {
@@ -80,10 +79,12 @@ IrqFlags_t SX126x::GetIrqFlags( void ) {
 
 void SX126x::Reset( void ) {
     // Reset radio
-    pinReset = 0;
-    wait_us( 100 );
-    pinReset = 1;
-    wait_us( 200 );
+    mcu.SetValueDigitalOutPin ( pinReset, 0);
+    //wait_us( 100 );
+    wait_ms( 1 );
+    mcu.SetValueDigitalOutPin ( pinReset, 1);
+    //wait_us( 200 );
+    wait_ms( 1 );
     radioMode = AWAKE;
 }
 
@@ -185,12 +186,12 @@ void SX126x::CalibrateImage( uint32_t freq )
 void SX126x::CheckDeviceReady( void ) {
     // @TODO: drive antenna switch
     if ( radioMode != SLEEP ) {
-        WaitOnBusy( );
+        waitOnBusy( );
     } else {
         // Busy is HIGH in sleep mode, wake-up the device
-        pinCS = 0;
-        WaitOnBusy( );
-        pinCS = 1;
+        mcu.SetValueDigitalOutPin ( pinCS, 0 );
+        waitOnBusy( );
+        mcu.SetValueDigitalOutPin ( pinCS, 1 );
         radioMode = AWAKE;
     }
 }
@@ -214,17 +215,17 @@ void SX126x::GetRxBufferStatus( uint8_t *payloadSize, uint8_t *rxStartBufferPoin
 }
 
 void SX126x::ReadBuffer( uint8_t offset, uint8_t *payload, uint8_t payloadSize ) {
-    WaitOnBusy( );
+    waitOnBusy( );
     
-    pinCS = 0;
-    spi.write( READ_BUFFER );
-    spi.write( offset );
-    spi.write( 0 );
+    mcu.SetValueDigitalOutPin ( pinCS, 0 );
+    mcu.SpiWrite( READ_BUFFER );
+    mcu.SpiWrite( offset );
+    mcu.SpiWrite( 0 );
     for( uint8_t i = 0; i < payloadSize; i++ )
     {
-        payload[i] = spi.write( 0 );
+        payload[i] = mcu.SpiWrite( 0 );
     }
-    pinCS = 1;
+    mcu.SetValueDigitalOutPin ( pinCS, 1 );
 }
 
 uint8_t SX126x::ReadRegister( uint16_t address ) {
@@ -235,21 +236,21 @@ uint8_t SX126x::ReadRegister( uint16_t address ) {
 
 // @TODO: Consistant prototype size vs payloadSize...
 void SX126x::ReadRegisters( uint16_t address, uint8_t *buffer, uint16_t size ) {
-    // Wait on low busy
+    // wait on low busy
     CheckDeviceReady( );
     
     // Read registers
-    pinCS = 0;
-    spi.write( READ_REGISTER );
-    spi.write( ( address & 0xFF00 ) >> 8 );
-    spi.write( address & 0x00FF );
-    spi.write( 0 );
+    mcu.SetValueDigitalOutPin ( pinCS, 0 );
+    mcu.SpiWrite( READ_REGISTER );
+    mcu.SpiWrite( ( address & 0xFF00 ) >> 8 );
+    mcu.SpiWrite( address & 0x00FF );
+    mcu.SpiWrite( 0 );
     
     for( uint16_t i = 0; i < size; i++ ) {
-        buffer[i] = spi.write( 0 );
+        buffer[i] = mcu.SpiWrite( 0 );
     }
     
-    pinCS = 1;
+    mcu.SetValueDigitalOutPin ( pinCS, 1 );
 }
 
 
@@ -283,17 +284,17 @@ void SX126x::ClearIrqStatus( uint16_t irq ) {
 
 uint8_t SX126x::ReadCommand( OpCode_t command, uint8_t *buffer, uint16_t size ) {
     uint8_t status;
-    WaitOnBusy( );
+    waitOnBusy( );
     
-    pinCS = 0;
+    mcu.SetValueDigitalOutPin ( pinCS, 0 );
     // Send command
-    spi.write( ( uint8_t ) command );
-    status = spi.write( 0x00 );
+    mcu.SpiWrite( ( uint8_t ) command );
+    status = mcu.SpiWrite( 0x00 );
     // Read data
     for( uint16_t i = 0; i < size; i++ ) {
-         buffer[i] = spi.write( 0x00 );
+         buffer[i] = mcu.SpiWrite( 0x00 );
     }
-    pinCS = 1;
+    mcu.SetValueDigitalOutPin ( pinCS, 1 );
     
     return status;
 }
@@ -517,52 +518,52 @@ void SX126x::StopTimerOnPreamble( bool state ) {
     WriteCommand( STOP_TIMER_ON_PREAMBLE, &temp, 1 );
 }
 
-void SX126x::WaitOnBusy( void ) {
-    while( pinBusy == 1 ) { };
+void SX126x::waitOnBusy( void ) {
+    while( mcu.GetValueDigitalInPin ( pinBusy )  == 1 ) { };
 }
 
 void SX126x::WriteBuffer( uint8_t offset, uint8_t *buffer, uint8_t size ) {
-     // Wait on low busy
+     // wait on low busy
     CheckDeviceReady( );
     
     // Write buffers
-    pinCS = 0;
-    spi.write( WRITE_BUFFER );
-    spi.write(  offset );
+    mcu.SetValueDigitalOutPin ( pinCS, 0 );
+    mcu.SpiWrite( WRITE_BUFFER );
+    mcu.SpiWrite(  offset );
     for( uint16_t i = 0; i < size; i++ ) {
-        spi.write( buffer[i] );
+        mcu.SpiWrite( buffer[i] );
     }
-    pinCS = 1;
+    mcu.SetValueDigitalOutPin ( pinCS, 1);
 }
 
 
 void SX126x::WriteCommand( OpCode_t opCode, uint8_t *buffer, uint16_t size ) {
-    // Wait on low busy
+    // wait on low busy
     CheckDeviceReady( );
     
     // Send command
-    pinCS = 0;
-    spi.write( (uint8_t) opCode );
+    mcu.SetValueDigitalOutPin ( pinCS, 0 );
+    mcu.SpiWrite( (uint8_t) opCode );
     for( uint16_t i = 0; i < size; i++ ) {
-        spi.write( buffer[i] );
+        mcu.SpiWrite( buffer[i] );
     }
-    pinCS = 1;
+    mcu.SetValueDigitalOutPin ( pinCS, 1 );
 }
 
 void SX126x::WriteRegisters( uint16_t address, uint8_t *buffer, uint16_t size ) {
-    // Wait on low busy
+    // wait on low busy
     CheckDeviceReady( );
     
     // Write registers
-    pinCS = 0;
-    spi.write( WRITE_REGISTER );
-    spi.write( ( address & 0xFF00 ) >> 8 );
-    spi.write( address & 0x00FF );
+    mcu.SetValueDigitalOutPin ( pinCS, 0 );
+    mcu.SpiWrite( WRITE_REGISTER );
+    mcu.SpiWrite( ( address & 0xFF00 ) >> 8 );
+    mcu.SpiWrite( address & 0x00FF );
     
     for( uint16_t i = 0; i < size; i++ ) {
-       spi.write( buffer[i] );
+       mcu.SpiWrite( buffer[i] );
     }
     
-    pinCS = 1;
+    mcu.SetValueDigitalOutPin ( pinCS, 1 );
 }
 

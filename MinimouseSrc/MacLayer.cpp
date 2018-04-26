@@ -20,7 +20,8 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #include "PhyLayer.h"
 #include "ApiMcu.h"
 #include "UserDefine.h"
-
+#include "stdio.h"
+#include "math.h"
 /*************************************************/
 /*                     Constructors              */
 /*@note have to check init values                */
@@ -848,7 +849,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SaveInFla
     BackUpFlash.CrcLow  = crcLow;
     BackUpFlash.CrcHigh = crcHigh;
     mcu.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
-    wait_ms( 25 );    
+   wait_ms( 25 );    
 }
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetBadCrcInFlash ( ) {
@@ -880,7 +881,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetBadCrc
     BackUpFlash.CrcLow  = crcLow + 1; // bad crc
     BackUpFlash.CrcHigh = crcHigh + 1;
     mcu.StoreContext( &BackUpFlash, UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
-    wait_ms( 25 );    
+   wait_ms( 25 );    
 }
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LoadFromFlash ( ) {

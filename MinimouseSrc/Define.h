@@ -17,17 +17,16 @@ Maintainer        : Fabien Holin (SEMTECH)
 */
 #ifndef DEFINE_H
 #define DEFINE_H
-#include "mbed.h"
+#include "stdint.h"
 #include "UserDefine.h"
-#include "ApiSpi.h"
-#include "ApiGpio.h"
+
 /********************************************************************************/
 /*             The section behind haven't to be modified by user                */
 /********************************************************************************/
-extern MMInterruptIn RadioGlobalIt ;
-extern MMInterruptIn RadioTimeOutGlobalIt ;
+
 
 #if DEBUG_TRACE == 1
+#include "mbed.h"
 extern Serial pcf;
 #define DEBUG_MSG(str)               pcf.printf(str)
 //#define DEBUG_PRINTF(fmt, args...)   DEBUG_PRINTF("  %s:%d: "fmt, __FUNCTION__, __LINE__, args)
@@ -55,7 +54,7 @@ typedef enum LoraWan_Process_States {
     LWPSTATE_RX2 ,
     LWPSTATE_PROCESSDOWNLINK ,
     LWPSTATE_UPDATEMAC,
-    LWPSTATE_TXWAIT,    
+    LWPSTATE_TXwait,    
     LWPSTATE_ERROR
 } eLoraWan_Process_States;
 /********************************************************************************/

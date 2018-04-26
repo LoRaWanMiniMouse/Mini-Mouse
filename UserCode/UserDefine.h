@@ -24,11 +24,11 @@ Maintainer        : Fabien Holin (SEMTECH)
 /*                         Application     dependant                            */
 /********************************************************************************/
 #define DEBUG_TRACE    1      // set to 1 to activate debug traces
-#define LOW_POWER_MODE 1      // set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
-
-#define SERIAL_TX       USBTX
-#define SERIAL_RX       USBRX
-
+#define LOW_POWER_MODE 0     // set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
+#if DEBUG_TRACE == 1
+    #define SERIAL_TX       USBTX
+    #define SERIAL_RX       USBRX
+#endif
 
 /*SX126w BOARD specific */
 //#define LORA_SPI_MOSI   PA_7
@@ -50,8 +50,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define LORA_SPI_SCLK       D13
 #define LORA_CS             D10
 #define LORA_RESET          A0
-#define TX_RX_IT            D2     // Interrupt TX/RX Done
-#define RX_TIMEOUT_IT       D3     // Interrupt RX TIME OUT 
+#define TX_RX_IT            GPIO_PIN_10     // Interrupt TX/RX Done
+#define RX_TIMEOUT_IT       GPIO_PIN_3     // Interrupt RX TIME OUT 
 #define CRYSTAL_ERROR              56 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3² for a crystal error = 0.3%)
 #define BOARD_DELAY_RX_SETTING_MS  4  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
 #define PA_BOOST_CONNECTED         1 //  Set to 1 to select Pa_boost outpin pin on the sx127x 

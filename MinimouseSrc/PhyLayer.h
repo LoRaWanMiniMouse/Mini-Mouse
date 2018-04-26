@@ -31,6 +31,7 @@ public:
     void Send              (eModulationType MacTxModulationCurrent, uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, eBandWidth TxBwMac, uint16_t TxPayloadSizeMac );
     void Receive           ( void );
     void IsrRadio          ( void ); // Isr routine implemented in IsrRoutine.cpp file
+    static void CallbackIsrRadio (void * obj){(reinterpret_cast<RadioContainer< R >*>(obj))->IsrRadio();} ;
     void AttachIsr         ( void ) ;
     void DetachIsr         ( void ); 
     int GetRadioState      ( void );

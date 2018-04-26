@@ -15,9 +15,17 @@ License           : Revised BSD License, see LICENSE.TXT file include in the pro
 Maintainer        : Fabien Holin (SEMTECH)
 */
 #include "ClassSTM32L4.h"
-#include "mbed.h"
+#include "stdint.h"
 #include "ApiMcu.h"
+#include "stm32l4xx_hal.h"
 #define WATCH_DOG_PERIOD_RELEASE 30 // this period have to be lower than the Watch Dog period of 32 seconds
+#include "stm32l4xx_ll_spi.h"
+
+
+
+
+
+
 
 /********************************************************************/
 /*                           Flash local functions                  */
@@ -96,7 +104,7 @@ uint8_t EepromMcuGetDeviceAddr( void )
 
 
 /********************************************************************/
-/*                           Timer local functions                  */
+/*                         Wake Up local functions                  */
 /********************************************************************/
 static RTC_HandleTypeDef RtcHandle;
 
@@ -173,13 +181,29 @@ void LPTIM1_IRQHandler ( void ) {
 }
 
 
+
+/********************************************************************/
+/*                        Gpio Handler  functions                   */
+/********************************************************************/
+void  _IRQHANDLERPB3 ( void ){
+    HAL_GPIO_EXTI_IRQHandler(RX_TIMEOUT_IT);
+    mcu.ExtISR();
+}
+void  _IRQHANDLERPA10 ( void ){
+    HAL_GPIO_EXTI_IRQHandler(TX_RX_IT);
+    mcu.ExtISR();
+}
+
 /*************************************************************/
 /*           Mcu Object Definition Constructor               */
 /*************************************************************/
-McuSTM32L4::McuSTM32L4(){
+McuSTM32L4::McuSTM32L4(PinName mosi, PinName miso, PinName sclk )  {
     Func = DoNothing; // don't modify
     obj = NULL;       // don't modify
-}
+    McuMosi = mosi;   // don't modify
+    McuMiso = miso;   // don't modify
+    McuSclk = sclk;   // don't modify
+}     
 McuSTM32L4::~McuSTM32L4(){
       // to be completed by mcu providers
 } 
@@ -188,9 +212,114 @@ McuSTM32L4::~McuSTM32L4(){
 /*                  Mcu Init               */
 /*******************************************/
 void McuSTM32L4::InitMcu( void ) {
-    // Done with mbed
+    // system clk Done with mbed to be completed by mcu providers if mbed is removed
     WakeUpInit ( );
+    InitSpi ( );
+    GPIO_InitTypeDef GPIO_InitStruct;
+    /*Configure GPIO pin : PA10 : TX_RX_IT */
+    GPIO_InitStruct.Pin = GPIO_PIN_10;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+    /*Configure GPIO pin : PB3 : RX_TIMEOUT_IT*/
+    GPIO_InitStruct.Pin = GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* EXTI interrupt init*/
+    HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+    NVIC_SetVector(EXTI3_IRQn, (uint32_t)_IRQHANDLERPB3);
+    HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+    NVIC_SetVector(EXTI15_10_IRQn, (uint32_t)_IRQHANDLERPA10);
+    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+    
+
+    NVIC_ClearPendingIRQ(RTC_WKUP_IRQn);
+    NVIC_DisableIRQ(RTC_WKUP_IRQn);
+    NVIC_SetVector(RTC_WKUP_IRQn, (uint32_t)RTC_IRQHandlerWakeUp);
+    NVIC_EnableIRQ(RTC_WKUP_IRQn);
+
+}
+/******************************************************************************/
+/*                                Mcu Spi Api                                 */
+/******************************************************************************/
+    /** Create a SPI master connected to the specified pins
+    *
+    *  @param mosi SPI Master Out, Slave In pin
+    *  @param miso SPI Master In, Slave Out pin
+    *  @param sclk SPI Clock pin
+    */
+SPI_HandleTypeDef hspi1;
+void McuSTM32L4::InitSpi ( ){
+    SPI pspi( McuMosi, McuMiso, McuSclk );
+    
+/***************************************************************************/    
+/* following code give an example to how remove spi done with mbed library */
+/* In this example Pin configuration is fixed                              */
+/***************************************************************************/ 
+#if 0
+    GPIO_InitTypeDef GPIO_InitStruct;
+    __HAL_RCC_SPI1_CLK_ENABLE();
+    HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(SPI1_IRQn);
+    /**SPI1 GPIO Configuration    
+    PA5     ------> SPI1_SCK
+    PA6     ------> SPI1_MISO
+    PA7     ------> SPI1_MOSI 
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    hspi1.Instance = SPI1;
+    hspi1.Init.Mode = SPI_MODE_MASTER;
+    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+    hspi1.Init.NSS = SPI_NSS_SOFT;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+    hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi1.Init.CRCPolynomial = 7;
+    //hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+    //hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+    __HAL_SPI_DISABLE(&hspi1);
+    HAL_SPI_Init(&hspi1);
+    __HAL_SPI_ENABLE(&hspi1);
+#endif
+
+}
+    /** Write to the SPI Slave and return the response
+    *
+    *  @param value Data to be sent to the SPI slave
+    *
+    *  @returns
+    *    Response from the SPI slave
+    */
+uint8_t McuSTM32L4::SpiWrite(int value){
+    SPI pspi( McuMosi, McuMiso, McuSclk );
+    return ( pspi.write( value ) );
+/***************************************************************************/    
+/* following code give an example to how remove spi done with mbed library */
+/* In this example Pin configuration is static                             */
+/***************************************************************************/ 
+# if 0
+    uint8_t rxData = 0;
+    while( LL_SPI_IsActiveFlag_TXE ( SPI1 ) == 0  ){};
+    LL_SPI_TransmitData8 (SPI1, uint8_t (value&0xFF));
+    while( LL_SPI_IsActiveFlag_RXNE ( SPI1 ) == 0 ){};
+    rxData =  LL_SPI_ReceiveData8( SPI1 );
+    return (rxData);
+#endif
 }
 /******************************************************************************/
 /*                                Mcu Flash Api                               */
@@ -408,6 +537,8 @@ void McuSTM32L4::LowPowerTimerLoRaInit ( ) {
     NVIC_EnableIRQ(LPTIM1_IRQn);
     Func = DoNothing;
     obj = NULL;
+    //Initialize delay Systick timer for wait function
+    //TM_DELAY_Init();
 };
 /*!
  * LowPowerTimerLoRa AttachMsecond
@@ -426,3 +557,21 @@ void McuSTM32L4::StartTimerMsecond ( void (* _Func) (void *) , void * _obj, int 
     HAL_LPTIM_TimeOut_Start_IT(&hlptim1, 65535, DelayMs2tick); // MCU specific
 };
 
+/******************************************************************************/
+/*                           Mcu Gpio Api                                     */
+/******************************************************************************/
+void McuSTM32L4::SetValueDigitalOutPin ( PinName Pin, int Value ){
+    DigitalOut DigOutMbed ( Pin ) ;
+    DigOutMbed = Value;
+
+};
+int McuSTM32L4::GetValueDigitalInPin ( PinName Pin ){
+    DigitalIn DigInMbed ( Pin );
+    return ( DigInMbed );
+};
+
+void  McuSTM32L4::AttachInterruptIn       (  void (* _Funcext) (void *) , void * _objext) {
+    Funcext =  _Funcext ;
+    objext  = _objext;
+    userIt  = 0 ; 
+};

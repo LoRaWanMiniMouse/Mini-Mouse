@@ -35,9 +35,8 @@ struct sBackUpFlash BackUpFlash;
 /*!
  * \brief   Radio Interrupt Pin declarations
  */
-MMInterruptIn RadioGlobalIt        ( TX_RX_IT ) ;
-MMInterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
-McuSTM32L4 mcu ;
+
+McuXX<McuSTM32L4> mcu ( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ) ;
 
 /*!
  * \brief   Parameters of the LoraWanKeys structure. 
@@ -51,13 +50,8 @@ uint8_t AppEuiInit[]         = { 0x70, 0xb3, 0xd5, 0x7e, 0xf0, 0x00, 0x36, 0x12 
 uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0xbb };    
 uint32_t LoRaDevAddrInit     = 0x26011918;
 
-//SX126x  RadioUser( LORA_BUSY, LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET );
-SX1276  RadioUser( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET );
-/* ISR routine specific of this example */
-void UserIsr ( void ) {
-    DEBUG_MSG( "\n\n\n Demo : use radio both in lorawan mode and in specific user mode \n receive isr radio \n\n\n" );
-    RadioGlobalIt.rise( NULL );// Release ISR 
-}
+//SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET );
+SX1276  RadioUser( LORA_CS, LORA_RESET );
 
 int main( ) {
     int i;

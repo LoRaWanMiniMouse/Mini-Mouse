@@ -19,7 +19,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #include "sx1276.h"
 #include "Define.h"
 #include "UserDefine.h"
-#include "mbed.h"
+#include "stdint.h"
 #include "sx1276Regs-Fsk.h"
 #include "sx1276Regs-LoRa.h"
 
@@ -30,8 +30,8 @@ Maintainer        : Olivier Gimenez (SEMTECH)
  ************************************************************************************************/
 
 
-SX1276::SX1276( PinName mosi, PinName miso, PinName sclk, PinName nss, PinName reset) : spi( mosi, miso, sclk ) , pinCS( nss ), pinReset( reset ){
-      pinCS = 1;
+SX1276::SX1276( PinName nss, PinName reset) : pinCS( nss ), pinReset( reset ){
+    mcu.SetValueDigitalOutPin ( pinCS, 1);
 }
 
 void SX1276::ClearIrqFlags( void ) {
@@ -50,9 +50,9 @@ uint8_t SX1276::GetIrqFlags( void ) {
 }
 
 void SX1276::Reset( void ) {
-    pinReset = 0;
+    mcu.SetValueDigitalOutPin ( pinReset, 0);
     wait_ms( 1 );
-    pinReset = 1;
+    mcu.SetValueDigitalOutPin ( pinReset, 1);
     wait_ms( 6 );
 }
 
@@ -304,26 +304,26 @@ void SX1276::Write( uint8_t addr, uint8_t *buffer, uint8_t size )
 {
     uint8_t i;
 
-    pinCS = 0;
-    spi.write( addr | 0x80 );
+    mcu.SetValueDigitalOutPin ( pinCS,0);
+    mcu.SpiWrite( addr | 0x80 );
     for( i = 0; i < size; i++ )
     {
-        spi.write( buffer[i] );
+        mcu.SpiWrite( buffer[i] );
     }
-    pinCS = 1;
+    mcu.SetValueDigitalOutPin ( pinCS, 1);
 }
 
 void SX1276::Read( uint8_t addr, uint8_t *buffer, uint8_t size )
 {
     uint8_t i;
 
-    pinCS = 0;
-    spi.write( addr & 0x7F );
+    mcu.SetValueDigitalOutPin ( pinCS, 0);
+    mcu.SpiWrite( addr & 0x7F );
     for( i = 0; i < size; i++ )
     {
-        buffer[i] = spi.write( 0 );
+        buffer[i] = mcu.SpiWrite( 0 );
     }
-    pinCS = 1;
+    mcu.SetValueDigitalOutPin ( pinCS, 1);
 }
 void SX1276::Write( uint8_t addr, uint8_t data )
 {

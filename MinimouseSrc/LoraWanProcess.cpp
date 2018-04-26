@@ -173,7 +173,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
             if ( ( packet.IsFrameToSend == NWKFRAME_TOSEND ) || ( packet.IsFrameToSend == USRFRAME_TORETRANSMIT) ) {// @note ack send during the next tx|| ( packet.IsFrameToSend == USERACK_TOSEND ) ) {
                 packet.IsFrameToSend = NOFRAME_TOSEND;
                 RtcTargetTimer = mcu.RtcGetTimeSecond( ) + randr( 2, 6 ); 
-                StateLoraWanProcess = LWPSTATE_TXWAIT;
+                StateLoraWanProcess = LWPSTATE_TXwait;
             } else {
                 RadioReset ( ) ; 
                 StateLoraWanProcess = LWPSTATE_IDLE;
@@ -181,9 +181,9 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
             ValidRxPacket = NO_MORE_VALID_RX_PACKET;
             break;
     /************************************************************************************/
-    /*                              STATE TXWAIT MAC                                    */
+    /*                              STATE TXwait MAC                                    */
     /************************************************************************************/
-        case LWPSTATE_TXWAIT:
+        case LWPSTATE_TXwait:
             DEBUG_MSG(".");
             if ( mcu.RtcGetTimeSecond( ) > RtcTargetTimer) {
                 StateLoraWanProcess = LWPSTATE_SEND; //@note the frame have already been prepare in Upadate Mac Layer

@@ -30,9 +30,8 @@
 // * \brief   sBackUpFlash BackUpFlash The LoraWan parameters save into the flash memory for failsafe restauration.
 // */
 //struct sBackUpFlash BackUpFlash;
-//MMInterruptIn RadioGlobalIt        ( TX_RX_IT ) ;
-//MMInterruptIn RadioTimeOutGlobalIt ( RX_TIMEOUT_IT ); 
-//McuSTM32L4 mcu ;
+
+//McuXX<McuSTM32L4> mcu ( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ) ;
 
 ///*!
 // * \brief   Parameters of the LoraWanKeys structure. 
@@ -47,7 +46,7 @@
 //uint32_t LoRaDevAddrInit     = 0x26011918;
 
 //sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
-//SX1276  RadioUser( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET );
+//SX1276  RadioUser( LORA_CS, LORA_RESET );
 //int main( ) {
 //    int i;
 //    int StatusCertification = 0;

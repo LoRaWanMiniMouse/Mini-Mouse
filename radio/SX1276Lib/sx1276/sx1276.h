@@ -48,7 +48,9 @@ public:
     void RxLora( eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
     void Sleep(  bool coldStart );
 
-//private:
+    uint32_t Channel;
+private:
+
 
     /*!
     * \brief Calibrates the Image rejection depending of the frequency

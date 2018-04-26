@@ -25,10 +25,9 @@ Maintainer        : Fabien Holin (SEMTECH)
 /********************************************************************************/
 #define DEBUG_TRACE    1      // set to 1 to activate debug traces
 #define LOW_POWER_MODE 0     // set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
-#if DEBUG_TRACE == 1
-    #define SERIAL_TX       USBTX
-    #define SERIAL_RX       USBRX
-#endif
+#define SERIAL_TX       USBTX
+#define SERIAL_RX       USBRX
+
 
 /*SX126w BOARD specific */
 //#define LORA_SPI_MOSI   PA_7

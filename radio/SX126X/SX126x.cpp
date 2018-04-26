@@ -48,7 +48,6 @@ void SX126x::FetchPayload(
     
     GetRxBufferStatus( payloadSize, &offset );
     ReadBuffer( offset, payload, *payloadSize );
-    
     GetPacketStatusLora( NULL, snr, signalRssi );
                     }
 IrqFlags_t SX126x::GetIrqFlags( void ) {

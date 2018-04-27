@@ -26,11 +26,13 @@ Maintainer        : Olivier Gimenez (SEMTECH)
  ************************************************************************************************/
 const uint8_t SX126x::LoraSyncword[2] = {0x34, 0x44};
 
-SX126x::SX126x( PinName Busy, PinName nss, PinName reset ):
+SX126x::SX126x( PinName Busy, PinName nss, PinName reset, PinName Interrupt ):
+
         pinBusy( Busy ),
         pinReset( reset ),
         pinCS( nss ) {
         mcu.SetValueDigitalOutPin ( pinCS, 1);
+        mcu.Init_Irq ( Interrupt ) ;
 }
 
 void SX126x::ClearIrqFlags( void ) {

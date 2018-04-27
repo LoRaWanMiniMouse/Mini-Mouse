@@ -19,7 +19,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "ApiMcu.h"
 #include "stm32l4xx_hal.h"
 #define WATCH_DOG_PERIOD_RELEASE 30 // this period have to be lower than the Watch Dog period of 32 seconds
-#include "stm32l4xx_ll_spi.h"
+
 
 
 
@@ -185,14 +185,44 @@ void LPTIM1_IRQHandler ( void ) {
 /********************************************************************/
 /*                        Gpio Handler  functions                   */
 /********************************************************************/
-void  _IRQHANDLERPB3 ( void ){
-    HAL_GPIO_EXTI_IRQHandler(RX_TIMEOUT_IT);
+
+void  IrqHandlerRadio ( void ){
+    int pintmp = TX_RX_IT;
+    if ( pintmp < 15 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << pintmp) );
+    } else if ( pintmp < 31 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 16 )) );
+    } else if ( pintmp < 47 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 32 )) );
+    } else if ( pintmp < 63 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 48 )) );
+    } else if ( pintmp < 79 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 64 )) );
+    } else if ( pintmp < 95 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 80 )) );
+    } else if ( pintmp < 111 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 96 )) );
+    } 
+    pintmp = RX_TIMEOUT_IT;
+    if ( pintmp < 15 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << pintmp) );
+    } else if ( pintmp < 31 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 16 )) );
+    } else if ( pintmp < 47 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 32 )) );
+    } else if ( pintmp < 63 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 48 )) );
+    } else if ( pintmp < 79 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 64 )) );
+    } else if ( pintmp < 95 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 80 )) );
+    } else if ( pintmp < 111 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 96 )) );
+    } 
     mcu.ExtISR();
 }
-void  _IRQHANDLERPA10 ( void ){
-    HAL_GPIO_EXTI_IRQHandler(TX_RX_IT);
-    mcu.ExtISR();
-}
+
+    
 
 /*************************************************************/
 /*           Mcu Object Definition Constructor               */
@@ -213,37 +243,90 @@ McuSTM32L4::~McuSTM32L4(){
 /*******************************************/
 void McuSTM32L4::InitMcu( void ) {
     // system clk Done with mbed to be completed by mcu providers if mbed is removed
+
     WakeUpInit ( );
     InitSpi ( );
-    GPIO_InitTypeDef GPIO_InitStruct;
-    /*Configure GPIO pin : PA10 : TX_RX_IT */
-    GPIO_InitStruct.Pin = GPIO_PIN_10;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    /*Configure GPIO pin : PB3 : RX_TIMEOUT_IT*/
-    GPIO_InitStruct.Pin = GPIO_PIN_3;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    /* EXTI interrupt init*/
-    HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
-    NVIC_SetVector(EXTI3_IRQn, (uint32_t)_IRQHANDLERPB3);
-    HAL_NVIC_EnableIRQ(EXTI3_IRQn);
-
-    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
-    NVIC_SetVector(EXTI15_10_IRQn, (uint32_t)_IRQHANDLERPA10);
-    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-    
-
     NVIC_ClearPendingIRQ(RTC_WKUP_IRQn);
     NVIC_DisableIRQ(RTC_WKUP_IRQn);
     NVIC_SetVector(RTC_WKUP_IRQn, (uint32_t)RTC_IRQHandlerWakeUp);
     NVIC_EnableIRQ(RTC_WKUP_IRQn);
 
 }
+
+void  McuSTM32L4::Init_Irq ( PinName pin) {
+    IRQn_Type IrqNum; 
+    int pintmp;
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    if ( pin < 15 ) {
+        pintmp = pin;
+        GPIO_InitStruct.Pin = (1 << pintmp);
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    } else if ( pin < 31 ) {
+        pintmp = pin-16;
+        GPIO_InitStruct.Pin = (1 << pintmp);
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    } else if ( pin < 47 ) {
+        pintmp = pin-32;
+        GPIO_InitStruct.Pin = (1 << pintmp);
+        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    } else if ( pin < 63 ) {
+        pintmp = pin-48;
+        GPIO_InitStruct.Pin = (1 << pintmp);
+        HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+    } else if ( pin < 79 ) {
+        pintmp = pin-64;
+        GPIO_InitStruct.Pin = (1 << pintmp);
+        HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+    } else if ( pin < 95 ) {
+        pintmp = pin-80;
+        GPIO_InitStruct.Pin = (1 << pintmp);
+        HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+    } else if ( pin < 111 ) {
+        pintmp = pin-96;
+        GPIO_InitStruct.Pin = (1 << pintmp);
+        HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+    }
+    switch ( pintmp ) {
+        case 0 : 
+            IrqNum = EXTI0_IRQn;
+            break;
+        case 1 : 
+            IrqNum = EXTI1_IRQn;
+            break;
+        case 2 : 
+            IrqNum = EXTI2_IRQn;
+            break;
+        case 3 : 
+            IrqNum = EXTI3_IRQn;
+            break;
+        case 4 : 
+            IrqNum = EXTI4_IRQn;
+            break;
+        case 5 :
+        case 6 :
+        case 7 :
+        case 8 :
+        case 9 :            
+            IrqNum = EXTI9_5_IRQn;
+            break;
+        case 10 :
+        case 11 :
+        case 12 :
+        case 13 :
+        case 14 :
+        case 15 :            
+            IrqNum = EXTI15_10_IRQn;
+            break;
+        default : 
+            IrqNum = EXTI15_10_IRQn;
+            break;
+    }
+    HAL_NVIC_SetPriority(IrqNum, 0, 0);
+    NVIC_SetVector(IrqNum, (uint32_t)IrqHandlerRadio);
+    HAL_NVIC_EnableIRQ(IrqNum);
+}    
 /******************************************************************************/
 /*                                Mcu Spi Api                                 */
 /******************************************************************************/

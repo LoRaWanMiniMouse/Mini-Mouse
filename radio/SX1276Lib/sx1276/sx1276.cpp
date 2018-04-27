@@ -30,8 +30,10 @@ Maintainer        : Olivier Gimenez (SEMTECH)
  ************************************************************************************************/
 
 
-SX1276::SX1276( PinName nss, PinName reset) : pinCS( nss ), pinReset( reset ){
+SX1276::SX1276( PinName nss, PinName reset, PinName TxRxIt, PinName RxTimeOutIt) : pinCS( nss ), pinReset( reset ){
     mcu.SetValueDigitalOutPin ( pinCS, 1);
+    mcu.Init_Irq ( TxRxIt ) ;
+    mcu.Init_Irq ( RxTimeOutIt ) ;
 }
 
 void SX1276::ClearIrqFlags( void ) {

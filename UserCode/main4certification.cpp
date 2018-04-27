@@ -46,7 +46,7 @@
 //uint32_t LoRaDevAddrInit     = 0x26011918;
 
 //sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
-//SX1276  RadioUser( LORA_CS, LORA_RESET );
+//    SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
 //int main( ) {
 //    int i;
 //    int StatusCertification = 0;

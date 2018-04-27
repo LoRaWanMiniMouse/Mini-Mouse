@@ -18,13 +18,14 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define McuSTM32L4_H
 #include "mbed.h"
 #include "Define.h"
-#include "stm32l4xx_ll_utils.h"
+
 
 class McuSTM32L4 {
 public :    
      McuSTM32L4 ( PinName mosi, PinName miso, PinName sclk );
     ~McuSTM32L4 ( );
     void InitMcu ( void );
+    void Init_Irq ( PinName pin);
 /******************************************************************************/
 /*                                Mcu Spi Api                                 */
 /******************************************************************************/
@@ -202,7 +203,13 @@ public :
     *  ExtISR
     * \remark    Do Not Modify 
     */
-    void ExtISR                ( void ) { if (userIt == 0 ) { Funcext(objext); } else { _UserFuncext ();}; };
+    void ExtISR                ( void ) { 
+        if (userIt == 0 ) { 
+        Funcext(objext); 
+        } else {
+        _UserFuncext ();
+        }; 
+    };
     
 /******************************************************************************/
 /*                           Mcu wait                                         */

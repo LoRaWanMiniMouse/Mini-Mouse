@@ -50,9 +50,6 @@ uint8_t AppEuiInit[]         = { 0x70, 0xb3, 0xd5, 0x7e, 0xf0, 0x00, 0x36, 0x12 
 uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0xbb };    
 uint32_t LoRaDevAddrInit     = 0x26011918;
 
-//SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET );
-SX1276  RadioUser( LORA_CS, LORA_RESET );
-
 int main( ) {
     int i;
     uint8_t UserPayloadSize ;
@@ -82,9 +79,10 @@ int main( ) {
     * \remark  The Current implementation doesn't yet support different radio (only SX1276) 
     * \remark  On the future dev , the Radio Type will be a parameter of the LoraWan Objects
     */
-
+    SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
     LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
-
+    //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
+    //LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
     /*!
     * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
     */

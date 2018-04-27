@@ -34,7 +34,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 
 class SX126x {
     public:
-        SX126x( PinName Busy, PinName nss, PinName reset );
+        SX126x( PinName Busy, PinName nss, PinName reset,PinName Interrupt );
         ~SX126x(){}; 
         
        void ClearIrqFlags( void );

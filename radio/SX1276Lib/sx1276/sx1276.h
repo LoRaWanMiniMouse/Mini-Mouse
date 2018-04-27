@@ -38,7 +38,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 
 class SX1276  {
 public:
-    SX1276( PinName nss, PinName reset );
+    SX1276( PinName nss, PinName reset , PinName TxRxIt, PinName RxTimeOutIt);
     ~SX1276(){};
     void ClearIrqFlags( void );
     uint8_t GetIrqFlags( void );

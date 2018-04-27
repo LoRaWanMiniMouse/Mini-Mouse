@@ -51,7 +51,7 @@
 //uint32_t LoRaDevAddrInit     = 0x26011918;
 
 
-//SX1276  RadioUser( LORA_CS, LORA_RESET );
+//    SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
 ///* ISR routine specific of this example */
 //void UserIsr ( void ) {
 //    DEBUG_MSG( "\n\n\n Demo : use radio both in lorawan mode and in specific user mode \n receive isr radio \n\n\n" );

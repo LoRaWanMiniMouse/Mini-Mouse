@@ -76,19 +76,14 @@ int main( ) {
 
     /*!
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
-    * \remark  The Current implementation doesn't yet support different radio (only SX1276) 
-    * \remark  On the future dev , the Radio Type will be a parameter of the LoraWan Objects
+    * \remark  The Current implementation  support radio SX1276 and sx1261
     */
     SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
     LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
     //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
     //LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
-    /*!
-    * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
-    */
-    UserFport       = 3;
-    UserPayloadSize = 14;
-    MsgType = UNCONF_DATA_UP;
+
+
     uint8_t AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE ;
     eLoraWan_Process_States LpState = LWPSTATE_IDLE;    
 
@@ -96,14 +91,16 @@ int main( ) {
     * \brief Restore the LoraWan Context
     */
     wait(2);
-    
     Lp.RestoreContext  ( );
 
     while(1) {
         
-        DEBUG_MSG("\n\n\n\n Lp1 OBJECT\n");
+        /*!
+         * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
+        */
         UserFport       = 3;
         UserPayloadSize = 9;
+        MsgType = UNCONF_DATA_UP;
         PrepareFrame ( UserPayload );
         UserPayload[8]  = Lp.GetNbOfReset(); // in this example adding number of reset inside the applicatif payload
         /*!
@@ -126,7 +123,7 @@ int main( ) {
 
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            mcu.GotoSleepMSecond ( 100 );
+            mcu.GotoSleepMSecond ( 300 );
             mcu.WatchDogRelease ( );
         }
         if ( LpState == LWPSTATE_ERROR ) {

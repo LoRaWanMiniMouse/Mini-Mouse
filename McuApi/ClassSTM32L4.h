@@ -214,8 +214,8 @@ public :
 /******************************************************************************/
 /*                           Mcu wait                                         */
 /******************************************************************************/   
-//    void mwait   (uint16_t value) { wait ( value );};
-//    void mwait_ms (uint32_t value){ wait_ms ( value );};
+    void wait   (int delays) { wait ( delays );};
+    void wait_ms (int delayms){ wait_ms ( delayms );};
 private :
     /*!
     *  Low power timer

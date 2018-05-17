@@ -90,7 +90,7 @@ int main( ) {
     /*!
     * \brief Restore the LoraWan Context
     */
-    wait(2);
+    mcu.wait(2);
     Lp.RestoreContext  ( );
 
     while(1) {
@@ -120,7 +120,7 @@ int main( ) {
          *        The only requirement is that this function must be called at least once between the end of the transmission and the beginning of the RX1 slot.
          *        Therefore when the stack is active a call periodicity of roughly 300mSec is recommended.
          */ 
-
+        DEBUG_MSG("\n\n");
         while ( LpState != LWPSTATE_IDLE ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
             mcu.GotoSleepMSecond ( 300 );
@@ -136,7 +136,7 @@ int main( ) {
             for ( i = 0 ; i < UserRxPayloadSize ; i++){
                 DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
             }
-            DEBUG_MSG("]\n");
+            DEBUG_MSG("]\n\n\n");
             // call the application layer to manage the application downlink
         } 
         /*!

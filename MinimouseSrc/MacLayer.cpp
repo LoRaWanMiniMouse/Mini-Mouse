@@ -712,7 +712,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateJoi
 
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::BuildJoinLoraFrame( void ) {
-    DevNonce += randr( 0, 65535 );
+    DevNonce += 1;
     MType = JOINREQUEST ;
     SetMacHeader ( );
     for (int i = 0; i <8; i++){ 

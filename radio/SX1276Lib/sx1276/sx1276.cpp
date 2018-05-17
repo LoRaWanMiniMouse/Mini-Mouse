@@ -53,9 +53,9 @@ uint8_t SX1276::GetIrqFlags( void ) {
 
 void SX1276::Reset( void ) {
     mcu.SetValueDigitalOutPin ( pinReset, 0);
-    wait_ms( 1 );
+    mcu.wait_ms( 1 );
     mcu.SetValueDigitalOutPin ( pinReset, 1);
-    wait_ms( 6 );
+    mcu.wait_ms( 6 );
 }
 
 void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,

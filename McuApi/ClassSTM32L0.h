@@ -509,10 +509,10 @@ public :
 /******************************************************************************/
 /*                           Mcu Wait Api                                     */
 /******************************************************************************/
-    void wait_ms (int delayms) {
+    void mwait_ms (int delayms) {
               HAL_Delay(delayms);
     };
-    void wait (int delays) {
+    void mwait (int delays) {
               HAL_Delay(1000*delays);
     };
     

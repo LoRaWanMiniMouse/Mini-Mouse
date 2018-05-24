@@ -19,9 +19,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "utilities.h"
 #include "Define.h"
 #include "ApiMcu.h"
-#if DEBUG_TRACE == 1
-    Serial pcf( SERIAL_TX, SERIAL_RX );
-#endif
+
 
 template class LoraWanObject< LoraRegionsEU, SX1276 >;
 template class LoraWanObject< LoraRegionsEU, SX126x >;

@@ -18,7 +18,7 @@
 
 Maintainer        : Fabien Holin (SEMTECH)
 */
-#include "mbed.h"
+
 #include "LoraMacDataStoreInFlash.h"
 #include "LoraWanProcess.h"
 #include "Define.h"
@@ -69,9 +69,7 @@ int main( ) {
     mcu.RtcInit ( );
     mcu.WatchDogStart ( );
     mcu.LowPowerTimerLoRaInit();
-#if DEBUG_TRACE == 1
-    pcf.baud( 115200 );
-#endif    
+	  mcu.UartInit ( );
     sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
 
     /*!
@@ -90,7 +88,8 @@ int main( ) {
     /*!
     * \brief Restore the LoraWan Context
     */
-    mcu.wait(2);
+		DEBUG_MSG("MM is starting ...\n\n");
+    mcu.mwait(2);
     Lp.RestoreContext  ( );
 
     while(1) {

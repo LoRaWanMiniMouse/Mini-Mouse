@@ -17,7 +17,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #ifndef McuSTM32L4_H
 #define McuSTM32L4_H
 #include "mbed.h"
-#include "Define.h"
+
 
 
 class McuSTM32L4 {
@@ -214,8 +214,14 @@ public :
 /******************************************************************************/
 /*                           Mcu wait                                         */
 /******************************************************************************/   
-    void wait   (int delays) { wait ( delays );};
-    void wait_ms (int delayms){ wait_ms ( delayms );};
+    void mwait   (int delays) { wait ( delays );};
+    void mwait_ms (int delayms){ wait_ms ( delayms );};
+		
+/******************************************************************************/
+/*                           Mcu Uart Api                                     */
+/******************************************************************************/
+    void UartInit ( void ) ;
+    void MMprint( const char *fmt, ...);		
 private :
     /*!
     *  Low power timer

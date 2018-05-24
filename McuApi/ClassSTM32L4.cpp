@@ -658,3 +658,34 @@ void  McuSTM32L4::AttachInterruptIn       (  void (* _Funcext) (void *) , void *
     objext  = _objext;
     userIt  = 0 ; 
 };
+#if DEBUG_TRACE == 1
+    Serial pcf( SERIAL_TX, SERIAL_RX );
+
+void vprint(const char *fmt, va_list argp)
+{
+
+    char string[200];
+    if(0 < vsprintf(string,fmt,argp)) // build string
+    {
+        pcf.printf(string);
+    }
+}
+
+#endif
+
+
+
+/******************************************************************************/
+/*                           Mcu Uart Api                                     */
+/******************************************************************************/
+void McuSTM32L4::UartInit ( void ) {
+    pcf.baud(115200);
+};
+void McuSTM32L4::MMprint( const char *fmt, ...){
+#if DEBUG_TRACE == 1
+  va_list argp;
+  va_start(argp, fmt);
+  vprint(fmt, argp);
+  va_end(argp);
+#endif
+};

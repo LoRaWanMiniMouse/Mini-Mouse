@@ -26,12 +26,12 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 
 #if DEBUG_TRACE == 1
-#include "mbed.h"
-extern Serial pcf;
-#define DEBUG_MSG(str)               pcf.printf(str)
+#include "ApiMcu.h"
+
+#define DEBUG_MSG(str)               mcu.MMprint(str)
 //#define DEBUG_PRINTF(fmt, args...)   DEBUG_PRINTF("  %s:%d: "fmt, __FUNCTION__, __LINE__, args)
-#define DEBUG_PRINTF(fmt, args...)   pcf.printf(fmt, args)
-#define DEBUG_SPRINTF(fmt, args...)  pcf.printf("  %s:%d: "fmt, args)
+#define DEBUG_PRINTF(fmt, args...)   mcu.MMprint(fmt, args)
+#define DEBUG_SPRINTF(fmt, args...)  mcu.MMprint("  %s:%d: "fmt, args)
 #define DEBUG_ARRAY(a,b,c)           for(a=0;a!=0;){}
     
 #define CHECK_NULL(a)                if(a==NULL){return LGW_HAL_ERROR;}

@@ -23,7 +23,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 template class LoraWanObject< LoraRegionsEU, SX1276 >;
 template class LoraWanObject< LoraRegionsEU, SX126x >;
-
+template class LoraWanObject< LoraRegionsUS, SX1276 >;
+template class LoraWanObject< LoraRegionsUS, SX126x >;
 template <template <class R> class T, class RADIOTYPE>
 LoraWanObject<T,RADIOTYPE>::LoraWanObject( sLoRaWanKeys LoRaWanKeys, RADIOTYPE * RadioUser,uint32_t FlashAdress ):packet(  LoRaWanKeys, RadioUser,FlashAdress ) {
     StateLoraWanProcess=LWPSTATE_IDLE;
@@ -335,7 +336,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::GetLorawanProcessState ( v
 /**************************************************/
 template <template <class R> class T, class RADIOTYPE> 
 void LoraWanObject <T,RADIOTYPE> ::RestoreContext ( void ) {
-    packet.LoadFromFlash ( );
+    packet.RegionLoadFromFlash ( );
 }; 
 
 
@@ -361,7 +362,7 @@ uint8_t LoraWanObject <T,RADIOTYPE> ::GetNextDataRate ( void ) { // note return 
 
 template <template <class R> class T, class RADIOTYPE> 
  void  LoraWanObject <T,RADIOTYPE> :: FactoryReset ( void ) {
-     packet.SetBadCrcInFlash ( ) ;
+     packet.RegionSetBadCrcInFlash ( ) ;
  }
  
 template <template <class R> class T, class RADIOTYPE> 

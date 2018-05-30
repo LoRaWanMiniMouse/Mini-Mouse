@@ -15,8 +15,8 @@ License           : Revised BSD License, see LICENSE.TXT file include in the pro
 
 Maintainer        : Fabien Holin ( SEMTECH)
 */
-#ifndef REGIONS_H
-#define REGIONS_H
+#ifndef REGIONSUS_H
+#define REGIONSUS_H
 #include "stdint.h"
 #include  "Define.h"
 #include "MacLayer.h"
@@ -29,13 +29,13 @@ Maintainer        : Fabien Holin ( SEMTECH)
 
 //template class LoraWanContainer<16,SX1276>;
 template < class R >
-class LoraRegionsEU : public LoraWanContainer<16,R> { 
+class LoraRegionsUS : public LoraWanContainer<72,R> { 
     
 
     
 public: 
-    LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys, R * RadioUser, uint32_t FlashAdress ); 
-    ~LoraRegionsEU ( void ) {};
+    LoraRegionsUS ( sLoRaWanKeys LoRaWanKeys, R * RadioUser, uint32_t FlashAdress ); 
+    ~LoraRegionsUS ( void ) {};
 /*********************************************************************/
 /*            Define Regional parameter                              */
 /*********************************************************************/
@@ -46,15 +46,15 @@ public:
     static const int      ADR_ACK_LIMIT      = 64 ;
     static const int      ADR_ACK_DELAY      = 32 ;
     static const int      ACK_TIMEOUT        = 2 ;// +/- 1 s (random delay between 1 and 3 seconds)
-    static const uint32_t FREQMIN            = 8630000 ;// MHz/100 coded over 24 bits
-    static const uint32_t FREQMAX            = 8700000 ;// MHz/100 coded over 24 bits
+    static const uint32_t FREQMIN            = 9023000 ;// MHz/100 coded over 24 bits
+    static const uint32_t FREQMAX            = 9149000 ;// MHz/100 coded over 24 bits??
     static const int      RX2DR_INIT         = 0;
     uint8_t DistriDataRate[8];
 
     eStatusLoRaWan RegionMaxPayloadSize   ( uint8_t sizeIn ) ;
     void RegionSetDataRateDistribution    ( uint8_t adrMode );
-	  void RegionLoadFromFlash                    ( void );
-		void RegionSetBadCrcInFlash                 ( void );	
+	  void RegionLoadFromFlash                      ( void ){};
+		void RegionSetBadCrcInFlash                   ( void ){};	
     virtual void RegionGiveNextDataRate           ( void );
 protected : 
     virtual void RegionGetCFList                  ( void );
@@ -73,7 +73,7 @@ protected :
     virtual eStatusLoRaWan RegionIsValidChannelIndex    ( uint8_t ChannelIndex);
     virtual uint8_t RegionGetAdrAckLimit                ( void );
     virtual uint8_t RegionGetAdrAckDelay                ( void );
-    virtual void RegionSaveInFlash                      ( void );
+    virtual void RegionSaveInFlash                      ( void ){};
 private :
 
     uint8_t DistriDataRateInit[8];

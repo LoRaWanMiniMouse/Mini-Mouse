@@ -21,12 +21,6 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define WATCH_DOG_PERIOD_RELEASE 30 // this period have to be lower than the Watch Dog period of 32 seconds
 
 
-
-
-
-
-
-
 /********************************************************************/
 /*                           Flash local functions                  */
 /********************************************************************/
@@ -339,47 +333,6 @@ void  McuSTM32L4::Init_Irq ( PinName pin) {
 SPI_HandleTypeDef hspi1;
 void McuSTM32L4::InitSpi ( ){
     SPI pspi( McuMosi, McuMiso, McuSclk );
-    
-/***************************************************************************/    
-/* following code give an example to how remove spi done with mbed library */
-/* In this example Pin configuration is fixed                              */
-/***************************************************************************/ 
-#if 0
-    GPIO_InitTypeDef GPIO_InitStruct;
-    __HAL_RCC_SPI1_CLK_ENABLE();
-    HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(SPI1_IRQn);
-    /**SPI1 GPIO Configuration    
-    PA5     ------> SPI1_SCK
-    PA6     ------> SPI1_MISO
-    PA7     ------> SPI1_MOSI 
-    */
-    GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    hspi1.Instance = SPI1;
-    hspi1.Init.Mode = SPI_MODE_MASTER;
-    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-    hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-    hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-    hspi1.Init.NSS = SPI_NSS_SOFT;
-    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
-    hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-    hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    hspi1.Init.CRCPolynomial = 7;
-    //hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-    //hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
-    __HAL_SPI_DISABLE(&hspi1);
-    HAL_SPI_Init(&hspi1);
-    __HAL_SPI_ENABLE(&hspi1);
-#endif
-
 }
     /** Write to the SPI Slave and return the response
     *
@@ -391,18 +344,6 @@ void McuSTM32L4::InitSpi ( ){
 uint8_t McuSTM32L4::SpiWrite(int value){
     SPI pspi( McuMosi, McuMiso, McuSclk );
     return ( pspi.write( value ) );
-/***************************************************************************/    
-/* following code give an example to how remove spi done with mbed library */
-/* In this example Pin configuration is static                             */
-/***************************************************************************/ 
-# if 0
-    uint8_t rxData = 0;
-    while( LL_SPI_IsActiveFlag_TXE ( SPI1 ) == 0  ){};
-    LL_SPI_TransmitData8 (SPI1, uint8_t (value&0xFF));
-    while( LL_SPI_IsActiveFlag_RXNE ( SPI1 ) == 0 ){};
-    rxData =  LL_SPI_ReceiveData8( SPI1 );
-    return (rxData);
-#endif
 }
 /******************************************************************************/
 /*                                Mcu Flash Api                               */
@@ -658,6 +599,10 @@ void  McuSTM32L4::AttachInterruptIn       (  void (* _Funcext) (void *) , void *
     objext  = _objext;
     userIt  = 0 ; 
 };
+
+/******************************************************************************/
+/*                           Mcu Uart Api                                     */
+/******************************************************************************/
 #if DEBUG_TRACE == 1
     Serial pcf( SERIAL_TX, SERIAL_RX );
 
@@ -673,11 +618,6 @@ void vprint(const char *fmt, va_list argp)
 
 #endif
 
-
-
-/******************************************************************************/
-/*                           Mcu Uart Api                                     */
-/******************************************************************************/
 void McuSTM32L4::UartInit ( void ) {
     pcf.baud(115200);
 };

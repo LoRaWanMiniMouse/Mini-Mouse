@@ -70,14 +70,14 @@ int main( ) {
     mcu.WatchDogStart ( );
     mcu.LowPowerTimerLoRaInit();
 	  mcu.UartInit ( );
-    sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
+    sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
 
     /*!
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
     * \remark  The Current implementation  support radio SX1276 and sx1261
     */
     SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
-    LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsUS,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
     //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
     //LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 
@@ -125,6 +125,7 @@ int main( ) {
             mcu.GotoSleepMSecond ( 300 );
             mcu.WatchDogRelease ( );
         }
+				
         if ( LpState == LWPSTATE_ERROR ) {
         // user application have to save all the need
             NVIC_SystemReset();

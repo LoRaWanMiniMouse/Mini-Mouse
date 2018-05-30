@@ -82,10 +82,10 @@ void SX126x::Reset( void ) {
     // Reset radio
     mcu.SetValueDigitalOutPin ( pinReset, 0);
     //wait_us( 100 );
-    wait_ms( 1 );
+    mcu.mwait_ms( 1 );
     mcu.SetValueDigitalOutPin ( pinReset, 1);
     //wait_us( 200 );
-    wait_ms( 1 );
+    mcu.mwait_ms( 1 );
     radioMode = AWAKE;
 }
 

@@ -24,7 +24,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "Define.h"
 #include "MacLayer.h"
 #include "Regions.h"
-
+#include "RegionUS.h"
 /*!
  * \class LoraWanObject 
  * \brief An absolutely minimalistic LoRaWAN Class A stack implementation .

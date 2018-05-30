@@ -24,7 +24,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 /*                         Application     dependant                            */
 /********************************************************************************/
 #define DEBUG_TRACE    1      // set to 1 to activate debug traces
-#define LOW_POWER_MODE 1     // set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
+#define LOW_POWER_MODE 0     // set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 
 
 
@@ -56,6 +56,6 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define FLASH_UPDATE_PERIOD 128      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted
 #define USERFLASHADRESS 0x807F800U - 2048  // start flash adress to store lorawan context
 
-#define USER_NUMBER_OF_RETRANSMISSION   2 // Only used in case of user defined darate distribution strategy
-#define USER_DR_DISTRIBUTION_PARAMETERS 0x11003300 + USER_NUMBER_OF_RETRANSMISSION // Only used in case of user defined darate distribution strategy refered to doc that explain this value
+#define USER_NUMBER_OF_RETRANSMISSION   1// Only used in case of user defined darate distribution strategy
+#define USER_DR_DISTRIBUTION_PARAMETERS 0x00000300 + USER_NUMBER_OF_RETRANSMISSION // Only used in case of user defined darate distribution strategy refered to doc that explain this value
 #endif

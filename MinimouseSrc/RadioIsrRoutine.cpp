@@ -26,6 +26,8 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     RegIrqFlag = Radio->GetIrqFlags( );
     Radio->ClearIrqFlags( ); 
     if ( RegIrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {
+			  tCurrentMillisec =  mcu.RtcGetTimeMs( );
+			  DEBUG_PRINTF( "Receive a packet %d ms after tx done\n",tCurrentMillisec-TimestampRtcIsr);
         status = DumpRxPayloadAndMetadata ( );
         Radio->Sleep ( false );
         if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 

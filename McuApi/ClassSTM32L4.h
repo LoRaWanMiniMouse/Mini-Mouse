@@ -18,8 +18,6 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define McuSTM32L4_H
 #include "mbed.h"
 
-
-
 class McuSTM32L4 {
 public :    
      McuSTM32L4 ( PinName mosi, PinName miso, PinName sclk );

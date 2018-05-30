@@ -32,7 +32,7 @@ public:
 
     LoraWanContainer( sLoRaWanKeys LoRaWanKeys, R * RadioUser,uint32_t FlashAdress ); 
     ~LoraWanContainer( );
-    static const uint8_t  NUMBER_OF_CHANNEL = NBCHANNEL; // @note this is an issue it is region dependant so move in region but tbd...
+    static const uint8_t  NUMBER_OF_CHANNEL = NBCHANNEL; 
     void BuildTxLoraFrame     ( void );
     void BuildJoinLoraFrame   ( void );
     void EncryptTxFrame       ( void );
@@ -155,10 +155,8 @@ public:
     uint32_t   RtcNextTimeJoinSecond ;
     uint32_t   RetryJoinCpt;
 
-/*  Flash */
-    void LoadFromFlash             ( void );
-    void SaveInFlash               ( void );
-    void SetBadCrcInFlash          ( void );
+
+
 /***************************************************************/
 /*  Virtual Method overwritten by the Class  of the region     */
 /***************************************************************/
@@ -181,7 +179,11 @@ public:
     
     virtual uint8_t RegionGetAdrAckLimit                   ( void )                     = 0;
     virtual uint8_t RegionGetAdrAckDelay                   ( void )                     = 0;
-    
+    /*  Flash */
+	
+    virtual     void RegionSaveInFlash               ( void )   = 0;
+
+    uint32_t    UserFlashAdress;
 /**************************************************************/
 /*      Protected Methods and variables                       */
 /**************************************************************/
@@ -207,7 +209,8 @@ private :
     int CheckRxPayloadLength       ( void );
     int ExtractRxFhdr              ( uint16_t *FcntDwnTemp ) ; 
     int AcceptFcntDwn              ( uint16_t FcntDwnTmp ) ;
-    void SetAlarm                  ( uint32_t alarmInMs ,eRxWinType type );
+
+void SetAlarm                  ( uint32_t alarmInMs ,eRxWinType type );
     void LinkCheckParser           ( void );
     void LinkADRParser             ( uint8_t NbMultiLinkAdrReq );
     void DutyCycleParser           ( void );
@@ -226,7 +229,7 @@ private :
     int32_t  RxOffsetMs;
     uint32_t MacRxWindowMs;
     uint32_t RxLateWindowMs ;
-    uint32_t UserFlashAdress;
+
 
 }; 
 

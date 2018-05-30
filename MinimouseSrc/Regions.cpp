@@ -28,7 +28,7 @@ template < class R > LoraRegionsEU<R>::LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys,
     memset( this->MacChannelIndexEnabled, CHANNEL_DISABLED, this->NUMBER_OF_CHANNEL );
     memset( this->MacMinDataRateChannel, 0, this->NUMBER_OF_CHANNEL );
     for (int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
-        this->MacTxFrequency [i] = 0;
+        this->MacTxFrequency  [i] = 0;
         this->MacRx1Frequency [i] = 0;
     }
     this->MacChannelIndexEnabled [0] = CHANNEL_ENABLED;
@@ -384,6 +384,135 @@ template < class R >uint8_t  LoraRegionsEU<R>::RegionGetAdrAckLimit( void ) {
 template < class R >uint8_t  LoraRegionsEU<R>::RegionGetAdrAckDelay( void ) {
     return ( ADR_ACK_DELAY );
 }
+
+
+template < class R >void LoraRegionsEU<R>::RegionLoadFromFlash ( void ){
+   uint32_t crcLow;
+    uint32_t crcHigh;
+    mcu.RestoreContext((uint8_t *)(&BackUpFlash), this->UserFlashAdress, sizeof(sBackUpFlash));
+    Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash)-8 , &crcLow, &crcHigh );    
+    if (( crcLow == BackUpFlash.CrcLow ) &&  ( crcHigh == BackUpFlash.CrcHigh ) ) { // explicit else = factory reset => the default value inside the constructor
+        BackUpFlash.FcntUp            +=  FLASH_UPDATE_PERIOD; //@note automatic increment
+        BackUpFlash.NbOfReset ++;
+        this->NbOfReset  = BackUpFlash.NbOfReset;
+        this->MacTxDataRate                 = BackUpFlash.MacTxDataRate;
+        this->MacTxPower                    = BackUpFlash.MacTxPower;
+        this->MacChMask                     = BackUpFlash.MacChMask;
+        this->MacNbTrans                    = BackUpFlash.MacNbTrans; 
+        this->MacRx2Frequency               = BackUpFlash.MacRx2Frequency; 
+        this->MacRx2DataRate                = BackUpFlash.MacRx2DataRate;
+        this->MacRx1DataRateOffset          = BackUpFlash.MacRx1DataRateOffset;
+        this->MacRx1Delay                   = BackUpFlash.MacRx1Delay ;
+        this->FcntUp                        = BackUpFlash.FcntUp ;
+        this->FcntDwn                       = BackUpFlash.FcntDwn ;
+        this->DevAddr                       = BackUpFlash.DevAddr;
+        this->DevNonce                      = BackUpFlash.DevNonce;
+        this->Phy.JoinedStatus              = ( eJoinStatus ) BackUpFlash.JoinedStatus;
+        for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
+            this->MacTxFrequency[i]         = BackUpFlash.MacTxFrequency[i] ;
+            this->MacRx1Frequency[i]        = BackUpFlash.MacRx1Frequency[i] ;
+            this->MacMaxDataRateChannel[i]  = BackUpFlash.MacMaxDataRateChannel[i] ;
+            this->MacMinDataRateChannel[i]  = BackUpFlash.MacMinDataRateChannel[i];
+            this->MacChannelIndexEnabled[i] = BackUpFlash.MacChannelIndexEnabled[i];
+        }
+        memcpy( &this->nwkSKey[0], &BackUpFlash.nwkSKey[0], 16);
+        memcpy( &this->appSKey[0], &BackUpFlash.appSKey[0], 16);
+        Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
+        BackUpFlash.CrcLow  = crcLow;
+        BackUpFlash.CrcHigh = crcHigh;
+        mcu.StoreContext( &BackUpFlash, this->UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );    
+        DEBUG_PRINTF ("\n MacTxDataRate = %d ", this->MacTxDataRate ) ;
+        DEBUG_PRINTF ("\n MacTxPower = %d ", this->MacTxPower ) ;
+        DEBUG_PRINTF ("\n MacChMask = 0x%x ", this->MacChMask ) ;
+        DEBUG_PRINTF ("\n MacRx2Frequency = %d ", this->MacRx2Frequency ) ;
+        DEBUG_PRINTF ("\n MacRx2DataRate = %d ", this->MacRx2DataRate ) ;
+        DEBUG_PRINTF ("\n MacRx1DataRateOffset = %d ", this->MacRx1DataRateOffset ) ;
+        DEBUG_PRINTF ("\n MacRx1Delay = %d ", this->MacRx1Delay ) ;
+        DEBUG_PRINTF ("\n FcntUp = %d ", this->FcntUp ) ;
+        DEBUG_PRINTF ("\n FcntDwn = %d ", this->FcntDwn ) ;
+        DEBUG_PRINTF ("\n DevAddr = 0x%x ", this->DevAddr ) ;
+        DEBUG_PRINTF ("\n DevNonce = 0x%x ", this->DevNonce ) ;
+        DEBUG_PRINTF ("\n JoinedStatus = %d ",this->Phy.JoinedStatus  ) ;
+        DEBUG_PRINTF ("\n NbOfReset = %d ",BackUpFlash.NbOfReset  ) ;
+        for (int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
+            DEBUG_PRINTF ("\n MacTxFrequency[%d]= %d ", i, this->MacTxFrequency[i] ) ;
+            DEBUG_PRINTF ("\n MacRx1Frequency[%d]= %d ", i, this->MacRx1Frequency[i] ) ;
+            DEBUG_PRINTF ("\n MacMaxDataRateChannel[%d]   = %d ", i, this->MacMaxDataRateChannel[i] ) ;
+            DEBUG_PRINTF ("\n MacMinDataRateChannel[%d]   = %d ", i, this->MacMinDataRateChannel[i] ) ;
+            DEBUG_PRINTF ("\n MacChannelIndexEnabled[%d]  = %d \n", i, this->MacChannelIndexEnabled[i] );
+        }
+
+    } else {
+        BackUpFlash.NbOfReset = 0;
+        RegionSaveInFlash ( );
+        DEBUG_MSG("WRONG CRC \n");
+        NVIC_SystemReset();
+    }
+}
+
+template < class R >void LoraRegionsEU<R>::RegionSaveInFlash ( void ){
+	  uint32_t crcLow;
+    uint32_t crcHigh;
+    BackUpFlash.MacTxDataRate           = this->MacTxDataRate;
+    BackUpFlash.MacTxPower              = this->MacTxPower;
+    BackUpFlash.MacChMask               = this->MacChMask;
+    BackUpFlash.MacNbTrans              = this->MacNbTrans; 
+    BackUpFlash.MacRx2Frequency         = this->MacRx2Frequency; 
+    BackUpFlash.MacRx2DataRate          = this->MacRx2DataRate;
+    BackUpFlash.MacRx1DataRateOffset    = this->MacRx1DataRateOffset;
+    BackUpFlash.MacRx1Delay             = this->MacRx1Delay;
+    BackUpFlash.FcntUp                  = this->FcntUp;
+    BackUpFlash.FcntDwn                 = this->FcntDwn;
+    BackUpFlash.DevAddr                 = this->DevAddr;
+    BackUpFlash.DevNonce                = this->DevNonce;
+    BackUpFlash.JoinedStatus            = this->Phy.JoinedStatus;
+    for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
+        BackUpFlash.MacTxFrequency[i]         = this->MacTxFrequency[i];
+        BackUpFlash.MacRx1Frequency[i]        = this->MacRx1Frequency[i];
+        BackUpFlash.MacMaxDataRateChannel[i]  = this->MacMaxDataRateChannel[i];
+        BackUpFlash.MacMinDataRateChannel[i]  = this->MacMinDataRateChannel[i];
+        BackUpFlash.MacChannelIndexEnabled[i] = this->MacChannelIndexEnabled[i];
+    }
+    memcpy( &BackUpFlash.nwkSKey[0], &this->nwkSKey[0], 16);
+    memcpy( &BackUpFlash.appSKey[0], &this->appSKey[0], 16);
+    Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
+    BackUpFlash.CrcLow  = crcLow ; 
+    BackUpFlash.CrcHigh = crcHigh ;
+    mcu.StoreContext( &BackUpFlash, this->UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
+    mcu.mwait_ms( 25 );    
+}
+
+template < class R >void LoraRegionsEU<R>::RegionSetBadCrcInFlash ( void ){
+	  uint32_t crcLow;
+    uint32_t crcHigh;
+    BackUpFlash.MacTxDataRate           = this->MacTxDataRate;
+    BackUpFlash.MacTxPower              = this->MacTxPower;
+    BackUpFlash.MacChMask               = this->MacChMask;
+    BackUpFlash.MacNbTrans              = this->MacNbTrans; 
+    BackUpFlash.MacRx2Frequency         = this->MacRx2Frequency; 
+    BackUpFlash.MacRx2DataRate          = this->MacRx2DataRate;
+    BackUpFlash.MacRx1DataRateOffset    = this->MacRx1DataRateOffset;
+    BackUpFlash.MacRx1Delay             = this->MacRx1Delay;
+    BackUpFlash.FcntUp                  = this->FcntUp;
+    BackUpFlash.FcntDwn                 = this->FcntDwn;
+    BackUpFlash.DevAddr                 = this->DevAddr;
+    BackUpFlash.DevNonce                = this->DevNonce;
+    BackUpFlash.JoinedStatus            = this->Phy.JoinedStatus;
+    for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
+        BackUpFlash.MacTxFrequency[i]         = this->MacTxFrequency[i];
+        BackUpFlash.MacRx1Frequency[i]        = this->MacRx1Frequency[i];
+        BackUpFlash.MacMaxDataRateChannel[i]  = this->MacMaxDataRateChannel[i];
+        BackUpFlash.MacMinDataRateChannel[i]  = this->MacMinDataRateChannel[i];
+        BackUpFlash.MacChannelIndexEnabled[i] = this->MacChannelIndexEnabled[i];
+    }
+    memcpy( &BackUpFlash.nwkSKey[0], &this->nwkSKey[0], 16);
+    memcpy( &BackUpFlash.appSKey[0], &this->appSKey[0], 16);
+    Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
+    BackUpFlash.CrcLow  = crcLow +1 ; // bad crc
+    BackUpFlash.CrcHigh = crcHigh + 1;
+    mcu.StoreContext( &BackUpFlash, this->UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
+    mcu.mwait_ms( 25 );    
+}
 /***********************************************************************************************/
 /*                      Private  Methods                                                        */
 /***********************************************************************************************/
@@ -420,4 +549,3 @@ template < class R >void LoraRegionsEU<R>:: Rx2DataRateToSfBw ( uint8_t dataRate
         DEBUG_MSG( " Invalid Datarate \n" ) ; 
     }
 }
-

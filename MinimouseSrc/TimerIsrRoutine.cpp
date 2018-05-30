@@ -22,6 +22,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 template class LoraWanContainer <16,SX1276>;
 template class LoraWanContainer <16,SX126x>;
+template class LoraWanContainer <72,SX1276>;
+template class LoraWanContainer <72,SX126x>;
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::IsrTimerRx1( void ) {
     StateTimer = TIMERSTATE_SLEEP;

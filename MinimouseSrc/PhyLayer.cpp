@@ -23,7 +23,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "Define.h"
 #include "ApiMcu.h"
 #include "UserDefine.h"
-
+#include "utilities.h"
+#define FileId 3
 template class RadioContainer<SX1276>;
 template class RadioContainer<SX126x>;
 
@@ -46,11 +47,12 @@ template <class R> RadioContainer<R>::~RadioContainer( ) {
 /*          Set Radio in Sleep Mode                                  */
 /*******************Isr Radio  ***************************************/
 template <class R> void RadioContainer <R>::AttachIsr ( void ) {
-    
+    InsertTrace ( __COUNTER__, FileId );    
    //  RadioGlobalIt.rise( callback ( this, &RadioContainer::IsrRadio ) );
     mcu.AttachInterruptIn( &RadioContainer< R >::CallbackIsrRadio,this);
 }
 template <class R> void RadioContainer <R>::DetachIsr ( void ) {
+	   InsertTrace ( __COUNTER__, FileId );
 }
 
 /************************************************************************************************/
@@ -68,13 +70,15 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     StateRadioProcess = RADIOSTATE_TXON;
     Radio->Reset( ); 
     if ( TxModulation == LORA ) {
+			  InsertTrace ( __COUNTER__, FileId );
         DEBUG_PRINTF ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
         Radio->SendLora( TxPhyPayload, TxPayloadSize, TxSf, TxBw, TxFrequency, TxPower );
     } else {
-        DEBUG_MSG("FSK TRANSMISSION \n");
+			   InsertTrace ( __COUNTER__, FileId );
+         DEBUG_MSG("FSK TRANSMISSION \n");
         //@TODO FSK
     }
-    wait_ms(1);
+    mcu.mwait_ms(1);
 };
 
 template <class R> void RadioContainer <R>::SetRxConfig(eModulationType RxModulation ,uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac ,uint32_t RxWindowMs) {
@@ -83,8 +87,10 @@ template <class R> void RadioContainer <R>::SetRxConfig(eModulationType RxModula
     RxSf         = RxSfMac;
     RxMod        = RxModulation;
     if ( RxModulation == LORA ) {
+			  InsertTrace ( __COUNTER__, FileId );
         Radio->RxLora( RxBw, RxSf, RxFrequency, RxWindowMs );
     } else {
+			  InsertTrace ( __COUNTER__, FileId );
         // @TODO: FSK
         // Radio.SetRxConfig( MODEM_FSK, 50e3, 50e3, 0, 83.333e3, 5, 0, false, 0, true, 0, 0, true, false );//@note rxtimeout 400ms!!!! // @TODO: Implementation
     }
@@ -92,11 +98,13 @@ template <class R> void RadioContainer <R>::SetRxConfig(eModulationType RxModula
 }
 
 template <class R>int RadioContainer<R>::GetRadioState( void ) {
+	  InsertTrace ( __COUNTER__, FileId );
     return StateRadioProcess;
 };
 
 
 template <class R> uint32_t RadioContainer<R>::GetTxFrequency ( void ) {
+	  InsertTrace ( __COUNTER__, FileId );
     return( TxFrequency );
 };
 
@@ -115,9 +123,11 @@ template <class R> int RadioContainer<R>::DumpRxPayloadAndMetadata ( void ) {
     RxPhyPayloadRssi= (int) rssi;
    /* check Mtype */
     int status = OKLORAWAN;
+    InsertTrace ( __COUNTER__, FileId );	
     uint8_t MtypeRxtmp = RxPhyPayload[0] >> 5 ;
     if (( MtypeRxtmp == JOINREQUEST) || ( MtypeRxtmp == UNCONF_DATA_UP ) || ( MtypeRxtmp == CONF_DATA_UP) || ( MtypeRxtmp == REJOIN_REQUEST )) {
         status += ERRORLORAWAN;
+			  InsertTrace ( __COUNTER__, FileId );
         DEBUG_PRINTF(" BAD Mtype = %d for RX Frame \n", MtypeRxtmp );
     }
     /* check devaddr */
@@ -125,10 +135,12 @@ template <class R> int RadioContainer<R>::DumpRxPayloadAndMetadata ( void ) {
         uint32_t DevAddrtmp = RxPhyPayload[1] + ( RxPhyPayload[2] << 8 ) + ( RxPhyPayload[3] << 16 )+ ( RxPhyPayload[4] << 24 );
         if ( DevAddrtmp != DevAddrIsr ) {
             status += ERRORLORAWAN;
+					  InsertTrace ( __COUNTER__, FileId );
             DEBUG_PRINTF( " BAD DevAddr = %x for RX Frame \n", DevAddrtmp );
         }
         if ( status != OKLORAWAN ) {
             RxPhyPayloadSize = 0;
+					  InsertTrace ( __COUNTER__, FileId );
         }
     }
     return (status);

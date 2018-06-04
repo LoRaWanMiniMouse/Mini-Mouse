@@ -89,7 +89,7 @@ public :
      * 
      *  @param buffer Buffer of data to be written 
      *  @param addr   Flash Address to begin writing to,
-     *  @param size   Size to write in bytes,
+     *  @param size   Size to write in 64 Bits,
      *  @return       0 on success, negative error code on failure 
      */ 
     int StoreContext(const void *buffer, uint32_t addr, uint32_t size); 

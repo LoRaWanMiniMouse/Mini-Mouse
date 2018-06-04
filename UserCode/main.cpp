@@ -27,6 +27,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "appli.h"
 #include "SX126x.h"
 #include "ApiMcu.h"
+#include "utilities.h"
+#define FileId 4
 /*!
  * \brief   BackUpFlash The LoraWan structure parameters save into the flash memory for failsafe restauration.
  */
@@ -45,9 +47,10 @@ McuXX<McuSTM32L4> mcu ( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ) ;
  */
 uint8_t LoRaMacNwkSKeyInit[] = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
 uint8_t LoRaMacAppSKeyInit[] = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
-uint8_t LoRaMacAppKeyInit[]  = { 0xBB, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+uint8_t LoRaMacAppKeyInit[]  = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
 uint8_t AppEuiInit[]         = { 0x70, 0xb3, 0xd5, 0x7e, 0xf0, 0x00, 0x36, 0x12 };
-uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0xbb };    
+//uint8_t AppEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0x22 };
+uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
 uint32_t LoRaDevAddrInit     = 0x26011918;
 
 int main( ) {
@@ -76,10 +79,10 @@ int main( ) {
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
     * \remark  The Current implementation  support radio SX1276 and sx1261
     */
-    SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
-    LoraWanObject<LoraRegionsUS,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
-    //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
-    //LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+    ///SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+    //LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+    SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
+    LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 
 
     uint8_t AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE ;
@@ -88,8 +91,16 @@ int main( ) {
     /*!
     * \brief Restore the LoraWan Context
     */
+
+
+		
 		DEBUG_MSG("MM is starting ...\n\n");
+
+		StoreTraceInFlash( USERFLASHADRESS + 4096 );
+    ReadTraceInFlash ( USERFLASHADRESS + 4096 );
     mcu.mwait(2);
+		InsertTrace ( __COUNTER__, FileId );
+		
     Lp.RestoreContext  ( );
 
     while(1) {
@@ -106,9 +117,11 @@ int main( ) {
          * \brief  Configure a new DataRate Strategy 
         */
         Lp.SetDataRateStrategy( AppDataRate );
-        if ( Lp.IsJoined ( ) == NOT_JOINED ) {            
+        if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
+            InsertTrace ( __COUNTER__, FileId );					
             LpState = Lp.Join( );
         } else {
+					  InsertTrace ( __COUNTER__, FileId );
             LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
         }
         /*!
@@ -120,17 +133,19 @@ int main( ) {
          *        Therefore when the stack is active a call periodicity of roughly 300mSec is recommended.
          */ 
         DEBUG_MSG("\n\n");
-        while ( LpState != LWPSTATE_IDLE ){
+        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
             mcu.GotoSleepMSecond ( 300 );
             mcu.WatchDogRelease ( );
         }
 				
         if ( LpState == LWPSTATE_ERROR ) {
+					  InsertTrace ( __COUNTER__, FileId );
         // user application have to save all the need
             NVIC_SystemReset();
         }
         if ( AvailableRxPacket == LORA_RX_PACKET_AVAILABLE ) { 
+					  InsertTrace ( __COUNTER__, FileId );
             Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
             DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
             for ( i = 0 ; i < UserRxPayloadSize ; i++){
@@ -145,9 +160,12 @@ int main( ) {
          */
 
         if ( Lp.IsJoined ( ) == NOT_JOINED ) {
+					  InsertTrace ( __COUNTER__, FileId ); 
             mcu.GotoSleepSecond(5);
         } else {
+					  InsertTrace ( __COUNTER__, FileId );
             mcu.GotoSleepSecond ( AppTimeSleeping );
+					  InsertTrace ( __COUNTER__, FileId );
         }
         
     }

@@ -138,8 +138,7 @@ public:
      * \param [OUT] none
      */  
     void                       RestoreContext          ( void ); 
-    
-    
+
      /*!
      * \brief   Reload the factory Config in the LoraWAN Stack 
      * \param [IN]  none
@@ -226,6 +225,7 @@ private :
     void AttachRadioIsr ( void ) { packet.Phy.AttachIsr ( ); };
     void DetachRadioIsr ( void ) { packet.Phy.DetachIsr ( ); };
     uint32_t FailSafeTimestamp;
+		uint32_t FlashAdress ;
 };
 
 #endif

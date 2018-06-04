@@ -100,10 +100,13 @@ void SX126x::SendLora(
     // Init radio
 
     Reset( );
+    SetRegulatorMode( USE_DCDC );
+    SetDio2AsRfSwitchCtrl( true );
+
     SetStandby( STDBY_XOSC );
     // Configure the radio
     SetPacketType( LORA );
-    CalibrateImage( channel );
+    //CalibrateImage( channel );
     SetRfFrequency( channel );
     SetModulationParams( LORA , SF, BW );
     SetPacketParams( LORA, payloadSize, IQ_STANDARD );
@@ -112,10 +115,12 @@ void SX126x::SendLora(
     // Send the payload to the radio
     SetBufferBaseAddress( 0, 0 );
     WriteBuffer( 0, payload, payloadSize );
+
+    ClearIrqStatus( IRQ_RADIO_ALL );
     // Configure IRQ
     SetDioIrqParams(
-                        IRQ_TX_DONE,
-                        IRQ_TX_DONE,
+                        0xFFFF,
+                        0xFFFF,
                         IRQ_RADIO_NONE,
                         IRQ_RADIO_NONE
                    );
@@ -471,6 +476,22 @@ void SX126x::SetStandby( StandbyModes_t standbyConfig ) {
     WriteCommand( SET_STANDBY, ( uint8_t* )&standbyConfig, 1 );
 }
 
+void SX126x::SetRegulatorMode( RadioRegulatorMode_t mode ) {
+    WriteCommand( SET_REGULATORMODE, ( uint8_t* )&mode, 1 );
+}
+
+void SX126x::SetDio2AsRfSwitchCtrl( uint8_t enable ) {
+    WriteCommand( SET_RFSWITCHMODE, &enable, 1 );
+}
+
+void SX126x::SetTxContinuousWave( void ) {
+    WriteCommand( SET_TXCONTINUOUSWAVE, 0, 0 );
+}
+
+void SX126x::SetTxInfinitePreamble( void ) {
+    WriteCommand( SET_TXCONTINUOUSPREAMBLE, 0, 0 );
+}
+        
 void SX126x::SetRx( uint32_t timeout ) {
     uint8_t buf[3];
     

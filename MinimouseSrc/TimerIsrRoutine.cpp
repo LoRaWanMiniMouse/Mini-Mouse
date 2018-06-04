@@ -19,7 +19,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "PhyLayer.h"
 #include "Define.h"
 #include "MacLayer.h"
-
+#include "utilities.h"
+#define FileId 7
 template class LoraWanContainer <16,SX1276>;
 template class LoraWanContainer <16,SX126x>;
 template class LoraWanContainer <72,SX1276>;
@@ -27,10 +28,12 @@ template class LoraWanContainer <72,SX126x>;
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::IsrTimerRx1( void ) {
     StateTimer = TIMERSTATE_SLEEP;
+	  InsertTrace ( __COUNTER__, FileId );
     ConfigureRadioForRx1 ( );
 };
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::IsrTimerRx2( void ) {
     StateTimer = TIMERSTATE_SLEEP;
+	  InsertTrace ( __COUNTER__, FileId );
     ConfigureRadioForRx2 ( );
 };

@@ -65,7 +65,13 @@ template < class R > LoraRegionsUS<R>::LoraRegionsUS ( sLoRaWanKeys LoRaWanKeys,
 /********************************************************************/
 
 template < class R >void LoraRegionsUS<R>::RegionSetPower ( uint8_t PowerCmd ) {
-
+	  uint8_t PowerTab [ 11 ] = { 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10 }; //@note check the meaning of 30dbm -2*TXpower in the standart
+    if  ( PowerCmd > 10 ) {
+            this->MacTxPower = 20 ;
+            DEBUG_MSG ("INVALID POWER \n");
+    } else {
+        this->MacTxPower = PowerTab [ PowerCmd ] ;
+    }
 }
 
 /********************************************************************/
@@ -73,7 +79,7 @@ template < class R >void LoraRegionsUS<R>::RegionSetPower ( uint8_t PowerCmd ) {
 /* Chapter 7.1.4 LoRaWan 1.0.1 specification                        */
 /********************************************************************/
 template < class R >void LoraRegionsUS<R>::RegionGetCFList ( void ) {
-  
+	// do nothing in US region   
 }
 
 /********************************************************************/

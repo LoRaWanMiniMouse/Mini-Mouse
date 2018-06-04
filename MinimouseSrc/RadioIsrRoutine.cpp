@@ -18,6 +18,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "PhyLayer.h"
 #include "Define.h"
 #include "ApiMcu.h"
+#include "utilities.h"
+#define FileId 6
 template class RadioContainer<SX1276>;
 template class RadioContainer<SX126x>;
 template <class R> void RadioContainer <R>::IsrRadio( void ) {
@@ -26,11 +28,13 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     RegIrqFlag = Radio->GetIrqFlags( );
     Radio->ClearIrqFlags( ); 
     if ( RegIrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {
+			  InsertTrace ( __COUNTER__, FileId );
 			  tCurrentMillisec =  mcu.RtcGetTimeMs( );
 			  DEBUG_PRINTF( "Receive a packet %d ms after tx done\n",tCurrentMillisec-TimestampRtcIsr);
         status = DumpRxPayloadAndMetadata ( );
         Radio->Sleep ( false );
         if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
+					  InsertTrace ( __COUNTER__, FileId );
             RegIrqFlag = BAD_PACKET_IRQ_FLAG ; // this case is exactly the same than the case of rx timeout
             tCurrentMillisec =  mcu.RtcGetTimeMs( );
             uint32_t timeoutMs = LastTimeRxWindowsMs - tCurrentMillisec ;
@@ -50,20 +54,24 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     }
 
     switch ( StateRadioProcess ) { 
-        case RADIOSTATE_TXON :
+        case RADIOSTATE_TXON : 
+			    	InsertTrace ( __COUNTER__, FileId );
             TimestampRtcIsr = mcu.RtcGetTimeMs ( ); //@info Timestamp only on txdone it
             StateRadioProcess = RADIOSTATE_TXFINISHED;
             break;
         
         case RADIOSTATE_TXFINISHED :
+					  InsertTrace ( __COUNTER__, FileId );
             StateRadioProcess = RADIOSTATE_RX1FINISHED;
             break;
         
        case RADIOSTATE_RX1FINISHED :
+				    InsertTrace ( __COUNTER__, FileId ); 
             StateRadioProcess = RADIOSTATE_IDLE;
             break;
         
         default :
+					  InsertTrace ( __COUNTER__, FileId ); 
             DEBUG_MSG ("receive It radio error\n");
             break;
     }

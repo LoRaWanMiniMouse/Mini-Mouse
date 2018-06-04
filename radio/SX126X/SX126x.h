@@ -77,6 +77,7 @@ class SX126x {
             CALIBRATE_IMAGE         = 0x98,
             CLR_IRQ_STATUS          = 0x02,
             STOP_TIMER_ON_PREAMBLE  = 0x9F,
+            SET_RFSWITCHMODE        = 0x9D,
             GET_IRQ_STATUS          = 0x12,
             GET_RX_BUFFER_STATUS    = 0x13,
             GET_PACKET_STATUS       = 0x14,
@@ -95,7 +96,11 @@ class SX126x {
             SET_TX                  = 0x83,
             SET_TX_PARAMS           = 0x8E,
             WRITE_BUFFER            = 0x0E,
-            WRITE_REGISTER          = 0x0D
+            WRITE_REGISTER          = 0x0D,
+            SET_TXCONTINUOUSWAVE    = 0xD1,
+            SET_TXCONTINUOUSPREAMBLE= 0xD2,
+            GET_STATUS              = 0xC0,
+            SET_REGULATORMODE       = 0x96
         } OpCode_t;
         
         typedef enum {
@@ -108,6 +113,11 @@ class SX126x {
             STDBY_RC                                = 0x00,
             STDBY_XOSC                              = 0x01,
         } StandbyModes_t;
+				
+				typedef enum {
+            USE_LDO                                 = 0x00, // default
+            USE_DCDC                                = 0x01,
+        }RadioRegulatorMode_t;
         
         typedef enum {
             IRQ_RADIO_NONE                          = 0x0000,
@@ -284,6 +294,28 @@ class SX126x {
          * @param [IN]  mode          Standby mode to put the radio into
          */
         void SetStandby( StandbyModes_t mode );
+				       /*!
+         * \brief Sets the power regulators operating mode
+         * \param [in]  mode          [0: LDO, 1:DC_DC]
+         */
+        void SetRegulatorMode( RadioRegulatorMode_t mode );
+        
+        /*!
+         * \brief Indicates if DIO2 is used to control an RF Switch
+         *
+         * \param [in] enable     true of false
+         */
+        void SetDio2AsRfSwitchCtrl( uint8_t enable );
+        
+        /*!
+         * \brief Sets the radio in continuous wave transmission mode
+         */
+        void SetTxContinuousWave( void );
+        
+        /*!
+         * \brief Sets the radio in continuous preamble transmission mode
+         */
+        void SetTxInfinitePreamble( void );
         
          /*!
          * \brief Sets the radio in reception mode

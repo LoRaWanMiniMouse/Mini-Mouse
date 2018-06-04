@@ -55,6 +55,7 @@ uint32_t LoRaDevAddrInit     = 0x26011918;
 
 int main( ) {
     int i;
+	  uint8_t StatusCpt = 0;
     uint8_t UserPayloadSize ;
     uint8_t UserPayload [14];
     uint8_t UserRxPayloadSize;
@@ -96,8 +97,14 @@ int main( ) {
 		
 		DEBUG_MSG("MM is starting ...\n\n");
 
-		StoreTraceInFlash( USERFLASHADRESS + 4096 );
+		DEBUG_MSG("********************Debug Trace In flash****************** \n\n");
     ReadTraceInFlash ( USERFLASHADRESS + 4096 );
+		
+		DEBUG_MSG("******************** Current Debug Trace****************** \n\n");
+		ReadTrace ( ExtDebugTrace );
+		
+		StoreTraceInFlash( USERFLASHADRESS + 4096 );
+
     mcu.mwait(2);
 		InsertTrace ( __COUNTER__, FileId );
 		
@@ -108,6 +115,7 @@ int main( ) {
         /*!
          * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
         */
+			  //if ( StatusCpt 
         UserFport       = 3;
         UserPayloadSize = 9;
         MsgType = UNCONF_DATA_UP;
@@ -159,7 +167,7 @@ int main( ) {
          *        Send a packet every AppTimeSleeping seconds in normal mode
          */
 
-        if ( Lp.IsJoined ( ) == NOT_JOINED ) {
+        if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ){
 					  InsertTrace ( __COUNTER__, FileId ); 
             mcu.GotoSleepSecond(5);
         } else {

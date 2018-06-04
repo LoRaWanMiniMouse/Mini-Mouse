@@ -23,12 +23,12 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 static uint8_t TracePointer ;
 #ifdef DEBUG_TRACE_ENABLE
-uint32_t DebugTrace[TRACE_SIZE] __attribute__((section("NoInit"),zero_init));
+uint32_t ExtDebugTrace[TRACE_SIZE] __attribute__((section("NoInit"),zero_init));
 #endif
 void InsertTrace (uint8_t id, uint8_t FileId) {
 #ifdef DEBUG_TRACE_ENABLE	
-	  DebugTrace[ TRACE_SIZE - 1 ] ++;
-	  TracePointer = DebugTrace[ TRACE_SIZE - 1 ];
+	  ExtDebugTrace[ TRACE_SIZE - 1 ] ++;
+	  TracePointer = ExtDebugTrace[ TRACE_SIZE - 1 ];
     if ( id > 31 ) {
 		    DEBUG_MSG("ERROR TRACE COUNTER > 31\n");
 			  return;
@@ -37,10 +37,10 @@ void InsertTrace (uint8_t id, uint8_t FileId) {
 		    DEBUG_MSG("ERROR TRACE FILE_ID > 7\n");
 			  return;
 		}			
-    DebugTrace[ TracePointer ] = ( ( mcu.RtcGetTimeMs( )  & 0x00FFFFFF )<< 8 ) + (( FileId & 0x7) << 5) + (id & 0x1F) ;
+    ExtDebugTrace[ TracePointer ] = ( ( mcu.RtcGetTimeMs( )  & 0x00FFFFFF )<< 8 ) + (( FileId & 0x7) << 5) + (id & 0x1F) ;
 #endif
 }
-void ReadTrace (void) {
+void ReadTrace (uint32_t * DebugTrace) {
 #ifdef DEBUG_TRACE_ENABLE		
 	  int i;
 	  uint8_t TPointer ;
@@ -149,13 +149,14 @@ void ReadTrace (void) {
 
 void StoreTraceInFlash( uint32_t TraceFlashAdress ) {
 #ifdef DEBUG_TRACE_ENABLE	
-    mcu.StoreContext(&DebugTrace[0], TraceFlashAdress , ( TRACE_SIZE >> 1 )); 
+    mcu.StoreContext(&ExtDebugTrace[0], TraceFlashAdress , ( TRACE_SIZE >> 1 )); 
 #endif
 }
 void ReadTraceInFlash ( uint32_t TraceFlashAdress ) {
 #ifdef DEBUG_TRACE_ENABLE		
-	  mcu.RestoreContext((uint8_t * )(&DebugTrace[0]), TraceFlashAdress, TRACE_SIZE * 4);
-	  ReadTrace ( );
+	  uint32_t TraceTemp[TRACE_SIZE];
+	  mcu.RestoreContext((uint8_t * )(&TraceTemp[0]), TraceFlashAdress, TRACE_SIZE * 4);
+	  ReadTrace ( TraceTemp );
 #endif
 }
 /*!

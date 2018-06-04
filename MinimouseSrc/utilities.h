@@ -123,11 +123,11 @@ void Crc64(uint8_t *dataIn, int size,uint32_t * crcLow, uint32_t * crcHigh );
  */
 #ifdef DEBUG_TRACE_ENABLE
 #define  TRACE_SIZE 260 // should be 64 bits aligned
-extern uint32_t DebugTrace[TRACE_SIZE] __attribute__((section("NoInit"),zero_init));  // Have to declare a section in the scatter/link file
+extern uint32_t ExtDebugTrace[TRACE_SIZE] __attribute__((section("NoInit"),zero_init));  // Have to declare a section in the scatter/link file
+
+#endif
 void StoreTraceInFlash( uint32_t TraceFlashAdress );
 void ReadTraceInFlash ( uint32_t TraceFlashAdress );
 extern void InsertTrace (uint8_t id, uint8_t FileId);
-void ReadTrace (void);
-#endif
-
+void ReadTrace (uint32_t * DebugTrace);
 #endif // __UTILITIES_H__

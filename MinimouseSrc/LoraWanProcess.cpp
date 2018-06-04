@@ -221,7 +221,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::Join ( void ) {
         return ( LWPSTATE_ERROR );
     }
     if ( GetIsOtaDevice ( ) == APB_DEVICE ) {
-        DEBUG_MSG( " ERROR : APB DEVICE CAN'T PROCCED A JOIN REQUEST\n" );
+        DEBUG_MSG( " ERROR : APB DEVICE CAN'T PROCCED A JOIN REQUEST \n" );
         return ( LWPSTATE_ERROR );
     }
     FailSafeTimestamp = mcu.RtcGetTimeSecond( ) ;

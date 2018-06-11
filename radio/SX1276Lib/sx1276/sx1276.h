@@ -91,13 +91,30 @@ private:
     * @param [IN]  mode          Standby mode to put the radio into
     */
     void SetStandby( void );
-    
+
     /*!
+    * \brief Sets the radio opmode for Lora operations
+		* TODO
+    */
+    void SetOpModeLora( uint8_t accessSharedReg, uint8_t lowFrequencyModeOn, uint8_t opMode );
+
+    /*!
+    * \brief Sets the radio opmode for FSK operations
+		* TODO
+		* @param [IN]  modulationType      The modulation scheme to be used for FSK/OOK:
+		* @param [IN]  lowFrequencyModeOn  Access Low Frequency mode registers. Powwible values 
+		*                                    - RFLR_OPMODE_FREQMODE_ACCESS_LF
+		*                                    - RFLR_OPMODE_FREQMODE_ACCESS_HF
+    * @param [IN]  opMode              mode to put the radio into
+    */
+    void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
+
+		/*!
     * \brief Sets the radio opmode
     * @param [IN]  opMode        mode to put the radio into
-    */
-    void SetOpMode( uint8_t opMode );
-    
+		*/
+		void SetOpMode( uint8_t opMode );
+
     /*!
     * \brief Write Payload inside the sx1276 fifo 
     * @param [in] *payload      Buffer of the data

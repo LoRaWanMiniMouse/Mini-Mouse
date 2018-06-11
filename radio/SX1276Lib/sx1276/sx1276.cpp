@@ -67,9 +67,8 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
     Channel = channel;
     Reset( );
     CalibrateImage( );
-    SetOpMode( RF_OPMODE_SLEEP );
 /* Set Lora Mode and max payload to 0x40 */
-    Write( REG_OPMODE, ( Read( REG_OPMODE ) & RFLR_OPMODE_LONGRANGEMODE_MASK ) | RFLR_OPMODE_LONGRANGEMODE_ON );
+    SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
 /* Configure Lora Tx */
     SetStandby( );
     SetRfFrequency( channel );
@@ -354,7 +353,16 @@ void SX1276::ReadFifo( uint8_t *buffer, uint8_t size )
     Read( 0, buffer, size );
 }
 
-void SX1276::SetOpMode( uint8_t opMode )
+void SX1276::SetOpModeLora( uint8_t accessSharedReg, uint8_t lowFrequencyModeOn, uint8_t opMode )
 {
-    Write( REG_OPMODE, ( Read( REG_OPMODE ) & RF_OPMODE_MASK ) | opMode );
+    Write( REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_ON | accessSharedReg | lowFrequencyModeOn | opMode );
+}
+
+void SX1276::SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode )
+{
+    Write( REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_OFF | modulationType | lowFrequencyModeOn | opMode );
+}
+
+void SX1276::SetOpMode( uint8_t opMode ) {
+	Write( REG_OPMODE, ( Read( REG_OPMODE ) & RF_OPMODE_MASK ) | opMode );
 }

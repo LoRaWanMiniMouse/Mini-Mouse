@@ -23,6 +23,12 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #include "sx1276Regs-Fsk.h"
 #include "sx1276Regs-LoRa.h"
 
+#define FSK_DATARATE_LORAWAN_REG_VALUE     0x280  // XTAL_FREQ / 50000
+#define FSK_FDEV_MSB_LORAWAN_REG_VALUE     RF_FDEVMSB_25000_HZ
+#define FSK_FDEV_LSB_LORAWAN_REG_VALUE     RF_FDEVLSB_25000_HZ
+#define FSK_PREAMBLE_MSB_LORAWAN_REG_VALUE 0x00
+#define FSK_PREAMBLE_LSB_LORAWAN_REG_VALUE 0x05
+#define FSK_SYNCWORD_LORAWAN_REG_VALUE     0xC194C1
 
 
 /************************************************************************************************
@@ -78,6 +84,33 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
 
 /* Configure IRQ Tx Done */
     Write ( REG_LR_IRQFLAGSMASK, 0xF7 ); 
+    Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
+    Write ( REG_DIOMAPPING2, 0x00 );
+/* Send */
+    SetOpMode( RF_OPMODE_TRANSMITTER );
+}
+
+void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
+                        uint32_t   channel,
+                        int8_t     power
+                    ) {
+    Channel = channel;
+    Reset( );
+    CalibrateImage( );
+/* Set FSK Mode */
+    SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
+
+/* Configure FSK Tx */
+    SetStandby( );
+    SetRfFrequency( channel );
+    SetPowerParamsTx( power );
+    SetModulationParamsTxFsk( payloadSize );
+
+
+    //SetPayload( payload, payloadSize);
+
+/* Configure IRQ Tx Done */
+    Write ( REG_LR_IRQFLAGSMASK, 0xF7 );
     Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
     Write ( REG_DIOMAPPING2, 0x00 );
 /* Send */

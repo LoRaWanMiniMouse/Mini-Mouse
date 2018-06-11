@@ -29,6 +29,8 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*************************************************/
 template class LoraWanContainer <16,SX1276>;
 template class LoraWanContainer <16,SX126x>;
+template class LoraWanContainer <16,SX1272>;
+template class LoraWanContainer <72,SX1272>;
 template class LoraWanContainer <72,SX1276>;
 template class LoraWanContainer <72,SX126x>;
 template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys, R * RadioUser,uint32_t FlashAdress)

@@ -22,6 +22,7 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*                     Constructors              */
 /*************************************************/
 template class LoraRegionsEU<SX1276>;
+template class LoraRegionsEU<SX1272>;
 template class LoraRegionsEU<SX126x>;
 template < class R > LoraRegionsEU<R>::LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys, R * RadioUser, uint32_t FlashAdress) : LoraWanContainer<16,R>  ( LoRaWanKeys, RadioUser, FlashAdress ){
     

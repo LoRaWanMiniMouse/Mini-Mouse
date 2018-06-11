@@ -24,6 +24,8 @@ template class LoraWanObject< LoraRegionsEU, SX1276 >;
 template class LoraWanObject< LoraRegionsEU, SX126x >;
 template class LoraWanObject< LoraRegionsUS, SX1276 >;
 template class LoraWanObject< LoraRegionsUS, SX126x >;
+template class LoraWanObject< LoraRegionsEU, SX1272 >;
+template class LoraWanObject< LoraRegionsUS, SX1272 >;
 template <template <class R> class T, class RADIOTYPE>
 LoraWanObject<T,RADIOTYPE>::LoraWanObject( sLoRaWanKeys LoRaWanKeys, RADIOTYPE * RadioUser,uint32_t FlashAdress ):packet(  LoRaWanKeys, RadioUser,FlashAdress ) {
     StateLoraWanProcess = LWPSTATE_IDLE;

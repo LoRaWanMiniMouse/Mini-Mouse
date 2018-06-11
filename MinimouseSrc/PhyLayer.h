@@ -16,6 +16,7 @@ License           : Revised BSD License, see LICENSE.TXT file include in the pro
 Maintainer        : Fabien Holin (SEMTECH)
 */
 #include "sx1276.h"
+#include "sx1272.h"
 #include "SX126x.h"
 #include "Define.h"
 #ifndef PHY_LAYER_H

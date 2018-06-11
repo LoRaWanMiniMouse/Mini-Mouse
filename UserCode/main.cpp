@@ -55,7 +55,6 @@ uint32_t LoRaDevAddrInit     = 0x26011918;
 
 int main( ) {
     int i;
-	  uint8_t StatusCpt = 0;
     uint8_t UserPayloadSize ;
     uint8_t UserPayload [14];
     uint8_t UserRxPayloadSize;
@@ -80,10 +79,10 @@ int main( ) {
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
     * \remark  The Current implementation  support radio SX1276 and sx1261
     */
-    ///SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
-    //LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
-    SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
-    LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+    SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+    LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+//	SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
+//	LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 
 
     uint8_t AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE ;

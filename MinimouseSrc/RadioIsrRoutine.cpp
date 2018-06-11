@@ -21,6 +21,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "utilities.h"
 #define FileId 6
 template class RadioContainer<SX1276>;
+template class RadioContainer<SX1272>;
 template class RadioContainer<SX126x>;
 template <class R> void RadioContainer <R>::IsrRadio( void ) {
     int status = OKLORAWAN;

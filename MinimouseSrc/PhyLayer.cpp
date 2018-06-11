@@ -26,6 +26,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "utilities.h"
 #define FileId 3
 template class RadioContainer<SX1276>;
+template class RadioContainer<SX1272>;
 template class RadioContainer<SX126x>;
 
 template <class R> RadioContainer <R>::RadioContainer( R * RadioUser ){

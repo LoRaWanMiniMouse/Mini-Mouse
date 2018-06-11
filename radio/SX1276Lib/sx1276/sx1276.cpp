@@ -72,7 +72,8 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
 /* Configure Lora Tx */
     SetStandby( );
     SetRfFrequency( channel );
-    SetModulationParamsTx( SF, BW, power );
+    SetPowerParamsTx( power );
+    SetModulationParamsTxLora( SF, BW );
     SetPayload( payload, payloadSize);
 
 /* Configure IRQ Tx Done */
@@ -160,14 +161,9 @@ void SX1276::GetPacketStatusLora( int16_t *pktRssi, int16_t *snr, int16_t *signa
 
 
 
-
-
-void SX1276::SetModulationParamsTx( uint8_t SF, eBandWidth BW, int8_t power ) {
-    
-    uint8_t LowDatarateOptimize;
+void SX1276::SetPowerParamsTx( int8_t power ) {
     uint8_t ValueTemp;
     power = ( power > 20 ) ? 20 : power;
-
     /*  Power  Setting  registers*/
     if ( PA_BOOST_CONNECTED == 1 ) {
         power = ( power > 20 ) ? 20 : power;
@@ -182,15 +178,21 @@ void SX1276::SetModulationParamsTx( uint8_t SF, eBandWidth BW, int8_t power ) {
         Write( REG_PADAC, 0x84 );
         Write( REG_PACONFIG, ( 0x70 +  power - 1 ));
     }
+}
+
+void SX1276::SetModulationParamsTxLora( uint8_t SF, eBandWidth BW ) {
+
+    uint8_t LowDatarateOptimize;
+    uint8_t ValueTemp;
 
      /* Set Coding rate 4/5 , Implicite Header and BW */
-        ValueTemp = 0x02 + ( ( BW + 7 ) << 4 ); 
+        ValueTemp = 0x02 + ( ( BW + 7 ) << 4 );
         Write( REG_LR_MODEMCONFIG1, ValueTemp );
-    
+
      /* Set Enable CRC and SF */
-        ValueTemp =  4 + ( SF << 4 ) ;
-        Write( REG_LR_MODEMCONFIG2, ValueTemp ) ;
-    
+        ValueTemp =  4 + ( SF << 4 );
+        Write( REG_LR_MODEMCONFIG2, ValueTemp );
+
      /* Enable/disable Low datarate optimized */
         if( ( ( BW == 0 ) && ( ( SF == 11 ) || ( SF == 12 ) ) ) || ( ( BW == 1 ) && ( SF == 12 ) ) ) {
              LowDatarateOptimize = 0x08;
@@ -198,17 +200,56 @@ void SX1276::SetModulationParamsTx( uint8_t SF, eBandWidth BW, int8_t power ) {
              LowDatarateOptimize = 0x00;
         }
         Write( REG_LR_MODEMCONFIG3,LowDatarateOptimize + 4 ); // + 4 for internal AGC loop
-         
+
      /* Set Preamble = 8 */
         Write( REG_LR_PREAMBLEMSB, 0 );
         Write( REG_LR_PREAMBLELSB, 8 );
-         
+
      /* Set Normal IQ */
         Write( REG_LR_INVERTIQ, 0x27) ;
         Write( REG_LR_INVERTIQ2, RFLR_INVERTIQ2_OFF );
-         
+
      /* Set Public sync word */
         Write( REG_LR_SYNCWORD, 0x34);
+}
+
+void SX1276::SetModulationParamsTxFsk( uint8_t payloadSize ) {
+
+		// Set Bitrate
+		Write( REG_BITRATEMSB, ( uint8_t )( FSK_DATARATE_LORAWAN_REG_VALUE >> 8 ) );
+		Write( REG_BITRATELSB, ( uint8_t )( FSK_DATARATE_LORAWAN_REG_VALUE & 0xFF ) );
+
+		// Set Fdev
+		Write( REG_FDEVMSB, FSK_FDEV_MSB_LORAWAN_REG_VALUE );
+		Write( REG_FDEVLSB, FSK_FDEV_LSB_LORAWAN_REG_VALUE );
+
+		// Set Preamble
+		Write( REG_PREAMBLEMSB, FSK_PREAMBLE_MSB_LORAWAN_REG_VALUE );
+		Write( REG_PREAMBLELSB, FSK_PREAMBLE_LSB_LORAWAN_REG_VALUE );
+
+		// Set sync config
+		Write( REG_SYNCCONFIG, RF_SYNCCONFIG_AUTORESTARTRXMODE_OFF | RF_SYNCCONFIG_PREAMBLEPOLARITY_AA |
+		                       RF_SYNCCONFIG_SYNC_ON | RF_SYNCCONFIG_SYNCSIZE_3
+		);
+
+		// Set Packet Config 1
+    Write( REG_PACKETCONFIG1, RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE | RF_PACKETCONFIG1_DCFREE_WHITENING |
+                              RF_PACKETCONFIG1_CRC_ON | RF_PACKETCONFIG1_CRCAUTOCLEAR_ON |
+                              RF_PACKETCONFIG1_ADDRSFILTERING_OFF | RF_PACKETCONFIG1_CRCWHITENINGTYPE_CCITT
+		);
+
+	  // Set Packet Config 2
+		Write( REG_PACKETCONFIG2, RF_PACKETCONFIG2_DATAMODE_PACKET | RF_PACKETCONFIG2_IOHOME_OFF |
+		                          RF_PACKETCONFIG2_BEACON_OFF
+		);
+
+		// Set payload length
+		Write( REG_PAYLOADLENGTH, payloadSize );
+
+		// Set Sync Values
+		Write( REG_SYNCVALUE1, ( FSK_SYNCWORD_LORAWAN_REG_VALUE >> 4 ) & 0x0000FF );
+		Write( REG_SYNCVALUE2, ( FSK_SYNCWORD_LORAWAN_REG_VALUE >> 2 ) & 0x0000FF );
+		Write( REG_SYNCVALUE3, ( FSK_SYNCWORD_LORAWAN_REG_VALUE >> 1 ) & 0x0000FF );
 }
 
 void SX1276::SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTimeout )

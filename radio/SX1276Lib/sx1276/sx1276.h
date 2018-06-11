@@ -66,12 +66,25 @@ private:
     void GetPacketStatusLora( int16_t *pktRssi, int16_t *snr, int16_t *signalRssi );
 
     /*!
-    * \brief Set the modulation parameters for Tx
-    * @param [IN] Speading factor
-    * @param [IN] Bandwith
+    * \brief Set the power parameters for Tx (modem independant)
     * @param [IN] Power
     */
-    void SetModulationParamsTx( uint8_t SF, eBandWidth BW, int8_t power );
+		void SetPowerParamsTx( int8_t power );
+
+    /*!
+    * \brief Set the modulation parameters for Lora Tx
+    * @param [IN] Speading factor
+    * @param [IN] Bandwith
+		* @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
+    */
+    void SetModulationParamsTxLora( uint8_t SF, eBandWidth BW );
+
+    /*!
+    * \brief Set the modulation parameters for FSK Tx
+		* @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
+    */
+		void SetModulationParamsTxFsk( uint8_t payloadSize );
+
     /*!
     * \brief Set the modulation parameters for Rx
     * @param [IN] Speading factor

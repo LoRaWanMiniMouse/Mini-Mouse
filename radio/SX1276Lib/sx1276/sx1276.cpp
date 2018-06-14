@@ -42,8 +42,13 @@ SX1276::SX1276( PinName nss, PinName reset, PinName TxRxIt, PinName RxTimeOutIt)
     mcu.Init_Irq ( RxTimeOutIt ) ;
 }
 
-void SX1276::ClearIrqFlags( void ) {
+void SX1276::ClearIrqFlagsLora( void ) {
     Write ( REG_LR_IRQFLAGS, 0xFF);
+}
+
+void SX1276::ClearIrqFlagsFsk( void ) {
+    Write ( REG_IRQFLAGS1, 0xFF);
+    Write ( REG_IRQFLAGS2, 0xFF);
 }
 
 void SX1276::FetchPayload( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi) {
@@ -52,9 +57,50 @@ void SX1276::FetchPayload( uint8_t *payloadSize, uint8_t payload[255], int16_t *
     GetPacketStatusLora( NULL, snr, signalRssi );
 }
 
-uint8_t SX1276::GetIrqFlags( void ) {
+IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
+    uint8_t irqFlags = 0x00;
 
-    return Read(REG_LR_IRQFLAGS);
+    // Read IRQ status
+    irqFlags = Read(REG_LR_IRQFLAGS);
+    // Parse it
+    if ( ( irqFlags & IRQ_LR_RX_TX_TIMEOUT ) !=0 ) {
+        irqFlags |= RXTIMEOUT_IRQ_FLAG;
+    }
+    if ( ( irqFlags & IRQ_LR_RX_DONE ) !=0 ) {
+        irqFlags |= RECEIVE_PACKET_IRQ_FLAG;
+    }
+    /* Not used by the MAC for now
+    if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
+        irqFlags = (IrqFlags_t) (irqFlags | TRANSMIT_PACKET_IRQ_FLAG);
+    }
+    */
+    if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
+        irqFlags |= BAD_PACKET_IRQ_FLAG;
+    }
+	  return (IrqFlags_t) irqFlags;
+}
+
+IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
+    uint16_t irqFlags = 0x0000;
+
+    Read(REG_LR_IRQFLAGS, (uint8_t*)&irqFlags, 2);
+
+    if ( ( irqFlags & IRQ_FSK_TIMEOUT ) !=0 ) {
+        irqFlags |= RXTIMEOUT_IRQ_FLAG;
+    }
+    if ( ( irqFlags & IRQ_FSK_PAYLOAD_READY ) !=0 ) {
+        irqFlags |= RECEIVE_PACKET_IRQ_FLAG;
+    }
+    /* Not used by the MAC for now
+    if ( ( irqFlags & IRQ_FSK_PACKET_SENT ) !=0 ) {
+        irqFlags = (IrqFlags_t) (irqFlags | TRANSMIT_PACKET_IRQ_FLAG);
+    }
+    */
+    /* This flag cannot be set in FSK based on IRQ registers parsing
+		if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
+        irqFlags |= BAD_PACKET_IRQ_FLAG;
+    }*/
+	  return (IrqFlags_t) irqFlags;
 }
 
 void SX1276::Reset( void ) {

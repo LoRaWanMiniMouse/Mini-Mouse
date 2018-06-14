@@ -40,8 +40,10 @@ class SX1276  {
 public:
     SX1276( PinName nss, PinName reset , PinName TxRxIt, PinName RxTimeOutIt);
     ~SX1276(){};
-    void ClearIrqFlags( void );
-    uint8_t GetIrqFlags( void );
+    void ClearIrqFlagsLora( void );
+    void ClearIrqFlagsFsk( void );
+    IrqFlags_t GetIrqFlagsLora( void );
+    IrqFlags_t GetIrqFlagsFsk( void );
     void FetchPayload( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
     void Reset( void );
     void SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power);

@@ -29,6 +29,8 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define FSK_PREAMBLE_MSB_LORAWAN_REG_VALUE 0x00
 #define FSK_PREAMBLE_LSB_LORAWAN_REG_VALUE 0x05
 #define FSK_SYNCWORD_LORAWAN_REG_VALUE     0xC194C1
+#define FSK_MAX_MODEM_PAYLOAD              64
+#define FSK_THRESHOLD_REFILL_LIMIT         32
 
 
 /************************************************************************************************
@@ -351,13 +353,12 @@ void SX1276::SetModulationParamsTxFsk( ) {
 		                          RF_PACKETCONFIG2_BEACON_OFF
 		);
 
-		// Set payload length
-		Write( REG_PAYLOADLENGTH, payloadSize );
-
 		// Set Sync Values
-		Write( REG_SYNCVALUE1, ( FSK_SYNCWORD_LORAWAN_REG_VALUE >> 4 ) & 0x0000FF );
-		Write( REG_SYNCVALUE2, ( FSK_SYNCWORD_LORAWAN_REG_VALUE >> 2 ) & 0x0000FF );
-		Write( REG_SYNCVALUE3, ( FSK_SYNCWORD_LORAWAN_REG_VALUE >> 1 ) & 0x0000FF );
+		
+		
+		Write( REG_SYNCVALUE1, (FSK_SYNCWORD_LORAWAN_REG_VALUE >> 16) & 0x0000FF );
+		Write( REG_SYNCVALUE2, (FSK_SYNCWORD_LORAWAN_REG_VALUE >> 8) & 0x0000FF );
+		Write( REG_SYNCVALUE3, FSK_SYNCWORD_LORAWAN_REG_VALUE & 0x0000FF );
 }
 
 void SX1276::SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTimeout )

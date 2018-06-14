@@ -140,27 +140,56 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
                         uint32_t   channel,
                         int8_t     power
                     ) {
+		uint8_t payloadChunkSize;
+		uint8_t bytesAlreadyIFifo = 0;
+		uint8_t remainingBytes = payloadSize;
     Channel = channel;
     Reset( );
     CalibrateImage( );
-/* Set FSK Mode */
-    SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
 
 /* Configure FSK Tx */
-    SetStandby( );
+    this->Sleep( false );
+    SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
     SetRfFrequency( channel );
     SetPowerParamsTx( power );
-    SetModulationParamsTxFsk( payloadSize );
+    SetModulationParamsTxFsk( );
 
+		if( payloadSize < FSK_MAX_MODEM_PAYLOAD ) {
+		    /* Configure IRQ Tx Done */
+			  Write( REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY | FSK_THRESHOLD_REFILL_LIMIT);
+        Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_01 );
+				Write ( REG_DIOMAPPING2, 0x00 );
+				WriteFifo( &payloadSize, 1);
+				WriteFifo( payload, payloadSize);
+				SetOpMode( RF_OPMODE_TRANSMITTER );
+				return;
+		}
+		else {
+			  Write( REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY | FSK_THRESHOLD_REFILL_LIMIT);
+        Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_01 );
+				Write( REG_DIOMAPPING2, 0x00 );
+				payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
+				WriteFifo( &payloadSize, 1);
+				WriteFifo( payload + bytesAlreadyIFifo, FSK_MAX_MODEM_PAYLOAD - 1);
+				bytesAlreadyIFifo += FSK_MAX_MODEM_PAYLOAD - 1;
+				remainingBytes = payloadSize - bytesAlreadyIFifo;
+				SetOpMode( RF_OPMODE_TRANSMITTER );
+				while( remainingBytes > payloadChunkSize ) {
+						while(IsFskFifoLevelReached()){}
+						WriteFifo( payload + bytesAlreadyIFifo, payloadChunkSize);
+						bytesAlreadyIFifo += payloadChunkSize;
+						remainingBytes = payloadSize - bytesAlreadyIFifo;
+				}
+				while(IsFskFifoLevelReached()){}
+				WriteFifo( payload + bytesAlreadyIFifo, remainingBytes);
+				return;
+		}
+}
 
-    //SetPayload( payload, payloadSize);
-
-/* Configure IRQ Tx Done */
-    Write ( REG_LR_IRQFLAGSMASK, 0xF7 );
-    Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
-    Write ( REG_DIOMAPPING2, 0x00 );
-/* Send */
-    SetOpMode( RF_OPMODE_TRANSMITTER );
+bool SX1276::IsFskFifoLevelReached() {
+    uint8_t irqFlags = 0x00;
+    Read(REG_IRQFLAGS2, &irqFlags, 1);
+    return (irqFlags & 0x20);
 }
 
 // @TODO: SetRxBoosted ?
@@ -292,7 +321,7 @@ void SX1276::SetModulationParamsTxLora( uint8_t SF, eBandWidth BW ) {
         Write( REG_LR_SYNCWORD, 0x34);
 }
 
-void SX1276::SetModulationParamsTxFsk( uint8_t payloadSize ) {
+void SX1276::SetModulationParamsTxFsk( ) {
 
 		// Set Bitrate
 		Write( REG_BITRATEMSB, ( uint8_t )( FSK_DATARATE_LORAWAN_REG_VALUE >> 8 ) );

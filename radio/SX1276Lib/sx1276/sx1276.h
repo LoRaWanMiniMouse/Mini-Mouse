@@ -54,6 +54,42 @@ public:
     uint32_t Channel;
 private:
 
+		typedef enum {
+				IRQ_LR_RADIO_ALL                           = 0xFF,
+				IRQ_LR_RX_TX_TIMEOUT                       = 0x80,
+				IRQ_LR_RX_DONE                             = 0x40,
+				IRQ_LR_CRC_ERROR                           = 0x20,
+				IRQ_LR_HEADER_VALID                        = 0x10,
+				IRQ_LR_TX_DONE                             = 0x08,
+				IRQ_LR_CAD_DONE                            = 0x04,
+				IRQ_LR_FHSS_CHANGE_CHANNEL_MASK            = 0x02,
+				IRQ_LR_CAD_DETECTED_MASK                   = 0x01,
+				IRQ_LR_RADIO_NONE                          = 0x00,
+		} IrqLoraValues_t;
+		
+		typedef enum {
+				IRQ_FSK_MODE_READY                         = 0x8000,
+				IRQ_FSK_RX_READY                           = 0x4000,
+				IRQ_FSK_TX_READY                           = 0x2000,
+				IRQ_FSK_PLL_LOCK                           = 0x1000,
+				IRQ_FSK_RSSI                               = 0x0800,
+				IRQ_FSK_TIMEOUT                            = 0x0400,
+				IRQ_FSK_PREAMBLE_DETECTED                  = 0x0200,
+				IRQ_FSK_SYNC_ADDRESS_MATCH                 = 0x0100,
+				IRQ_FSK_FIFO_FULL                          = 0x0080,
+				IRQ_FSK_FIFO_EMPTY                         = 0x0040,
+				IRQ_FSK_FIFO_LEVEL                         = 0x0020,
+				IRQ_FSK_FIFO_OVERRUN                       = 0x0010,
+				IRQ_FSK_PACKET_SENT                        = 0x0008,
+				IRQ_FSK_PAYLOAD_READY                      = 0x0004,
+				IRQ_FSK_CRC_OK                             = 0x0002,
+				IRQ_FSK_LOW_BATTERY                        = 0x0001,
+		} IrqFskValues_t;
+		
+    /*!
+    * \brief Indicate if the FIFO threshold level has been reached
+    */
+		bool IsFskFifoLevelReached( void );
 
     /*!
     * \brief Calibrates the Image rejection depending of the frequency
@@ -86,7 +122,7 @@ private:
     * \brief Set the modulation parameters for FSK Tx
 		* @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
     */
-		void SetModulationParamsTxFsk( uint8_t payloadSize );
+		void SetModulationParamsTxFsk( void );
 
     /*!
     * \brief Set the modulation parameters for Rx

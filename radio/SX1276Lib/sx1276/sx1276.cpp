@@ -37,7 +37,6 @@ Maintainer        : Olivier Gimenez (SEMTECH)
  *                                 Public  Methods                                              *
  ************************************************************************************************/
 
-
 SX1276::SX1276( PinName nss, PinName reset, PinName TxRxIt, PinName RxTimeOutIt) : pinCS( nss ), pinReset( reset ){
     mcu.SetValueDigitalOutPin ( pinCS, 1);
     mcu.Init_Irq ( TxRxIt ) ;
@@ -203,7 +202,7 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     SetRfFrequency( channel );
     uint16_t symbTimeout = ( ( TimeOutMs & 0xFFFF ) * ( ( BW + 1 ) * 125 ) ) >> SF ;
     SetModulationParamsRx( SF, BW, symbTimeout);
-    
+
 /* Configure IRQ Rx Done or Rx timeout */
     Write ( REG_LR_IRQFLAGSMASK, 0x3F ); 
     Write( REG_DIOMAPPING1,0);
@@ -213,14 +212,11 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     Write( REG_LR_FIFOADDRPTR, 0 );
 /* Receive */
     SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
-
 }
 
 void SX1276::Sleep(  bool coldStart ) {
         SetOpMode( RF_OPMODE_SLEEP );
 }
-
-
 
 /************************************************************************************************
  *                                Private  Methods                                              *
@@ -259,17 +255,14 @@ void SX1276::CalibrateImage( void )
     SetRfFrequency( initialFreq );
 }
 
-
 void SX1276::GetPacketStatusLora( int16_t *pktRssi, int16_t *snr, int16_t *signalRssi ) {
-    
+
     *snr = ((int16_t) Read( REG_LR_PKTSNRVALUE ))/4; 
     int16_t rssi = (int16_t) Read( REG_LR_PKTRSSIVALUE );
     rssi += rssi / 16; 
     rssi = (Channel > RF_MID_BAND_THRESH ) ? RSSI_OFFSET_HF + rssi : RSSI_OFFSET_LF + rssi;
     *signalRssi = (*snr < 0 ) ? *snr + rssi : rssi;
 }
-
-
 
 void SX1276::SetPowerParamsTx( int8_t power ) {
     uint8_t ValueTemp;
@@ -373,7 +366,7 @@ void SX1276::SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTime
     Write( REG_LR_MODEMCONFIG2, ValueTemp ) ;
   /* Set LSB Timeout*/
     Write( REG_LR_SYMBTIMEOUTLSB, ( uint8_t )( symbTimeout & 0x00FF ) );
-    
+
  /* Enable/disable Low datarate optimized */
     if( ( ( BW == 0 ) && ( ( SF == 11 ) || ( SF == 12 ) ) ) || ( ( BW == 1 ) && ( SF == 12 ) ) ) {
          LowDatarateOptimize = 0x08;
@@ -384,12 +377,12 @@ void SX1276::SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTime
  /* Set Preamble = 8 */
     Write( REG_LR_PREAMBLEMSB, 0 );
     Write( REG_LR_PREAMBLELSB, 8 );
-     
+
  /* Set inverted IQ */
     Write( REG_LR_INVERTIQ, 0x67) ;
     Write( REG_LR_INVERTIQ2, RFLR_INVERTIQ2_ON );
 /* sensitivity optimization */
-    
+
     Write( REG_LR_DETECTOPTIMIZE,( Read( REG_LR_DETECTOPTIMIZE ) & RFLR_DETECTIONOPTIMIZE_MASK ) | RFLR_DETECTIONOPTIMIZE_SF7_TO_SF12 );
     Write( REG_LR_DETECTIONTHRESHOLD, RFLR_DETECTIONTHRESH_SF7_TO_SF12 );
 
@@ -422,8 +415,6 @@ void SX1276::SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTime
     Write( REG_LR_SYNCWORD, 0x34);
 }
 
-
-
 void SX1276::SetPayload (uint8_t *payload, uint8_t payloadSize) {
 // Initializes the payload size
         Write( REG_LR_PAYLOADLENGTH, payloadSize );
@@ -442,7 +433,6 @@ void SX1276::SetPayload (uint8_t *payload, uint8_t payloadSize) {
         WriteFifo( payload, payloadSize );
 }
 
-
 void SX1276::SetRfFrequency( uint32_t frequency ) {
     uint32_t initialFreqInt, initialFreqFrac;
     initialFreqInt = frequency / FREQ_STEP_8;
@@ -456,7 +446,6 @@ void SX1276::SetRfFrequency( uint32_t frequency ) {
 void SX1276::SetStandby( void ) {
     Write( REG_OPMODE, ( Read( REG_OPMODE ) & RF_OPMODE_MASK ) | RF_OPMODE_STANDBY );
 }
-
 
 void SX1276::Write( uint8_t addr, uint8_t *buffer, uint8_t size )
 {
@@ -483,10 +472,12 @@ void SX1276::Read( uint8_t addr, uint8_t *buffer, uint8_t size )
     }
     mcu.SetValueDigitalOutPin ( pinCS, 1);
 }
+
 void SX1276::Write( uint8_t addr, uint8_t data )
 {
     Write( addr, &data, 1 );
 }
+
 void SX1276::WriteFifo( uint8_t *buffer, uint8_t size )
 {
     Write( 0, buffer, size );
@@ -498,6 +489,7 @@ uint8_t SX1276::Read( uint8_t addr )
     Read( addr, &data, 1 );
     return data;
 }
+
 void SX1276::ReadFifo( uint8_t *buffer, uint8_t size )
 {
     Read( 0, buffer, size );

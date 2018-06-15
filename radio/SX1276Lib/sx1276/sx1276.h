@@ -44,15 +44,20 @@ public:
     void ClearIrqFlagsFsk( void );
     IrqFlags_t GetIrqFlagsLora( void );
     IrqFlags_t GetIrqFlagsFsk( void );
-    void FetchPayload( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
+    void FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
+    void FetchPayloadFsk( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
     void Reset( void );
     void SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power);
     void SendFsk( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power);
     void RxLora( eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
+		void RxFsk(uint32_t channel, uint16_t timeout);
     void Sleep(  bool coldStart );
 
     uint32_t Channel;
 private:
+	
+	  uint8_t* rxBuffer;
+		uint8_t rxPayloadSize;
 
 		typedef enum {
 				IRQ_LR_RADIO_ALL                           = 0xFF,
@@ -123,14 +128,17 @@ private:
 		* @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
     */
 		void SetModulationParamsTxFsk( void );
+		
+		void SetModulationParamsRxFsk( uint16_t symbTimeout );
+		void SetModulationParamsCommonFsk( void );
 
     /*!
-    * \brief Set the modulation parameters for Rx
+    * \brief Set the modulation parameters for Rx with Lora
     * @param [IN] Speading factor
     * @param [IN] Bandwith
     * @param [IN] TimeOut : number of symbols
     */
-    void SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTimeout );
+    void SetModulationParamsRxLora( uint8_t SF, eBandWidth BW, uint16_t symbTimeout );
     
     /*!
     * \brief Set the RF frequency

@@ -93,10 +93,14 @@ IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
 }
 
 IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
-    uint16_t irqFlags = 0x0000;
+		uint8_t irq1 = 0x00;
+		uint8_t irq2 = 0x00;
+		uint16_t irqFlags = 0x0000;
+	
+    Read(REG_IRQFLAGS1, &irq1, 1);
+		Read(REG_IRQFLAGS2, &irq2, 1);
 
-    Read(REG_LR_IRQFLAGS, (uint8_t*)&irqFlags, 2);
-
+		irqFlags = irq1<<8 | irq2;
     if ( ( irqFlags & IRQ_FSK_TIMEOUT ) !=0 ) {
         irqFlags |= RXTIMEOUT_IRQ_FLAG;
     }
@@ -168,18 +172,12 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
 
 		if( payloadSize < FSK_MAX_MODEM_PAYLOAD ) {
 		    /* Configure IRQ Tx Done */
-			  Write( REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY | FSK_THRESHOLD_REFILL_LIMIT);
-        Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_01 );
-				Write ( REG_DIOMAPPING2, 0x00 );
 				WriteFifo( &payloadSize, 1);
 				WriteFifo( payload, payloadSize);
 				SetOpMode( RF_OPMODE_TRANSMITTER );
 				return;
 		}
 		else {
-			  Write( REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY | FSK_THRESHOLD_REFILL_LIMIT);
-        Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_01 );
-				Write( REG_DIOMAPPING2, 0x00 );
 				payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
 				WriteFifo( &payloadSize, 1);
 				WriteFifo( payload + bytesAlreadyIFifo, FSK_MAX_MODEM_PAYLOAD - 1);
@@ -198,12 +196,6 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
 		}
 }
 
-bool SX1276::IsFskFifoLevelReached() {
-    uint8_t irqFlags = 0x00;
-    Read(REG_IRQFLAGS2, &irqFlags, 1);
-    return (irqFlags & 0x20);
-}
-
 // @TODO: SetRxBoosted ?
 void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs ) {
     Channel = channel;
@@ -212,7 +204,7 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     SetStandby( );
     SetRfFrequency( channel );
     uint16_t symbTimeout = ( ( TimeOutMs & 0xFFFF ) * ( ( BW + 1 ) * 125 ) ) >> SF ;
-    SetModulationParamsRx( SF, BW, symbTimeout);
+    SetModulationParamsRxLora( SF, BW, symbTimeout);
 
 /* Configure IRQ Rx Done or Rx timeout */
     Write ( REG_LR_IRQFLAGSMASK, 0x3F ); 
@@ -246,7 +238,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
 }
 
 void SX1276::Sleep(  bool coldStart ) {
-        SetOpMode( RF_OPMODE_SLEEP );
+	SetOpMode( RF_OPMODE_SLEEP );
 }
 
 /************************************************************************************************
@@ -284,6 +276,24 @@ void SX1276::CalibrateImage( void )
     // Restore context
     this->Write( REG_PACONFIG, regPaConfigInitVal );
     SetRfFrequency( initialFreq );
+}
+
+bool SX1276::IsFskFifoLevelReached() {
+    uint8_t irqFlags = 0x00;
+    Read(REG_IRQFLAGS2, &irqFlags, 1);
+    return (irqFlags & 0x20);
+}
+
+bool SX1276::IsFskFifoEmpty() {
+    uint8_t irqFlags = 0x00;
+    Read(REG_IRQFLAGS2, &irqFlags, 1);
+    return (irqFlags & 0x40);
+}
+
+bool SX1276::HasTimeouted() {
+    uint8_t irqFlags = 0x00;
+    Read(REG_IRQFLAGS1, &irqFlags, 1);
+    return (irqFlags & 0x04);
 }
 
 void SX1276::GetPacketStatusLora( int16_t *pktRssi, int16_t *snr, int16_t *signalRssi ) {
@@ -347,8 +357,7 @@ void SX1276::SetModulationParamsTxLora( uint8_t SF, eBandWidth BW ) {
         Write( REG_LR_SYNCWORD, 0x34);
 }
 
-void SX1276::SetModulationParamsTxFsk( ) {
-
+void SX1276::SetModulationParamsCommonFsk( ) {
 		// Set Bitrate
 		Write( REG_BITRATEMSB, ( uint8_t )( FSK_DATARATE_LORAWAN_REG_VALUE >> 8 ) );
 		Write( REG_BITRATELSB, ( uint8_t )( FSK_DATARATE_LORAWAN_REG_VALUE & 0xFF ) );
@@ -368,7 +377,7 @@ void SX1276::SetModulationParamsTxFsk( ) {
 
 		// Set Packet Config 1
     Write( REG_PACKETCONFIG1, RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE | RF_PACKETCONFIG1_DCFREE_WHITENING |
-                              RF_PACKETCONFIG1_CRC_ON | RF_PACKETCONFIG1_CRCAUTOCLEAR_ON |
+                              RF_PACKETCONFIG1_CRC_ON | RF_PACKETCONFIG1_CRCAUTOCLEAR_OFF |
                               RF_PACKETCONFIG1_ADDRSFILTERING_OFF | RF_PACKETCONFIG1_CRCWHITENINGTYPE_CCITT
 		);
 

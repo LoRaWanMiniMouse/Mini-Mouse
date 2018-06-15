@@ -95,6 +95,9 @@ private:
     * \brief Indicate if the FIFO threshold level has been reached
     */
 		bool IsFskFifoLevelReached( void );
+		
+		bool IsFskFifoEmpty( void );
+		bool HasTimeouted( void );
 
     /*!
     * \brief Calibrates the Image rejection depending of the frequency

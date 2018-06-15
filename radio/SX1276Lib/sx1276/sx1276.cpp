@@ -31,6 +31,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define FSK_SYNCWORD_LORAWAN_REG_VALUE     0xC194C1
 #define FSK_MAX_MODEM_PAYLOAD              64
 #define FSK_THRESHOLD_REFILL_LIMIT         32
+#define MAX_PAYLOAD_SIZE                   255
 
 
 /************************************************************************************************
@@ -41,6 +42,8 @@ SX1276::SX1276( PinName nss, PinName reset, PinName TxRxIt, PinName RxTimeOutIt)
     mcu.SetValueDigitalOutPin ( pinCS, 1);
     mcu.Init_Irq ( TxRxIt ) ;
     mcu.Init_Irq ( RxTimeOutIt ) ;
+		rxBuffer = (uint8_t*) malloc(MAX_PAYLOAD_SIZE);
+		rxPayloadSize = 0;
 }
 
 void SX1276::ClearIrqFlagsLora( void ) {

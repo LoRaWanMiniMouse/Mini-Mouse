@@ -179,13 +179,13 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
     SetModulationParamsTxFsk( );
 
 		if( payloadSize < FSK_MAX_MODEM_PAYLOAD ) {
-		    /* Configure IRQ Tx Done */
 				WriteFifo( &payloadSize, 1);
 				WriteFifo( payload, payloadSize);
 				SetOpMode( RF_OPMODE_TRANSMITTER );
 				return;
 		}
 		else {
+				SetFifoThreshold(FSK_THRESHOLD_REFILL_LIMIT);
 				payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
 				WriteFifo( &payloadSize, 1);
 				WriteFifo( payload + bytesAlreadyIFifo, FSK_MAX_MODEM_PAYLOAD - 1);
@@ -459,12 +459,12 @@ void SX1276::SetModulationParamsCommonFsk( ) {
 
 void SX1276::SetFifoThreshold(uint8_t threshold){
 	Write( REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY | (threshold & ~RF_FIFOTHRESH_FIFOTHRESHOLD_MASK));
-	Write( REG_DIOMAPPING2, 0x00 );
 }
 
 void SX1276::SetModulationParamsTxFsk( ) {
 	this->SetModulationParamsCommonFsk();
-	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_01 );
+	Write( REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY | FSK_THRESHOLD_REFILL_LIMIT);
+	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_11 | RF_DIOMAPPING1_DIO2_01 );
 	Write( REG_DIOMAPPING2, 0x00 );
 }
 

@@ -41,7 +41,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
  ************************************************************************************************/
 
 SX1276::SX1276( PinName nss, PinName reset, PinName TxRxIt, PinName RxTimeOutIt) :
-pinCS( nss ), pinReset( reset ), isFakeIrq(false), fakeIrqFlag(RADIO_IRQ_NONE), lastPacketRssi(0){
+isFakeIrq(false), fakeIrqFlag(RADIO_IRQ_NONE), pinCS( nss ), pinReset( reset ), lastPacketRssi(0){
     mcu.SetValueDigitalOutPin ( pinCS, 1);
     mcu.Init_Irq ( TxRxIt ) ;
     mcu.Init_Irq ( RxTimeOutIt ) ;

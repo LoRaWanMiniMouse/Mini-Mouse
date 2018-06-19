@@ -54,10 +54,21 @@ public:
     void Sleep(  bool coldStart );
 
     uint32_t Channel;
+
+protected:
+		void SetAndGenerateFakeIRQ(IrqFlags_t fakeIrqFlag );
+		bool IsFakeIRQ(void);
+		void generateFakeIrq(void);
+		void SetFifoThreshold(uint8_t threshold);
+		void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
+		void SetModulationParamsRxFsk( uint8_t symbTimeout );
+
 private:
 	
 	  uint8_t* rxBuffer;
 		uint8_t rxPayloadSize;
+		bool isFakeIrq;
+		IrqFlags_t fakeIrqFlag;
 
 		typedef enum {
 				IRQ_LR_RADIO_ALL                           = 0xFF,
@@ -132,7 +143,7 @@ private:
     */
 		void SetModulationParamsTxFsk( void );
 		
-		void SetModulationParamsRxFsk( uint16_t symbTimeout );
+		//void SetModulationParamsRxFsk( uint8_t symbTimeout );
 		void SetModulationParamsCommonFsk( void );
 
     /*!
@@ -170,7 +181,7 @@ private:
 		*                                    - RFLR_OPMODE_FREQMODE_ACCESS_HF
     * @param [IN]  opMode              mode to put the radio into
     */
-    void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
+    //void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
 
 		/*!
     * \brief Sets the radio opmode

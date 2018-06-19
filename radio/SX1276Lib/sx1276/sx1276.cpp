@@ -32,13 +32,15 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define FSK_MAX_MODEM_PAYLOAD              64
 #define FSK_THRESHOLD_REFILL_LIMIT         32
 #define MAX_PAYLOAD_SIZE                   255
+#define FSK_FAKE_IRQ_THRESHOLD             2
 
 
 /************************************************************************************************
  *                                 Public  Methods                                              *
  ************************************************************************************************/
 
-SX1276::SX1276( PinName nss, PinName reset, PinName TxRxIt, PinName RxTimeOutIt) : pinCS( nss ), pinReset( reset ){
+SX1276::SX1276( PinName nss, PinName reset, PinName TxRxIt, PinName RxTimeOutIt) :
+pinCS( nss ), pinReset( reset ), isFakeIrq(false), fakeIrqFlag(RADIO_IRQ_NONE){
     mcu.SetValueDigitalOutPin ( pinCS, 1);
     mcu.Init_Irq ( TxRxIt ) ;
     mcu.Init_Irq ( RxTimeOutIt ) ;
@@ -94,7 +96,11 @@ IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
 IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
 		uint8_t irq1 = 0x00;
 		uint8_t irq2 = 0x00;
-		uint16_t irqFlags = 0x0000;
+		uint16_t irqs = 0x0000;
+		uint16_t flags = RADIO_IRQ_NONE;
+		if(this->IsFakeIRQ()){
+			return this->fakeIrqFlag;
+		}
 	
     Read(REG_IRQFLAGS1, &irq1, 1);
 		Read(REG_IRQFLAGS2, &irq2, 1);
@@ -251,6 +257,27 @@ void SX1276::Sleep(  bool coldStart ) {
 /************************************************************************************************
  *                                Private  Methods                                              *
  ************************************************************************************************/
+void SX1276::SetAndGenerateFakeIRQ(IrqFlags_t fakeIrqFlag ){
+	this->isFakeIrq = true;
+	this->fakeIrqFlag = fakeIrqFlag;
+	this->generateFakeIrq();
+}
+
+bool SX1276::IsFakeIRQ(void){
+	if(this->isFakeIrq == true ){
+		this->isFakeIrq = false;
+		return true;
+	}
+	return false;
+}
+
+void SX1276::generateFakeIrq(void){
+	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_11 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
+	SetFifoThreshold(FSK_FAKE_IRQ_THRESHOLD);
+	WriteFifo(this->rxBuffer, FSK_FAKE_IRQ_THRESHOLD + 1);
+	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
+}
+
 void SX1276::CalibrateImage( void )
 {
     uint8_t regPaConfigInitVal;
@@ -399,17 +426,21 @@ void SX1276::SetModulationParamsCommonFsk( ) {
 		Write( REG_SYNCVALUE3, FSK_SYNCWORD_LORAWAN_REG_VALUE & 0x0000FF );
 }
 
+void SX1276::SetFifoThreshold(uint8_t threshold){
+	Write( REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY | (threshold & ~RF_FIFOTHRESH_FIFOTHRESHOLD_MASK));
+	Write( REG_DIOMAPPING2, 0x00 );
+}
+
 void SX1276::SetModulationParamsTxFsk( ) {
 	this->SetModulationParamsCommonFsk();
-	Write( REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY | FSK_THRESHOLD_REFILL_LIMIT);
 	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_01 );
 	Write( REG_DIOMAPPING2, 0x00 );
 }
 
-void SX1276::SetModulationParamsRxFsk( uint16_t symbTimeout ) {
+void SX1276::SetModulationParamsRxFsk( uint8_t symbTimeout ) {
 	this->SetModulationParamsCommonFsk();
 	Write( REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY | FSK_THRESHOLD_REFILL_LIMIT);
-	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_10 );
+	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_10 | RF_DIOMAPPING1_DIO1_11 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
 	Write( REG_DIOMAPPING2, 0x00 );
 	Write( REG_RXCONFIG, RF_RXCONFIG_RESTARTRXONCOLLISION_OFF |
 	                     RF_RXCONFIG_AFCAUTO_ON | RF_RXCONFIG_AGCAUTO_ON | RF_RXCONFIG_RXTRIGER_PREAMBLEDETECT );

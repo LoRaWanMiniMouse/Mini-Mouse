@@ -45,8 +45,8 @@ pinCS( nss ), pinReset( reset ), isFakeIrq(false), fakeIrqFlag(RADIO_IRQ_NONE), 
     mcu.SetValueDigitalOutPin ( pinCS, 1);
     mcu.Init_Irq ( TxRxIt ) ;
     mcu.Init_Irq ( RxTimeOutIt ) ;
-        rxBuffer = (uint8_t*) malloc(MAX_PAYLOAD_SIZE);
-        rxPayloadSize = 0;
+    rxBuffer = (uint8_t*) malloc(MAX_PAYLOAD_SIZE);
+    rxPayloadSize = 0;
 }
 
 void SX1276::ClearIrqFlagsLora( void ) {
@@ -91,22 +91,21 @@ IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
     if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
         irqFlags |= BAD_PACKET_IRQ_FLAG;
     }
-      return (IrqFlags_t) irqFlags;
+    return (IrqFlags_t) irqFlags;
 }
 
 IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
-        uint8_t irq1 = 0x00;
-        uint8_t irq2 = 0x00;
-        uint16_t irqs = 0x0000;
-        uint16_t flags = RADIO_IRQ_NONE;
-        if(this->IsFakeIRQ()){
-            return this->fakeIrqFlag;
-        }
+    uint8_t irq1 = 0x00;
+    uint8_t irq2 = 0x00;
+    uint16_t irqs = 0x0000;
+    uint16_t flags = RADIO_IRQ_NONE;
+    if(this->IsFakeIRQ()){
+        return this->fakeIrqFlag;
+    }
 
     Read(REG_IRQFLAGS1, &irq1, 1);
-        Read(REG_IRQFLAGS2, &irq2, 1);
-
-        irqs = irq1<<8 | irq2;
+    Read(REG_IRQFLAGS2, &irq2, 1);
+    irqs = irq1<<8 | irq2;
     if ( ( irqs & IRQ_FSK_TIMEOUT ) !=0 ) {
         flags |= RXTIMEOUT_IRQ_FLAG;
     }
@@ -128,98 +127,98 @@ void SX1276::Reset( void ) {
     mcu.mwait_ms( 1 );
     mcu.SetValueDigitalOutPin ( pinReset, 1);
     mcu.mwait_ms( 6 );
-      this->ResetFakeIrq();
-        lastPacketRssi = 0;
+    this->ResetFakeIrq();
+    lastPacketRssi = 0;
 }
 
 void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
-                        uint8_t    SF,
-                        eBandWidth BW,
-                        uint32_t   channel,
-                        int8_t     power
+                       uint8_t    SF,
+                       eBandWidth BW,
+                       uint32_t   channel,
+                       int8_t     power
                     ) {
     Channel = channel;
     Reset( );
     CalibrateImage( );
-/* Set Lora Mode and max payload to 0x40 */
+    /* Set Lora Mode and max payload to 0x40 */
     SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
-/* Configure Lora Tx */
+    /* Configure Lora Tx */
     SetStandby( );
     SetRfFrequency( channel );
     SetPowerParamsTx( power );
     SetModulationParamsTxLora( SF, BW );
     SetPayload( payload, payloadSize);
 
-/* Configure IRQ Tx Done */
+    /* Configure IRQ Tx Done */
     Write ( REG_LR_IRQFLAGSMASK, 0xF7 );
     Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
     Write ( REG_DIOMAPPING2, 0x00 );
-/* Send */
+    /* Send */
     SetOpMode( RF_OPMODE_TRANSMITTER );
 }
 
 void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
-                        uint32_t   channel,
-                        int8_t     power
+                      uint32_t   channel,
+                      int8_t     power
                     ) {
-        uint8_t payloadChunkSize;
-        uint8_t bytesAlreadyIFifo = 0;
-        uint8_t remainingBytes = payloadSize;
+    uint8_t payloadChunkSize;
+    uint8_t bytesAlreadyIFifo = 0;
+    uint8_t remainingBytes = payloadSize;
     Channel = channel;
     Reset( );
     CalibrateImage( );
 
-/* Configure FSK Tx */
+    /* Configure FSK Tx */
     this->Sleep( false );
     SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
     SetRfFrequency( channel );
     SetPowerParamsTx( power );
     SetModulationParamsTxFsk( );
 
-        if( payloadSize < FSK_MAX_MODEM_PAYLOAD ) {
-                WriteFifo( &payloadSize, 1);
-                WriteFifo( payload, payloadSize);
-                SetOpMode( RF_OPMODE_TRANSMITTER );
-                return;
+    if( payloadSize < FSK_MAX_MODEM_PAYLOAD ) {
+        WriteFifo( &payloadSize, 1);
+        WriteFifo( payload, payloadSize);
+        SetOpMode( RF_OPMODE_TRANSMITTER );
+        return;
+    }
+    else {
+        SetFifoThreshold(FSK_THRESHOLD_REFILL_LIMIT);
+        payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
+        WriteFifo( &payloadSize, 1);
+        WriteFifo( payload + bytesAlreadyIFifo, FSK_MAX_MODEM_PAYLOAD - 1);
+        bytesAlreadyIFifo += FSK_MAX_MODEM_PAYLOAD - 1;
+        remainingBytes = payloadSize - bytesAlreadyIFifo;
+        SetOpMode( RF_OPMODE_TRANSMITTER );
+        while( remainingBytes > payloadChunkSize ) {
+            while(IsFskFifoLevelReached()){}
+            WriteFifo( payload + bytesAlreadyIFifo, payloadChunkSize);
+            bytesAlreadyIFifo += payloadChunkSize;
+            remainingBytes = payloadSize - bytesAlreadyIFifo;
         }
-        else {
-                SetFifoThreshold(FSK_THRESHOLD_REFILL_LIMIT);
-                payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
-                WriteFifo( &payloadSize, 1);
-                WriteFifo( payload + bytesAlreadyIFifo, FSK_MAX_MODEM_PAYLOAD - 1);
-                bytesAlreadyIFifo += FSK_MAX_MODEM_PAYLOAD - 1;
-                remainingBytes = payloadSize - bytesAlreadyIFifo;
-                SetOpMode( RF_OPMODE_TRANSMITTER );
-                while( remainingBytes > payloadChunkSize ) {
-                        while(IsFskFifoLevelReached()){}
-                        WriteFifo( payload + bytesAlreadyIFifo, payloadChunkSize);
-                        bytesAlreadyIFifo += payloadChunkSize;
-                        remainingBytes = payloadSize - bytesAlreadyIFifo;
-                }
-                while(IsFskFifoLevelReached()){}
-                WriteFifo( payload + bytesAlreadyIFifo, remainingBytes);
-                return;
-        }
+        while(IsFskFifoLevelReached()){}
+        WriteFifo( payload + bytesAlreadyIFifo, remainingBytes);
+        return;
+    }
 }
 
 // @TODO: SetRxBoosted ?
 void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs ) {
     Channel = channel;
-/* Configure Lora Rx */
+    /* Configure Lora Rx */
     SetOpMode( RF_OPMODE_SLEEP );
     SetStandby( );
     SetRfFrequency( channel );
     uint16_t symbTimeout = ( ( TimeOutMs & 0xFFFF ) * ( ( BW + 1 ) * 125 ) ) >> SF ;
     SetModulationParamsRxLora( SF, BW, symbTimeout);
 
-/* Configure IRQ Rx Done or Rx timeout */
+    /* Configure IRQ Rx Done or Rx timeout */
     Write ( REG_LR_IRQFLAGSMASK, 0x3F );
     Write( REG_DIOMAPPING1,0);
     Write ( REG_DIOMAPPING2, 0x00 );
-/* Configure Fifo*/
+    /* Configure Fifo*/
     Write( REG_LR_FIFORXBASEADDR, 0 );
     Write( REG_LR_FIFOADDRPTR, 0 );
-/* Receive */
+    /* Receive */
     SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
 
 }
@@ -233,16 +232,16 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     uint8_t firstBytesRx[LORAWAN_MIN_PACKET_SIZE] = {0x00};
     uint8_t payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
 
-  SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
-  SetRfFrequency( channel );
-  uint8_t symbTimeout = timeOutMs / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
-  SetModulationParamsRxFsk( symbTimeout );
+    SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
+    SetRfFrequency( channel );
+    uint8_t symbTimeout = timeOutMs / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
+    SetModulationParamsRxFsk( symbTimeout );
 
     SetFifoThreshold(LORAWAN_MIN_PACKET_SIZE - 1);
     SetOpMode( RF_OPMODE_RECEIVER );
     while(!IsFskFifoLevelReached()) {
         wait_ms(2);
-        if(this->HasTimeouted()){
+        if(this->HasTimeouted()) {
             this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG);
             return;
         }
@@ -254,8 +253,8 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     remainingBytes = rxPayloadSize - bytesReceived;
 
     SetFifoThreshold(payloadChunkSize - 1);
-    while(remainingBytes > payloadChunkSize){
-        while(!IsFskFifoLevelReached()){
+    while(remainingBytes > payloadChunkSize) {
+        while(!IsFskFifoLevelReached()) {
             wait_ms(2);
         }
         ReadFifo( rxBuffer + bytesReceived, payloadChunkSize );
@@ -264,7 +263,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     }
 
     SetFifoThreshold(remainingBytes - 1);
-    while(!IsPayloadReady()){
+    while(!IsPayloadReady()) {
         wait_ms(2);
     }
     ReadFifo( rxBuffer + bytesReceived, remainingBytes );
@@ -280,18 +279,18 @@ void SX1276::Sleep(  bool coldStart ) {
 /************************************************************************************************
  *                                Private  Methods                                              *
  ************************************************************************************************/
-void SX1276::SetAndGenerateFakeIRQ(IrqFlags_t fakeIrqFlag ){
+void SX1276::SetAndGenerateFakeIRQ(IrqFlags_t fakeIrqFlag ) {
     this->isFakeIrq = true;
     this->fakeIrqFlag = fakeIrqFlag;
     this->generateFakeIrq();
 }
 
-void SX1276::ResetFakeIrq(void){
+void SX1276::ResetFakeIrq(void) {
     this->isFakeIrq = false;
     this->fakeIrqFlag = RADIO_IRQ_NONE;
 }
 
-bool SX1276::IsFakeIRQ(void){
+bool SX1276::IsFakeIRQ(void) {
     if(this->isFakeIrq == true ){
         this->isFakeIrq = false;
         return true;
@@ -299,15 +298,14 @@ bool SX1276::IsFakeIRQ(void){
     return false;
 }
 
-void SX1276::generateFakeIrq(void){
+void SX1276::generateFakeIrq(void) {
     Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_10 | RF_DIOMAPPING1_DIO1_11 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
     SetFifoThreshold(FSK_FAKE_IRQ_THRESHOLD);
     WriteFifo(this->rxBuffer, FSK_FAKE_IRQ_THRESHOLD + 1);
     Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_10 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
 }
 
-void SX1276::CalibrateImage( void )
-{
+void SX1276::CalibrateImage( void ) {
     uint8_t regPaConfigInitVal;
     uint32_t initialFreq;
 
@@ -365,7 +363,6 @@ bool SX1276::HasTimeouted() {
 }
 
 void SX1276::GetPacketStatusLora( int16_t *pktRssi, int16_t *snr, int16_t *signalRssi ) {
-
     *snr = ((int16_t) Read( REG_LR_PKTSNRVALUE ))/4;
     int16_t rssi = (int16_t) Read( REG_LR_PKTRSSIVALUE );
     rssi += rssi / 16;
@@ -393,71 +390,70 @@ void SX1276::SetPowerParamsTx( int8_t power ) {
 }
 
 void SX1276::SetModulationParamsTxLora( uint8_t SF, eBandWidth BW ) {
-
     uint8_t LowDatarateOptimize;
     uint8_t ValueTemp;
 
-     /* Set Coding rate 4/5 , Implicite Header and BW */
-        ValueTemp = 0x02 + ( ( BW + 7 ) << 4 );
-        Write( REG_LR_MODEMCONFIG1, ValueTemp );
+    /* Set Coding rate 4/5 , Implicite Header and BW */
+    ValueTemp = 0x02 + ( ( BW + 7 ) << 4 );
+    Write( REG_LR_MODEMCONFIG1, ValueTemp );
 
-     /* Set Enable CRC and SF */
-        ValueTemp =  4 + ( SF << 4 );
-        Write( REG_LR_MODEMCONFIG2, ValueTemp );
+    /* Set Enable CRC and SF */
+    ValueTemp =  4 + ( SF << 4 );
+    Write( REG_LR_MODEMCONFIG2, ValueTemp );
 
-     /* Enable/disable Low datarate optimized */
-        if( ( ( BW == 0 ) && ( ( SF == 11 ) || ( SF == 12 ) ) ) || ( ( BW == 1 ) && ( SF == 12 ) ) ) {
-             LowDatarateOptimize = 0x08;
-        } else {
-             LowDatarateOptimize = 0x00;
-        }
-        Write( REG_LR_MODEMCONFIG3,LowDatarateOptimize + 4 ); // + 4 for internal AGC loop
+    /* Enable/disable Low datarate optimized */
+    if( ( ( BW == 0 ) && ( ( SF == 11 ) || ( SF == 12 ) ) ) || ( ( BW == 1 ) && ( SF == 12 ) ) ) {
+         LowDatarateOptimize = 0x08;
+    } else {
+         LowDatarateOptimize = 0x00;
+    }
+    Write( REG_LR_MODEMCONFIG3,LowDatarateOptimize + 4 ); // + 4 for internal AGC loop
 
-     /* Set Preamble = 8 */
-        Write( REG_LR_PREAMBLEMSB, 0 );
-        Write( REG_LR_PREAMBLELSB, 8 );
+    /* Set Preamble = 8 */
+    Write( REG_LR_PREAMBLEMSB, 0 );
+    Write( REG_LR_PREAMBLELSB, 8 );
 
-     /* Set Normal IQ */
-        Write( REG_LR_INVERTIQ, 0x27) ;
-        Write( REG_LR_INVERTIQ2, RFLR_INVERTIQ2_OFF );
+    /* Set Normal IQ */
+    Write( REG_LR_INVERTIQ, 0x27) ;
+    Write( REG_LR_INVERTIQ2, RFLR_INVERTIQ2_OFF );
 
-     /* Set Public sync word */
-        Write( REG_LR_SYNCWORD, 0x34);
+    /* Set Public sync word */
+    Write( REG_LR_SYNCWORD, 0x34);
 }
 
 void SX1276::SetModulationParamsCommonFsk( ) {
-        // Set Bitrate
-        Write( REG_BITRATEMSB, ( uint8_t )( FSK_DATARATE_LORAWAN_REG_VALUE >> 8 ) );
-        Write( REG_BITRATELSB, ( uint8_t )( FSK_DATARATE_LORAWAN_REG_VALUE & 0xFF ) );
+    // Set Bitrate
+    Write( REG_BITRATEMSB, ( uint8_t )( FSK_DATARATE_LORAWAN_REG_VALUE >> 8 ) );
+    Write( REG_BITRATELSB, ( uint8_t )( FSK_DATARATE_LORAWAN_REG_VALUE & 0xFF ) );
 
-        // Set Fdev
-        Write( REG_FDEVMSB, FSK_FDEV_MSB_LORAWAN_REG_VALUE );
-        Write( REG_FDEVLSB, FSK_FDEV_LSB_LORAWAN_REG_VALUE );
+    // Set Fdev
+    Write( REG_FDEVMSB, FSK_FDEV_MSB_LORAWAN_REG_VALUE );
+    Write( REG_FDEVLSB, FSK_FDEV_LSB_LORAWAN_REG_VALUE );
 
-        // Set Preamble
-        Write( REG_PREAMBLEMSB, FSK_PREAMBLE_MSB_LORAWAN_REG_VALUE );
-        Write( REG_PREAMBLELSB, FSK_PREAMBLE_LSB_LORAWAN_REG_VALUE );
+    // Set Preamble
+    Write( REG_PREAMBLEMSB, FSK_PREAMBLE_MSB_LORAWAN_REG_VALUE );
+    Write( REG_PREAMBLELSB, FSK_PREAMBLE_LSB_LORAWAN_REG_VALUE );
 
-        // Set sync config
-        Write( REG_SYNCCONFIG, RF_SYNCCONFIG_AUTORESTARTRXMODE_OFF | RF_SYNCCONFIG_PREAMBLEPOLARITY_AA |
-                               RF_SYNCCONFIG_SYNC_ON | RF_SYNCCONFIG_SYNCSIZE_3
-        );
+    // Set sync config
+    Write( REG_SYNCCONFIG, RF_SYNCCONFIG_AUTORESTARTRXMODE_OFF | RF_SYNCCONFIG_PREAMBLEPOLARITY_AA |
+                           RF_SYNCCONFIG_SYNC_ON | RF_SYNCCONFIG_SYNCSIZE_3
+    );
 
-        // Set Packet Config 1
+    // Set Packet Config 1
     Write( REG_PACKETCONFIG1, RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE | RF_PACKETCONFIG1_DCFREE_WHITENING |
                               RF_PACKETCONFIG1_CRC_ON | RF_PACKETCONFIG1_CRCAUTOCLEAR_OFF |
                               RF_PACKETCONFIG1_ADDRSFILTERING_OFF | RF_PACKETCONFIG1_CRCWHITENINGTYPE_CCITT
-        );
+    );
 
       // Set Packet Config 2
-        Write( REG_PACKETCONFIG2, RF_PACKETCONFIG2_DATAMODE_PACKET | RF_PACKETCONFIG2_IOHOME_OFF |
-                                  RF_PACKETCONFIG2_BEACON_OFF
-        );
+    Write( REG_PACKETCONFIG2, RF_PACKETCONFIG2_DATAMODE_PACKET | RF_PACKETCONFIG2_IOHOME_OFF |
+                              RF_PACKETCONFIG2_BEACON_OFF
+    );
 
-        // Set Sync Values
-        Write( REG_SYNCVALUE1, (FSK_SYNCWORD_LORAWAN_REG_VALUE >> 16) & 0x0000FF );
-        Write( REG_SYNCVALUE2, (FSK_SYNCWORD_LORAWAN_REG_VALUE >> 8) & 0x0000FF );
-        Write( REG_SYNCVALUE3, FSK_SYNCWORD_LORAWAN_REG_VALUE & 0x0000FF );
+    // Set Sync Values
+    Write( REG_SYNCVALUE1, (FSK_SYNCWORD_LORAWAN_REG_VALUE >> 16) & 0x0000FF );
+    Write( REG_SYNCVALUE2, (FSK_SYNCWORD_LORAWAN_REG_VALUE >> 8) & 0x0000FF );
+    Write( REG_SYNCVALUE3, FSK_SYNCWORD_LORAWAN_REG_VALUE & 0x0000FF );
 }
 
 void SX1276::SetFifoThreshold(uint8_t threshold){
@@ -487,56 +483,51 @@ void SX1276::SetModulationParamsRxFsk( uint8_t symbTimeout ) {
     Write( REG_RXTIMEOUT2, symbTimeout );
 }
 
-void SX1276::SetModulationParamsRxLora( uint8_t SF, eBandWidth BW, uint16_t symbTimeout )
-{
+void SX1276::SetModulationParamsRxLora( uint8_t SF, eBandWidth BW, uint16_t symbTimeout ) {
     uint8_t LowDatarateOptimize;
     uint8_t ValueTemp;
- /* Set Coding rate 4/5 , Implicite Header and BW */
+    /* Set Coding rate 4/5 , Implicite Header and BW */
     ValueTemp = 0x02 + ( ( BW + 7 ) << 4 );
     Write( REG_LR_MODEMCONFIG1, ValueTemp );
-  /* Set Enable CRC and SF + MSB Timeout*/
+    /* Set Enable CRC and SF + MSB Timeout*/
     ValueTemp = ( SF << 4 ) + 4 + ( ( symbTimeout >> 8 ) & 0x3 ) ;
     Write( REG_LR_MODEMCONFIG2, ValueTemp ) ;
-  /* Set LSB Timeout*/
+    /* Set LSB Timeout*/
     Write( REG_LR_SYMBTIMEOUTLSB, ( uint8_t )( symbTimeout & 0x00FF ) );
 
- /* Enable/disable Low datarate optimized */
+    /* Enable/disable Low datarate optimized */
     if( ( ( BW == 0 ) && ( ( SF == 11 ) || ( SF == 12 ) ) ) || ( ( BW == 1 ) && ( SF == 12 ) ) ) {
-         LowDatarateOptimize = 0x08;
+        LowDatarateOptimize = 0x08;
     } else {
-         LowDatarateOptimize = 0x00;
+        LowDatarateOptimize = 0x00;
     }
     Write( REG_LR_MODEMCONFIG3,LowDatarateOptimize + 4 ); // + 4 for internal AGC loop
- /* Set Preamble = 8 */
+    /* Set Preamble = 8 */
     Write( REG_LR_PREAMBLEMSB, 0 );
     Write( REG_LR_PREAMBLELSB, 8 );
 
- /* Set inverted IQ */
+    /* Set inverted IQ */
     Write( REG_LR_INVERTIQ, 0x67) ;
     Write( REG_LR_INVERTIQ2, RFLR_INVERTIQ2_ON );
-/* sensitivity optimization */
-
+    /* sensitivity optimization */
     Write( REG_LR_DETECTOPTIMIZE,( Read( REG_LR_DETECTOPTIMIZE ) & RFLR_DETECTIONOPTIMIZE_MASK ) | RFLR_DETECTIONOPTIMIZE_SF7_TO_SF12 );
     Write( REG_LR_DETECTIONTHRESHOLD, RFLR_DETECTIONTHRESH_SF7_TO_SF12 );
 
-    if( ( BW == 2 ) && ( Channel > RF_MID_BAND_THRESH ) )
-    {
+    if( ( BW == 2 ) && ( Channel > RF_MID_BAND_THRESH ) ) {
         // ERRATA 2.1 - Sensitivity Optimization with a 500 kHz Bandwidth
         Write( REG_LR_TEST36, 0x02 );
         Write( REG_LR_TEST3A, 0x64 );
         // ERRATA 2.3 - Receiver Spurious Reception of a LoRa Signal
         Write( REG_LR_DETECTOPTIMIZE, Read( REG_LR_DETECTOPTIMIZE ) | 0x80 );
     }
-    else if( BW == 2 )
-    {
+    else if( BW == 2 ) {
         // ERRATA 2.1 - Sensitivity Optimization with a 500 kHz Bandwidth
         Write( REG_LR_TEST36, 0x02 );
         Write( REG_LR_TEST3A, 0x7F );
         // ERRATA 2.3 - Receiver Spurious Reception of a LoRa Signal
         Write( REG_LR_DETECTOPTIMIZE, Read( REG_LR_DETECTOPTIMIZE ) | 0x80 );
     }
-    else
-    {
+    else {
         // ERRATA 2.1 - Sensitivity Optimization
         Write( REG_LR_TEST36, 0x03 );
         // ERRATA 2.3 - Receiver Spurious Reception of a LoRa Signal
@@ -549,21 +540,20 @@ void SX1276::SetModulationParamsRxLora( uint8_t SF, eBandWidth BW, uint16_t symb
 }
 
 void SX1276::SetPayload (uint8_t *payload, uint8_t payloadSize) {
-// Initializes the payload size
-        Write( REG_LR_PAYLOADLENGTH, payloadSize );
+    // Initializes the payload size
+    Write( REG_LR_PAYLOADLENGTH, payloadSize );
 
-        // Full buffer used for Tx
-        Write( REG_LR_FIFOTXBASEADDR, 0 );
-        Write( REG_LR_FIFOADDRPTR, 0 );
+    // Full buffer used for Tx
+    Write( REG_LR_FIFOTXBASEADDR, 0 );
+    Write( REG_LR_FIFOADDRPTR, 0 );
 
-        // FIFO operations can not take place in Sleep mode
-        if( ( Read( REG_OPMODE ) & ~RF_OPMODE_MASK ) == RF_OPMODE_SLEEP )
-        {
-            SetStandby( );
-            wait_ms( 1 );
-        }
-        // Write payload buffer
-        WriteFifo( payload, payloadSize );
+    // FIFO operations can not take place in Sleep mode
+    if( ( Read( REG_OPMODE ) & ~RF_OPMODE_MASK ) == RF_OPMODE_SLEEP ) {
+        SetStandby( );
+        wait_ms( 1 );
+    }
+    // Write payload buffer
+    WriteFifo( payload, payloadSize );
 }
 
 void SX1276::SetRfFrequency( uint32_t frequency ) {
@@ -580,8 +570,7 @@ void SX1276::SetStandby( void ) {
     Write( REG_OPMODE, ( Read( REG_OPMODE ) & RF_OPMODE_MASK ) | RF_OPMODE_STANDBY );
 }
 
-void SX1276::Write( uint8_t addr, uint8_t *buffer, uint8_t size )
-{
+void SX1276::Write( uint8_t addr, uint8_t *buffer, uint8_t size ) {
     uint8_t i;
 
     mcu.SetValueDigitalOutPin ( pinCS,0);
@@ -593,8 +582,7 @@ void SX1276::Write( uint8_t addr, uint8_t *buffer, uint8_t size )
     mcu.SetValueDigitalOutPin ( pinCS, 1);
 }
 
-void SX1276::Read( uint8_t addr, uint8_t *buffer, uint8_t size )
-{
+void SX1276::Read( uint8_t addr, uint8_t *buffer, uint8_t size ) {
     uint8_t i;
 
     mcu.SetValueDigitalOutPin ( pinCS, 0);
@@ -606,35 +594,29 @@ void SX1276::Read( uint8_t addr, uint8_t *buffer, uint8_t size )
     mcu.SetValueDigitalOutPin ( pinCS, 1);
 }
 
-void SX1276::Write( uint8_t addr, uint8_t data )
-{
+void SX1276::Write( uint8_t addr, uint8_t data ) {
     Write( addr, &data, 1 );
 }
 
-void SX1276::WriteFifo( uint8_t *buffer, uint8_t size )
-{
+void SX1276::WriteFifo( uint8_t *buffer, uint8_t size ) {
     Write( 0, buffer, size );
 }
 
-uint8_t SX1276::Read( uint8_t addr )
-{
+uint8_t SX1276::Read( uint8_t addr ) {
     uint8_t data;
     Read( addr, &data, 1 );
     return data;
 }
 
-void SX1276::ReadFifo( uint8_t *buffer, uint8_t size )
-{
+void SX1276::ReadFifo( uint8_t *buffer, uint8_t size ) {
     Read( 0, buffer, size );
 }
 
-void SX1276::SetOpModeLora( uint8_t accessSharedReg, uint8_t lowFrequencyModeOn, uint8_t opMode )
-{
+void SX1276::SetOpModeLora( uint8_t accessSharedReg, uint8_t lowFrequencyModeOn, uint8_t opMode ) {
     Write( REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_ON | accessSharedReg | lowFrequencyModeOn | opMode );
 }
 
-void SX1276::SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode )
-{
+void SX1276::SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode ) {
     Write( REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_OFF | modulationType | lowFrequencyModeOn | opMode );
 }
 

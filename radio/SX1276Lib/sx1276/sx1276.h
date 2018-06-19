@@ -50,96 +50,96 @@ public:
     void SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power);
     void SendFsk( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power);
     void RxLora( eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
-		void RxFsk(uint32_t channel, uint16_t timeout);
+        void RxFsk(uint32_t channel, uint16_t timeout);
     void Sleep(  bool coldStart );
 
     uint32_t Channel;
 
 private:
 
-	  uint8_t* rxBuffer;
-		uint8_t rxPayloadSize;
-		bool isFakeIrq;
-		IrqFlags_t fakeIrqFlag;
+      uint8_t* rxBuffer;
+        uint8_t rxPayloadSize;
+        bool isFakeIrq;
+        IrqFlags_t fakeIrqFlag;
 
-		typedef enum {
-				IRQ_LR_RADIO_ALL                           = 0xFF,
-				IRQ_LR_RX_TX_TIMEOUT                       = 0x80,
-				IRQ_LR_RX_DONE                             = 0x40,
-				IRQ_LR_CRC_ERROR                           = 0x20,
-				IRQ_LR_HEADER_VALID                        = 0x10,
-				IRQ_LR_TX_DONE                             = 0x08,
-				IRQ_LR_CAD_DONE                            = 0x04,
-				IRQ_LR_FHSS_CHANGE_CHANNEL_MASK            = 0x02,
-				IRQ_LR_CAD_DETECTED_MASK                   = 0x01,
-				IRQ_LR_RADIO_NONE                          = 0x00,
-		} IrqLoraValues_t;
+        typedef enum {
+                IRQ_LR_RADIO_ALL                           = 0xFF,
+                IRQ_LR_RX_TX_TIMEOUT                       = 0x80,
+                IRQ_LR_RX_DONE                             = 0x40,
+                IRQ_LR_CRC_ERROR                           = 0x20,
+                IRQ_LR_HEADER_VALID                        = 0x10,
+                IRQ_LR_TX_DONE                             = 0x08,
+                IRQ_LR_CAD_DONE                            = 0x04,
+                IRQ_LR_FHSS_CHANGE_CHANNEL_MASK            = 0x02,
+                IRQ_LR_CAD_DETECTED_MASK                   = 0x01,
+                IRQ_LR_RADIO_NONE                          = 0x00,
+        } IrqLoraValues_t;
 
-		typedef enum {
-				IRQ_FSK_MODE_READY                         = 0x8000,
-				IRQ_FSK_RX_READY                           = 0x4000,
-				IRQ_FSK_TX_READY                           = 0x2000,
-				IRQ_FSK_PLL_LOCK                           = 0x1000,
-				IRQ_FSK_RSSI                               = 0x0800,
-				IRQ_FSK_TIMEOUT                            = 0x0400,
-				IRQ_FSK_PREAMBLE_DETECTED                  = 0x0200,
-				IRQ_FSK_SYNC_ADDRESS_MATCH                 = 0x0100,
-				IRQ_FSK_FIFO_FULL                          = 0x0080,
-				IRQ_FSK_FIFO_EMPTY                         = 0x0040,
-				IRQ_FSK_FIFO_LEVEL                         = 0x0020,
-				IRQ_FSK_FIFO_OVERRUN                       = 0x0010,
-				IRQ_FSK_PACKET_SENT                        = 0x0008,
-				IRQ_FSK_PAYLOAD_READY                      = 0x0004,
-				IRQ_FSK_CRC_OK                             = 0x0002,
-				IRQ_FSK_LOW_BATTERY                        = 0x0001,
-		} IrqFskValues_t;
+        typedef enum {
+                IRQ_FSK_MODE_READY                         = 0x8000,
+                IRQ_FSK_RX_READY                           = 0x4000,
+                IRQ_FSK_TX_READY                           = 0x2000,
+                IRQ_FSK_PLL_LOCK                           = 0x1000,
+                IRQ_FSK_RSSI                               = 0x0800,
+                IRQ_FSK_TIMEOUT                            = 0x0400,
+                IRQ_FSK_PREAMBLE_DETECTED                  = 0x0200,
+                IRQ_FSK_SYNC_ADDRESS_MATCH                 = 0x0100,
+                IRQ_FSK_FIFO_FULL                          = 0x0080,
+                IRQ_FSK_FIFO_EMPTY                         = 0x0040,
+                IRQ_FSK_FIFO_LEVEL                         = 0x0020,
+                IRQ_FSK_FIFO_OVERRUN                       = 0x0010,
+                IRQ_FSK_PACKET_SENT                        = 0x0008,
+                IRQ_FSK_PAYLOAD_READY                      = 0x0004,
+                IRQ_FSK_CRC_OK                             = 0x0002,
+                IRQ_FSK_LOW_BATTERY                        = 0x0001,
+        } IrqFskValues_t;
 
     /*!
     * \brief Indicate if the FIFO threshold level has been reached
     */
-		bool IsFskFifoLevelReached( void );
+        bool IsFskFifoLevelReached( void );
 
-		/*!
-		 * \brief Indicate if the FIFO is empty
-		 */
-		bool IsFskFifoEmpty( void );
+        /*!
+         * \brief Indicate if the FIFO is empty
+         */
+        bool IsFskFifoEmpty( void );
 
-		/*!
-		 * \brief Indicate if the RX operation has timeouted by reading IRQ buffer, not
-		 * by reading an IRQ line
-		 */
-		bool HasTimeouted( void );
+        /*!
+         * \brief Indicate if the RX operation has timeouted by reading IRQ buffer, not
+         * by reading an IRQ line
+         */
+        bool HasTimeouted( void );
 
-		bool IsPayloadReady(void);
+        bool IsPayloadReady(void);
 
-		int8_t GetCurrentRssi(void);
-		void ConfigureRssi(void);
+        int8_t GetCurrentRssi(void);
+        void ConfigureRssi(void);
 
-		/*!
-		 * \brief Make the radio generate an IRQ with reason fakeIrqFlag
-		 * \param [IN] fakeIrqFlag   The fake reason for the radio to generate the IRQ
-		 */
-		void SetAndGenerateFakeIRQ(IrqFlags_t fakeIrqFlag );
+        /*!
+         * \brief Make the radio generate an IRQ with reason fakeIrqFlag
+         * \param [IN] fakeIrqFlag   The fake reason for the radio to generate the IRQ
+         */
+        void SetAndGenerateFakeIRQ(IrqFlags_t fakeIrqFlag );
 
-		/*!
-		 * \brief Indicate if the last IRQ was a fake one or not
-		 */
-		bool IsFakeIRQ(void);
+        /*!
+         * \brief Indicate if the last IRQ was a fake one or not
+         */
+        bool IsFakeIRQ(void);
 
-		/*!
-		 * \brief Reset the Fake IRQ flag and Fake IRQ reason
-		 */
-		void ResetFakeIrq(void);
+        /*!
+         * \brief Reset the Fake IRQ flag and Fake IRQ reason
+         */
+        void ResetFakeIrq(void);
 
-		/*!
-		 * \brief Make the radio generate an IRQ
-		 */
-		void generateFakeIrq(void);
+        /*!
+         * \brief Make the radio generate an IRQ
+         */
+        void generateFakeIrq(void);
 
-		/*!
-		 * \brief Set the threshold value for the threshold level detection mechanism
-		 */
-		void SetFifoThreshold(uint8_t threshold);
+        /*!
+         * \brief Set the threshold value for the threshold level detection mechanism
+         */
+        void SetFifoThreshold(uint8_t threshold);
 
     /*!
     * \brief Calibrates the Image rejection depending of the frequency
@@ -158,24 +158,24 @@ private:
     * \brief Set the power parameters for Tx (modem independant)
     * @param [IN] Power
     */
-		void SetPowerParamsTx( int8_t power );
+        void SetPowerParamsTx( int8_t power );
 
     /*!
     * \brief Set the modulation parameters for Lora Tx
     * @param [IN] Speading factor
     * @param [IN] Bandwith
-		* @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
+        * @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
     */
     void SetModulationParamsTxLora( uint8_t SF, eBandWidth BW );
 
     /*!
     * \brief Set the modulation parameters for FSK Tx
-		* @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
+        * @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
     */
-		void SetModulationParamsTxFsk( void );
+        void SetModulationParamsTxFsk( void );
 
-		//void SetModulationParamsRxFsk( uint8_t symbTimeout );
-		void SetModulationParamsCommonFsk( void );
+        //void SetModulationParamsRxFsk( uint8_t symbTimeout );
+        void SetModulationParamsCommonFsk( void );
 
     /*!
     * \brief Set the modulation parameters for Rx with Lora
@@ -189,7 +189,7 @@ private:
     * \brief Set the modulation parameters for Rx with FSK
     * @param [IN] symbTimeout : number of symbols before raising the timeout interrupt
     */
-		void SetModulationParamsRxFsk( uint8_t symbTimeout );
+        void SetModulationParamsRxFsk( uint8_t symbTimeout );
 
     /*!
     * \brief Set the RF frequency
@@ -205,36 +205,36 @@ private:
 
     /*!
     * \brief Sets the radio opmode for Lora operations
-		* \param [IN] accessSharedReg
-		* \param [IN] lowFrequencyModeOn
-		* \param [IN] opMode
+        * \param [IN] accessSharedReg
+        * \param [IN] lowFrequencyModeOn
+        * \param [IN] opMode
     */
     void SetOpModeLora( uint8_t accessSharedReg, uint8_t lowFrequencyModeOn, uint8_t opMode );
 
     /*!
     * \brief Sets the radio opmode for FSK operations
-		* \param [IN] modulationType
-		* \param [IN] lowFrequencyModeOn
-		* \param [IN] opMode
+        * \param [IN] modulationType
+        * \param [IN] lowFrequencyModeOn
+        * \param [IN] opMode
     */
-		void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
+        void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
 
     /*!
     * \brief Sets the radio opmode for FSK operations
-		* TODO
-		* @param [IN]  modulationType      The modulation scheme to be used for FSK/OOK:
-		* @param [IN]  lowFrequencyModeOn  Access Low Frequency mode registers. Powwible values
-		*                                    - RFLR_OPMODE_FREQMODE_ACCESS_LF
-		*                                    - RFLR_OPMODE_FREQMODE_ACCESS_HF
+        * TODO
+        * @param [IN]  modulationType      The modulation scheme to be used for FSK/OOK:
+        * @param [IN]  lowFrequencyModeOn  Access Low Frequency mode registers. Powwible values
+        *                                    - RFLR_OPMODE_FREQMODE_ACCESS_LF
+        *                                    - RFLR_OPMODE_FREQMODE_ACCESS_HF
     * @param [IN]  opMode              mode to put the radio into
     */
     //void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
 
-		/*!
+        /*!
     * \brief Sets the radio opmode
     * @param [IN]  opMode        mode to put the radio into
-		*/
-		void SetOpMode( uint8_t opMode );
+        */
+        void SetOpMode( uint8_t opMode );
 
     /*!
     * \brief Write Payload inside the sx1276 fifo
@@ -291,7 +291,7 @@ private:
     void Write( uint8_t addr, uint8_t data );
     PinName pinCS;
     PinName pinReset;
-		int8_t lastPacketRssi;
+        int8_t lastPacketRssi;
 };
 #endif
 

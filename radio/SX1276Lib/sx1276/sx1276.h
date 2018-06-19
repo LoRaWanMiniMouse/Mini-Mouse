@@ -55,14 +55,6 @@ public:
 
     uint32_t Channel;
 
-protected:
-		void SetAndGenerateFakeIRQ(IrqFlags_t fakeIrqFlag );
-		bool IsFakeIRQ(void);
-		void generateFakeIrq(void);
-		void SetFifoThreshold(uint8_t threshold);
-		void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
-		void SetModulationParamsRxFsk( uint8_t symbTimeout );
-
 private:
 	
 	  uint8_t* rxBuffer;
@@ -107,8 +99,47 @@ private:
     */
 		bool IsFskFifoLevelReached( void );
 		
+		/*!
+		 * \brief Indicate if the FIFO is empty
+		 */
 		bool IsFskFifoEmpty( void );
+		
+		/*!
+		 * \brief Indicate if the RX operation has timeouted by reading IRQ buffer, not
+		 * by reading an IRQ line
+		 */
 		bool HasTimeouted( void );
+		
+		bool IsPayloadReady(void);
+		
+		int8_t GetCurrentRssi(void);
+		void ConfigureRssi(void);
+		
+		/*!
+		 * \brief Make the radio generate an IRQ with reason fakeIrqFlag
+		 * \param [IN] fakeIrqFlag   The fake reason for the radio to generate the IRQ
+		 */
+		void SetAndGenerateFakeIRQ(IrqFlags_t fakeIrqFlag );
+		
+		/*!
+		 * \brief Indicate if the last IRQ was a fake one or not
+		 */
+		bool IsFakeIRQ(void);
+		
+		/*!
+		 * \brief Reset the Fake IRQ flag and Fake IRQ reason
+		 */
+		void ResetFakeIrq(void);
+		
+		/*!
+		 * \brief Make the radio generate an IRQ
+		 */
+		void generateFakeIrq(void);
+		
+		/*!
+		 * \brief Set the threshold value for the threshold level detection mechanism
+		 */
+		void SetFifoThreshold(uint8_t threshold);
 
     /*!
     * \brief Calibrates the Image rejection depending of the frequency
@@ -168,9 +199,19 @@ private:
 
     /*!
     * \brief Sets the radio opmode for Lora operations
-		* TODO
+		* \param [IN] accessSharedReg
+		* \param [IN] lowFrequencyModeOn
+		* \param [IN] opMode
     */
     void SetOpModeLora( uint8_t accessSharedReg, uint8_t lowFrequencyModeOn, uint8_t opMode );
+
+    /*!
+    * \brief Sets the radio opmode for FSK operations
+		* \param [IN] modulationType
+		* \param [IN] lowFrequencyModeOn
+		* \param [IN] opMode
+    */
+		void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
 
     /*!
     * \brief Sets the radio opmode for FSK operations

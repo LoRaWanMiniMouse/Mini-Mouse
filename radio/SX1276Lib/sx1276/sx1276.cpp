@@ -31,6 +31,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define FSK_SYNCWORD_LORAWAN_REG_VALUE     0xC194C1
 #define FSK_MAX_MODEM_PAYLOAD              64
 #define FSK_THRESHOLD_REFILL_LIMIT         32
+#define LORAWAN_MIN_PACKET_SIZE            9
 #define MAX_PAYLOAD_SIZE                   255
 #define FSK_FAKE_IRQ_THRESHOLD             2
 
@@ -227,26 +228,48 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
 	this->Reset();
 	Channel = channel;
 	rxPayloadSize = 0;
-  //this->Sleep( false );
+	uint8_t bytesReceived = 0;
+	uint8_t remainingBytes = 0;
+	uint8_t firstBytesRx[LORAWAN_MIN_PACKET_SIZE] = {0x00};
+	uint8_t payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
+	
   SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
   SetRfFrequency( channel );
   uint8_t symbTimeout = timeOutMs / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
   SetModulationParamsRxFsk( symbTimeout );
+	
+	SetFifoThreshold(LORAWAN_MIN_PACKET_SIZE - 1);
 	SetOpMode( RF_OPMODE_RECEIVER );
-	while(IsFskFifoEmpty()) {
-		wait_ms(5);
+	while(!IsFskFifoLevelReached()) {
+		wait_ms(2);
 		if(this->HasTimeouted()){
 			this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG);
 			return;
 		}
 	}
-	ReadFifo( &rxPayloadSize, 1 );
-	for(uint8_t indexPayload = 0; indexPayload<rxPayloadSize; indexPayload++) {
-		while(IsFskFifoEmpty()){
-			wait_ms(5);
+	ReadFifo( &firstBytesRx[0], LORAWAN_MIN_PACKET_SIZE );
+	rxPayloadSize = firstBytesRx[0];
+	bytesReceived = LORAWAN_MIN_PACKET_SIZE - 1;   // -1 because the first one is the payload size, which is not included into the payload
+	memcpy(rxBuffer, firstBytesRx + 1, bytesReceived);
+	remainingBytes = rxPayloadSize - bytesReceived;
+	
+	SetFifoThreshold(payloadChunkSize - 1);
+	while(remainingBytes > payloadChunkSize){
+		while(!IsFskFifoLevelReached()){
+			wait_ms(2);
 		}
-		ReadFifo( rxBuffer + indexPayload, 1 );
+		ReadFifo( rxBuffer + bytesReceived, payloadChunkSize );
+		bytesReceived += payloadChunkSize;
+		remainingBytes = rxPayloadSize - bytesReceived;
 	}
+
+	SetFifoThreshold(remainingBytes - 1);
+	while(!IsPayloadReady()){
+		wait_ms(2);
+	}
+	ReadFifo( rxBuffer + bytesReceived, remainingBytes );
+	lastPacketRssi = this->GetCurrentRssi();
+	this->Sleep(false);
 	this->SetAndGenerateFakeIRQ(RECEIVE_PACKET_IRQ_FLAG);
 }
 
@@ -316,6 +339,12 @@ bool SX1276::IsFskFifoLevelReached() {
     uint8_t irqFlags = 0x00;
     Read(REG_IRQFLAGS2, &irqFlags, 1);
     return (irqFlags & 0x20);
+}
+
+bool SX1276::IsPayloadReady() {
+    uint8_t irqFlags = 0x00;
+    Read(REG_IRQFLAGS2, &irqFlags, 1);
+    return (irqFlags & 0x04);
 }
 
 bool SX1276::IsFskFifoEmpty() {

@@ -41,7 +41,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
  ************************************************************************************************/
 
 SX1276::SX1276( PinName nss, PinName reset, PinName TxRxIt, PinName RxTimeOutIt) :
-pinCS( nss ), pinReset( reset ), isFakeIrq(false), fakeIrqFlag(RADIO_IRQ_NONE){
+pinCS( nss ), pinReset( reset ), isFakeIrq(false), fakeIrqFlag(RADIO_IRQ_NONE), lastPacketRssi(0){
     mcu.SetValueDigitalOutPin ( pinCS, 1);
     mcu.Init_Irq ( TxRxIt ) ;
     mcu.Init_Irq ( RxTimeOutIt ) ;
@@ -68,7 +68,7 @@ void SX1276::FetchPayloadFsk( uint8_t *payloadSize, uint8_t payload[255], int16_
 	*payloadSize = this->rxPayloadSize;
 	memcpy(payload, this->rxBuffer, this->rxPayloadSize);
 	*snr = 0;
-	*signalRssi = 0;
+	*signalRssi = this->lastPacketRssi;
 }
 
 IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
@@ -130,6 +130,8 @@ void SX1276::Reset( void ) {
     mcu.mwait_ms( 1 );
     mcu.SetValueDigitalOutPin ( pinReset, 1);
     mcu.mwait_ms( 6 );
+	  this->ResetFakeIrq();
+		lastPacketRssi = 0;
 }
 
 void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
@@ -468,7 +470,7 @@ void SX1276::SetModulationParamsTxFsk( ) {
 
 void SX1276::SetModulationParamsRxFsk( uint8_t symbTimeout ) {
 	this->SetModulationParamsCommonFsk();
-	Write( REG_FIFOTHRESH, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY | FSK_THRESHOLD_REFILL_LIMIT);
+	this->ConfigureRssi();
 	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_10 | RF_DIOMAPPING1_DIO1_11 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
 	Write( REG_DIOMAPPING2, 0x00 );
 	Write( REG_RXCONFIG, RF_RXCONFIG_RESTARTRXONCOLLISION_OFF |
@@ -635,4 +637,14 @@ void SX1276::SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, u
 
 void SX1276::SetOpMode( uint8_t opMode ) {
 	Write( REG_OPMODE, ( Read( REG_OPMODE ) & RF_OPMODE_MASK ) | opMode );
+}
+
+void SX1276::ConfigureRssi(void){
+	Write(REG_RSSICONFIG, RF_RSSICONFIG_OFFSET_P_00_DB | RF_RSSICONFIG_SMOOTHING_256);
+}
+
+int8_t SX1276::GetCurrentRssi(void){
+	uint8_t regVal = 0x00;
+	Read(REG_RSSIVALUE, &regVal, 1);
+	return -(regVal >> 1);
 }

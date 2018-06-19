@@ -184,6 +184,12 @@ private:
     * @param [IN] TimeOut : number of symbols
     */
     void SetModulationParamsRxLora( uint8_t SF, eBandWidth BW, uint16_t symbTimeout );
+
+    /*!
+    * \brief Set the modulation parameters for Rx with FSK
+    * @param [IN] symbTimeout : number of symbols before raising the timeout interrupt
+    */
+		void SetModulationParamsRxFsk( uint8_t symbTimeout );
     
     /*!
     * \brief Set the RF frequency
@@ -285,6 +291,7 @@ private:
     void Write( uint8_t addr, uint8_t data );
     PinName pinCS;
     PinName pinReset;
+		int8_t lastPacketRssi;
 };
 #endif
 

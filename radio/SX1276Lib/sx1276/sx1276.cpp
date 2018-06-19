@@ -1,14 +1,14 @@
 /*
 
-  __  __ _       _                                 
- |  \/  (_)     (_)                                
- | \  / |_ _ __  _ _ __ ___   ___  _   _ ___  ___  
+  __  __ _       _
+ |  \/  (_)     (_)
+ | \  / |_ _ __  _ _ __ ___   ___  _   _ ___  ___
  | |\/| | | '_ \| | '_ ` _ \ / _ \| | | / __|/ _ \
- | |  | | | | | | | | | | | | (_) | |_| \__ \  __/ 
- |_|  |_|_|_| |_|_|_| |_| |_|\___/ \__,_|___/\___| 
-                                                   
-                                                   
-Description       : LoraWan Phy Layer objets.  
+ | |  | | | | | | | | | | | | (_) | |_| \__ \  __/
+ |_|  |_|_|_| |_|_|_| |_| |_|\___/ \__,_|___/\___|
+
+
+Description       : LoraWan Phy Layer objets.
 
 
 License           : Revised BSD License, see LICENSE.TXT file include in the project
@@ -102,7 +102,7 @@ IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
 		if(this->IsFakeIRQ()){
 			return this->fakeIrqFlag;
 		}
-	
+
     Read(REG_IRQFLAGS1, &irq1, 1);
 		Read(REG_IRQFLAGS2, &irq2, 1);
 
@@ -151,7 +151,7 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
     SetPayload( payload, payloadSize);
 
 /* Configure IRQ Tx Done */
-    Write ( REG_LR_IRQFLAGSMASK, 0xF7 ); 
+    Write ( REG_LR_IRQFLAGSMASK, 0xF7 );
     Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
     Write ( REG_DIOMAPPING2, 0x00 );
 /* Send */
@@ -213,7 +213,7 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     SetModulationParamsRxLora( SF, BW, symbTimeout);
 
 /* Configure IRQ Rx Done or Rx timeout */
-    Write ( REG_LR_IRQFLAGSMASK, 0x3F ); 
+    Write ( REG_LR_IRQFLAGSMASK, 0x3F );
     Write( REG_DIOMAPPING1,0);
     Write ( REG_DIOMAPPING2, 0x00 );
 /* Configure Fifo*/
@@ -221,7 +221,7 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     Write( REG_LR_FIFOADDRPTR, 0 );
 /* Receive */
     SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
-		
+
 }
 
 void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
@@ -232,12 +232,12 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
 	uint8_t remainingBytes = 0;
 	uint8_t firstBytesRx[LORAWAN_MIN_PACKET_SIZE] = {0x00};
 	uint8_t payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
-	
+
   SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
   SetRfFrequency( channel );
   uint8_t symbTimeout = timeOutMs / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
   SetModulationParamsRxFsk( symbTimeout );
-	
+
 	SetFifoThreshold(LORAWAN_MIN_PACKET_SIZE - 1);
 	SetOpMode( RF_OPMODE_RECEIVER );
 	while(!IsFskFifoLevelReached()) {
@@ -252,7 +252,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
 	bytesReceived = LORAWAN_MIN_PACKET_SIZE - 1;   // -1 because the first one is the payload size, which is not included into the payload
 	memcpy(rxBuffer, firstBytesRx + 1, bytesReceived);
 	remainingBytes = rxPayloadSize - bytesReceived;
-	
+
 	SetFifoThreshold(payloadChunkSize - 1);
 	while(remainingBytes > payloadChunkSize){
 		while(!IsFskFifoLevelReached()){
@@ -329,7 +329,7 @@ void SX1276::CalibrateImage( void )
     // Sets a Frequency in HF band
     SetRfFrequency( 868000000 );
 
-    // Launch Rx chain calibration for HF band 
+    // Launch Rx chain calibration for HF band
     Write ( REG_IMAGECAL, ( Read( REG_IMAGECAL ) & RF_IMAGECAL_IMAGECAL_MASK ) | RF_IMAGECAL_IMAGECAL_START );
     while( ( Read( REG_IMAGECAL ) & RF_IMAGECAL_IMAGECAL_RUNNING ) == RF_IMAGECAL_IMAGECAL_RUNNING )
     {
@@ -366,9 +366,9 @@ bool SX1276::HasTimeouted() {
 
 void SX1276::GetPacketStatusLora( int16_t *pktRssi, int16_t *snr, int16_t *signalRssi ) {
 
-    *snr = ((int16_t) Read( REG_LR_PKTSNRVALUE ))/4; 
+    *snr = ((int16_t) Read( REG_LR_PKTSNRVALUE ))/4;
     int16_t rssi = (int16_t) Read( REG_LR_PKTRSSIVALUE );
-    rssi += rssi / 16; 
+    rssi += rssi / 16;
     rssi = (Channel > RF_MID_BAND_THRESH ) ? RSSI_OFFSET_HF + rssi : RSSI_OFFSET_LF + rssi;
     *signalRssi = (*snr < 0 ) ? *snr + rssi : rssi;
 }
@@ -382,7 +382,7 @@ void SX1276::SetPowerParamsTx( int8_t power ) {
         power = ( power < 2 )  ? 2  : power;
         ValueTemp = ( power > 17 ) ? 0x87 : 0x84; // Enable/disable +20dbM option ON PA_BOOSt pin
         Write( REG_PADAC, ValueTemp );
-        ValueTemp = ( power > 17 ) ? 0xf0 + ( power - 5 ) : 0xf0 + ( power - 2 ); 
+        ValueTemp = ( power > 17 ) ? 0xf0 + ( power - 5 ) : 0xf0 + ( power - 2 );
         Write( REG_PACONFIG, ValueTemp );
     } else {
         power = ( power > 14 ) ? 14 : power;
@@ -521,7 +521,7 @@ void SX1276::SetModulationParamsRxLora( uint8_t SF, eBandWidth BW, uint16_t symb
 
     if( ( BW == 2 ) && ( Channel > RF_MID_BAND_THRESH ) )
     {
-        // ERRATA 2.1 - Sensitivity Optimization with a 500 kHz Bandwidth 
+        // ERRATA 2.1 - Sensitivity Optimization with a 500 kHz Bandwidth
         Write( REG_LR_TEST36, 0x02 );
         Write( REG_LR_TEST3A, 0x64 );
         // ERRATA 2.3 - Receiver Spurious Reception of a LoRa Signal
@@ -537,7 +537,7 @@ void SX1276::SetModulationParamsRxLora( uint8_t SF, eBandWidth BW, uint16_t symb
     }
     else
     {
-        // ERRATA 2.1 - Sensitivity Optimization 
+        // ERRATA 2.1 - Sensitivity Optimization
         Write( REG_LR_TEST36, 0x03 );
         // ERRATA 2.3 - Receiver Spurious Reception of a LoRa Signal
         Write( REG_LR_DETECTOPTIMIZE, Read( REG_LR_DETECTOPTIMIZE ) & 0x7F );
@@ -552,7 +552,7 @@ void SX1276::SetPayload (uint8_t *payload, uint8_t payloadSize) {
 // Initializes the payload size
         Write( REG_LR_PAYLOADLENGTH, payloadSize );
 
-        // Full buffer used for Tx            
+        // Full buffer used for Tx
         Write( REG_LR_FIFOTXBASEADDR, 0 );
         Write( REG_LR_FIFOADDRPTR, 0 );
 
@@ -570,7 +570,7 @@ void SX1276::SetRfFrequency( uint32_t frequency ) {
     uint32_t initialFreqInt, initialFreqFrac;
     initialFreqInt = frequency / FREQ_STEP_8;
     initialFreqFrac = frequency - ( initialFreqInt * FREQ_STEP_8 );
-    frequency = ( initialFreqInt << 8 ) + ( ( ( initialFreqFrac << 8 ) + ( FREQ_STEP_8 / 2 ) ) / FREQ_STEP_8 ); 
+    frequency = ( initialFreqInt << 8 ) + ( ( ( initialFreqFrac << 8 ) + ( FREQ_STEP_8 / 2 ) ) / FREQ_STEP_8 );
     Write( REG_FRFMSB, ( uint8_t )( ( frequency >> 16 ) & 0xFF ) );
     Write( REG_FRFMID, ( uint8_t )( ( frequency >> 8 ) & 0xFF ) );
     Write( REG_FRFLSB, ( uint8_t )( frequency & 0xFF ) );

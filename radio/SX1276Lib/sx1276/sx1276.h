@@ -1,14 +1,14 @@
 /*
 
-  __  __ _       _                                 
- |  \/  (_)     (_)                                
- | \  / |_ _ __  _ _ __ ___   ___  _   _ ___  ___  
+  __  __ _       _
+ |  \/  (_)     (_)
+ | \  / |_ _ __  _ _ __ ___   ___  _   _ ___  ___
  | |\/| | | '_ \| | '_ ` _ \ / _ \| | | / __|/ _ \
- | |  | | | | | | | | | | | | (_) | |_| \__ \  __/ 
- |_|  |_|_|_| |_|_|_| |_| |_|\___/ \__,_|___/\___| 
-                                                   
-                                                   
-Description       : LoraWan Phy Layer objets.  
+ | |  | | | | | | | | | | | | (_) | |_| \__ \  __/
+ |_|  |_|_|_| |_|_|_| |_| |_|\___/ \__,_|___/\___|
+
+
+Description       : LoraWan Phy Layer objets.
 
 
 License           : Revised BSD License, see LICENSE.TXT file include in the project
@@ -56,7 +56,7 @@ public:
     uint32_t Channel;
 
 private:
-	
+
 	  uint8_t* rxBuffer;
 		uint8_t rxPayloadSize;
 		bool isFakeIrq;
@@ -74,7 +74,7 @@ private:
 				IRQ_LR_CAD_DETECTED_MASK                   = 0x01,
 				IRQ_LR_RADIO_NONE                          = 0x00,
 		} IrqLoraValues_t;
-		
+
 		typedef enum {
 				IRQ_FSK_MODE_READY                         = 0x8000,
 				IRQ_FSK_RX_READY                           = 0x4000,
@@ -93,49 +93,49 @@ private:
 				IRQ_FSK_CRC_OK                             = 0x0002,
 				IRQ_FSK_LOW_BATTERY                        = 0x0001,
 		} IrqFskValues_t;
-		
+
     /*!
     * \brief Indicate if the FIFO threshold level has been reached
     */
 		bool IsFskFifoLevelReached( void );
-		
+
 		/*!
 		 * \brief Indicate if the FIFO is empty
 		 */
 		bool IsFskFifoEmpty( void );
-		
+
 		/*!
 		 * \brief Indicate if the RX operation has timeouted by reading IRQ buffer, not
 		 * by reading an IRQ line
 		 */
 		bool HasTimeouted( void );
-		
+
 		bool IsPayloadReady(void);
-		
+
 		int8_t GetCurrentRssi(void);
 		void ConfigureRssi(void);
-		
+
 		/*!
 		 * \brief Make the radio generate an IRQ with reason fakeIrqFlag
 		 * \param [IN] fakeIrqFlag   The fake reason for the radio to generate the IRQ
 		 */
 		void SetAndGenerateFakeIRQ(IrqFlags_t fakeIrqFlag );
-		
+
 		/*!
 		 * \brief Indicate if the last IRQ was a fake one or not
 		 */
 		bool IsFakeIRQ(void);
-		
+
 		/*!
 		 * \brief Reset the Fake IRQ flag and Fake IRQ reason
 		 */
 		void ResetFakeIrq(void);
-		
+
 		/*!
 		 * \brief Make the radio generate an IRQ
 		 */
 		void generateFakeIrq(void);
-		
+
 		/*!
 		 * \brief Set the threshold value for the threshold level detection mechanism
 		 */
@@ -173,7 +173,7 @@ private:
 		* @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
     */
 		void SetModulationParamsTxFsk( void );
-		
+
 		//void SetModulationParamsRxFsk( uint8_t symbTimeout );
 		void SetModulationParamsCommonFsk( void );
 
@@ -190,7 +190,7 @@ private:
     * @param [IN] symbTimeout : number of symbols before raising the timeout interrupt
     */
 		void SetModulationParamsRxFsk( uint8_t symbTimeout );
-    
+
     /*!
     * \brief Set the RF frequency
     * @param [IN] Frequency [Hz]
@@ -223,7 +223,7 @@ private:
     * \brief Sets the radio opmode for FSK operations
 		* TODO
 		* @param [IN]  modulationType      The modulation scheme to be used for FSK/OOK:
-		* @param [IN]  lowFrequencyModeOn  Access Low Frequency mode registers. Powwible values 
+		* @param [IN]  lowFrequencyModeOn  Access Low Frequency mode registers. Powwible values
 		*                                    - RFLR_OPMODE_FREQMODE_ACCESS_LF
 		*                                    - RFLR_OPMODE_FREQMODE_ACCESS_HF
     * @param [IN]  opMode              mode to put the radio into
@@ -237,7 +237,7 @@ private:
 		void SetOpMode( uint8_t opMode );
 
     /*!
-    * \brief Write Payload inside the sx1276 fifo 
+    * \brief Write Payload inside the sx1276 fifo
     * @param [in] *payload      Buffer of the data
     * @param [in] payloadSize   Size of the data
     */
@@ -249,7 +249,7 @@ private:
     * \param [in]  payloadSize   The number of byte to be read
     */
     void ReadFifo( uint8_t *buffer, uint8_t size );
-    
+
     /*!
     * \brief  Read 1 byte from  radio registers
     * \param  [In]  address      Address of the byte to read
@@ -265,7 +265,7 @@ private:
     * \param  [In]  size         The number of bytes to read
     */
     void Read( uint8_t addr, uint8_t *buffer, uint8_t size );
-    
+
     /*!
     * \brief Write data to the buffer holding the payload in the radio
     *
@@ -285,7 +285,7 @@ private:
 
     /*!
     * \brief  Write 1 bytes  to the radio registers
-    * \param  [In]  address      
+    * \param  [In]  address
     * \return Read byte
     */
     void Write( uint8_t addr, uint8_t data );

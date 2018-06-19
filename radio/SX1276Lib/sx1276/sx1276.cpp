@@ -288,6 +288,11 @@ void SX1276::SetAndGenerateFakeIRQ(IrqFlags_t fakeIrqFlag ){
 	this->generateFakeIrq();
 }
 
+void SX1276::ResetFakeIrq(void){
+	this->isFakeIrq = false;
+	this->fakeIrqFlag = RADIO_IRQ_NONE;
+}
+
 bool SX1276::IsFakeIRQ(void){
 	if(this->isFakeIrq == true ){
 		this->isFakeIrq = false;
@@ -297,10 +302,10 @@ bool SX1276::IsFakeIRQ(void){
 }
 
 void SX1276::generateFakeIrq(void){
-	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_11 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
+	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_10 | RF_DIOMAPPING1_DIO1_11 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
 	SetFifoThreshold(FSK_FAKE_IRQ_THRESHOLD);
 	WriteFifo(this->rxBuffer, FSK_FAKE_IRQ_THRESHOLD + 1);
-	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_00 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
+	Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_10 | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
 }
 
 void SX1276::CalibrateImage( void )

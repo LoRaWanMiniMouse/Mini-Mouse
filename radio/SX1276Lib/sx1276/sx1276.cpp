@@ -62,12 +62,8 @@ void SX1276::FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16
 }
 
 void SX1276::FetchPayloadFsk( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi) {
-	/*ReadFifo( payloadSize, 1 );
-	ReadFifo( payload, *payloadSize );*/
 	*payloadSize = this->rxPayloadSize;
-	for( uint8_t indexPayload = 0; indexPayload < this->rxPayloadSize; indexPayload++ ) {
-		payload[indexPayload] = this->rxBuffer[indexPayload];
-	}
+	memcpy(payload, this->rxBuffer, this->rxPayloadSize);
 	*snr = 0;
 	*signalRssi = 0;
 }
@@ -228,16 +224,24 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
   //this->Sleep( false );
   SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
   SetRfFrequency( channel );
-  uint16_t symbTimeout = timeOutMs / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
+  uint8_t symbTimeout = timeOutMs / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
   SetModulationParamsRxFsk( symbTimeout );
 	SetOpMode( RF_OPMODE_RECEIVER );
-	while(IsFskFifoEmpty() && !HasTimeouted()) {
+	while(IsFskFifoEmpty()) {
+		wait_ms(5);
+		if(this->HasTimeouted()){
+			this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG);
+			return;
+		}
 	}
 	ReadFifo( &rxPayloadSize, 1 );
 	for(uint8_t indexPayload = 0; indexPayload<rxPayloadSize; indexPayload++) {
-		while(IsFskFifoEmpty()){}
+		while(IsFskFifoEmpty()){
+			wait_ms(5);
+		}
 		ReadFifo( rxBuffer + indexPayload, 1 );
 	}
+	this->SetAndGenerateFakeIRQ(RECEIVE_PACKET_IRQ_FLAG);
 }
 
 void SX1276::Sleep(  bool coldStart ) {

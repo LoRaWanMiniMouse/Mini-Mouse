@@ -105,12 +105,12 @@ IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
     Read(REG_IRQFLAGS1, &irq1, 1);
 		Read(REG_IRQFLAGS2, &irq2, 1);
 
-		irqFlags = irq1<<8 | irq2;
-    if ( ( irqFlags & IRQ_FSK_TIMEOUT ) !=0 ) {
-        irqFlags |= RXTIMEOUT_IRQ_FLAG;
+		irqs = irq1<<8 | irq2;
+    if ( ( irqs & IRQ_FSK_TIMEOUT ) !=0 ) {
+        flags |= RXTIMEOUT_IRQ_FLAG;
     }
-    if ( ( irqFlags & IRQ_FSK_PAYLOAD_READY ) !=0 ) {
-        irqFlags |= RECEIVE_PACKET_IRQ_FLAG;
+    if ( ( irqs & IRQ_FSK_PAYLOAD_READY ) !=0 ) {
+        flags |= RECEIVE_PACKET_IRQ_FLAG;
     }
     /* Not used by the MAC for now
     if ( ( irqFlags & IRQ_FSK_PACKET_SENT ) !=0 ) {
@@ -121,7 +121,7 @@ IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
 		if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
         irqFlags |= BAD_PACKET_IRQ_FLAG;
     }*/
-	  return (IrqFlags_t) irqFlags;
+	  return (IrqFlags_t) flags;
 }
 
 void SX1276::Reset( void ) {

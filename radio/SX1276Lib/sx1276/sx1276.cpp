@@ -113,11 +113,9 @@ IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
     if ( ( irqs & IRQ_FSK_PAYLOAD_READY ) !=0 ) {
         flags |= RECEIVE_PACKET_IRQ_FLAG;
     }
-    /* Not used by the MAC for now
-    if ( ( irqFlags & IRQ_FSK_PACKET_SENT ) !=0 ) {
-        irqFlags = (IrqFlags_t) (irqFlags | TRANSMIT_PACKET_IRQ_FLAG);
+    if ( ( irqs & IRQ_FSK_PACKET_SENT ) !=0 ) {
+        flags |= SENT_PACKET_IRQ_FLAG;
     }
-    */
     /* This flag cannot be set in FSK based on IRQ registers parsing
 		if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
         irqFlags |= BAD_PACKET_IRQ_FLAG;

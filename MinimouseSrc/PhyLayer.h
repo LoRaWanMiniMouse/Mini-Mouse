@@ -45,7 +45,7 @@ public:
     int                    RxPhyPayloadRssi;
     uint16_t               TxPayloadSize;
     uint32_t               DevAddrIsr ; // a copy of the devaddr to be tested in the isr routine
-    uint8_t                RegIrqFlag;
+    IrqFlags_t             RegIrqFlag;
     eJoinStatus            JoinedStatus; // used in isr routine to not filter on devaddr
     int                    StateRadioProcess;
     uint32_t               TimestampRtcIsr;

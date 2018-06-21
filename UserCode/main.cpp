@@ -28,6 +28,9 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "SX126x.h"
 #include "ApiMcu.h"
 #include "utilities.h"
+#include "Fragmentation.h"
+#include "FragmentationDecode.h"
+
 #define FileId 4
 /*!
  * \brief   BackUpFlash The LoraWan structure parameters save into the flash memory for failsafe restauration.
@@ -50,40 +53,89 @@ uint8_t LoRaMacAppSKeyInit[] = { 0x12, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22,
 uint8_t LoRaMacAppKeyInit[]  = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
 uint8_t AppEuiInit[]         = { 0x71, 0xb3, 0xd5, 0x7e, 0xf0, 0x00, 0x36, 0x12 };
 //uint8_t AppEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0x22 };
-uint8_t DevEuiInit[]         = { 0xFF, 0x23, 0x03, 0x4D, 0xE4, 0xBD, 0x29, 0x4C };    
+uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
 uint32_t LoRaDevAddrInit     = 0x26011920;
+
+
+SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+/* User Radio ISR routine */
+#define NBENCODEDFRAME 52
+void UserRadioIsrFuota ( void ) {
+	  int16_t snr,rssi;
+	  uint32_t crcL, crcH;
+	  uint8_t PayloadSize;
+	  uint8_t FuotaPayload[255];
+	  uint16_t NbFrame;
+	  uint8_t  FrameLength;
+	  static uint32_t endOfTest = 0xFFFFFFFF;
+	  static uint8_t FirstTime = 0;
+	  uint8_t tempvec[255];
+    mcu.WatchDogRelease ( ); 
+	  int IrqFlag = RadioUser.GetIrqFlags( );
+		RadioUser.ClearIrqFlags( ); 
+    if ( IrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {
+        RadioUser.FetchPayload(&PayloadSize, FuotaPayload, &snr, &rssi );
+		  	RadioUser.Sleep ( false );
+			  if ((FuotaPayload[1] == 0xF) && (FuotaPayload[2] == 0xA) && (FuotaPayload[3] == 0xB) && (FuotaPayload[4] == 0x4)){
+						NbFrame = (FuotaPayload[7]<<8) + FuotaPayload[8];
+						FrameLength = FuotaPayload[9];
+						if (FirstTime == 0){
+								FirstTime =1;
+								FotaParameterInit( NbFrame-NBENCODEDFRAME,NBENCODEDFRAME, FrameLength+2);
+								DEBUG_MSG("Start FW upgrade \n");
+						}
+						for (int jj = 0 ; jj < FrameLength ; jj++){
+								tempvec[jj+2] =  FuotaPayload[jj+12];
+						}
+						Crc64(&tempvec[2], FrameLength,&crcL, &crcH );
+						tempvec[0] = FuotaPayload[5];
+						tempvec[1] = FuotaPayload[6];
+						if (endOfTest == 0xFFFFFFFF) {
+								if (( FuotaPayload[10]  ==  ( crcL & 0xff )) && (FuotaPayload[11]  ==  ( ( crcL >> 8) & 0xff ))){  // check crc
+										endOfTest = FragmentationDecodeCore( &tempvec[0], 0);
+								}
+						} else {
+								DEBUG_MSG("end of defrag\n");
+								FLASH_If_BankSwitch();
+						}
+        }
+	  RadioUser.RxLora  (BW125, 7, 868100000 , 10000);			
+    } else {
+		    RadioUser.RxLora  (BW125, 7, 868100000 , 10000);
+		}
+}
 
 int main( ) {
     int i;
-	  uint8_t StatusCpt = 0;
     uint8_t UserPayloadSize ;
     uint8_t UserPayload [14];
     uint8_t UserRxPayloadSize;
-    uint8_t UserRxPayload [25];
+    uint8_t UserRxPayload [125];
     uint8_t UserFport ;
     uint8_t UserRxFport ;
     uint8_t MsgType ;
     eDataRateStrategy AppDataRate = STATIC_ADR_MODE; // adr mode manage by network
     uint8_t AppTimeSleeping = 6 ;
-
+	  uint8_t uid[8];
+    sLoRaWanKeys  LoraWanKeys ; 
     /*!
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
     */
     mcu.InitMcu ( );
-    mcu.RtcInit ( );
     mcu.WatchDogStart ( );
-    mcu.LowPowerTimerLoRaInit();
-	  mcu.UartInit ( );
-    sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
+		mcu.GetUniqueId (uid); 
+	  LoraWanKeys  = DeriveKeyForTest ( uid, LoRaDevAddrInit ) ; // OTA DEVICE
+    
+	  //sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
 
     /*!
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
     * \remark  The Current implementation  support radio SX1276 and sx1261
     */
-    SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+
     LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
-    //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
-    //LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+	  //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
+  	//LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 
 
     uint8_t AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE ;
@@ -92,23 +144,22 @@ int main( ) {
     /*!
     * \brief Restore the LoraWan Context
     */
-
-
-		
-		DEBUG_MSG("MM is starting ...\n\n");
+		DEBUG_PRINTF("MM is starting ...%x %x %x %x  %x %x %x %x",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
 
 		DEBUG_MSG("********************Debug Trace In flash****************** \n\n");
     ReadTraceInFlash ( USERFLASHADRESS + 4096 );
 		
 		DEBUG_MSG("******************** Current Debug Trace****************** \n\n");
 		ReadTrace ( ExtDebugTrace );
-		
-		StoreTraceInFlash( USERFLASHADRESS + 4096 );
-
+	  StoreTraceInFlash( USERFLASHADRESS + 4096 );
     mcu.mwait(2);
 		InsertTrace ( __COUNTER__, FileId );
-		
     Lp.RestoreContext  ( );
+/**************************************************Provisionning Step*******************************************/
+
+        mcu.GetUniqueId (&UserPayload[1]);
+
+/****************************************************End of Provisionnning**************************************/
 
     while(1) {
         
@@ -143,7 +194,7 @@ int main( ) {
         DEBUG_MSG("\n\n");
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            mcu.GotoSleepMSecond ( 300 );
+            mcu.GotoSleepMSecond ( 100 );
             mcu.WatchDogRelease ( );
         }
 				
@@ -160,13 +211,38 @@ int main( ) {
                 DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
             }
             DEBUG_MSG("]\n\n\n");
-            // call the application layer to manage the application downlink
-        } 
+						if ( ( UserRxFport == 0x69 )&& ( UserRxPayloadSize == 5 ) ) {
+								int GoInFwUpgrade = 0;
+								for (int i = 0; i < 5 ; i++) {
+									GoInFwUpgrade = (UserRxPayload[i]-i == 0) ? GoInFwUpgrade : 1;
+								}
+								if ( GoInFwUpgrade == 0 ){
+										Lp.SetDataRateStrategy(USER_DR_DISTRIBUTION);
+										LpState = Lp.SendPayload( 0x69, UserPayload, UserPayloadSize, MsgType );
+										while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) ){
+												LpState = Lp.LoraWanProcess( &AvailableRxPacket );
+												mcu.GotoSleepMSecond ( 100 );
+												mcu.WatchDogRelease ( );
+										}
+										mcu.AttachInterruptIn( &UserRadioIsrFuota ); // attach ISR
+										mcu.mwait(1);
+										RadioUser.RxLora  (BW125, 7, 868100000 , 10000);
+										uint32_t BeginFWUpgrade = mcu.RtcGetTimeSecond( );
+										while(1) {
+												if ( ( mcu.RtcGetTimeSecond( ) - BeginFWUpgrade ) > 3600 ) {
+														 DEBUG_MSG ( "ERROR : TOO LATE FOR FW UPGRADE  \n");
+														 NVIC_SystemReset() ;
+												}
+												 mcu.GotoSleepSecond ( AppTimeSleeping);
+										}
+						    }
+				    }
+				}
         /*!
          * \brief Send a ¨Packet every 120 seconds in case of join 
          *        Send a packet every AppTimeSleeping seconds in normal mode
          */
-
+				
         if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ){
 					  InsertTrace ( __COUNTER__, FileId ); 
             mcu.GotoSleepSecond(5);
@@ -175,7 +251,6 @@ int main( ) {
             mcu.GotoSleepSecond ( AppTimeSleeping );
 					  InsertTrace ( __COUNTER__, FileId );
         }
-        
     }
 }
 

@@ -24,8 +24,6 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "Uart.h"
 #include "stdint.h"
 
-#define TX_RX_IT            D2     // Interrupt TX/RX Done
-#define RX_TIMEOUT_IT       D3     // Interrupt RX TIME OUT 
 
 
 /* Definition for USARTx Pins */
@@ -37,7 +35,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define USARTx_RX_AF                     GPIO_AF4_USART1
 
 
-#define PA_BOOST_CONNECTED         1 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
+
 static IWDG_HandleTypeDef Iwdg;
  extern "C" {
      void EXTI4_15_IRQHandler(void);

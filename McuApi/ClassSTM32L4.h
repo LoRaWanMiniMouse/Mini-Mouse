@@ -94,6 +94,19 @@ public :
      */ 
     int StoreContext(const void *buffer, uint32_t addr, uint32_t size); 
     
+		
+		     /** RestoreContext data from a flash device.  
+     * 
+     *  This method invokes memcpy - reads number of bytes from the address 
+     * 
+     *  @param buffer Buffer to write to 
+     *  @param addr   Flash address to begin reading from 
+     *  @param size   Size to read in bytes 
+     *  @return       0 on success, negative error code on failure 
+     */ 
+    int WriteFlashWithoutErase(uint8_t *buffer, uint32_t addr, uint32_t size);
+
+ 
 /******************************************************************************/
 /*                                Mcu RTC Api                                 */
 /******************************************************************************/
@@ -219,7 +232,26 @@ public :
 /*                           Mcu Uart Api                                     */
 /******************************************************************************/
     void UartInit ( void ) ;
-    void MMprint( const char *fmt, ...);		
+    void MMprint( const char *fmt, ...);
+/*****************************************************************************/
+/*											Get Unique Id																				 */		
+/*****************************************************************************/
+
+    void GetUniqueId ( uint8_t  DevEui[8] ) {
+			const char* UID = (char*)0x1FFF7590;
+			uint32_t uid;
+        memcpy(&uid, UID, 4);
+        DevEui[7] =(uint8_t)(uid&0xff);
+        DevEui[6] =(uint8_t)((uid>>8)&0xFF);
+        DevEui[5] =(uint8_t)((uid>>16)&0xFF);
+        DevEui[4] =(uint8_t)((uid>>24)&0xFF);
+			  memcpy(&uid, UID + 4, 4);
+        DevEui[3] =(uint8_t)(uid&0xFF);
+        DevEui[2] =(uint8_t)((uid>>8)&0xFF);
+        DevEui[1] =(uint8_t)((uid>>16)&0xFF);
+        DevEui[0] =(uint8_t)((uid>>24)&0xFF);
+		    	
+		}			
 private :
     /*!
     *  Low power timer

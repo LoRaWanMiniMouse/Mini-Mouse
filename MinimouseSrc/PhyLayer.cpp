@@ -26,6 +26,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "utilities.h"
 #define FileId 3
 template class RadioContainer<SX1276>;
+template class RadioContainer<SX1272>;
 template class RadioContainer<SX126x>;
 
 template <class R> RadioContainer <R>::RadioContainer( R * RadioUser ){
@@ -87,7 +88,7 @@ template <class R> void RadioContainer <R>::SetRxConfig(eModulationType RxModula
     RxBw         = RxBwMac;
     RxSf         = RxSfMac;
     RxMod        = RxModulation;
-		CurrentMod   = RxModulation;
+    CurrentMod   = RxModulation;
     if ( RxModulation == LORA ) {
         InsertTrace ( __COUNTER__, FileId );
         Radio->RxLora( RxBw, RxSf, RxFrequency, RxWindowMs );

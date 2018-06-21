@@ -24,6 +24,8 @@ template class LoraWanObject< LoraRegionsEU, SX1276 >;
 template class LoraWanObject< LoraRegionsEU, SX126x >;
 template class LoraWanObject< LoraRegionsUS, SX1276 >;
 template class LoraWanObject< LoraRegionsUS, SX126x >;
+template class LoraWanObject< LoraRegionsEU, SX1272 >;
+template class LoraWanObject< LoraRegionsUS, SX1272 >;
 template <template <class R> class T, class RADIOTYPE>
 LoraWanObject<T,RADIOTYPE>::LoraWanObject( sLoRaWanKeys LoRaWanKeys, RADIOTYPE * RadioUser,uint32_t FlashAdress ):packet(  LoRaWanKeys, RadioUser,FlashAdress ) {
     StateLoraWanProcess = LWPSTATE_IDLE;
@@ -200,7 +202,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
 
         default: 
 				  	InsertTrace ( __COUNTER__, FileId );
-            DEBUG_MSG( " Illegal state\n " );
+            DEBUG_MSG( " Illegal state in lorawan process\n " );
             break;
         }
     return ( StateLoraWanProcess );
@@ -342,14 +344,28 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::GetLorawanProcessState ( v
 }
  
 /**************************************************/
-/*    LoraWan  RestoreContext  Method     */
+/*    LoraWan  RestoreContext  Method             */
 /**************************************************/
 template <template <class R> class T, class RADIOTYPE> 
 void LoraWanObject <T,RADIOTYPE> ::RestoreContext ( void ) {
     packet.RegionLoadFromFlash ( );
 }; 
 
-
+ 
+/**************************************************/
+/*    LoraWan  storeContext  Method               */
+/**************************************************/
+template <template <class R> class T, class RADIOTYPE> 
+ void LoraWanObject <T,RADIOTYPE> ::SetProvisionning ( sLoRaWanKeys LoRaWanKeys ) {
+	  memcpy( packet.appSKey, LoRaWanKeys.LoRaMacAppSKey, 16 );
+    memcpy( packet.nwkSKey, LoRaWanKeys.LoRaMacNwkSKey, 16 );
+    memcpy( packet.appKey, LoRaWanKeys.LoRaMacAppKey, 16 );
+    memcpy( packet.devEui, LoRaWanKeys.DevEui, 8 );
+    memcpy( packet.appEui, LoRaWanKeys.AppEui, 8 );
+    packet.otaDevice      = LoRaWanKeys.OtaDevice;
+    packet.DevAddr               = LoRaWanKeys.LoRaDevAddr ;
+	  packet.RegionSaveInFlash ( );
+ }
 /**************************************************/
 /*   LoraWan  GetNextMaxPayloadLength  Method     */
 /**************************************************/

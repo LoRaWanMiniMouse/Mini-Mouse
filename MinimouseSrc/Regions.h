@@ -56,6 +56,7 @@ public:
 	  void RegionLoadFromFlash                    ( void );
 		void RegionSetBadCrcInFlash                 ( void );	
     virtual void RegionGiveNextDataRate           ( void );
+		virtual void RegionSaveInFlash                      ( void );
 protected : 
     virtual void RegionGetCFList                  ( void );
     virtual void RegionGiveNextChannel            ( void ); 
@@ -73,7 +74,6 @@ protected :
     virtual eStatusLoRaWan RegionIsValidChannelIndex    ( uint8_t ChannelIndex);
     virtual uint8_t RegionGetAdrAckLimit                ( void );
     virtual uint8_t RegionGetAdrAckDelay                ( void );
-    virtual void RegionSaveInFlash                      ( void );
 private :
 
     uint8_t DistriDataRateInit[8];

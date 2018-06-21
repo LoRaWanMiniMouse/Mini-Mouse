@@ -205,15 +205,22 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
 void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs ) {
     Channel = channel;
     /* Configure Lora Rx */
+    Reset( );
+    CalibrateImage( );
     SetOpMode( RF_OPMODE_SLEEP );
+	/* Set Lora Mode and max payload to 0x40 */
+    Write( REG_OPMODE, ( Read( REG_OPMODE ) & RFLR_OPMODE_LONGRANGEMODE_MASK ) | RFLR_OPMODE_LONGRANGEMODE_ON );
     SetStandby( );
     SetRfFrequency( channel );
     uint16_t symbTimeout = ( ( TimeOutMs & 0xFFFF ) * ( ( BW + 1 ) * 125 ) ) >> SF ;
+	  if ( symbTimeout > 0x3FF ) {
+			symbTimeout = 0x3FF ;
+		}
     SetModulationParamsRxLora( SF, BW, symbTimeout);
-
-    /* Configure IRQ Rx Done or Rx timeout */
-    Write ( REG_LR_IRQFLAGSMASK, 0x3F );
-    Write( REG_DIOMAPPING1,0);
+    
+/* Configure IRQ Rx Done or Rx timeout */
+    Write ( REG_LR_IRQFLAGSMASK, 0x3F ); 
+    Write ( REG_DIOMAPPING1,0);
     Write ( REG_DIOMAPPING2, 0x00 );
     /* Configure Fifo*/
     Write( REG_LR_FIFORXBASEADDR, 0 );

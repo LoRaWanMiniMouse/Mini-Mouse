@@ -29,6 +29,8 @@ Maintainer        : Fabien Holin ( SEMTECH)
 /*************************************************/
 template class LoraWanContainer <16,SX1276>;
 template class LoraWanContainer <16,SX126x>;
+template class LoraWanContainer <16,SX1272>;
+template class LoraWanContainer <72,SX1272>;
 template class LoraWanContainer <72,SX1276>;
 template class LoraWanContainer <72,SX126x>;
 template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys, R * RadioUser,uint32_t FlashAdress)
@@ -56,6 +58,7 @@ template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContain
     FirstDwn              = true;
     Phy.JoinedStatus      = ( otaDevice == APB_DEVICE ) ? JOINED : NOT_JOINED;
     UserFlashAdress       = FlashAdress;
+		MacNwkPayloadSize     = 0;
 }; 
 
 template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::~LoraWanContainer( ) {
@@ -375,7 +378,7 @@ template <int NBCHANNEL, class R> eStatusLoRaWan LoraWanContainer<NBCHANNEL, R>:
                 break;
             default: 
 						   	InsertTrace ( __COUNTER__, FileId );
-                DEBUG_MSG( " Illegal state\n " );
+                DEBUG_MSG( " Illegal state in mac layer\n " );
                 break;
         }
     }

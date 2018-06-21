@@ -26,29 +26,29 @@ template class RadioContainer<SX126x>;
 template <class R> void RadioContainer <R>::IsrRadio( void ) {
     int status = OKLORAWAN;
     uint32_t tCurrentMillisec;
-	  if ( CurrentMod == LORA ) {
-        RegIrqFlag = Radio->GetIrqFlags( );
-        Radio->ClearIrqFlags( );
-		} else {
-			// RegIrqFlag = Radio->GetIrqFlagsFSK( );
-      // Radio->ClearIrqFlagsFSK( );
-		}			
+    if( this->CurrentMod == LORA ) {
+        RegIrqFlag = Radio->GetIrqFlagsLora( );
+        Radio->ClearIrqFlagsLora( );
+    } else {
+        RegIrqFlag = Radio->GetIrqFlagsFsk( );
+        Radio->ClearIrqFlagsFsk( );
+    }
     if ( RegIrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {
-			  InsertTrace ( __COUNTER__, FileId );
-			  tCurrentMillisec =  mcu.RtcGetTimeMs( );
-			  DEBUG_PRINTF( "Receive a packet %d ms after tx done\n",tCurrentMillisec-TimestampRtcIsr);
+        InsertTrace ( __COUNTER__, FileId );
+        tCurrentMillisec =  mcu.RtcGetTimeMs( );
+        DEBUG_PRINTF( "Receive a packet %d ms after tx done\n",tCurrentMillisec-TimestampRtcIsr);
         status = DumpRxPayloadAndMetadata ( );
         Radio->Sleep ( false );
         if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
-					  InsertTrace ( __COUNTER__, FileId );
+            InsertTrace ( __COUNTER__, FileId );
             RegIrqFlag = BAD_PACKET_IRQ_FLAG ; // this case is exactly the same than the case of rx timeout
             tCurrentMillisec =  mcu.RtcGetTimeMs( );
             uint32_t timeoutMs = LastTimeRxWindowsMs - tCurrentMillisec ;
             if ( (int)( LastTimeRxWindowsMs - tCurrentMillisec - 5 * SymbolDuration ) > 0 ) {
                 if ( RxMod == LORA ) {
-                      Radio->RxLora( RxBw, RxSf, RxFrequency, timeoutMs );
+                    Radio->RxLora( RxBw, RxSf, RxFrequency, timeoutMs );
                 } else {
-//                    FSK @todo
+                    Radio->RxFsk( RxFrequency, timeoutMs );
                 }
             DEBUG_MSG( "Receive a packet But rejected\n");
             DEBUG_PRINTF( "tcurrent %u timeout = %d, end time %u \n ", tCurrentMillisec, timeoutMs, LastTimeRxWindowsMs);

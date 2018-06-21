@@ -32,40 +32,62 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define RADIO_FREQ_STEP                                   ( double )( RADIO_XTAL_FREQ / RADIO_FREQ_DIV )
 
 
+//! \warning: FSK is under still test and not officialy supported on this driver
 class SX126x {
     public:
         SX126x( PinName Busy, PinName nss, PinName reset,PinName Interrupt );
         ~SX126x(){}; 
-        
-       void ClearIrqFlags( void );
-        
-       IrqFlags_t GetIrqFlags( void );
-        
-       void FetchPayload(
-                        uint8_t *payloadSize,
-                        uint8_t payload[255],
-                        int16_t *snr,
-                        int16_t *signalRssi
-                    );
-        
+
+        void ClearIrqFlagsLora( void );
+		void ClearIrqFlagsFsk( void );
+
+        IrqFlags_t GetIrqFlagsLora( void );
+		IrqFlags_t GetIrqFlagsFsk( void );
+
+        void FetchPayloadLora(
+            uint8_t *payloadSize,
+            uint8_t payload[255],
+            int16_t *snr,
+            int16_t *signalRssi
+        );
+
+        void FetchPayloadFsk(
+            uint8_t *payloadSize,
+            uint8_t payload[255],
+            int16_t *snr,
+            int16_t *signalRssi
+        );
+
         void Reset( void );
-        
+
         void SendLora(
-                        uint8_t    *payload,
-                        uint8_t    payloadSize,
-                        uint8_t    SF,
-                        eBandWidth BW,
-                        uint32_t   channel,
-                        int8_t     power
-                    );
-        
+            uint8_t    *payload,
+            uint8_t    payloadSize,
+            uint8_t    SF,
+            eBandWidth BW,
+            uint32_t   channel,
+            int8_t     power
+        );
+
+        void SendFsk(
+            uint8_t *payload,
+            uint8_t payloadSize,
+            uint32_t channel,
+            int8_t power
+        );
+
         void RxLora(
-                        eBandWidth   BW,
-                        uint8_t      SF,
-                        uint32_t     channel,
-                        uint32_t     rxTimeoutMs
-                    );
-        
+            eBandWidth   BW,
+            uint8_t      SF,
+            uint32_t     channel,
+            uint32_t     rxTimeoutMs
+        );
+
+        void RxFsk(
+            uint32_t channel,
+            uint32_t     rxTiemoutMs
+        );
+
        void Sleep( bool coldStart );
     private:
         typedef enum {
@@ -114,7 +136,7 @@ class SX126x {
             STDBY_XOSC                              = 0x01,
         } StandbyModes_t;
 				
-				typedef enum {
+        typedef enum {
             USE_LDO                                 = 0x00, // default
             USE_DCDC                                = 0x01,
         }RadioRegulatorMode_t;
@@ -235,32 +257,41 @@ class SX126x {
          * \param [IN]  dio3Mask      DIO3 mask
          */
         void SetDioIrqParams(
-                        uint16_t irqMask,
-                        uint16_t dio1Mask,
-                        uint16_t dio2Mask,
-                        uint16_t dio3Mask
-                    );
-        
+            uint16_t irqMask,
+            uint16_t dio1Mask,
+            uint16_t dio2Mask,
+            uint16_t dio3Mask
+        );
+
         /*!
-         * \brief Set the modulation parameters
-         * @param [IN] Modulation (LoRa/FSK)
+         * \brief Set the modulation parameters for LORA
          * @param [IN] Speading factor
          * @param [IN] Bandwith
          */
-        void SetModulationParams(
-                    eModulationType modulation,
-                    uint8_t    SF,
-                    eBandWidth BW
-                );
+        void SetModulationParamsLora(
+            uint8_t    SF,
+            eBandWidth BW
+        );
+
         /*!
-         * \brief Sets the packet parameters
+         * \brief Set the modulation parameters for FSK
          */
-        void SetPacketParams(
-                    eModulationType modulation,
-                    uint8_t payloadSize,
-                    InvertIQ_t invertIQ
-                );
-        
+        void SetModulationParamsFsk( );
+
+        /*!
+         * \brief Sets the packet parameters for LORA
+         */
+        void SetPacketParamsLora(
+            uint8_t payloadSize
+        );
+
+        /*!
+         * \brief Sets the packet parameters for FSK
+         */
+        void SetPacketParamsFsk(
+            uint8_t payloadSize
+        );
+
         /*!
          * \brief Sets the transmission parameters
          *
@@ -271,11 +302,11 @@ class SX126x {
          */
 
         void SetPaConfig(
-                    uint8_t paDutyCycle,
-                    uint8_t hpMax,
-                    uint8_t deviceSel,
-                    uint8_t paLut
-                );
+            uint8_t paDutyCycle,
+            uint8_t hpMax,
+            uint8_t deviceSel,
+            uint8_t paLut
+        );
         
         /*!
          * \brief Set packet type
@@ -373,7 +404,12 @@ class SX126x {
          * @param [in] size         Size of the data
          */
         void WriteRegisters( uint16_t address, uint8_t *buffer, uint16_t size );
+        void WriteRegister( uint16_t address, uint8_t value );
 
+        void ConfigureCrcCCITT(void);
+        void SetCrcSeedFskCCITT(void);
+        void SetCrcPolynomialFskCCITT(void);
+        void SetSyncWordFskLorawan(void);
 };
 
 #endif

@@ -173,27 +173,24 @@ uint32_t FLASH_If_Write(uint32_t destination, uint32_t *p_source, uint32_t lengt
   * @brief  Configure the write protection status of user flash area.
   * @retval uint32_t FLASHIF_OK if change is applied.
   */
-uint32_t FLASH_If_WriteProtectionClear( void )
-{
-  FLASH_OBProgramInitTypeDef OptionsBytesStruct1;
-  HAL_StatusTypeDef retr;
+uint32_t FLASH_If_WriteProtectionClear( void ) {
+		FLASH_OBProgramInitTypeDef OptionsBytesStruct1;
+		/* Unlock the Flash to enable the flash control register access *************/
+		HAL_FLASH_Unlock();
 
-  /* Unlock the Flash to enable the flash control register access *************/
-  retr = HAL_FLASH_Unlock();
+		/* Unlock the Options Bytes *************************************************/
+		HAL_FLASH_OB_Unlock();
 
-  /* Unlock the Options Bytes *************************************************/
-  HAL_FLASH_OB_Unlock();
+		OptionsBytesStruct1.RDPLevel = OB_RDP_LEVEL_0;
+		OptionsBytesStruct1.OptionType = OPTIONBYTE_WRP;
+		OptionsBytesStruct1.WRPArea = OB_WRPAREA_BANK2_AREAA;
+		OptionsBytesStruct1.WRPEndOffset = 0x00;
+		OptionsBytesStruct1.WRPStartOffset = 0xFF;
+		HAL_FLASHEx_OBProgram(&OptionsBytesStruct1);
 
-  OptionsBytesStruct1.RDPLevel = OB_RDP_LEVEL_0;
-  OptionsBytesStruct1.OptionType = OPTIONBYTE_WRP;
-  OptionsBytesStruct1.WRPArea = OB_WRPAREA_BANK2_AREAA;
-  OptionsBytesStruct1.WRPEndOffset = 0x00;
-  OptionsBytesStruct1.WRPStartOffset = 0xFF;
-   HAL_FLASHEx_OBProgram(&OptionsBytesStruct1);
-
-  OptionsBytesStruct1.WRPArea = OB_WRPAREA_BANK2_AREAB;
-   HAL_FLASHEx_OBProgram(&OptionsBytesStruct1);
-
+		OptionsBytesStruct1.WRPArea = OB_WRPAREA_BANK2_AREAB;
+		HAL_FLASHEx_OBProgram(&OptionsBytesStruct1);
+    return (0);
 }
 
 /**
@@ -610,7 +607,6 @@ static uint8_t copyPage [2048] ;
 int McuSTM32L4::WriteFlashWithoutErase(uint8_t *buffer, uint32_t addr, uint32_t size){
 	  
     int findPage = 0 ;
-    int findDoubleAdress = 0 ;
     int findByteAdress = 0 ;
     int findLastAdress = 0 ;
   	int status = 0;
@@ -671,6 +667,7 @@ int McuSTM32L4::WriteFlashWithoutErase(uint8_t *buffer, uint32_t addr, uint32_t 
 			DEBUG_MSG("ERROR HAL FLASH \n");
 		}
 		HAL_FLASH_Lock( );
+		return ( 0 ); 
 }
 
 

@@ -54,7 +54,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define PA_BOOST_CONNECTED         1 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
 
 #define FLASH_UPDATE_PERIOD 128      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted
-#define USERFLASHADRESS 0x807F800U - 2048  // start flash adress to store lorawan context
+#define USERFLASHADRESS 0x807E000U   // start flash adress to store lorawan context
 
 #define USER_NUMBER_OF_RETRANSMISSION   1// Only used in case of user defined darate distribution strategy
 #define USER_DR_DISTRIBUTION_PARAMETERS 0x00000300 + USER_NUMBER_OF_RETRANSMISSION // Only used in case of user defined darate distribution strategy refered to doc that explain this value

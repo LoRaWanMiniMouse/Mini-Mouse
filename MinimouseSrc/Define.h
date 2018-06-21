@@ -54,7 +54,8 @@ typedef enum LoraWan_Process_States {
     LWPSTATE_RX2 ,
     LWPSTATE_PROCESSDOWNLINK ,
     LWPSTATE_UPDATEMAC,
-    LWPSTATE_TXwait,    
+    LWPSTATE_TXwait,
+    LWPSTATE_INVALID,	
     LWPSTATE_ERROR
 } eLoraWan_Process_States;
 /********************************************************************************/

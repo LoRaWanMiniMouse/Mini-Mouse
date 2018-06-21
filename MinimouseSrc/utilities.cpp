@@ -23,12 +23,12 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 static uint8_t TracePointer ;
 #ifdef DEBUG_TRACE_ENABLE
-uint32_t ExtDebugTrace[TRACE_SIZE] __attribute__((section("NoInit"),zero_init));
+uint32_t ExtDebugTrace[TRACE_SIZE+4] __attribute__((section("NoInit"),zero_init));
 #endif
 void InsertTrace (uint8_t id, uint8_t FileId) {
 #ifdef DEBUG_TRACE_ENABLE	
 	  ExtDebugTrace[ TRACE_SIZE - 1 ] ++;
-	  TracePointer = ExtDebugTrace[ TRACE_SIZE - 1 ];
+	  TracePointer = ExtDebugTrace[ TRACE_SIZE - 1 ] & 0xff;
     if ( id > 31 ) {
 		    DEBUG_MSG("ERROR TRACE COUNTER > 31\n");
 			  return;
@@ -46,7 +46,7 @@ void ReadTrace (uint32_t * DebugTrace) {
 	  uint8_t TPointer ;
 	  uint8_t Fid;
 	  uint8_t id;
-	  TPointer = DebugTrace[ TRACE_SIZE - 1];
+	  TPointer = DebugTrace[ TRACE_SIZE - 1]&0xFF;
 	  DEBUG_MSG("\n Debug Trace = [ \n");
 	  for ( i = 0; i <  TRACE_SIZE - 1; i++ ) {
 			  Fid = (DebugTrace[(uint8_t)(TPointer - i)]&0xE0) >> 5;
@@ -341,12 +341,11 @@ sLoRaWanKeys DeriveKeyForTest ( uint8_t * uid, uint32_t devaddr ){
     uint8_t LoRaMacNwkSKeyInit[] = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
     uint8_t LoRaMacAppSKeyInit[] = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
     uint8_t LoRaMacAppKeyInit[]  = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
-    uint8_t AppEuiInit[]         = { 0x70, 0xb3, 0xd5, 0x7e, 0xf0, 0x00, 0x36, 0x12 };
+    uint8_t AppEuiInit[]         = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
     uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
 		sLoRaWanKeys  LoRaWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, devaddr,OTA_DEVICE};
-
+    
     memcpy( &(LoRaWanKeys.DevEui[0]), uid, 8 );
-    memcpy( &(LoRaWanKeys.AppEui[0]), uid, 8 );
     return (LoRaWanKeys);
 }	
 

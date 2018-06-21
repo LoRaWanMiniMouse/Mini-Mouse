@@ -51,11 +51,11 @@ McuXX<McuSTM32L4> mcu ( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ) ;
 uint8_t LoRaMacNwkSKeyInit[] = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
 uint8_t LoRaMacAppSKeyInit[] = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
 uint8_t LoRaMacAppKeyInit[]  = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
-uint8_t AppEuiInit[]         = { 0x70, 0xb3, 0xd5, 0x7e, 0xf0, 0x00, 0x36, 0x12 };
+uint8_t AppEuiInit[]         = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
 //uint8_t AppEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0x22 };
 uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
 uint32_t LoRaDevAddrInit     = 0x26011920;
-
+   
 
 SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
 /* User Radio ISR routine */
@@ -108,7 +108,7 @@ void UserRadioIsrFuota ( void ) {
 int main( ) {
     int i;
     uint8_t UserPayloadSize ;
-    uint8_t UserPayload [14];
+    uint8_t UserPayload [255];
     uint8_t UserRxPayloadSize;
     uint8_t UserRxPayload [125];
     uint8_t UserFport ;
@@ -117,17 +117,14 @@ int main( ) {
     eDataRateStrategy AppDataRate = STATIC_ADR_MODE; // adr mode manage by network
     uint8_t AppTimeSleeping = 6 ;
 	  uint8_t uid[8];
-    sLoRaWanKeys  LoraWanKeys ; 
     /*!
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
     */
     mcu.InitMcu ( );
     mcu.WatchDogStart ( );
 		mcu.GetUniqueId (uid); 
-	  LoraWanKeys  = DeriveKeyForTest ( uid, LoRaDevAddrInit ) ; // OTA DEVICE
-    
-	  //sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
-
+	  sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
+		memcpy(&LoraWanKeys.DevEui[0], uid , 8);
     /*!
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
     * \remark  The Current implementation  support radio SX1276 and sx1261
@@ -144,44 +141,62 @@ int main( ) {
     /*!
     * \brief Restore the LoraWan Context
     */
-		DEBUG_PRINTF("MM is starting ...%x %x %x %x  %x %x %x %x",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
+		DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x }",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
 
 		DEBUG_MSG("********************Debug Trace In flash****************** \n\n");
     ReadTraceInFlash ( USERFLASHADRESS + 4096 );
 		
 		DEBUG_MSG("******************** Current Debug Trace****************** \n\n");
 		ReadTrace ( ExtDebugTrace );
+		uint8_t TPointer ;
+	  TPointer = ExtDebugTrace[ TRACE_SIZE - 1]& 0xff;
+    
+		for (int i  = 0; i < 200; i++){ 
+		    UserPayload [i] = (ExtDebugTrace[(uint8_t)(TPointer - i)] & 0xFF);
+		}
 	  StoreTraceInFlash( USERFLASHADRESS + 4096 );
     mcu.mwait(2);
 		InsertTrace ( __COUNTER__, FileId );
     Lp.RestoreContext  ( );
-/**************************************************Provisionning Step*******************************************/
 
-        mcu.GetUniqueId (&UserPayload[1]);
-
-/****************************************************End of Provisionnning**************************************/
-
+    uint32_t FrameCounterUpTest  = 1;
+		uint32_t FrameCounterDwnTest = 0;
     while(1) {
         
         /*!
          * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
         */
-			  //if ( StatusCpt 
-        UserFport       = 3;
-        UserPayloadSize = 9;
-        MsgType = UNCONF_DATA_UP;
-        PrepareFrame ( UserPayload );
-        UserPayload[8]  = Lp.GetNbOfReset(); // in this example adding number of reset inside the applicatif payload
-        /*!
-         * \brief  Configure a new DataRate Strategy 
-        */
-        Lp.SetDataRateStrategy( AppDataRate );
+			  if ( FrameCounterUpTest > 10 ) { 
+						UserFport       = 3;
+						UserPayloadSize = randr( 9, 40 );
+						memset( UserPayload, 0, UserPayloadSize);
+						MsgType = UNCONF_DATA_UP;
+						//PrepareFrame ( UserPayload );
+						UserPayload[ 0 ]  =  FrameCounterUpTest >> 24;
+						UserPayload[ 1 ]  = (FrameCounterUpTest >> 16) & 0xFF;
+						UserPayload[ 2 ]  = (FrameCounterUpTest >> 8) & 0xFF;
+						UserPayload[ 3 ]  =  FrameCounterUpTest & 0xFF;
+						UserPayload[ 4 ]  =  FrameCounterDwnTest >> 24;
+						UserPayload[ 5 ]  = (FrameCounterDwnTest >> 16) & 0xFF;
+						UserPayload[ 6 ]  = (FrameCounterDwnTest >> 8) & 0xFF;
+						UserPayload[ 7 ]  =  FrameCounterDwnTest & 0xFF;
+						UserPayload[ 8 ]  = Lp.GetNbOfReset(); // in this example adding number of reset inside the applicatif payload
+						Lp.SetDataRateStrategy( AppDataRate );
+				} else {  // send Trace
+					  UserFport       = 4;
+						MsgType = UNCONF_DATA_UP;
+						Lp.SetDataRateStrategy( MOBILE_LOWPER_DR_DISTRIBUTION );
+					  UserPayloadSize = 210 ;
+				}
+					
+					
         if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
             InsertTrace ( __COUNTER__, FileId );					
             LpState = Lp.Join( );
         } else {
 					  InsertTrace ( __COUNTER__, FileId );
             LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
+					  FrameCounterUpTest ++;
         }
         /*!
          * \brief 
@@ -192,7 +207,7 @@ int main( ) {
          *        Therefore when the stack is active a call periodicity of roughly 300mSec is recommended.
          */ 
         DEBUG_MSG("\n\n");
-        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) ){
+        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
             mcu.GotoSleepMSecond ( 100 );
             mcu.WatchDogRelease ( );
@@ -206,6 +221,7 @@ int main( ) {
         if ( AvailableRxPacket == LORA_RX_PACKET_AVAILABLE ) { 
 					  InsertTrace ( __COUNTER__, FileId );
             Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
+					  FrameCounterDwnTest ++;
             DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
             for ( i = 0 ; i < UserRxPayloadSize ; i++){
                 DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
@@ -243,7 +259,7 @@ int main( ) {
          *        Send a packet every AppTimeSleeping seconds in normal mode
          */
 				
-        if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ){
+        if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) && ( LpState != LWPSTATE_INVALID)){
 					  InsertTrace ( __COUNTER__, FileId ); 
             mcu.GotoSleepSecond(5);
         } else {

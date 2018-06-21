@@ -267,12 +267,12 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::SendPayload ( uint8_t fPor
     status = packet.RegionMaxPayloadSize ( sizeIn );
     if ( status == ERRORLORAWAN ) {
         DEBUG_MSG( " ERROR : PAYLOAD SIZE TOO HIGH \n" );
-        return ( LWPSTATE_ERROR );
+        return ( LWPSTATE_INVALID );
     }
     if ( GetIsOtaDevice ( ) == OTA_DEVICE ) {
         if ( packet.Phy.JoinedStatus ==  NOT_JOINED ) {
             DEBUG_MSG( " ERROR : OTA DEVICE NOT JOINED YET\n" );
-            return ( LWPSTATE_ERROR );
+            return ( LWPSTATE_INVALID );
         }
     }
     RadioReset ( ) ; 

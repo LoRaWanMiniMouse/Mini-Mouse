@@ -152,11 +152,11 @@ enum {
 /*****************************************************************************/
 
 typedef enum{
-    RADIO_IRQ_NONE,
-    RXTIMEOUT_IRQ_FLAG      = 0x80,
+    RADIO_IRQ_NONE          = 0x00,
+		SENT_PACKET_IRQ_FLAG    = 0x20,
     RECEIVE_PACKET_IRQ_FLAG = 0x40,
     BAD_PACKET_IRQ_FLAG     = 0x60,
-    
+    RXTIMEOUT_IRQ_FLAG      = 0x80, 
 }IrqFlags_t;
 
 

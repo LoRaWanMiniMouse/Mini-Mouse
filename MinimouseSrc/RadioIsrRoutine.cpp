@@ -27,7 +27,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     uint32_t tCurrentMillisec;
     if( this->CurrentMod == LORA ) {
         RegIrqFlag = Radio->GetIrqFlagsLora( );
-        Radio->ClearIrqFlagsLora( ); 
+        Radio->ClearIrqFlagsLora( );
     } else {
         RegIrqFlag = Radio->GetIrqFlagsFsk( );
         Radio->ClearIrqFlagsFsk( );

@@ -55,6 +55,7 @@ private :
     eBandWidth           RxBw;
     uint8_t              RxSf;
     eModulationType      RxMod;
+    eModulationType      CurrentMod;
     uint32_t             TxFrequency;
     uint8_t              TxPower;
     uint8_t              TxSf;

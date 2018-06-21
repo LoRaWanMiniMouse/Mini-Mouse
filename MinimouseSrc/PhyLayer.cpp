@@ -66,17 +66,18 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     TxPower           = TxPowerMac;
     TxSf              = TxSfMac;
     TxBw              = TxBwMac;
-    TxPayloadSize     = TxPayloadSizeMac ;
+    TxPayloadSize     = TxPayloadSizeMac;
     StateRadioProcess = RADIOSTATE_TXON;
+    CurrentMod        = TxModulation;
     Radio->Reset( ); 
     if ( TxModulation == LORA ) {
-			  InsertTrace ( __COUNTER__, FileId );
+        InsertTrace ( __COUNTER__, FileId );
         DEBUG_PRINTF ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
         Radio->SendLora( TxPhyPayload, TxPayloadSize, TxSf, TxBw, TxFrequency, TxPower );
     } else {
-			   InsertTrace ( __COUNTER__, FileId );
-         DEBUG_MSG("FSK TRANSMISSION \n");
-        //@TODO FSK
+        InsertTrace ( __COUNTER__, FileId );
+        DEBUG_MSG("FSK TRANSMISSION \n");
+        Radio->SendFsk( TxPhyPayload, TxPayloadSize, TxFrequency, TxPower );
     }
     mcu.mwait_ms(1);
 };
@@ -86,15 +87,16 @@ template <class R> void RadioContainer <R>::SetRxConfig(eModulationType RxModula
     RxBw         = RxBwMac;
     RxSf         = RxSfMac;
     RxMod        = RxModulation;
+		CurrentMod   = RxModulation;
     if ( RxModulation == LORA ) {
-			  InsertTrace ( __COUNTER__, FileId );
+        InsertTrace ( __COUNTER__, FileId );
         Radio->RxLora( RxBw, RxSf, RxFrequency, RxWindowMs );
+        DEBUG_PRINTF ( "  RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw );
     } else {
-			  InsertTrace ( __COUNTER__, FileId );
-        // @TODO: FSK
-        // Radio.SetRxConfig( MODEM_FSK, 50e3, 50e3, 0, 83.333e3, 5, 0, false, 0, true, 0, 0, true, false );//@note rxtimeout 400ms!!!! // @TODO: Implementation
+        InsertTrace ( __COUNTER__, FileId );
+        Radio->RxFsk( RxFrequency, RxWindowMs );
+        DEBUG_PRINTF ( "  RxFrequency = %d, FSK \n", RxFrequency );
     }
-    DEBUG_PRINTF ( "  RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw );
 }
 
 template <class R>int RadioContainer<R>::GetRadioState( void ) {
@@ -118,7 +120,11 @@ template <class R> uint32_t RadioContainer<R>::GetTxFrequency ( void ) {
 template <class R> int RadioContainer<R>::DumpRxPayloadAndMetadata ( void ) {
     int16_t snr;
     int16_t rssi;
-    Radio->FetchPayload( &RxPhyPayloadSize, RxPhyPayload, &snr, &rssi );
+    if( CurrentMod == LORA ) {
+        Radio->FetchPayloadLora( &RxPhyPayloadSize, RxPhyPayload, &snr, &rssi );
+    } else {
+        Radio->FetchPayloadFsk( &RxPhyPayloadSize, RxPhyPayload, &snr, &rssi );
+    }
     RxPhyPayloadSnr = (int) snr;
     RxPhyPayloadRssi= (int) rssi;
    /* check Mtype */

@@ -268,7 +268,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             DistriDataRateInit[2]    = 0; 
             DistriDataRateInit[1]    = 0;         
             DistriDataRateInit[0]    = 1; 
-            this->MacNbTrans         = 3;
+            this->MacNbTrans         = 1;
             break;
         case JOIN_DR_DISTRIBUTION: //in this example 1/3 dr5 1/3 dr4 and 1/3 dr0
             DistriDataRateInit[7]    = 0; 

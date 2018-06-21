@@ -113,7 +113,7 @@ int8_t Nibble2HexChar( uint8_t a );
 
 #define POLY64REV     0x95AC9329AC4BC9B5
 #define INITIALCRC    0xFFFFFFFFFFFFFFFF
-void Crc64(uint8_t *dataIn, int size,uint32_t * crcLow, uint32_t * crcHigh );
+void Crc64(uint8_t *dataIn, int size, uint32_t * crcLow, uint32_t * crcHigh );
 
 
 
@@ -130,4 +130,5 @@ void StoreTraceInFlash( uint32_t TraceFlashAdress );
 void ReadTraceInFlash ( uint32_t TraceFlashAdress );
 extern void InsertTrace (uint8_t id, uint8_t FileId);
 void ReadTrace (uint32_t * DebugTrace);
+sLoRaWanKeys DeriveKeyForTest ( uint8_t * uid, uint32_t devaddr );
 #endif // __UTILITIES_H__

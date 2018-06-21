@@ -69,6 +69,7 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     TxBw              = TxBwMac;
     TxPayloadSize     = TxPayloadSizeMac ;
     StateRadioProcess = RADIOSTATE_TXON;
+	  CurrentMod        = TxModulation;
     Radio->Reset( ); 
     if ( TxModulation == LORA ) {
 			  InsertTrace ( __COUNTER__, FileId );
@@ -87,6 +88,7 @@ template <class R> void RadioContainer <R>::SetRxConfig(eModulationType RxModula
     RxBw         = RxBwMac;
     RxSf         = RxSfMac;
     RxMod        = RxModulation;
+	  CurrentMod   = RxModulation;
     if ( RxModulation == LORA ) {
 			  InsertTrace ( __COUNTER__, FileId );
         Radio->RxLora( RxBw, RxSf, RxFrequency, RxWindowMs );

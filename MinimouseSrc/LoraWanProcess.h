@@ -138,6 +138,13 @@ public:
      * \param [OUT] none
      */  
     void                       RestoreContext          ( void ); 
+		
+		      /*!
+     * \brief   Store provisionning informations in flash
+     * \param [IN]  none
+     * \param [OUT] none
+     */  
+    void                       SetProvisionning            ( sLoRaWanKeys LoRaWanKeys ); 
 
      /*!
      * \brief   Reload the factory Config in the LoraWAN Stack 
@@ -212,6 +219,7 @@ public:
     eLoraWan_Process_States    GetLorawanProcessState  ( void );
     
      uint8_t  GetNbOfReset (void);
+		 
 private :
     //int StateLoraWanProcess;
     T<RADIOTYPE> packet;

@@ -89,6 +89,15 @@ void SX126x::Reset( void ) {
     radioMode = AWAKE;
 }
 
+void SX126x::SendCw(uint32_t frequency){
+	  Reset();
+		SetRegulatorMode( USE_DCDC );
+    SetDio2AsRfSwitchCtrl( true );
+    SetStandby( STDBY_XOSC );
+		SetRfFrequency( frequency );
+		SX126x::SetTxContinuousWave( );
+}
+
 void SX126x::SendLora(
                         uint8_t    *payload,
                         uint8_t    payloadSize,

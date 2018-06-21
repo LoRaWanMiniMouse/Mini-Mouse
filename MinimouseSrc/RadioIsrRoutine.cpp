@@ -26,8 +26,13 @@ template class RadioContainer<SX126x>;
 template <class R> void RadioContainer <R>::IsrRadio( void ) {
     int status = OKLORAWAN;
     uint32_t tCurrentMillisec;
-    RegIrqFlag = Radio->GetIrqFlags( );
-    Radio->ClearIrqFlags( ); 
+	  if ( CurrentMod == LORA ) {
+        RegIrqFlag = Radio->GetIrqFlags( );
+        Radio->ClearIrqFlags( );
+		} else {
+			// RegIrqFlag = Radio->GetIrqFlagsFSK( );
+      // Radio->ClearIrqFlagsFSK( );
+		}			
     if ( RegIrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {
 			  InsertTrace ( __COUNTER__, FileId );
 			  tCurrentMillisec =  mcu.RtcGetTimeMs( );

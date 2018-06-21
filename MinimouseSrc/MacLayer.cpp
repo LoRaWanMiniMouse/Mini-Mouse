@@ -58,6 +58,7 @@ template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContain
     FirstDwn              = true;
     Phy.JoinedStatus      = ( otaDevice == APB_DEVICE ) ? JOINED : NOT_JOINED;
     UserFlashAdress       = FlashAdress;
+		MacNwkPayloadSize     = 0;
 }; 
 
 template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::~LoraWanContainer( ) {
@@ -377,7 +378,7 @@ template <int NBCHANNEL, class R> eStatusLoRaWan LoraWanContainer<NBCHANNEL, R>:
                 break;
             default: 
 						   	InsertTrace ( __COUNTER__, FileId );
-                DEBUG_MSG( " Illegal state\n " );
+                DEBUG_MSG( " Illegal state in mac layer\n " );
                 break;
         }
     }

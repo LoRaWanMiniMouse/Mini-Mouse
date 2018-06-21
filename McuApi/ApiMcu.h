@@ -225,6 +225,6 @@ public :
 //    void (* _UserFuncext) ( void );
 //    int userIt;
 };
-
+HAL_StatusTypeDef FLASH_If_BankSwitch(void);
 extern McuXX<McuSTM32L4> mcu;
 #endif

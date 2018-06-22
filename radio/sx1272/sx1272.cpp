@@ -36,19 +36,19 @@ SX1272::SX1272( PinName nss, PinName reset, PinName TxRxIt, PinName RxTimeOutIt)
     mcu.Init_Irq ( RxTimeOutIt ) ;
 }
 
-void SX1272::ClearIrqFlags( void ) {
+void SX1272::ClearIrqFlagsLora( void ) {
     Write ( REG_LR_IRQFLAGS, 0xFF);
 }
 
-void SX1272::FetchPayload( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi) {
+void SX1272::FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi) {
     *payloadSize = Read( REG_LR_RXNBBYTES );
     ReadFifo( payload, *payloadSize );
     GetPacketStatusLora( NULL, snr, signalRssi );
 }
 
-uint8_t SX1272::GetIrqFlags( void ) {
+IrqFlags_t SX1272::GetIrqFlagsLora( void ) {
 
-    return Read(REG_LR_IRQFLAGS);
+    return ((IrqFlags_t) Read(REG_LR_IRQFLAGS));
 }
 
 void SX1272::Reset( void ) {

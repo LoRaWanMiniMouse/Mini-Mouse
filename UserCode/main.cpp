@@ -60,6 +60,7 @@ uint32_t LoRaDevAddrInit     = 0x26011920;
 SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
 /* User Radio ISR routine */
 #define NBENCODEDFRAME 52
+#define FW_VERSION     01
 void UserRadioIsrFuota ( void ) {
 	  int16_t snr,rssi;
 	  uint32_t crcL, crcH;
@@ -168,19 +169,20 @@ int main( ) {
         */
 			  if ( FrameCounterUpTest > 10 ) { 
 						UserFport       = 3;
-						UserPayloadSize = randr( 9, 40 );
+						UserPayloadSize = randr( 10, 40 );
 						memset( UserPayload, 0, UserPayloadSize);
 						MsgType = UNCONF_DATA_UP;
 						//PrepareFrame ( UserPayload );
-						UserPayload[ 0 ]  =  FrameCounterUpTest >> 24;
-						UserPayload[ 1 ]  = (FrameCounterUpTest >> 16) & 0xFF;
-						UserPayload[ 2 ]  = (FrameCounterUpTest >> 8) & 0xFF;
-						UserPayload[ 3 ]  =  FrameCounterUpTest & 0xFF;
-						UserPayload[ 4 ]  =  FrameCounterDwnTest >> 24;
-						UserPayload[ 5 ]  = (FrameCounterDwnTest >> 16) & 0xFF;
-						UserPayload[ 6 ]  = (FrameCounterDwnTest >> 8) & 0xFF;
-						UserPayload[ 7 ]  =  FrameCounterDwnTest & 0xFF;
-						UserPayload[ 8 ]  = Lp.GetNbOfReset(); // in this example adding number of reset inside the applicatif payload
+					  UserPayload[ 0 ]  = FW_VERSION ;
+						UserPayload[ 1 ]  =  FrameCounterUpTest >> 24;
+						UserPayload[ 2 ]  = (FrameCounterUpTest >> 16) & 0xFF;
+						UserPayload[ 3 ]  = (FrameCounterUpTest >> 8) & 0xFF;
+						UserPayload[ 4 ]  =  FrameCounterUpTest & 0xFF;
+						UserPayload[ 5 ]  =  FrameCounterDwnTest >> 24;
+						UserPayload[ 6 ]  = (FrameCounterDwnTest >> 16) & 0xFF;
+						UserPayload[ 7 ]  = (FrameCounterDwnTest >> 8) & 0xFF;
+						UserPayload[ 8 ]  =  FrameCounterDwnTest & 0xFF;
+						UserPayload[ 9 ]  = Lp.GetNbOfReset(); // in this example adding number of reset inside the applicatif payload
 						Lp.SetDataRateStrategy( AppDataRate );
 				} else {  // send Trace
 					  UserFport       = 4;

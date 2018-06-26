@@ -45,7 +45,6 @@ isFakeIrq(false), fakeIrqFlag(RADIO_IRQ_NONE), pinCS( nss ), pinReset( reset ), 
     mcu.SetValueDigitalOutPin ( pinCS, 1);
     mcu.Init_Irq ( TxRxIt ) ;
     mcu.Init_Irq ( RxTimeOutIt ) ;
-    rxBuffer = (uint8_t*) malloc(MAX_PAYLOAD_SIZE);
     rxPayloadSize = 0;
 }
 
@@ -247,7 +246,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     SetFifoThreshold(LORAWAN_MIN_PACKET_SIZE - 1);
     SetOpMode( RF_OPMODE_RECEIVER );
     while(!IsFskFifoLevelReached()) {
-        wait_ms(2);
+        mcu.mwait_ms(2);
         if(this->HasTimeouted()) {
             this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG);
             return;
@@ -262,7 +261,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     SetFifoThreshold(payloadChunkSize - 1);
     while(remainingBytes > payloadChunkSize) {
         while(!IsFskFifoLevelReached()) {
-            wait_ms(2);
+            mcu.mwait_ms(2);
         }
         ReadFifo( rxBuffer + bytesReceived, payloadChunkSize );
         bytesReceived += payloadChunkSize;
@@ -271,7 +270,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
 
     SetFifoThreshold(remainingBytes - 1);
     while(!IsPayloadReady()) {
-        wait_ms(2);
+        mcu.mwait_ms(2);
     }
     ReadFifo( rxBuffer + bytesReceived, remainingBytes );
     lastPacketRssi = this->GetCurrentRssi();
@@ -557,7 +556,7 @@ void SX1276::SetPayload (uint8_t *payload, uint8_t payloadSize) {
     // FIFO operations can not take place in Sleep mode
     if( ( Read( REG_OPMODE ) & ~RF_OPMODE_MASK ) == RF_OPMODE_SLEEP ) {
         SetStandby( );
-        wait_ms( 1 );
+        mcu.mwait_ms( 1 );
     }
     // Write payload buffer
     WriteFifo( payload, payloadSize );

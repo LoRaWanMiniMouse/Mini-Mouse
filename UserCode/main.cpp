@@ -50,14 +50,13 @@ McuXX<McuSTM32L4> mcu ( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ) ;
  */
 //uint8_t LoRaMacNwkSKeyInit[] = { 0x23, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xFF, 0x23, 0x03, 0x4D, 0xE4, 0x11, 0x11, 0x11};
 //uint8_t LoRaMacAppSKeyInit[] = { 0x12, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0xE4, 0xBD, 0x29};
-uint8_t LoRaMacNwkSKeyInit[] = { 0x23, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-uint8_t LoRaMacAppSKeyInit[] = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
-uint8_t LoRaMacAppKeyInit[]  = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
-uint8_t AppEuiInit[]         = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
-//uint8_t AppEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0x22 };
-uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
-uint32_t LoRaDevAddrInit     = 0x26011920;
-   
+uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
+uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
+uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
+//uint8_t AppEuiInit[]            = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0x22 };
+uint8_t DevEuiInit[]              = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
+uint32_t LoRaDevAddrInit          = 0x26011920;
 
 SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
 /* User Radio ISR routine */
@@ -117,7 +116,6 @@ int main( ) {
     uint8_t UserFport ;
     uint8_t UserRxFport ;
     uint8_t MsgType ;
-    eDataRateStrategy AppDataRate = STATIC_ADR_MODE; // adr mode manage by network
     uint8_t AppTimeSleeping = 6 ;
 	  uint8_t uid[8];
     /*!
@@ -144,8 +142,7 @@ int main( ) {
     /*!
     * \brief Restore the LoraWan Context
     */
-		DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x }",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
-
+		DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
 		DEBUG_MSG("********************Debug Trace In flash****************** \n\n");
     ReadTraceInFlash ( USERFLASHADRESS + 4096 );
 		
@@ -159,10 +156,8 @@ int main( ) {
 		}
 	  StoreTraceInFlash( USERFLASHADRESS + 4096 );
     mcu.mwait(2);
-		InsertTrace ( __COUNTER__, FileId );
-		
     //Lp.RestoreContext  ( );
-
+    Lp.ActivateClassC  ( );
     uint32_t FrameCounterUpTest  = 1;
 		uint32_t FrameCounterDwnTest = 0;
     while(1) {
@@ -186,7 +181,7 @@ int main( ) {
 						UserPayload[ 7 ]  = (FrameCounterDwnTest >> 8) & 0xFF;
 						UserPayload[ 8 ]  =  FrameCounterDwnTest & 0xFF;
 						UserPayload[ 9 ]  = Lp.GetNbOfReset(); // in this example adding number of reset inside the applicatif payload
-						Lp.SetDataRateStrategy( USER_DR_DISTRIBUTION );
+						Lp.SetDataRateStrategy( STATIC_ADR_MODE );
 				} else {  // send Trace
 					  UserFport       = 4;
 						MsgType = UNCONF_DATA_UP;
@@ -214,8 +209,9 @@ int main( ) {
         DEBUG_MSG("\n\n");
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            mcu.GotoSleepMSecond ( 100 );
-            mcu.WatchDogRelease ( );
+            mcu.GotoSleepMSecond ( 300 );
+            mcu.WatchDogRelease ( );	
+					   
         }
 				
         if ( LpState == LWPSTATE_ERROR ) {
@@ -223,7 +219,7 @@ int main( ) {
         // user application have to save all the need
             NVIC_SystemReset();
         }
-        if ( AvailableRxPacket == LORA_RX_PACKET_AVAILABLE ) { 
+        if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
 					  InsertTrace ( __COUNTER__, FileId );
             Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
 					  FrameCounterDwnTest ++;
@@ -245,6 +241,7 @@ int main( ) {
 												mcu.GotoSleepMSecond ( 100 );
 												mcu.WatchDogRelease ( );
 										}
+										 DEBUG_MSG ( "START FW UPGRADE\n");
 										mcu.AttachInterruptIn( &UserRadioIsrFuota ); // attach ISR
 										mcu.mwait(1);
 										RadioUser.RxLora  (BW125, 7, 868100000 , 10000);

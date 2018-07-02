@@ -55,8 +55,9 @@ typedef enum LoraWan_Process_States {
     LWPSTATE_PROCESSDOWNLINK ,
     LWPSTATE_UPDATEMAC,
     LWPSTATE_TXwait,
-    LWPSTATE_INVALID,	
-    LWPSTATE_ERROR
+    LWPSTATE_INVALID,
+    LWPSTATE_RX_CLASSC,	
+    LWPSTATE_ERROR,
 } eLoraWan_Process_States;
 /********************************************************************************/
 /*                           Timer Process States                               */
@@ -75,9 +76,12 @@ enum{
     RADIOSTATE_TXON,
     RADIOSTATE_TXFINISHED,
     RADIOSTATE_RX1FINISHED,
-//    RADIOSTATE_RX2FINISHED
+    RADIOSTATE_RXC,
 };
-
+typedef enum {
+    CLASS_C_ACTIVATED,
+    CLASS_C_NOT_ACTIVATED,
+}eDeviceTypeClassC;
 
 /********************************************************************************/
 /*                   LoraWan Mac Layer Parameters                               */
@@ -93,6 +97,10 @@ enum{
     PROPRIETARY,
 };
 
+typedef enum {
+	  NOT_RECEIVE_ON_RXC,
+    RECEIVE_ON_RXC,
+}eIsReceiveOnRXC;
 enum{
     LORAWANR1,
     RFU,
@@ -217,6 +225,7 @@ typedef enum {
 }eStatusChannel;
 typedef enum {
     NO_MORE_VALID_RX_PACKET,
+	  USER_RX_PACKET,
     USERRX_FOPTSPACKET,
     NWKRXPACKET,
     JOIN_ACCEPT_PACKET,
@@ -228,10 +237,12 @@ typedef enum {
 /*************************/
 /*    SHARE WITH USER    */
 /*************************/
-enum {
+typedef enum {
     NO_LORA_RXPACKET_AVAILABLE,
     LORA_RX_PACKET_AVAILABLE,
-};
+		MULTI_CAST_G0_RX_PACKET_AVAILABLE,
+	  MULTI_CAST_G1_RX_PACKET_AVAILABLE,
+}eUserRxPacketType;
 
 typedef enum { 
     NOT_JOINED,
@@ -250,6 +261,20 @@ typedef enum {
     FSK
 }eModulationType;
 
+typedef enum { 
+    VALID_DEV_ADDR_UNICAST,
+    VALID_DEV_ADDR_MULTI_CAST_G0,
+	  VALID_DEV_ADDR_MULTI_CAST_G1,
+	  UNVALID_DEV_ADDR,
+}eValidDevAddr;
+
+
+typedef enum { 
+    CLASS_CG0_ENABLE,
+	  CLASS_CG0_DISABLE,
+	  CLASS_CG1_ENABLE,
+	  CLASS_CG1_DISABLE,
+}eClassCEnable;
 /*************************/
 /*    API CRYPTO         */
 /*************************/
@@ -261,7 +286,6 @@ enum {
 /*                         LORA KEYS USER Specific                              */
 /********************************************************************************/
 typedef struct sLoRaWanKeys {
-    
     uint8_t *              LoRaMacNwkSKey;
     uint8_t *              LoRaMacAppSKey;
     uint8_t *              LoRaMacAppKey;

@@ -100,11 +100,11 @@ IrqFlags_t SX126x::GetIrqFlagsLora( void ) {
     if ( ( irqStatus[1] & IRQ_RX_DONE ) !=0 ) {
         irqFlags = (IrqFlags_t) (irqFlags | RECEIVE_PACKET_IRQ_FLAG);
     }
-    /* Not used by the MAC for now
+
     if ( ( irqStatus[1] & IRQ_TX_DONE ) !=0 ) {
-        irqFlags = (IrqFlags_t) (irqFlags | RADIO_IRQ_TX_DONE);
-    }
-    */
+        irqFlags = (IrqFlags_t) (irqFlags | SENT_PACKET_IRQ_FLAG);
+		}
+    
     if ( ( ( irqStatus[1] & IRQ_HEADER_ERROR ) != 0 ) ||
         ( ( irqStatus[1] & IRQ_CRC_ERROR ) != 0 ) ) {
         irqFlags = (IrqFlags_t) (irqFlags | BAD_PACKET_IRQ_FLAG);

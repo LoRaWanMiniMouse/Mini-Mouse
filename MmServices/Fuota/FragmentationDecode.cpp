@@ -362,7 +362,7 @@ int FragmentationDecodeCore( uint8_t* rowData, int bank )
 		}
 		first = 0;
     frameCounter=CatchFrameCounter( rowData ); // find frame counter of the current receive frame
-	  printf("Receive Frame With Fcnt = %d  %d  %d \n",frameCounter,rowData[0],rowData[1],rowData[2]);
+	  DEBUG_PRINTF("Receive Frame With Fcnt = %d  %d  %d \n",frameCounter,rowData[0],rowData[1]);
     if ( frameCounter < sFotaParameter.LastReceiveFrameCnt)
     {
 			return 0xFFFFFFFF;  // drop frame out of order

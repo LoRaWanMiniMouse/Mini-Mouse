@@ -77,18 +77,18 @@ IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
     irqFlags = Read(REG_LR_IRQFLAGS);
     // Parse it
     if ( ( irqFlags & IRQ_LR_RX_TX_TIMEOUT ) !=0 ) {
-        irqFlags |= RXTIMEOUT_IRQ_FLAG;
+        irqFlags = RXTIMEOUT_IRQ_FLAG;
     }
     if ( ( irqFlags & IRQ_LR_RX_DONE ) !=0 ) {
-        irqFlags |= RECEIVE_PACKET_IRQ_FLAG;
+        irqFlags = RECEIVE_PACKET_IRQ_FLAG;
     }
-    /* Not used by the MAC for now
+
     if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
-        irqFlags = (IrqFlags_t) (irqFlags | TRANSMIT_PACKET_IRQ_FLAG);
-    }
-    */
+        irqFlags = (IrqFlags_t) (irqFlags | SENT_PACKET_IRQ_FLAG);
+		}
+
     if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
-        irqFlags |= BAD_PACKET_IRQ_FLAG;
+        irqFlags = BAD_PACKET_IRQ_FLAG;
     }
     return (IrqFlags_t) irqFlags;
 }

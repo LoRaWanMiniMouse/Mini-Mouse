@@ -47,8 +47,23 @@ void SX1272::FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16
 }
 
 IrqFlags_t SX1272::GetIrqFlagsLora( void ) {
+    uint8_t irqFlags = 0x00;
+    irqFlags = Read(REG_LR_IRQFLAGS);
+		if ( ( irqFlags & IRQ_LR_RX_TX_TIMEOUT ) !=0 ) {
+			  irqFlags = RXTIMEOUT_IRQ_FLAG;
+		}
+		if ( ( irqFlags & IRQ_LR_RX_DONE ) !=0 ) {
+		  	irqFlags = RECEIVE_PACKET_IRQ_FLAG;
+		}
 
-    return ((IrqFlags_t) Read(REG_LR_IRQFLAGS));
+		if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
+		   	irqFlags = (IrqFlags_t) (irqFlags | SENT_PACKET_IRQ_FLAG);
+		}
+
+		if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
+			  irqFlags = BAD_PACKET_IRQ_FLAG;
+		}
+		return (IrqFlags_t) irqFlags;
 }
 
 void SX1272::Reset( void ) {

@@ -54,6 +54,12 @@ struct sBackUpFlash
     uint32_t     DevAddr;
     uint8_t      nwkSKey [16];
     uint8_t      appSKey [16];
+		uint32_t     DevAddrClasCG0;
+    uint8_t      nwkSKeyClasCG0[16];
+    uint8_t      appSKeyClasCG0[16];
+		uint32_t     DevAddrClasCG1;
+    uint8_t      nwkSKeyClasCG1[16];
+    uint8_t      appSKeyClasCG1[16];
     uint8_t      JoinedStatus;
     uint16_t     DevNonce;    
     uint8_t      NbOfReset;

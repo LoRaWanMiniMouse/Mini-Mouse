@@ -36,6 +36,7 @@ template <class R> RadioContainer <R>::RadioContainer( R * RadioUser ){
     TxPower = 14;
     TxSf = 7;
     Radio = RadioUser;
+	  LastItTimeFailsafe = mcu.RtcGetTimeSecond( );
 }; 
 template <class R> RadioContainer<R>::~RadioContainer( ) {
 };
@@ -115,7 +116,22 @@ template <class R> uint32_t RadioContainer<R>::GetTxFrequency ( void ) {
 /************************************************************************************************/
 /*                      Private  Methods                                                         */
 /************************************************************************************************/
-
+/********************************************************/
+/*               Check is valid devaddr                 */
+/********************************************************/
+template <class R> eValidDevAddr RadioContainer<R>::CheckDevAddr (uint32_t devAddrToTest){
+	
+	  if ( devAddrToTest == DevAddrIsr ) {
+			return VALID_DEV_ADDR_UNICAST;
+		}
+    if (( devAddrToTest == 	DevAddrClassCG0Isr ) && ( ClassCG0EnableIsr ==CLASS_CG0_ENABLE )){
+		  return VALID_DEV_ADDR_MULTI_CAST_G0;
+		}
+		if (( devAddrToTest == 	DevAddrClassCG1Isr ) && ( ClassCG0EnableIsr ==CLASS_CG1_ENABLE )){
+		  return VALID_DEV_ADDR_MULTI_CAST_G1;
+		}
+		return(UNVALID_DEV_ADDR);
+}
 
 
 template <class R> int RadioContainer<R>::DumpRxPayloadAndMetadata ( void ) {
@@ -140,15 +156,20 @@ template <class R> int RadioContainer<R>::DumpRxPayloadAndMetadata ( void ) {
     /* check devaddr */
     if ( JoinedStatus == JOINED ){
         uint32_t DevAddrtmp = RxPhyPayload[1] + ( RxPhyPayload[2] << 8 ) + ( RxPhyPayload[3] << 16 )+ ( RxPhyPayload[4] << 24 );
-        if ( DevAddrtmp != DevAddrIsr ) {
+			  CurrentDevaddrType = CheckDevAddr ( DevAddrtmp );
+        if ( CurrentDevaddrType == UNVALID_DEV_ADDR ) {
             status += ERRORLORAWAN;
 					  InsertTrace ( __COUNTER__, FileId );
             DEBUG_PRINTF( " BAD DevAddr = %x for RX Frame \n", DevAddrtmp );
         }
         if ( status != OKLORAWAN ) {
+					  
             RxPhyPayloadSize = 0;
 					  InsertTrace ( __COUNTER__, FileId );
         }
     }
+		if (status == OKLORAWAN) {
+			IsReceiveOnRXC = (StateRadioProcess == RADIOSTATE_RXC) ? RECEIVE_ON_RXC : NOT_RECEIVE_ON_RXC ;
+		}
     return (status);
 }

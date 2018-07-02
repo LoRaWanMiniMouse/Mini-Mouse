@@ -491,7 +491,7 @@ template < class R >void LoraRegionsEU<R>::RegionSaveInFlash ( void ){
     BackUpFlash.CrcLow  = crcLow ; 
     BackUpFlash.CrcHigh = crcHigh ;
     mcu.StoreContext( &BackUpFlash, this->UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
-    mcu.mwait_ms( 25 );    
+    mcu.mwait_ms( 100 );    
 }
 
 template < class R >void LoraRegionsEU<R>::RegionSetBadCrcInFlash ( void ){
@@ -523,7 +523,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetBadCrcInFlash ( void ){
     BackUpFlash.CrcLow  = crcLow +1 ; // bad crc
     BackUpFlash.CrcHigh = crcHigh + 1;
     mcu.StoreContext( &BackUpFlash, this->UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
-    mcu.mwait_ms( 25 );    
+    mcu.mwait_ms( 100 );    
 }
 /***********************************************************************************************/
 /*                      Private  Methods                                                        */

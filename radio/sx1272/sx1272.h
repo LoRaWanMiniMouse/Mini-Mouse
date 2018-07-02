@@ -56,7 +56,18 @@ public:
 	  void Write( uint8_t addr, uint8_t data );
     uint32_t Channel;
 private:
-
+    typedef enum {
+            IRQ_LR_RADIO_ALL                           = 0xFF,
+            IRQ_LR_RX_TX_TIMEOUT                       = 0x80,
+            IRQ_LR_RX_DONE                             = 0x40,
+            IRQ_LR_CRC_ERROR                           = 0x20,
+            IRQ_LR_HEADER_VALID                        = 0x10,
+            IRQ_LR_TX_DONE                             = 0x08,
+            IRQ_LR_CAD_DONE                            = 0x04,
+            IRQ_LR_FHSS_CHANGE_CHANNEL_MASK            = 0x02,
+            IRQ_LR_CAD_DETECTED_MASK                   = 0x01,
+            IRQ_LR_RADIO_NONE                          = 0x00,
+        } IrqLoraValues_t;
 
     /*!
     * \brief Calibrates the Image rejection depending of the frequency

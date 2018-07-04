@@ -154,7 +154,7 @@ enum {
 
 typedef enum{
     RADIO_IRQ_NONE          = 0x00,
-		SENT_PACKET_IRQ_FLAG    = 0x20,
+    SENT_PACKET_IRQ_FLAG    = 0x20,
     RECEIVE_PACKET_IRQ_FLAG = 0x40,
     BAD_PACKET_IRQ_FLAG     = 0x60,
     RXTIMEOUT_IRQ_FLAG      = 0x80, 
@@ -215,16 +215,19 @@ typedef enum {
     ERROR_CHANNEL_MASK = -1,
     OKCHANNEL    = 0,
 }eStatusChannel;
+
 typedef enum {
     NO_MORE_VALID_RX_PACKET,
     USERRX_FOPTSPACKET,
     NWKRXPACKET,
     JOIN_ACCEPT_PACKET,
 } eRxPacketType;
+
 typedef enum {
     RX1,
     RX2
 }eRxWinType;
+
 /*************************/
 /*    SHARE WITH USER    */
 /*************************/
@@ -271,4 +274,3 @@ typedef struct sLoRaWanKeys {
     eDeviceTypeOTA_APB     OtaDevice;
 }sLoRaWanKeys;
 #endif
-

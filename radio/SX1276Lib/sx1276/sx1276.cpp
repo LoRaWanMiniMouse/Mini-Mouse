@@ -32,7 +32,6 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define FSK_MAX_MODEM_PAYLOAD              64
 #define FSK_THRESHOLD_REFILL_LIMIT         32
 #define LORAWAN_MIN_PACKET_SIZE            9
-#define MAX_PAYLOAD_SIZE                   255
 #define FSK_FAKE_IRQ_THRESHOLD             2
 
 
@@ -45,7 +44,6 @@ isFakeIrq(false), fakeIrqFlag(RADIO_IRQ_NONE), pinCS( nss ), pinReset( reset ), 
     mcu.SetValueDigitalOutPin ( pinCS, 1);
     mcu.Init_Irq ( TxRxIt ) ;
     mcu.Init_Irq ( RxTimeOutIt ) ;
-    rxBuffer = (uint8_t*) malloc(MAX_PAYLOAD_SIZE);
     rxPayloadSize = 0;
 }
 

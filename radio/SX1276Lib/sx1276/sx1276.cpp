@@ -244,12 +244,16 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
 
     SetFifoThreshold(LORAWAN_MIN_PACKET_SIZE - 1);
     SetOpMode( RF_OPMODE_RECEIVER );
-    while(!IsFskFifoLevelReached()) {
-        wait_ms(2);
+    while(true) {
+        mcu.mwait_ms(5);
         if(this->HasTimeouted()) {
             this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG);
             return;
         }
+        if(this->IsFskFifoLevelReached()){
+            break;
+        }
+        mcu.mwait_ms(5);
     }
     ReadFifo( &firstBytesRx[0], LORAWAN_MIN_PACKET_SIZE );
     rxPayloadSize = firstBytesRx[0];

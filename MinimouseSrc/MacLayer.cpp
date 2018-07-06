@@ -135,13 +135,18 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureTimerForRx ( eRxWinType type ) {
     InsertTrace ( __COUNTER__, FileId );
-	  uint32_t tCurrentMillisec;
+	uint32_t tCurrentMillisec;
     uint32_t tAlarmMillisec;
     tCurrentMillisec =  mcu.RtcGetTimeMs( );
 
     if (type == RX1) {
         RegionSetRxConfig ( RX1 );
-        ComputeRxWindowParameters ( MacRx1SfCurrent, MacRx1BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 , BOARD_DELAY_RX_SETTING_MS );
+        if( MacTxModulationCurrent == LORA ){
+            ComputeRxWindowParameters(MacRx1SfCurrent, MacRx1BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 , BOARD_DELAY_RX_SETTING_MS);
+        }
+        else{
+            ComputeRxWindowParametersFSK(CRYSTAL_ERROR, MacRx1Delay * 1000 , BOARD_DELAY_RX_SETTING_MS);
+        }
         tAlarmMillisec = ( ( MacRx1Delay * 1000 )+ Phy.TimestampRtcIsr )  - tCurrentMillisec  ;
         if ( (int)(tAlarmMillisec - RxOffsetMs) < 0 ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_RX1FINISHED ;
@@ -904,10 +909,11 @@ template <int NBCHANNEL, class R> int  LoraWanContainer<NBCHANNEL, R>::FindEnabl
     }
     return (-1) ; // for error case 
 };
+
 template <int NBCHANNEL, class R> void  LoraWanContainer<NBCHANNEL, R>::ComputeRxWindowParameters( uint8_t SF, eBandWidth BW, uint32_t ClockAccuracy, uint32_t RxDelayMs, uint8_t BoardDelayRxMs) {
     // ClockAccuracy is set in Define.h, it is board dependent. It must be equal to error in per thousand
   	InsertTrace ( __COUNTER__, FileId );  
-	  uint32_t RxErrorMs= ( ClockAccuracy * RxDelayMs ) / 1000; // for example with an clockaccuracy = 30 (3%)  and a rx windows set to 5s => rxerror = 150 ms 
+    uint32_t RxErrorMs= ( ClockAccuracy * RxDelayMs ) / 1000; // for example with an clockaccuracy = 30 (3%)  and a rx windows set to 5s => rxerror = 150 ms
     int bwTemp = 125* ( BW + 1 );
     double tSymbol = (double) (1<<SF) / (double) bwTemp;        
     Phy.SymbolDuration = (uint32_t) tSymbol ;
@@ -915,4 +921,11 @@ template <int NBCHANNEL, class R> void  LoraWanContainer<NBCHANNEL, R>::ComputeR
     MacRxWindowSymb = (uint16_t) (MAX( ( 2 * minRxSymbols - 8 ) + (2 * RxErrorMs * bwTemp >> SF) + 1 , minRxSymbols ));
     RxOffsetMs = ( int32_t )((ceil( ( 4.0 * tSymbol ) - ( ( MacRxWindowSymb * tSymbol ) / 2.0 ) - BoardDelayRxMs ))*(-1));
     MacRxWindowMs = MacRxWindowSymb * tSymbol ;
+};
+
+
+template <int NBCHANNEL, class R> void  LoraWanContainer<NBCHANNEL, R>::ComputeRxWindowParametersFSK(uint32_t ClockAccuracy, uint32_t RxDelayMs, uint8_t BoardDelayRxMs) {
+    uint32_t RxErrorMs= ( ClockAccuracy * RxDelayMs ) / 1000;
+    MacRxWindowMs = 2 + 2*RxErrorMs;   // Exact formula is 1.3 + 2*RxErrorMs
+    RxOffsetMs = MacRxWindowMs >> 1;
 };

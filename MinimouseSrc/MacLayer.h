@@ -221,6 +221,7 @@ void SetAlarm                  ( uint32_t alarmInMs ,eRxWinType type );
     void DicChannelParser          ( void );
     void UpdateDataRateForAdr      ( void );
     void ComputeRxWindowParameters ( uint8_t SF, eBandWidth BW, uint32_t ClockAccuracy, uint32_t RxDelayMs ,uint8_t BoardDelayRxMs );
+    void ComputeRxWindowParametersFSK(uint32_t ClockAccuracy, uint32_t RxDelayMs, uint8_t BoardDelayRxMs);
     sBackUpFlash BackUpFlash;
     uint8_t NwkPayloadIndex ;
     uint8_t RxEmptyPayload ;

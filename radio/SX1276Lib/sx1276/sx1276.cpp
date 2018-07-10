@@ -241,8 +241,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
 
     SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
     SetRfFrequency( channel );
-    uint8_t symbTimeout = timeOutMs / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
-    SetModulationParamsRxFsk( symbTimeout );
+    SetModulationParamsRxFsk( );
 
     SetFifoThreshold(LORAWAN_MIN_PACKET_SIZE - 1);
     SetOpMode( RF_OPMODE_RECEIVER );
@@ -495,7 +494,7 @@ void SX1276::SetModulationParamsTxFsk( ) {
     Write( REG_DIOMAPPING2, 0x00 );
 }
 
-void SX1276::SetModulationParamsRxFsk( uint8_t symbTimeout ) {
+void SX1276::SetModulationParamsRxFsk( void ) {
     this->SetModulationParamsCommonFsk();
     this->ConfigureRssi();
     Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_10 | RF_DIOMAPPING1_DIO1_11 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
@@ -508,7 +507,9 @@ void SX1276::SetModulationParamsRxFsk( uint8_t symbTimeout ) {
     Write( REG_AFCFEI, RF_AFCFEI_AFCAUTOCLEAR_ON );
     Write( REG_LNA, RF_LNA_GAIN_G1 | RF_LNA_BOOST_ON );
     Write( REG_PAYLOADLENGTH, 0xFF );
-    Write( REG_RXTIMEOUT2, symbTimeout );
+    Write( REG_RXTIMEOUT1, 0x00 );
+    Write( REG_RXTIMEOUT2, 0x00 );
+    Write( REG_RXTIMEOUT3, 0x00 );
 }
 
 void SX1276::SetModulationParamsRxLora( uint8_t SF, eBandWidth BW, uint16_t symbTimeout ) {

@@ -188,9 +188,8 @@ class SX1276 {
 
         /*!
         * \brief Set the modulation parameters for Rx with FSK
-        * @param [IN] symbTimeout : number of symbols before raising the timeout interrupt
         */
-            void SetModulationParamsRxFsk( uint8_t symbTimeout );
+        void SetModulationParamsRxFsk( void );
 
         /*!
         * \brief Set the RF frequency

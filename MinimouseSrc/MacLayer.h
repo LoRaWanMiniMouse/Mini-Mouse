@@ -193,8 +193,10 @@ protected :
     eBandWidth   MacTxBwCurrent;
     uint32_t     MacTxFrequencyCurrent;
     uint32_t     MacRx1FrequencyCurrent;
+    eModulationType      MacRx1ModulationCurrent;
     uint8_t      MacRx1SfCurrent;
     eBandWidth   MacRx1BwCurrent;
+    eModulationType      MacRx2ModulationCurrent;
     uint8_t      MacRx2SfCurrent;
     eBandWidth   MacRx2BwCurrent;
     int          FindEnabledChannel ( uint8_t Index);

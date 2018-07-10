@@ -119,7 +119,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx1 ( void ) {
 		InsertTrace ( __COUNTER__, FileId );
-    Phy.SetRxConfig(MacTxModulationCurrent,MacRx1FrequencyCurrent, MacRx1SfCurrent, MacRx1BwCurrent, MacRxWindowMs);
+    Phy.SetRxConfig(MacRx1ModulationCurrent, MacRx1FrequencyCurrent, MacRx1SfCurrent, MacRx1BwCurrent, MacRxWindowMs);
 };
 /************************************************************************************************************************************/
 /*                                              ConfigureRadioForRx2 +  ConfigureTimerForRx                                         */
@@ -129,7 +129,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx2 ( void ) {
 	  InsertTrace ( __COUNTER__, FileId );   
-	  Phy.SetRxConfig(MacTxModulationCurrent, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
+	  Phy.SetRxConfig(MacRx2ModulationCurrent, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
 };
 
 
@@ -141,7 +141,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
 
     if (type == RX1) {
         RegionSetRxConfig ( RX1 );
-        if( MacTxModulationCurrent == LORA ){
+        if( MacRx1ModulationCurrent == LORA ){
             ComputeRxWindowParameters(MacRx1SfCurrent, MacRx1BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 , BOARD_DELAY_RX_SETTING_MS);
         }
         else{
@@ -156,6 +156,12 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
         }
     } else {
         RegionSetRxConfig ( RX2 );
+        if( MacRx2ModulationCurrent == LORA ){
+            ComputeRxWindowParameters(MacRx2SfCurrent, MacRx2BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 , BOARD_DELAY_RX_SETTING_MS);
+        }
+        else{
+            ComputeRxWindowParametersFSK(CRYSTAL_ERROR, MacRx1Delay * 1000 , BOARD_DELAY_RX_SETTING_MS);
+        }
         ComputeRxWindowParameters ( MacRx2SfCurrent, MacRx2BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 + 1000 , BOARD_DELAY_RX_SETTING_MS );
         tAlarmMillisec = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - tCurrentMillisec  ;// @note Rx2 Dalay is alway RX1DELAY + 1 second
         if ( (int)(tAlarmMillisec - RxOffsetMs) < 0 ) {// too late to launch a timer

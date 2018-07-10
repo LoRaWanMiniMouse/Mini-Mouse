@@ -173,10 +173,8 @@ class SX1276 {
         * \brief Set the modulation parameters for FSK Tx
             * @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
         */
-            void SetModulationParamsTxFsk( void );
-
-            //void SetModulationParamsRxFsk( uint8_t symbTimeout );
-            void SetModulationParamsCommonFsk( void );
+        void SetModulationParamsTxFsk( void );
+        void SetModulationParamsCommonFsk( void );
 
         /*!
         * \brief Set the modulation parameters for Rx with Lora
@@ -217,7 +215,7 @@ class SX1276 {
             * \param [IN] lowFrequencyModeOn
             * \param [IN] opMode
         */
-            void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
+        void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
 
         /*!
         * \brief Sets the radio opmode for FSK operations
@@ -234,7 +232,7 @@ class SX1276 {
         * \brief Sets the radio opmode
         * @param [IN]  opMode        mode to put the radio into
             */
-            void SetOpMode( uint8_t opMode );
+        void SetOpMode( uint8_t opMode );
 
         /*!
         * \brief Write Payload inside the sx1276 fifo

@@ -234,7 +234,6 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     rxPayloadSize = 0;
     uint8_t bytesReceived = 0;
     uint8_t remainingBytes = 0;
-    uint8_t firstBytesRx[LORAWAN_MIN_PACKET_SIZE] = {0x00};
     uint8_t payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
     uint32_t timeoutExpectedMS = 0x00000000;
     bool preamble_detected = false;
@@ -267,27 +266,27 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
             break;
         }
     }
-    ReadFifo( &firstBytesRx[0], LORAWAN_MIN_PACKET_SIZE );
-    rxPayloadSize = firstBytesRx[0];
     bytesReceived = LORAWAN_MIN_PACKET_SIZE - 1;   // -1 because the first one is the payload size, which is not included into the payload
-    memcpy(rxBuffer, firstBytesRx + 1, bytesReceived);
+    ReadFifo( &rxPayloadSize, 1 );
+    ReadFifo( rxBuffer, bytesReceived );
     remainingBytes = rxPayloadSize - bytesReceived;
 
-    SetFifoThreshold(payloadChunkSize - 1);
-    while(remainingBytes > payloadChunkSize) {
-        while(!IsFskFifoLevelReached()) {
-            wait_ms(2);
+    if(rxPayloadSize > (FSK_MAX_MODEM_PAYLOAD - 1)){
+        SetFifoThreshold(payloadChunkSize - 1);
+        while(remainingBytes > payloadChunkSize) {
+            while(!IsFskFifoLevelReached()) {
+                wait_ms(3);
+            }
+            ReadFifo( &rxBuffer[0] + bytesReceived, payloadChunkSize );
+            bytesReceived += payloadChunkSize;
+            remainingBytes = rxPayloadSize - bytesReceived;
         }
-        ReadFifo( rxBuffer + bytesReceived, payloadChunkSize );
-        bytesReceived += payloadChunkSize;
-        remainingBytes = rxPayloadSize - bytesReceived;
     }
 
-    SetFifoThreshold(remainingBytes - 1);
     while(!IsPayloadReady()) {
         wait_ms(2);
     }
-    ReadFifo( rxBuffer + bytesReceived, remainingBytes );
+    ReadFifo( &rxBuffer[0] + bytesReceived, remainingBytes );
     lastPacketRssi = this->GetCurrentRssi();
     this->Sleep(false);
     this->SetAndGenerateFakeIRQ(RECEIVE_PACKET_IRQ_FLAG);

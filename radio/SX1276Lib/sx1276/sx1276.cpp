@@ -30,7 +30,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define FSK_PREAMBLE_LSB_LORAWAN_REG_VALUE 0x05
 #define FSK_SYNCWORD_LORAWAN_REG_VALUE     0xC194C1
 #define FSK_MAX_MODEM_PAYLOAD              64
-#define FSK_THRESHOLD_REFILL_LIMIT         32
+#define FSK_THRESHOLD_REFILL_LIMIT         0x0F
 #define LORAWAN_MIN_PACKET_SIZE            9
 #define FSK_FAKE_IRQ_THRESHOLD             2
 

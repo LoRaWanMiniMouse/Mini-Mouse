@@ -236,6 +236,8 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     uint8_t remainingBytes = 0;
     uint8_t firstBytesRx[LORAWAN_MIN_PACKET_SIZE] = {0x00};
     uint8_t payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
+    uint32_t timeoutExpectedMS = 0x00000000;
+    bool preamble_detected = false;
 
     SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
     SetRfFrequency( channel );
@@ -244,16 +246,27 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
 
     SetFifoThreshold(LORAWAN_MIN_PACKET_SIZE - 1);
     SetOpMode( RF_OPMODE_RECEIVER );
+    timeoutExpectedMS = mcu.RtcGetTimeMs() + timeOutMs;
     while(true) {
-        mcu.mwait_ms(5);
-        if(this->HasTimeouted()) {
-            this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG);
-            return;
+        if(mcu.RtcGetTimeMs() > timeoutExpectedMS) {
+            if(this->HasDetectedPreamble() && !preamble_detected){
+                // A timeout has been detected so a payload might be in the process of being received.
+                // Allocate here the amount of time required to receive the 3 bytes of address and the
+                // LORAWAN_MIN_PACKET_SIZE that should trigger the FifoLevelReached.
+                timeoutExpectedMS += 2;
+                DEBUG_MSG("   ...Timeout but preamble detected...\n");
+                preamble_detected = true;
+            }
+            else{
+                this->Sleep(false);
+                this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG);
+                return;
+            }
         }
+        mcu.mwait_ms(5);
         if(this->IsFskFifoLevelReached()){
             break;
         }
-        mcu.mwait_ms(5);
     }
     ReadFifo( &firstBytesRx[0], LORAWAN_MIN_PACKET_SIZE );
     rxPayloadSize = firstBytesRx[0];
@@ -369,6 +382,12 @@ bool SX1276::HasTimeouted() {
     uint8_t irqFlags = 0x00;
     Read(REG_IRQFLAGS1, &irqFlags, 1);
     return (irqFlags & 0x04);
+}
+
+bool SX1276::HasDetectedPreamble() {
+    uint8_t irqFlags = 0x00;
+    Read(REG_IRQFLAGS1, &irqFlags, 1);
+    return (irqFlags & 0x02);
 }
 
 void SX1276::GetPacketStatusLora( int16_t *pktRssi, int16_t *snr, int16_t *signalRssi ) {

@@ -109,6 +109,8 @@ class SX1276 {
          */
         bool HasTimeouted( void );
 
+        bool HasDetectedPreamble(void);
+
         bool IsPayloadReady(void);
 
         int8_t GetCurrentRssi(void);

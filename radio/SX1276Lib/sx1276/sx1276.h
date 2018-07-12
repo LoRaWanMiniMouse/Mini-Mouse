@@ -26,7 +26,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define XTAL_FREQ                                   32000000
 #define FREQ_STEP                                   61.03515625
 #define FREQ_STEP_8                                 15625 /* FREQ_STEP<<8 */
-#define RX_BUFFER_SIZE                              256
+#define RX_BUFFER_SIZE                              255
 
 /*!
  * Constant values need to compute the RSSI value

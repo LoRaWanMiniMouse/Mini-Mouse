@@ -275,7 +275,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
         SetFifoThreshold(payloadChunkSize - 1);
         while(remainingBytes > payloadChunkSize) {
             while(!IsFskFifoLevelReached()) {
-                wait_ms(3);
+                mcu.mwait_ms(3);
             }
             ReadFifo( &rxBuffer[0] + bytesReceived, payloadChunkSize );
             bytesReceived += payloadChunkSize;

@@ -23,9 +23,9 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define FSK_DATARATE_MOD_PARAMETER     0x005000  // = 32 * Fxtal / 50kbps
 #define FSK_PULSE_SHAPE_MOD_PARAMETER  0x09    // : Gaussian BT 0.5
 #define FSK_RX_BW_MOD_PARAMETER        0x13    // : 93.8kHz DSB ==> ~ 50kHz SSB
-#define FSK_FDEV_MOD_PARAMETER         0x006666  // = 25kHz * 2^25 / Fxtal
+#define FSK_FDEV_MOD_PARAMETER         0x005D22  // = 25kHz * Fxtal / 2^25
 
-#define FSK_PREAMBLE_LENGTH_PACKET_PARAMETER           0x0005
+#define FSK_PREAMBLE_LENGTH_PACKET_PARAMETER           40
 #define FSK_PREAMBLE_DETECTOR_LENGTH_PACKET_PARAMETER  0x05   // : Preamble detector over 2 Bytes
 #define FSK_SYNC_WORD_LENGTH_PACKET_PARAMETER          0x18   // : 3 Bytes
 #define FSK_ADDRESS_COMP_PACKET_PARAMETER              0x00   // : Address filtering disabled
@@ -40,6 +40,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define REG_CRCSEEDBASEADDR       0x06bc
 #define REG_CRCPOLYBASEADDR       0x06be
 #define REG_SYNCWORDBASEADDRESS   0x06c0
+#define REG_WHITSEEDBASEADDR_MSB  0x06B8
 
 /************************************************************************************************
  *                                 Public  Methods                                              *
@@ -157,7 +158,7 @@ void SX126x::SendLora(
     //CalibrateImage( channel );
     SetRfFrequency( channel );
     SetModulationParamsLora( SF, BW );
-    SetPacketParamsLora( payloadSize );
+    SetPacketParamsLora( payloadSize, IQ_STANDARD );
     SetTxParams( power );
     WriteRegisters( REG_LORA_SYNC_WORD_MSB, ( uint8_t * ) this->LoraSyncword, 2 );
     // Send the payload to the radio
@@ -167,52 +168,53 @@ void SX126x::SendLora(
     ClearIrqStatus( IRQ_RADIO_ALL );
     // Configure IRQ
     SetDioIrqParams(
-                        0xFFFF,
-                        0xFFFF,
-                        IRQ_RADIO_NONE,
-                        IRQ_RADIO_NONE
-                   );
+        0xFFFF,
+        0xFFFF,
+        IRQ_RADIO_NONE,
+        IRQ_RADIO_NONE
+    );
     ClearIrqStatus( IRQ_RADIO_ALL );
-    
+
     // Send ! No timeout here as it is already handled by the MAC
     SetTx( 0 );
 }
 
 void SX126x::SendFsk(
-                        uint8_t    *payload,
-                        uint8_t    payloadSize,
-                        uint32_t   channel,
-                        int8_t     power
-                    ) {
+        uint8_t    *payload,
+        uint8_t    payloadSize,
+        uint32_t   channel,
+        int8_t     power
+    ) {
     //! \warning: FSK is under still test and not officialy supported on this driver
     // Init radio
-
     Reset( );
     SetRegulatorMode( USE_DCDC );
     SetDio2AsRfSwitchCtrl( true );
 
-    SetStandby( STDBY_XOSC );
+    SetStandby( STDBY_RC );
     // Configure the radio
     SetPacketType( FSK );
-    //CalibrateImage( channel );
+    // CalibrateImage( channel );
     SetRfFrequency( channel );
+    SetTxParams( power );
+    SetBufferBaseAddress( 0, 0 );
+    // Send the payload to the radio
+    WriteBuffer( 0, payload, payloadSize );
     SetModulationParamsFsk( );
     SetPacketParamsFsk( payloadSize );
-	  ConfigureCrcCCITT();
-    SetTxParams( power );
-		SetSyncWordFskLorawan();
-    // Send the payload to the radio
-    SetBufferBaseAddress( 0, 0 );
-    WriteBuffer( 0, payload, payloadSize );
+    ConfigureCrcCCITT();
+    SetSyncWordFskLorawan();
+
+    SetWhiteningSeedFSK( 0x01FF );
 
     ClearIrqStatus( IRQ_RADIO_ALL );
     // Configure IRQ
     SetDioIrqParams(
-                        0xFFFF,
-                        0xFFFF,
-                        IRQ_RADIO_NONE,
-                        IRQ_RADIO_NONE
-                   );
+        0xFFFF,
+        0xFFFF,
+        IRQ_RADIO_NONE,
+        IRQ_RADIO_NONE
+    );
     ClearIrqStatus( IRQ_RADIO_ALL );
 
     // Send ! No timeout here as it is already handled by the MAC
@@ -221,49 +223,50 @@ void SX126x::SendFsk(
 
 // @TODO: SetRxBoosted ?
 void SX126x::RxLora(
-                        eBandWidth   BW,
-                        uint8_t      SF,
-                        uint32_t     channel,
-                        uint32_t     rxTimeoutMs
-                    ) {
-    
+        eBandWidth   BW,
+        uint8_t      SF,
+        uint32_t     channel,
+        uint32_t     rxTimeoutMs
+    ) {
+    uint8_t val = 0;
     // Configure the radio
     SetPacketType( LORA );
     SetRfFrequency( channel );
     SetModulationParamsLora( SF, BW );
-    SetPacketParamsLora( 0 );
+    SetPacketParamsLora( 0, IQ_INVERTED );
     StopTimerOnPreamble( true );
     WriteRegisters( REG_LORA_SYNC_WORD_MSB, ( uint8_t * ) this->LoraSyncword, 2 );
     // Configure IRQ
     SetDioIrqParams(
-                        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
-                        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
-                        IRQ_RADIO_NONE,
-                        IRQ_RADIO_NONE
-                   );
+        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
+        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
+        IRQ_RADIO_NONE,
+        IRQ_RADIO_NONE
+    );
     ClearIrqStatus( IRQ_RADIO_ALL );
+
     SetRx( rxTimeoutMs << 6 );
 }
 
 void SX126x::RxFsk(
-                        uint32_t     channel,
-                        uint32_t     rxTimeoutMs
-                    ) {
+        uint32_t     channel,
+        uint32_t     rxTimeoutMs
+    ) {
     //! \warning: FSK is under still test and not officialy supported on this driver
     // Configure the radio
     SetPacketType( FSK );
     SetRfFrequency( channel );
     SetModulationParamsFsk();
-    SetPacketParamsFsk( 0 );
+    SetPacketParamsFsk( 0xFF );
     StopTimerOnPreamble( true );
-		SetSyncWordFskLorawan();
+    SetSyncWordFskLorawan();
     // Configure IRQ
     SetDioIrqParams(
-                        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
-                        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
-                        IRQ_RADIO_NONE,
-                        IRQ_RADIO_NONE
-                   );
+        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
+        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
+        IRQ_RADIO_NONE,
+        IRQ_RADIO_NONE
+    );
     ClearIrqStatus( IRQ_RADIO_ALL );
     SetRx( rxTimeoutMs << 6 );
 }
@@ -469,14 +472,14 @@ void SX126x::SetModulationParamsFsk( ) {
     WriteCommand( SET_MODULATION_PARAMS, buf, 8 );
 }
 
-void SX126x::SetPacketParamsLora( uint8_t payloadSize ) {
+void SX126x::SetPacketParamsLora( uint8_t payloadSize, InvertIQ_t iq_type ) {
     uint8_t buf[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     buf[0] = 0x00;  // Preamble of 0x08 symbols
     buf[1] = 0x08;
     buf[2] = 0x00;  // Explicit header (Variable packet length)
     buf[3] = payloadSize;
     buf[4] = 0x01;  // Uplink: CRC ON
-    buf[5] = IQ_STANDARD;  // Uplink: Standard IQ
+    buf[5] = iq_type;  // Uplink: Standard IQ
     WriteCommand( SET_PACKET_PARAMS, buf, 6 );
 }
 
@@ -488,7 +491,7 @@ void SX126x::SetPacketParamsFsk( uint8_t payloadSize ) {
     buf[3] = FSK_SYNC_WORD_LENGTH_PACKET_PARAMETER;
     buf[4] = FSK_ADDRESS_COMP_PACKET_PARAMETER;
     buf[5] = FSK_PACKET_TYPE_PACKET_PARAMETER;
-    buf[6] = FSK_PAYLOAD_LENGTH_PACKET_PARAMETER;
+    buf[6] = payloadSize;
     buf[7] = FSK_CRC_TYPE_PACKET_PARAMETER;
     buf[8] = FSK_WHITENING_PACKET_PARAMETER;
     WriteCommand( SET_PACKET_PARAMS, buf, 9 );
@@ -496,7 +499,7 @@ void SX126x::SetPacketParamsFsk( uint8_t payloadSize ) {
 
 void SX126x::ConfigureCrcCCITT(void) {
     this->SetCrcSeedFskCCITT( );
-	  this->SetCrcPolynomialFskCCITT( );
+    this->SetCrcPolynomialFskCCITT( );
 }
 
 void SX126x::SetCrcSeedFskCCITT(void) {
@@ -517,15 +520,18 @@ void SX126x::SetCrcPolynomialFskCCITT(void) {
 void SX126x::SetSyncWordFskLorawan(void)
 {
     WriteRegister( REG_SYNCWORDBASEADDRESS, ( FSK_SYNCWORD_LORAWAN_REG_VALUE >> 16 ) & 0x0000FF );
-    WriteRegister( REG_SYNCWORDBASEADDRESS, ( FSK_SYNCWORD_LORAWAN_REG_VALUE >> 8 ) & 0x0000FF );
-    WriteRegister( REG_SYNCWORDBASEADDRESS, FSK_SYNCWORD_LORAWAN_REG_VALUE & 0x0000FF );
+    WriteRegister( REG_SYNCWORDBASEADDRESS + 1, ( FSK_SYNCWORD_LORAWAN_REG_VALUE >> 8 ) & 0x0000FF );
+    WriteRegister( REG_SYNCWORDBASEADDRESS + 2, FSK_SYNCWORD_LORAWAN_REG_VALUE & 0x0000FF );
 }
 
 void SX126x::SetPacketType( eModulationType modulation ) {
+    uint8_t mod = 0;
     if ( modulation == LORA ) {
-        uint8_t mod = 1;
-    WriteCommand( SET_PACKET_TYPE, ( uint8_t* )&mod, 1 );
+        mod = 1;
+    } else if (modulation == FSK ) {
+        mod = 0;
     }
+    WriteCommand( SET_PACKET_TYPE, ( uint8_t* )&mod, 1 );
 }
 
 void SX126x::SetPaConfig(
@@ -678,3 +684,11 @@ void SX126x::WriteRegister( uint16_t address, uint8_t value ){
 	this->WriteRegisters( address, &value, 1 );
 }
 
+void SX126x::SetWhiteningSeedFSK( uint16_t seed )
+{
+    uint8_t regValue = 0;
+    regValue = ReadRegister( REG_WHITSEEDBASEADDR_MSB ) & 0xFE;
+    regValue = ( ( seed >> 8 ) & 0x01 ) | regValue;
+    WriteRegister( REG_WHITSEEDBASEADDR_MSB, regValue ); // only 1 bit.
+    WriteRegister( REG_WHITSEEDBASEADDR_MSB + 1, ( uint8_t )seed );
+}

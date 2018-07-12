@@ -283,15 +283,14 @@ class SX126x {
          * \brief Sets the packet parameters for LORA
          */
         void SetPacketParamsLora(
-            uint8_t payloadSize
+            uint8_t payloadSize,
+            InvertIQ_t iq_type
         );
 
         /*!
          * \brief Sets the packet parameters for FSK
          */
-        void SetPacketParamsFsk(
-            uint8_t payloadSize
-        );
+        void SetPacketParamsFsk( uint8_t payloadSize );
 
         /*!
          * \brief Sets the transmission parameters
@@ -411,6 +410,7 @@ class SX126x {
         void SetCrcSeedFskCCITT(void);
         void SetCrcPolynomialFskCCITT(void);
         void SetSyncWordFskLorawan(void);
+        void SetWhiteningSeedFSK( uint16_t seed );
 };
 
 #endif

@@ -218,22 +218,27 @@ public:
      */ 
     eLoraWan_Process_States    GetLorawanProcessState  ( void );
     
-     uint8_t  GetNbOfReset (void);
-		 
+    uint8_t  GetNbOfReset (void);
+		void                       ActivateClassC          ( void );
+		void                       DeActivateClassC        ( void );
+		
+		
 private :
-    //int StateLoraWanProcess;
-    T<RADIOTYPE> packet;
-    eLoraWan_Process_States StateLoraWanProcess; // for debug not private
-    void CopyUserPayload( const uint8_t* dataIn, const uint8_t sizeIn );
-    uint8_t  GetStateTimer( void );
-    uint8_t  GetRadioIrqFlag ( void );
-    uint8_t  ValidRxPacket; 
-    uint32_t RtcTargetTimer;
-    void RadioReset ( void ) ;
-    void AttachRadioIsr ( void ) { packet.Phy.AttachIsr ( ); };
-    void DetachRadioIsr ( void ) { packet.Phy.DetachIsr ( ); };
-    uint32_t FailSafeTimestamp;
-		uint32_t FlashAdress ;
+
+    T<RADIOTYPE>               packet;
+    eLoraWan_Process_States    StateLoraWanProcess; // for debug not private
+		uint32_t                   FlashAdress ;
+		eDeviceTypeClassC          ClassCActivated;
+    uint8_t                    ValidRxPacket; 
+    uint32_t                   RtcTargetTimer;
+    void CopyUserPayload          ( const uint8_t* dataIn, const uint8_t sizeIn );
+    uint8_t  GetStateTimer        ( void );
+    uint32_t GetFailSafeTimestamp ( void ){return packet.Phy.LastItTimeFailsafe;};
+    uint8_t  GetRadioIrqFlag      ( void );
+    void RadioReset               ( void );
+    void AttachRadioIsr           ( void ) { packet.Phy.AttachIsr ( ); };
+    void DetachRadioIsr           ( void ) { packet.Phy.DetachIsr ( ); };
+
 };
 
 #endif

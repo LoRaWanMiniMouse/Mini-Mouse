@@ -76,18 +76,18 @@ IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
     irqFlags = Read(REG_LR_IRQFLAGS);
     // Parse it
     if ( ( irqFlags & IRQ_LR_RX_TX_TIMEOUT ) !=0 ) {
-        irqFlags |= RXTIMEOUT_IRQ_FLAG;
+        irqFlags = RXTIMEOUT_IRQ_FLAG;
     }
     if ( ( irqFlags & IRQ_LR_RX_DONE ) !=0 ) {
-        irqFlags |= RECEIVE_PACKET_IRQ_FLAG;
+        irqFlags = RECEIVE_PACKET_IRQ_FLAG;
     }
-    /* Not used by the MAC for now
+
     if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
-        irqFlags = (IrqFlags_t) (irqFlags | TRANSMIT_PACKET_IRQ_FLAG);
-    }
-    */
+        irqFlags = (IrqFlags_t) (irqFlags | SENT_PACKET_IRQ_FLAG);
+		}
+
     if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
-        irqFlags |= BAD_PACKET_IRQ_FLAG;
+        irqFlags = BAD_PACKET_IRQ_FLAG;
     }
     return (IrqFlags_t) irqFlags;
 }
@@ -284,7 +284,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     }
 
     while(!IsPayloadReady()) {
-        wait_ms(2);
+        mcu.mwait_ms(2);
     }
     ReadFifo( &rxBuffer[0] + bytesReceived, remainingBytes );
     lastPacketRssi = this->GetCurrentRssi();
@@ -578,7 +578,7 @@ void SX1276::SetPayload (uint8_t *payload, uint8_t payloadSize) {
     // FIFO operations can not take place in Sleep mode
     if( ( Read( REG_OPMODE ) & ~RF_OPMODE_MASK ) == RF_OPMODE_SLEEP ) {
         SetStandby( );
-        wait_ms( 1 );
+        mcu.mwait_ms( 1 );
     }
     // Write payload buffer
     WriteFifo( payload, payloadSize );

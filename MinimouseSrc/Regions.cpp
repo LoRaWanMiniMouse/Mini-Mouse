@@ -296,7 +296,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             DistriDataRateInit[2]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x00F00000 ) ) >> 20; 
             DistriDataRateInit[1]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x0F000000 ) ) >> 24; 
             DistriDataRateInit[0]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0xF0000000 ) ) >> 28; 
-            this->MacNbTrans         = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x0000000F ) );
+            this->MacNbTrans         = USER_NUMBER_OF_RETRANSMISSION;
         
             break;
         default: 
@@ -497,7 +497,7 @@ template < class R >void LoraRegionsEU<R>::RegionSaveInFlash ( void ){
     BackUpFlash.CrcLow  = crcLow ; 
     BackUpFlash.CrcHigh = crcHigh ;
     mcu.StoreContext( &BackUpFlash, this->UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
-    mcu.mwait_ms( 25 );    
+    mcu.mwait_ms( 100 );    
 }
 
 template < class R >void LoraRegionsEU<R>::RegionSetBadCrcInFlash ( void ){
@@ -529,7 +529,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetBadCrcInFlash ( void ){
     BackUpFlash.CrcLow  = crcLow +1 ; // bad crc
     BackUpFlash.CrcHigh = crcHigh + 1;
     mcu.StoreContext( &BackUpFlash, this->UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
-    mcu.mwait_ms( 25 );    
+    mcu.mwait_ms( 100 );    
 }
 /***********************************************************************************************/
 /*                      Private  Methods                                                        */

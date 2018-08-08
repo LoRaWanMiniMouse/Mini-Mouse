@@ -153,17 +153,17 @@ public:
 /* Join Duty cycle management */
     uint32_t     RtcNextTimeJoinSecond ;
     uint32_t     RetryJoinCpt;
-		
+
 /*******************************************/
 /*    Multicast and Class C Variables      */
 /*******************************************/
-		eClassCEnable    ClassCG0Enable; 
-	  eClassCEnable    ClassCG1Enable; 
-		uint32_t         DevAddrClassCG0;
-	  uint32_t         DevAddrClassCG1;
-		uint32_t         FcntDwnClassCG0;  // Wrapping 16 to 32 bits is managed in AcceptFcntDwn Method
-	  uint32_t         FcntDwnClassCG1;  // Wrapping 16 to 32 bits is managed in AcceptFcntDwn Method
-		uint8_t          nwkSKeyClassCG0[16];
+    eClassCEnable    ClassCG0Enable; 
+    eClassCEnable    ClassCG1Enable; 
+    uint32_t         DevAddrClassCG0;
+    uint32_t         DevAddrClassCG1;
+    uint32_t         FcntDwnClassCG0;  // Wrapping 16 to 32 bits is managed in AcceptFcntDwn Method
+    uint32_t         FcntDwnClassCG1;  // Wrapping 16 to 32 bits is managed in AcceptFcntDwn Method
+    uint8_t          nwkSKeyClassCG0[16];
     uint8_t          appSKeyClassCG0[16];  
     uint8_t          nwkSKeyClassCG1[16];
     uint8_t          appSKeyClassCG1[16];
@@ -190,7 +190,7 @@ public:
     virtual void              RegionSaveInFlash                ( void )                                 = 0;
 
     uint32_t    UserFlashAdress;
-		void             SetDevAddr                                ( uint32_t address );
+    void             SetDevAddr                                ( uint32_t address );
 /**************************************************************/
 /*      Protected Methods and variables                       */
 /**************************************************************/
@@ -235,7 +235,7 @@ private :
     int32_t      RxOffsetMs;
     uint32_t     MacRxWindowMs;
     uint32_t     RxLateWindowMs;
-		eStatusLoRaWan CheckValidMulticastPayload ( void );
+    eStatusLoRaWan CheckValidMulticastPayload ( void );
 }; 
 
 

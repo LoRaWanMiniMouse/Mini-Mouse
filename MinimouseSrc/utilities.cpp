@@ -23,128 +23,127 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 static uint8_t TracePointer ;
 #ifdef DEBUG_TRACE_ENABLE
-uint32_t ExtDebugTrace[TRACE_SIZE+4] __attribute__((section("NoInit"),zero_init));
+    uint32_t ExtDebugTrace[TRACE_SIZE+4] __attribute__((section("NoInit"),zero_init));
 #endif
 void InsertTrace (uint8_t id, uint8_t FileId) {
 #ifdef DEBUG_TRACE_ENABLE	
-	  ExtDebugTrace[ TRACE_SIZE - 1 ] ++;
-	  TracePointer = ExtDebugTrace[ TRACE_SIZE - 1 ] & 0xff;
+    ExtDebugTrace[ TRACE_SIZE - 1 ] ++;
+    TracePointer = ExtDebugTrace[ TRACE_SIZE - 1 ] & 0xff;
     if ( id > 31 ) {
-		    DEBUG_MSG("ERROR TRACE COUNTER > 31\n");
-			  return;
-		}
+        DEBUG_MSG("ERROR TRACE COUNTER > 31\n");
+        return;
+    }
     if ( FileId > 7 ) {
-		    DEBUG_MSG("ERROR TRACE FILE_ID > 7\n");
-			  return;
-		}			
+        DEBUG_MSG("ERROR TRACE FILE_ID > 7\n");
+        return;
+    }
     ExtDebugTrace[ TracePointer ] = ( ( mcu.RtcGetTimeMs( )  & 0x00FFFFFF )<< 8 ) + (( FileId & 0x7) << 5) + (id & 0x1F) ;
 #endif
 }
 void ReadTrace (uint32_t * DebugTrace) {
-#ifdef DEBUG_TRACE_ENABLE		
-	  int i;
-	  uint8_t TPointer ;
-	  uint8_t Fid;
-	  uint8_t id;
-	  TPointer = DebugTrace[ TRACE_SIZE - 1]&0xFF;
-	  DEBUG_MSG("\n Debug Trace = [ \n");
-	  for ( i = 0; i <  TRACE_SIZE - 1; i++ ) {
-			  Fid = (DebugTrace[(uint8_t)(TPointer - i)]&0xE0) >> 5;
-			  id  =  (DebugTrace[(uint8_t)(TPointer - i)]&0x1F);
-			switch ( Fid ) {
-				case 0 : 
-		        DEBUG_PRINTF(" @%.8d  id =  %.2x LoraWanProcess  file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-				    break;
-				case 1 : 
-		        DEBUG_PRINTF(" @%.8d  id =  %.2x RegionsEU868    file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-				    break;
-				case 2 : 
-					    switch ( id ) {
-							case 8 :
-                DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file    RECEIVE CMD LINK_CHECK_ANS \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 9 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD LINK_ADR_ANS\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 10 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD LINK_ADR_ANS MULTIPLE\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 11 :
-                DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file    RECEIVE CMD DUTY_CYCLE_ANS \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 12 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD RXPARRAM_SETUP_ANS\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 13 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD NEW_CHANNEL_ANS\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 14 :
-                DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file    RECEIVE CMD RXTIMING_SETUP_ANS \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 15 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD TXPARAM_SETUP_ANS\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 16 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD DIC_CHANNEL_ANS\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-              default:								
-		             DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-						}					
-				    break;
-
-				case 3 :
-            switch ( id ) {
-							case 6 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x PhyLayer        file    Wait For It \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-               default:						
-		            DEBUG_PRINTF(" @%.8d  id =  %.2x PhyLayer        file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-				        break;
-						 }
-						 break;
-				case 4 :
-            switch ( id ) {
-							case 0 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x Main            file    JUST RESET \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 2 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x Main            file    Send \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 6 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x Main            file    Sleep \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-              default:								
-		             DEBUG_PRINTF(" @%.8d  id =  %.2x Main            file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-						}
-				    break;
-			  case 5 : 
-		        DEBUG_PRINTF(" @%.8d  id =  %.2x LoRaMacCrypto   file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-				    break;
-			  case 6 :
-            switch ( id ) {
-							case 2 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x Radio Isr       file    RECEIVE IT TX DONE \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-							case 3 :
-                 DEBUG_PRINTF(" @%.8d  id =  %.2x Radio Isr       file    RECEIVE IT RX or TIMEOUT\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-              default:								
-		            DEBUG_PRINTF(" @%.8d  id =  %.2x Radio Isr       file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-							   break;
-						}					
-				    break;
-				case 7 : 
-		        DEBUG_PRINTF(" @%.8d  id =  %.2x Timer Isr       file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-				    break;
-				default :
-					  DEBUG_PRINTF(" @%.8d  id =  %.2x Unknown file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
-            break;
-			}
-		}
-    DEBUG_MSG("] \n\n");
-#endif		
+#ifdef DEBUG_TRACE_ENABLE
+    int i;
+    uint8_t TPointer ;
+    uint8_t Fid;
+    uint8_t id;
+    TPointer = DebugTrace[ TRACE_SIZE - 1]&0xFF;
+    DEBUG_MSG("\n Debug Trace = [ \n");
+    for ( i = 0; i <  TRACE_SIZE - 1; i++ ) {
+        Fid = (DebugTrace[(uint8_t)(TPointer - i)]&0xE0) >> 5;
+        id  =  (DebugTrace[(uint8_t)(TPointer - i)]&0x1F);
+        switch ( Fid ) {
+            case 0 : 
+                DEBUG_PRINTF(" @%.8d  id =  %.2x LoraWanProcess  file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                break;
+            case 1 : 
+                DEBUG_PRINTF(" @%.8d  id =  %.2x RegionsEU868    file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                break;
+            case 2 : 
+                switch ( id ) {
+                    case 8 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file    RECEIVE CMD LINK_CHECK_ANS \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 9 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD LINK_ADR_ANS\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 10 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD LINK_ADR_ANS MULTIPLE\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 11 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file    RECEIVE CMD DUTY_CYCLE_ANS \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 12 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD RXPARRAM_SETUP_ANS\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 13 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD NEW_CHANNEL_ANS\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 14 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file    RECEIVE CMD RXTIMING_SETUP_ANS \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 15 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD TXPARAM_SETUP_ANS\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 16 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file   RECEIVE CMD DIC_CHANNEL_ANS\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    default:
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x MacLayer        file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                }
+                break;
+            case 3 :
+                switch ( id ) {
+                    case 6 :
+                            DEBUG_PRINTF(" @%.8d  id =  %.2x PhyLayer        file    Wait For It \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                            break;
+                    default:
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x PhyLayer        file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                 }
+                 break;
+            case 4 :
+                switch ( id ) {
+                    case 0 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x Main            file    JUST RESET \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 2 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x Main            file    Send \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 6 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x Main            file    Sleep \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    default:
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x Main            file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                }
+                break;
+            case 5 : 
+                DEBUG_PRINTF(" @%.8d  id =  %.2x LoRaMacCrypto   file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                break;
+            case 6 :
+                switch ( id ) {
+                    case 2 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x Radio Isr       file    RECEIVE IT TX DONE \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    case 3 :
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x Radio Isr       file    RECEIVE IT RX or TIMEOUT\n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                    default:
+                        DEBUG_PRINTF(" @%.8d  id =  %.2x Radio Isr       file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                        break;
+                }
+                break;
+            case 7 : 
+                DEBUG_PRINTF(" @%.8d  id =  %.2x Timer Isr       file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                break;
+            default :
+                DEBUG_PRINTF(" @%.8d  id =  %.2x Unknown file \n", (DebugTrace[(uint8_t)(TPointer - i)]>>8), id);
+                break;
+        }
+    }
+DEBUG_MSG("] \n\n");
+#endif
 }
 
 void StoreTraceInFlash( uint32_t TraceFlashAdress ) {
@@ -153,10 +152,10 @@ void StoreTraceInFlash( uint32_t TraceFlashAdress ) {
 #endif
 }
 void ReadTraceInFlash ( uint32_t TraceFlashAdress ) {
-#ifdef DEBUG_TRACE_ENABLE		
-	  uint32_t TraceTemp[TRACE_SIZE];
-	  mcu.RestoreContext((uint8_t * )(&TraceTemp[0]), TraceFlashAdress, TRACE_SIZE * 4);
-	  ReadTrace ( TraceTemp );
+#ifdef DEBUG_TRACE_ENABLE
+    uint32_t TraceTemp[TRACE_SIZE];
+    mcu.RestoreContext((uint8_t * )(&TraceTemp[0]), TraceFlashAdress, TRACE_SIZE * 4);
+    ReadTrace ( TraceTemp );
 #endif
 }
 /*!
@@ -343,9 +342,8 @@ sLoRaWanKeys DeriveKeyForTest ( uint8_t * uid, uint32_t devaddr ){
     uint8_t LoRaMacAppKeyInit[]  = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
     uint8_t AppEuiInit[]         = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
     uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
-		sLoRaWanKeys  LoRaWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, devaddr,OTA_DEVICE};
-    
+    sLoRaWanKeys  LoRaWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, devaddr,OTA_DEVICE};
     memcpy( &(LoRaWanKeys.DevEui[0]), uid, 8 );
     return (LoRaWanKeys);
-}	
+}
 

@@ -89,7 +89,6 @@ int CatchFrameCounter( uint8_t* rowData );
 void FotaParameterInit( int M, int Redundancy, int DataSize ); 
 void FindMissingReceiveFrame( int  frameCounter );
 int FragmentationDecodeCore( uint8_t* rowData, int bank ) ;
-void XorLineData( uint8_t* dataL1,uint8_t* dataL2, int size);
 void XorLineBool( bool* dataL1,bool* dataL2, int size);
 void GetRowInFlash(int l, uint8_t* rowData ,int bank);
 int  FindMissingFrameIndex ( int x ); 

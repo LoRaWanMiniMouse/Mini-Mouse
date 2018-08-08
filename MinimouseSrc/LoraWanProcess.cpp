@@ -30,8 +30,8 @@ template <template <class R> class T, class RADIOTYPE>
 LoraWanObject<T,RADIOTYPE>::LoraWanObject( sLoRaWanKeys LoRaWanKeys, RADIOTYPE * RadioUser,uint32_t FlashAdress ):packet(  LoRaWanKeys, RadioUser,FlashAdress ) {
     StateLoraWanProcess = LWPSTATE_IDLE;
     packet.MajorBits    = LORAWANR1;
-	  FlashAdress         = FlashAdress;
-	  ClassCActivated     = CLASS_C_NOT_ACTIVATED;
+    FlashAdress         = FlashAdress;
+    ClassCActivated     = CLASS_C_NOT_ACTIVATED;
 }; 
 template <template <class R> class T, class RADIOTYPE> 
 LoraWanObject <T,RADIOTYPE> ::~LoraWanObject() {
@@ -55,7 +55,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
         StateLoraWanProcess = LWPSTATE_IDLE ;
     }        
     #endif
-	   
+
     if ( ( mcu.RtcGetTimeSecond( ) - GetFailSafeTimestamp () ) > 120 ) {
         RadioReset ( ) ;
         StateLoraWanProcess = LWPSTATE_ERROR ;
@@ -73,9 +73,8 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     /************************************************************************************/
         case LWPSTATE_SEND:
             switch ( GetRadioState( ) ) {
-                
                 case RADIOSTATE_IDLE :
-									  InsertTrace ( __COUNTER__, FileId );
+                    InsertTrace ( __COUNTER__, FileId );
                     AttachRadioIsr ( );                    
                     packet.ConfigureRadioAndSend( );
                     DEBUG_MSG( "\n" );
@@ -85,14 +84,13 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
                     break ; 
             
                 case RADIOSTATE_TXFINISHED :
-										InsertTrace ( __COUNTER__, FileId );
-								    packet.ConfigureTimerForRx ( RX1 );
-                    if ( ClassCActivated == CLASS_C_ACTIVATED ) {								
+                    InsertTrace ( __COUNTER__, FileId );
+                    packet.ConfigureTimerForRx ( RX1 );
+                    if ( ClassCActivated == CLASS_C_ACTIVATED ) {
                         packet.ConfigureRadioForRxClassC ();
-										} 
-										StateLoraWanProcess = LWPSTATE_RX1;	
+                    } 
+                    StateLoraWanProcess = LWPSTATE_RX1;
                     break ;
-                
                 default :
                     break;
             }
@@ -104,22 +102,22 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
         case LWPSTATE_RX1:
             if ( GetRadioState( ) == RADIOSTATE_RX1FINISHED ) {
                 if ( GetRadioIrqFlag ( ) == RECEIVE_PACKET_IRQ_FLAG) {
-								   	InsertTrace ( __COUNTER__, FileId );	
+                    InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
                     DEBUG_MSG( " * Receive a downlink RX1 *\n " );
                     DEBUG_MSG( " **************************\n " );
                     StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK;
                 } else { 
-									  InsertTrace ( __COUNTER__, FileId );
+                    InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
                     DEBUG_MSG( " *      RX1 Timeout       *\n " );
                     DEBUG_MSG( " **************************\n " );
-									  packet.ConfigureTimerForRx ( RX2 );
-									  if ( ClassCActivated == CLASS_C_ACTIVATED ) {								
+                    packet.ConfigureTimerForRx ( RX2 );
+                    if ( ClassCActivated == CLASS_C_ACTIVATED ) {
                          packet.ConfigureRadioForRxClassC ();
-										} 
+                    } 
                     StateLoraWanProcess = LWPSTATE_RX2;
                 }
             }
@@ -131,14 +129,14 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
                             
             if ( GetRadioState( ) == RADIOSTATE_IDLE ) {
                 if ( GetRadioIrqFlag ( ) == RECEIVE_PACKET_IRQ_FLAG) {
-									  InsertTrace ( __COUNTER__, FileId );
+                    InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
                     DEBUG_MSG( " * Receive a downlink RX2 *\n " );
                     DEBUG_MSG( " **************************\n " );
                     StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK; 
                 } else {
-									  InsertTrace ( __COUNTER__, FileId );
+                    InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
                     DEBUG_MSG( " *      RX2 Timeout       *\n " );
@@ -158,7 +156,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     /*    Step 6 : Extract Fport to select Between App/nwm Payload                      */
     /************************************************************************************/
         case LWPSTATE_PROCESSDOWNLINK:
-					  InsertTrace ( __COUNTER__, FileId );
+            InsertTrace ( __COUNTER__, FileId );
             DEBUG_MSG( "\n" );
             DEBUG_MSG( "  **************************\n " );
             DEBUG_MSG( " * Process Downlink       *\n " );
@@ -170,7 +168,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     /*                              STATE UPDATE MAC                                    */
     /************************************************************************************/
         case LWPSTATE_UPDATEMAC:
-					  InsertTrace ( __COUNTER__, FileId );
+            InsertTrace ( __COUNTER__, FileId );
             DetachRadioIsr ( );
             packet.Phy.StateRadioProcess = RADIOSTATE_IDLE;  
             DEBUG_MSG( "\n" );
@@ -192,13 +190,13 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
                 StateLoraWanProcess = LWPSTATE_TXwait;
             } else {
                 RadioReset ( ) ; 
-							  if (( ClassCActivated == CLASS_C_NOT_ACTIVATED ) || ( *AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) ){
-                     StateLoraWanProcess = LWPSTATE_IDLE;
-								} else {
-									   packet.Phy.StateRadioProcess = RADIOSTATE_RXC; 
-                     packet.ConfigureRadioForRxClassC ();
-                     StateLoraWanProcess = LWPSTATE_RX_CLASSC;				
-								}
+                if (( ClassCActivated == CLASS_C_NOT_ACTIVATED ) || ( *AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) ){
+                    StateLoraWanProcess = LWPSTATE_IDLE;
+                } else {
+                    packet.Phy.StateRadioProcess = RADIOSTATE_RXC; 
+                    packet.ConfigureRadioForRxClassC ();
+                    StateLoraWanProcess = LWPSTATE_RX_CLASSC;
+                }
             }
             ValidRxPacket = NO_MORE_VALID_RX_PACKET;
             break;
@@ -206,18 +204,17 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     /*                              STATE TXwait MAC                                    */
     /************************************************************************************/
         case LWPSTATE_TXwait:
-					  InsertTrace ( __COUNTER__, FileId );
+            InsertTrace ( __COUNTER__, FileId );
             DEBUG_MSG(".");
             if ( mcu.RtcGetTimeSecond( ) > RtcTargetTimer) {
                 StateLoraWanProcess = LWPSTATE_SEND; //@note the frame have already been prepare in Upadate Mac Layer
             }
             break;
-						
-	  /************************************************************************************/
+
+    /************************************************************************************/
     /*                              STATE RX CLASS C MAC                                */
-    /************************************************************************************/					
+    /************************************************************************************/
          case LWPSTATE_RX_CLASSC:
-                             
             if ( GetRadioState( ) == RADIOSTATE_IDLE ) {
                 if ( GetRadioIrqFlag ( ) == RECEIVE_PACKET_IRQ_FLAG) {
                     DEBUG_MSG( "\n" );
@@ -229,7 +226,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
             }
             break;
         default: 
-				  	InsertTrace ( __COUNTER__, FileId );
+            InsertTrace ( __COUNTER__, FileId );
             DEBUG_MSG( " Illegal state in lorawan process\n " );
             break;
         }
@@ -246,7 +243,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
 /**************************************************/
 template <template <class R> class T, class RADIOTYPE> 
 eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::Join ( void ) {
-	  packet.Phy.LastItTimeFailsafe =  mcu.RtcGetTimeSecond ( );
+    packet.Phy.LastItTimeFailsafe =  mcu.RtcGetTimeSecond ( );
     if ( StateLoraWanProcess != LWPSTATE_IDLE ) {
         DEBUG_MSG( " ERROR : LP STATE NOT EQUAL TO IDLE \n" );
         return ( LWPSTATE_ERROR );
@@ -255,7 +252,6 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::Join ( void ) {
         DEBUG_MSG( " ERROR : APB DEVICE CAN'T PROCCED A JOIN REQUEST \n" );
         return ( LWPSTATE_ERROR );
     }
-		
     packet.Phy.JoinedStatus = NOT_JOINED;
     packet.MacNbTransCpt = packet.MacNbTrans = 1;
     packet.RegionSetDataRateDistribution( JOIN_DR_DISTRIBUTION ); 
@@ -290,7 +286,7 @@ void LoraWanObject <T,RADIOTYPE> ::NewJoin ( void ) {
 /**************************************************/
 template <template <class R> class T, class RADIOTYPE> 
 eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType ) {
-	  packet.Phy.LastItTimeFailsafe =  mcu.RtcGetTimeSecond ( );
+    packet.Phy.LastItTimeFailsafe =  mcu.RtcGetTimeSecond ( );
     eStatusLoRaWan status;
     packet.RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region )
     status = packet.RegionMaxPayloadSize ( sizeIn );
@@ -309,7 +305,6 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::SendPayload ( uint8_t fPor
     packet.UserPayloadSize = sizeIn;
     packet.fPort = fPort;
     packet.MType = PacketType;
-
     packet.BuildTxLoraFrame( );
     packet.EncryptTxFrame( );
     if (PacketType == CONF_DATA_UP){
@@ -386,14 +381,14 @@ void LoraWanObject <T,RADIOTYPE> ::RestoreContext ( void ) {
 /**************************************************/
 template <template <class R> class T, class RADIOTYPE> 
  void LoraWanObject <T,RADIOTYPE> ::SetProvisionning ( sLoRaWanKeys LoRaWanKeys ) {
-	  memcpy( packet.appSKey, LoRaWanKeys.LoRaMacAppSKey, 16 );
+    memcpy( packet.appSKey, LoRaWanKeys.LoRaMacAppSKey, 16 );
     memcpy( packet.nwkSKey, LoRaWanKeys.LoRaMacNwkSKey, 16 );
     memcpy( packet.appKey, LoRaWanKeys.LoRaMacAppKey, 16 );
     memcpy( packet.devEui, LoRaWanKeys.DevEui, 8 );
     memcpy( packet.appEui, LoRaWanKeys.AppEui, 8 );
     packet.otaDevice      = LoRaWanKeys.OtaDevice;
     packet.SetDevAddr( LoRaWanKeys.LoRaDevAddr ) ;
-	  packet.RegionSaveInFlash ( );
+    packet.RegionSaveInFlash ( );
  }
 /**************************************************/
 /*   LoraWan  GetNextMaxPayloadLength  Method     */

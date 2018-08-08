@@ -15,10 +15,9 @@ License           : Revised BSD License, see LICENSE.TXT file include in the pro
 
 Maintainer        : Fabien Holin ( SEMTECH)
 */
-#ifndef ENCODER_H
-#define ENCODER_H
-#include "stdint.h"
-#include  "Define.h"
+#ifndef ENCODER_MP_H
+#define ENCODER_MP_H
+#include "LoraWanProcess.h"
 
 /*!
  * \brief	Function to determine whether a frame is a fragmentation command or fragmentation content
@@ -26,34 +25,14 @@ Maintainer        : Fabien Holin ( SEMTECH)
  * \param	[IN]  input variable to be tested 
  * \param	[OUT] return true if x is a power of two
  */
-bool IsPowerOfTwo( unsigned int x)
-{
-    int i;
-    int bi;
-    int sumBit = 0;
-    for ( i = 0; i < 32; i++ ) {
-        bi = 1 << i;
-        sumBit+= ( x & bi) >> i;
-    }
-    if ( sumBit == 1 ) {
-        return(true);
-    } else {
-        return(false);
-    }
-}
+bool IsPowerOfTwo( unsigned int x);
 
 
 /*!
  * \brief	Pseudo random number generator : prbs23
  * \param	[IN] x - the input of the prbs23 generator
  */
-int FragmentationPrbs23( int x )
-{
-    int b0 = x & 1;
-    int b1 = (x & 0x20) >> 5; 
-    x = ( int ) floor( ( double ) x / 2 ) + (( b0 ^ b1 ) << 22);
-    return x;
-}
+int FragmentationPrbs23( int x );
 
 /*!
  * \brief	Function to calculate a certain row from the parity check matrix
@@ -62,34 +41,7 @@ int FragmentationPrbs23( int x )
  * \param	[IN] M - the size of the row to be calculted, the number of uncoded fragments used in the scheme,matrixRow - pointer to the boolean array
  * \param	[OUT] void
  */
-void FragmentationGetParityMatrixRow( int N, int M, uint8_t * matrixRow  )
-{
-   
-    int i;
-    int m;
-    int x;
-    int nbCoeff = 0;
-    int r;
-    if ( IsPowerOfTwo(M) ) {
-        m=1;
-    } else {
-        m=0;
-    }
-    x = 1 + ( 1001 * N );
-    for (i = 0; i < M; i++) {
-        matrixRow[i] = 0;
-    }
-    while( nbCoeff < M / 2 ) {
-        r = 1 << 16;
-        while( r >= M )
-        {
-            x = FragmentationPrbs23( x );
-            r = x % ( M + m );
-        }
-    matrixRow[r] = 1;
-    nbCoeff += 1;
-    }
-}
+void FragmentationGetParityMatrixRow( int N, int M, uint8_t * matrixRow  );
 
 /*!
  * \brief	Function to xor two line of data 
@@ -98,15 +50,7 @@ void FragmentationGetParityMatrixRow( int N, int M, uint8_t * matrixRow  )
  * \paral [IN] size : number of Bytes in dataL1
  * \param	[OUT] xor(dataL1,dataL2) in dataL1
  */
-void XorLineData( uint8_t* dataL1,uint8_t* dataL2, int size) {
-    int i ;
-    uint8_t dataTemp[size];
-    for(i = 0 ;i < size; i++) {
-        dataTemp[i] = dataL1[i] ^ dataL2[i];
-    }
-    memcpy ( dataL1, dataTemp, size);
-}
-
+void XorLineData( uint8_t* dataL1,uint8_t* dataL2, int size);
     
 enum
 {
@@ -166,7 +110,6 @@ class EncoderMp {
             if ( matrixRow[i] == 1) {
                 FirstOneInMatrix = (FirstOneInMatrix==0) ? i : FirstOneInMatrix;
                 GetLineInFifo ( tmp, i ) ;                 
-                pcf.printf("get line = %d %d\n",tmp[0],tmp[1]);
                 XorLineData( tmp2, tmp, DataSize);
             }
         }
@@ -175,15 +118,8 @@ class EncoderMp {
         RedundancyCnt ++ ;
         RedundancyCnt = RedundancyCnt & 0x7F;
         memcpy(&SdataOut[1], tmp2, DataSize );
-    pcf.printf( "matrix = ");
-     for (int i = 0; i < WLength; i ++) {
-      pcf.printf(" %d  ",matrixRow[i]);
-     }
-     pcf.printf( "\n fifo = ");
-     for (int i = 0; i < WLength; i ++) {
-      pcf.printf(" %d  ",DataFifo[i]);
-     }
-    pcf.printf("\n encoded data %d  %d\n ", SdataOut[0], SdataOut[1]);
+    
+   
     }
 
     uint8_t   InitEncoder;    

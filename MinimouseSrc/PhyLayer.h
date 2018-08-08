@@ -45,20 +45,20 @@ public:
     int                    RxPhyPayloadRssi;
     uint16_t               TxPayloadSize;
     uint32_t               DevAddrIsr ; // a copy of the devaddr to be tested in the isr routine + devaddrclassCG0 & devaddrclasccG1
-	  eClassCEnable          ClassCG0EnableIsr; 
-	  eClassCEnable          ClassCG1EnableIsr; 
-		uint32_t               DevAddrClassCG0Isr;
-	  uint32_t               DevAddrClassCG1Isr;
+    eClassCEnable          ClassCG0EnableIsr; 
+    eClassCEnable          ClassCG1EnableIsr; 
+    uint32_t               DevAddrClassCG0Isr;
+    uint32_t               DevAddrClassCG1Isr;
     IrqFlags_t             RegIrqFlag;
     eJoinStatus            JoinedStatus; // used in isr routine to not filter on devaddr
     int                    StateRadioProcess;
     uint32_t               TimestampRtcIsr;
     uint32_t               LastTimeRxWindowsMs;
     uint32_t               SymbolDuration;
-		uint32_t               LastItTimeFailsafe;
-		eValidDevAddr          CurrentDevaddrType;
-		/**********for class c************/
-		eIsReceiveOnRXC        IsReceiveOnRXC;
+    uint32_t               LastItTimeFailsafe;
+    eValidDevAddr          CurrentDevaddrType;
+    /**********for class c************/
+    eIsReceiveOnRXC        IsReceiveOnRXC;
 
 private :
     uint32_t             RxFrequency;
@@ -72,6 +72,6 @@ private :
     eBandWidth           TxBw;
 
     int                  DumpRxPayloadAndMetadata ( void );
-	  eValidDevAddr        CheckDevAddr (uint32_t devAddrToTest); 
+    eValidDevAddr        CheckDevAddr (uint32_t devAddrToTest); 
 };
 #endif

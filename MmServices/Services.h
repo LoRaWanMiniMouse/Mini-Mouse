@@ -18,7 +18,8 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #ifndef SERVICES_H
 #define SERVICES_H
 #include "stdint.h"
-#include  "Define.h"
+#include "Define.h"
+#include "LoraWanProcess.h"
 #include "EncoderMp.h"
 
 #define PROTECTED_PORT    200
@@ -44,7 +45,7 @@ template < template <class R> class T, class RADIOTYPE>
      * \param                                            => return Error in case of payload too long
      * \param                                            => return Error In case of the Lorawan stack previous state is not equal to iddle
      */  
-    eLoraWan_Process_States    SendPayload             ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType ){
+    eLoraWan_Process_States    SendPayload             ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType ) {
         uint8_t                  SdataTmp[255]; 
         eLoraWan_Process_States  status;
         SfPort                   = fPort;
@@ -88,4 +89,4 @@ private :
     uint8_t SPacketType;
     uint8_t NbPacketToSend;
 };
-    #endif
+#endif

@@ -18,7 +18,7 @@ Description: 	Firmware update over the air with LoRa proof of concept
 #include "stdbool.h"
 #include <string.h>
 #include "ApiMcu.h"
-
+#include "EncoderMp.h"
 //uint8_t FlashData[NBOFUTILFRAMEMAX][SIZEOFFRAMETRANSMITMAX];
 FotaParameter sFotaParameter;
 static bool  s[REDUNDANCYMAX];
@@ -134,28 +134,7 @@ void FindMissingReceiveFrame( int  frameCounter )
 		
 }	
 
-/*!
- * \brief	Function to xor two line of data 
- * 
- * \param	[IN] dataL1 and dataL2
- * \paral [IN] size : number of Bytes in dataL1
- * \param	[OUT] xor(dataL1,dataL2) in dataL1
- */
-void XorLineData( uint8_t* dataL1,uint8_t* dataL2, int size)
- {
-    int i ;
-	  uint8_t dataTemp[size];
-	  for(i = 0 ;i < size; i++)
-	  {
-			dataTemp[i] = dataL1[i] ^ dataL2[i];
-		}
-		for(i = 0 ;i < size; i++)
-	  {
-		  dataL1[i] = dataTemp[i] ;
-		}
- }
 
- 
 /*!
  * \brief	Function to xor two line of data 
  * 
@@ -343,7 +322,7 @@ int FragmentationDecodeCore( uint8_t* rowData, int bank )
     int li; 
     int lj;
     int firstOneInRow;
-    bool matrixRow[NBOFUTILFRAMEMAX] ;
+    uint8_t matrixRow[NBOFUTILFRAMEMAX] ;
     uint8_t matrixDataTemp[NBOFUTILFRAMEMAX] ;
 //		static int m2l = 0;
   //  int first;

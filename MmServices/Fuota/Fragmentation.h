@@ -23,9 +23,8 @@ By: Paul Marcelis
 #include <stdbool.h>    /* bool type */
 #include <stdio.h>      /* printf fprintf sprintf fopen fputs */
 bool IsFragmentationCommand( unsigned char );
-void FragmentationGetParityMatrixRow( int N, int M, bool * matrixRow  );
-int FragmentationPrbs23( int );
-bool IsPowerOfTwo( unsigned int x);
+
+
 
 
 #endif

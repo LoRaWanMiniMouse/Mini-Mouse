@@ -36,7 +36,7 @@ template <class R> RadioContainer <R>::RadioContainer( R * RadioUser ){
     TxPower = 14;
     TxSf = 7;
     Radio = RadioUser;
-	  LastItTimeFailsafe = mcu.RtcGetTimeSecond( );
+    LastItTimeFailsafe = mcu.RtcGetTimeSecond( );
 }; 
 template <class R> RadioContainer<R>::~RadioContainer( ) {
 };
@@ -54,7 +54,7 @@ template <class R> void RadioContainer <R>::AttachIsr ( void ) {
     mcu.AttachInterruptIn( &RadioContainer< R >::CallbackIsrRadio,this);
 }
 template <class R> void RadioContainer <R>::DetachIsr ( void ) {
-	   InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
 }
 
 /************************************************************************************************/
@@ -102,13 +102,13 @@ template <class R> void RadioContainer <R>::SetRxConfig(eModulationType RxModula
 }
 
 template <class R>int RadioContainer<R>::GetRadioState( void ) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     return StateRadioProcess;
 };
 
 
 template <class R> uint32_t RadioContainer<R>::GetTxFrequency ( void ) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     return( TxFrequency );
 };
 
@@ -120,17 +120,17 @@ template <class R> uint32_t RadioContainer<R>::GetTxFrequency ( void ) {
 /*               Check is valid devaddr                 */
 /********************************************************/
 template <class R> eValidDevAddr RadioContainer<R>::CheckDevAddr (uint32_t devAddrToTest){
-	
-	  if ( devAddrToTest == DevAddrIsr ) {
-			return VALID_DEV_ADDR_UNICAST;
-		}
+
+    if ( devAddrToTest == DevAddrIsr ) {
+        return VALID_DEV_ADDR_UNICAST;
+    }
     if (( devAddrToTest == 	DevAddrClassCG0Isr ) && ( ClassCG0EnableIsr ==CLASS_CG0_ENABLE )){
-		  return VALID_DEV_ADDR_MULTI_CAST_G0;
-		}
-		if (( devAddrToTest == 	DevAddrClassCG1Isr ) && ( ClassCG0EnableIsr ==CLASS_CG1_ENABLE )){
-		  return VALID_DEV_ADDR_MULTI_CAST_G1;
-		}
-		return(UNVALID_DEV_ADDR);
+        return VALID_DEV_ADDR_MULTI_CAST_G0;
+    }
+    if (( devAddrToTest == 	DevAddrClassCG1Isr ) && ( ClassCG0EnableIsr ==CLASS_CG1_ENABLE )){
+        return VALID_DEV_ADDR_MULTI_CAST_G1;
+    }
+    return(UNVALID_DEV_ADDR);
 }
 
 
@@ -150,26 +150,25 @@ template <class R> int RadioContainer<R>::DumpRxPayloadAndMetadata ( void ) {
     uint8_t MtypeRxtmp = RxPhyPayload[0] >> 5 ;
     if (( MtypeRxtmp == JOINREQUEST) || ( MtypeRxtmp == UNCONF_DATA_UP ) || ( MtypeRxtmp == CONF_DATA_UP) || ( MtypeRxtmp == REJOIN_REQUEST )) {
         status += ERRORLORAWAN;
-			  InsertTrace ( __COUNTER__, FileId );
+        InsertTrace ( __COUNTER__, FileId );
         DEBUG_PRINTF(" BAD Mtype = %d for RX Frame \n", MtypeRxtmp );
     }
     /* check devaddr */
     if ( JoinedStatus == JOINED ){
         uint32_t DevAddrtmp = RxPhyPayload[1] + ( RxPhyPayload[2] << 8 ) + ( RxPhyPayload[3] << 16 )+ ( RxPhyPayload[4] << 24 );
-			  CurrentDevaddrType = CheckDevAddr ( DevAddrtmp );
+        CurrentDevaddrType = CheckDevAddr ( DevAddrtmp );
         if ( CurrentDevaddrType == UNVALID_DEV_ADDR ) {
             status += ERRORLORAWAN;
-					  InsertTrace ( __COUNTER__, FileId );
+            InsertTrace ( __COUNTER__, FileId );
             DEBUG_PRINTF( " BAD DevAddr = %x for RX Frame \n", DevAddrtmp );
         }
         if ( status != OKLORAWAN ) {
-					  
             RxPhyPayloadSize = 0;
-					  InsertTrace ( __COUNTER__, FileId );
+            InsertTrace ( __COUNTER__, FileId );
         }
     }
-		if (status == OKLORAWAN) {
-			IsReceiveOnRXC = (StateRadioProcess == RADIOSTATE_RXC) ? RECEIVE_ON_RXC : NOT_RECEIVE_ON_RXC ;
-		}
+    if (status == OKLORAWAN) {
+        IsReceiveOnRXC = (StateRadioProcess == RADIOSTATE_RXC) ? RECEIVE_ON_RXC : NOT_RECEIVE_ON_RXC ;
+    }
     return (status);
 }

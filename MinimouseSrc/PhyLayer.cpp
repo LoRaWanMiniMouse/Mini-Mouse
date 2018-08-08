@@ -74,11 +74,12 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     Radio->Reset( ); 
     if ( TxModulation == LORA ) {
         InsertTrace ( __COUNTER__, FileId );
-        DEBUG_PRINTF ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
+        DEBUG_PRINTF ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize);
         Radio->SendLora( TxPhyPayload, TxPayloadSize, TxSf, TxBw, TxFrequency, TxPower );
     } else {
         InsertTrace ( __COUNTER__, FileId );
         DEBUG_MSG("FSK TRANSMISSION \n");
+        DEBUG_PRINTF ( "  TxFrequency = %d, PayloadSize = %d\n", TxFrequency, TxPayloadSize);
         Radio->SendFsk( TxPhyPayload, TxPayloadSize, TxFrequency, TxPower );
     }
     mcu.mwait_ms(1);

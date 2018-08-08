@@ -170,8 +170,14 @@ template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionMaxPayloadSize ( uint
 template < class R >void LoraRegionsEU<R>::RegionSetRxConfig ( eRxWinType type ) {
   	InsertTrace ( __COUNTER__, FileId );
     if ( type == RX1 ) {
-        this->MacRx1SfCurrent =  ( this->MacTxSfCurrent < 12 - this->MacRx1DataRateOffset) ? this->MacTxSfCurrent + this->MacRx1DataRateOffset : 12;
-        this->MacRx1BwCurrent = this->MacTxBwCurrent;
+        if( this->MacTxModulationCurrent == FSK && this->MacRx1DataRateOffset == 0){
+            this->MacRx1ModulationCurrent = FSK;
+        }
+        else{
+            this->MacRx1ModulationCurrent = LORA;
+            this->MacRx1SfCurrent =  ( this->MacTxSfCurrent < 12 - this->MacRx1DataRateOffset) ? this->MacTxSfCurrent + this->MacRx1DataRateOffset : 12;
+            this->MacRx1BwCurrent = this->MacTxBwCurrent;
+        }
     } else if ( type == RX2 ) {
         Rx2DataRateToSfBw ( this->MacRx2DataRate );
     } else {
@@ -282,8 +288,8 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             this->MacNbTrans         = 1;
             break;
         case USER_DR_DISTRIBUTION: //in this example 1/3 dr5 1/3 dr4 and 1/3 dr0
-            DistriDataRateInit[7]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x0000000F ) );
-            DistriDataRateInit[6]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x000000F0 ) ) >> 4; //fsk 
+            DistriDataRateInit[7]    = USER_DR_DISTRIBUTION_PARAMETERS & 0x0000000F;  //fsk 
+            DistriDataRateInit[6]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x000000F0 ) ) >> 4;
             DistriDataRateInit[5]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x00000F00 ) ) >> 8; 
             DistriDataRateInit[4]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x0000F000 ) ) >> 12; 
             DistriDataRateInit[3]    = ( ( USER_DR_DISTRIBUTION_PARAMETERS )& ( 0x000F0000 ) ) >> 16; 
@@ -530,36 +536,38 @@ template < class R >void LoraRegionsEU<R>::RegionSetBadCrcInFlash ( void ){
 /***********************************************************************************************/
 //@notereview function a commun
 template < class R >void LoraRegionsEU<R>:: TxDataRateToSfBw ( uint8_t dataRate ) {
-	  InsertTrace ( __COUNTER__, FileId );
-    this->MacTxModulationCurrent = LORA ;
+    InsertTrace ( __COUNTER__, FileId );
+    this->MacTxModulationCurrent = LORA;
     if ( dataRate < 6 ){ 
-        this->MacTxSfCurrent = 12 - dataRate ;
-        this->MacTxBwCurrent = BW125 ;
+        this->MacTxSfCurrent = 12 - dataRate;
+        this->MacTxBwCurrent = BW125;
     } else if ( dataRate == 6 ){ 
         this->MacTxSfCurrent = 7;
-        this->MacTxBwCurrent = BW250 ;}
-    else if ( dataRate == 7 ) {
-        this->MacTxModulationCurrent = FSK ;
+        this->MacTxBwCurrent = BW250;
+    } else if ( dataRate == 7 ) {
+        this->MacTxModulationCurrent = FSK;
     } else {
-        this->MacTxSfCurrent = 12 ;
-        this->MacTxBwCurrent = BW125 ;
-        DEBUG_MSG( " Invalid Datarate \n" ) ; 
+        this->MacTxSfCurrent = 12;
+        this->MacTxBwCurrent = BW125;
+        DEBUG_MSG( " Invalid Datarate \n" );
     }
 }
 template < class R >void LoraRegionsEU<R>:: Rx2DataRateToSfBw ( uint8_t dataRate ) {
   	InsertTrace ( __COUNTER__, FileId );
-    if ( dataRate < 6 ){ 
-        this->MacRx2SfCurrent = 12 - dataRate ;
-        this->MacRx2BwCurrent = BW125 ;
-    } else if ( dataRate== 6 ){ 
+    if ( dataRate < 6 ){
+        this->MacRx2ModulationCurrent = LORA;
+        this->MacRx2SfCurrent = 12 - dataRate;
+        this->MacRx2BwCurrent = BW125;
+    } else if ( dataRate== 6 ){
+        this->MacRx2ModulationCurrent = LORA;
         this->MacRx2SfCurrent = 7;
-        this->MacRx2BwCurrent = BW250 ;}
-    else if ( dataRate == 7 ) {
-        //@note tbd manage fsk case }
+        this->MacRx2BwCurrent = BW250;
+    } else if ( dataRate == 7 ) {
+        this->MacRx2ModulationCurrent = FSK;
     }
     else {
-        this->MacRx2SfCurrent = 12 ;
-        this->MacRx2BwCurrent = BW125 ;
-        DEBUG_MSG( " Invalid Datarate \n" ) ; 
+        this->MacRx2SfCurrent = 12;
+        this->MacRx2BwCurrent = BW125;
+        DEBUG_MSG( " Invalid Datarate \n" );
     }
 }

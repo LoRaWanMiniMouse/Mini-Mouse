@@ -200,11 +200,13 @@ protected :
     eBandWidth       MacTxBwCurrent;
     uint32_t         MacTxFrequencyCurrent;
     uint32_t         MacRx1FrequencyCurrent;
+    eModulationType  MacRx1ModulationCurrent;
     uint8_t          MacRx1SfCurrent;
     eBandWidth       MacRx1BwCurrent;
+    eModulationType  MacRx2ModulationCurrent;
     uint8_t          MacRx2SfCurrent;
     eBandWidth       MacRx2BwCurrent;
-    int              FindEnabledChannel ( uint8_t Index );
+    int              FindEnabledChannel ( uint8_t Index);
     void             PrintMacContext ( void ) ;
 
 private :
@@ -226,7 +228,8 @@ private :
     void RXTimingSetupParser       ( void );
     void DicChannelParser          ( void );
     void UpdateDataRateForAdr      ( void );
-    void ComputeRxWindowParameters ( uint8_t SF, eBandWidth BW, uint32_t ClockAccuracy, uint32_t RxDelayMs, uint8_t BoardDelayRxMs );
+    void ComputeRxWindowParameters ( uint8_t SF, eBandWidth BW, uint32_t ClockAccuracy, uint32_t RxDelayMs ,uint8_t BoardDelayRxMs );
+    void ComputeRxWindowParametersFSK(uint32_t ClockAccuracy, uint32_t RxDelayMs, uint8_t BoardDelayRxMs);
     sBackUpFlash BackUpFlash;
     uint8_t      NwkPayloadIndex;
     uint8_t      RxEmptyPayload;

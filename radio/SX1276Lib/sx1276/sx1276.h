@@ -26,7 +26,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define XTAL_FREQ                                   32000000
 #define FREQ_STEP                                   61.03515625
 #define FREQ_STEP_8                                 15625 /* FREQ_STEP<<8 */
-#define RX_BUFFER_SIZE                              256
+#define RX_BUFFER_SIZE                              255
 
 /*!
  * Constant values need to compute the RSSI value
@@ -56,7 +56,7 @@ class SX1276 {
         uint32_t Channel;
 
     private:
-        uint8_t rxBuffer[255];
+        uint8_t rxBuffer[RX_BUFFER_SIZE];
         uint8_t rxPayloadSize;
         bool isFakeIrq;
         IrqFlags_t fakeIrqFlag;
@@ -108,6 +108,8 @@ class SX1276 {
          * by reading an IRQ line
          */
         bool HasTimeouted( void );
+
+        bool HasDetectedPreamble(void);
 
         bool IsPayloadReady(void);
 
@@ -171,10 +173,8 @@ class SX1276 {
         * \brief Set the modulation parameters for FSK Tx
             * @see SX1276::SetPowerParamsTx, SX1276::SetRfFrequency
         */
-            void SetModulationParamsTxFsk( void );
-
-            //void SetModulationParamsRxFsk( uint8_t symbTimeout );
-            void SetModulationParamsCommonFsk( void );
+        void SetModulationParamsTxFsk( void );
+        void SetModulationParamsCommonFsk( void );
 
         /*!
         * \brief Set the modulation parameters for Rx with Lora
@@ -186,9 +186,8 @@ class SX1276 {
 
         /*!
         * \brief Set the modulation parameters for Rx with FSK
-        * @param [IN] symbTimeout : number of symbols before raising the timeout interrupt
         */
-            void SetModulationParamsRxFsk( uint8_t symbTimeout );
+        void SetModulationParamsRxFsk( void );
 
         /*!
         * \brief Set the RF frequency
@@ -216,7 +215,7 @@ class SX1276 {
             * \param [IN] lowFrequencyModeOn
             * \param [IN] opMode
         */
-            void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
+        void SetOpModeFsk( uint8_t modulationType, uint8_t lowFrequencyModeOn, uint8_t opMode );
 
         /*!
         * \brief Sets the radio opmode for FSK operations
@@ -233,7 +232,7 @@ class SX1276 {
         * \brief Sets the radio opmode
         * @param [IN]  opMode        mode to put the radio into
             */
-            void SetOpMode( uint8_t opMode );
+        void SetOpMode( uint8_t opMode );
 
         /*!
         * \brief Write Payload inside the sx1276 fifo

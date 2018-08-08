@@ -30,9 +30,8 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #define FSK_PREAMBLE_LSB_LORAWAN_REG_VALUE 0x05
 #define FSK_SYNCWORD_LORAWAN_REG_VALUE     0xC194C1
 #define FSK_MAX_MODEM_PAYLOAD              64
-#define FSK_THRESHOLD_REFILL_LIMIT         32
+#define FSK_THRESHOLD_REFILL_LIMIT         0x0F
 #define LORAWAN_MIN_PACKET_SIZE            9
-#define MAX_PAYLOAD_SIZE                   255
 #define FSK_FAKE_IRQ_THRESHOLD             2
 
 
@@ -235,44 +234,59 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     rxPayloadSize = 0;
     uint8_t bytesReceived = 0;
     uint8_t remainingBytes = 0;
-    uint8_t firstBytesRx[LORAWAN_MIN_PACKET_SIZE] = {0x00};
     uint8_t payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
+    uint32_t timeoutExpectedMS = 0x00000000;
+    bool preamble_detected = false;
 
     SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
     SetRfFrequency( channel );
-    uint8_t symbTimeout = timeOutMs / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
-    SetModulationParamsRxFsk( symbTimeout );
+    SetModulationParamsRxFsk( );
 
     SetFifoThreshold(LORAWAN_MIN_PACKET_SIZE - 1);
     SetOpMode( RF_OPMODE_RECEIVER );
-    while(!IsFskFifoLevelReached()) {
-        mcu.mwait_ms(2);
-        if(this->HasTimeouted()) {
-            this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG);
-            return;
+    timeoutExpectedMS = mcu.RtcGetTimeMs() + timeOutMs;
+    while(true) {
+        if(mcu.RtcGetTimeMs() > timeoutExpectedMS) {
+            if(this->HasDetectedPreamble() && !preamble_detected){
+                // A timeout has been detected so a payload might be in the process of being received.
+                // Allocate here the amount of time required to receive the 3 bytes of address and the
+                // LORAWAN_MIN_PACKET_SIZE that should trigger the FifoLevelReached.
+                timeoutExpectedMS += 2;
+                DEBUG_MSG("   ...Timeout but preamble detected...\n");
+                preamble_detected = true;
+            }
+            else{
+                this->Sleep(false);
+                this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG);
+                return;
+            }
+        }
+        mcu.mwait_ms(5);
+        if(this->IsFskFifoLevelReached()){
+            break;
         }
     }
-    ReadFifo( &firstBytesRx[0], LORAWAN_MIN_PACKET_SIZE );
-    rxPayloadSize = firstBytesRx[0];
     bytesReceived = LORAWAN_MIN_PACKET_SIZE - 1;   // -1 because the first one is the payload size, which is not included into the payload
-    memcpy(rxBuffer, firstBytesRx + 1, bytesReceived);
+    ReadFifo( &rxPayloadSize, 1 );
+    ReadFifo( rxBuffer, bytesReceived );
     remainingBytes = rxPayloadSize - bytesReceived;
 
-    SetFifoThreshold(payloadChunkSize - 1);
-    while(remainingBytes > payloadChunkSize) {
-        while(!IsFskFifoLevelReached()) {
-            mcu.mwait_ms(2);
+    if(rxPayloadSize > (FSK_MAX_MODEM_PAYLOAD - 1)){
+        SetFifoThreshold(payloadChunkSize - 1);
+        while(remainingBytes > payloadChunkSize) {
+            while(!IsFskFifoLevelReached()) {
+                mcu.mwait_ms(3);
+            }
+            ReadFifo( &rxBuffer[0] + bytesReceived, payloadChunkSize );
+            bytesReceived += payloadChunkSize;
+            remainingBytes = rxPayloadSize - bytesReceived;
         }
-        ReadFifo( rxBuffer + bytesReceived, payloadChunkSize );
-        bytesReceived += payloadChunkSize;
-        remainingBytes = rxPayloadSize - bytesReceived;
     }
 
-    SetFifoThreshold(remainingBytes - 1);
     while(!IsPayloadReady()) {
         mcu.mwait_ms(2);
     }
-    ReadFifo( rxBuffer + bytesReceived, remainingBytes );
+    ReadFifo( &rxBuffer[0] + bytesReceived, remainingBytes );
     lastPacketRssi = this->GetCurrentRssi();
     this->Sleep(false);
     this->SetAndGenerateFakeIRQ(RECEIVE_PACKET_IRQ_FLAG);
@@ -366,6 +380,12 @@ bool SX1276::HasTimeouted() {
     uint8_t irqFlags = 0x00;
     Read(REG_IRQFLAGS1, &irqFlags, 1);
     return (irqFlags & 0x04);
+}
+
+bool SX1276::HasDetectedPreamble() {
+    uint8_t irqFlags = 0x00;
+    Read(REG_IRQFLAGS1, &irqFlags, 1);
+    return (irqFlags & 0x02);
 }
 
 void SX1276::GetPacketStatusLora( int16_t *pktRssi, int16_t *snr, int16_t *signalRssi ) {
@@ -473,7 +493,7 @@ void SX1276::SetModulationParamsTxFsk( ) {
     Write( REG_DIOMAPPING2, 0x00 );
 }
 
-void SX1276::SetModulationParamsRxFsk( uint8_t symbTimeout ) {
+void SX1276::SetModulationParamsRxFsk( void ) {
     this->SetModulationParamsCommonFsk();
     this->ConfigureRssi();
     Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_10 | RF_DIOMAPPING1_DIO1_11 | RF_DIOMAPPING1_DIO2_10 | RF_DIOMAPPING1_DIO3_01 );
@@ -486,7 +506,9 @@ void SX1276::SetModulationParamsRxFsk( uint8_t symbTimeout ) {
     Write( REG_AFCFEI, RF_AFCFEI_AFCAUTOCLEAR_ON );
     Write( REG_LNA, RF_LNA_GAIN_G1 | RF_LNA_BOOST_ON );
     Write( REG_PAYLOADLENGTH, 0xFF );
-    Write( REG_RXTIMEOUT2, symbTimeout );
+    Write( REG_RXTIMEOUT1, 0x00 );
+    Write( REG_RXTIMEOUT2, 0x00 );
+    Write( REG_RXTIMEOUT3, 0x00 );
 }
 
 void SX1276::SetModulationParamsRxLora( uint8_t SF, eBandWidth BW, uint16_t symbTimeout ) {

@@ -49,7 +49,7 @@ template <template <class R> class T, class RADIOTYPE>
 eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
 
     *AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE;
-    #if LOW_POWER_MODE == 1
+    #if LOW_POWER_MODE == 0
     if ( ( IsJoined ( ) == NOT_JOINED ) && ( mcu.RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
         DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",mcu.RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
         StateLoraWanProcess = LWPSTATE_IDLE ;
@@ -246,6 +246,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
 /**************************************************/
 template <template <class R> class T, class RADIOTYPE> 
 eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::Join ( void ) {
+	  packet.Phy.LastItTimeFailsafe =  mcu.RtcGetTimeSecond ( );
     if ( StateLoraWanProcess != LWPSTATE_IDLE ) {
         DEBUG_MSG( " ERROR : LP STATE NOT EQUAL TO IDLE \n" );
         return ( LWPSTATE_ERROR );
@@ -289,6 +290,7 @@ void LoraWanObject <T,RADIOTYPE> ::NewJoin ( void ) {
 /**************************************************/
 template <template <class R> class T, class RADIOTYPE> 
 eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType ) {
+	  packet.Phy.LastItTimeFailsafe =  mcu.RtcGetTimeSecond ( );
     eStatusLoRaWan status;
     packet.RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region )
     status = packet.RegionMaxPayloadSize ( sizeIn );

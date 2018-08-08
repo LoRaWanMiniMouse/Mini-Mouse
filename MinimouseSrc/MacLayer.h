@@ -185,9 +185,9 @@ public:
     virtual eStatusLoRaWan    RegionIsValidMacFrequency        ( uint32_t Frequency)                    = 0;
     virtual eStatusLoRaWan    RegionIsValidTxPower             ( uint8_t Power )                        = 0;
     virtual eStatusLoRaWan    RegionIsValidChannelIndex        ( uint8_t ChannelIndex)                  = 0;
-    virtual uint8_t RegionGetAdrAckLimit                       ( void )                                 = 0;
-    virtual uint8_t RegionGetAdrAckDelay                       ( void )                                 = 0;
-    virtual     void RegionSaveInFlash                         ( void )                                 = 0;
+    virtual uint8_t           RegionGetAdrAckLimit             ( void )                                 = 0;
+    virtual uint8_t           RegionGetAdrAckDelay             ( void )                                 = 0;
+    virtual void              RegionSaveInFlash                ( void )                                 = 0;
 
     uint32_t    UserFlashAdress;
 		void             SetDevAddr                                ( uint32_t address );

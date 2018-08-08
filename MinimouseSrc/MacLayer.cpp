@@ -803,17 +803,21 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateJoi
     MacRx1DataRateOffset = ( MacRxPayload[11] & 0x70 ) >> 4;
     MacRx2DataRate       = ( MacRxPayload[11] & 0x0F );
     MacRx1Delay          = MacRxPayload[12];
-    DEBUG_PRINTF("DevAddr= %x\n",DevAddr);
-    DEBUG_PRINTF("MacRx1DataRateOffset= %d\n",MacRx1DataRateOffset);
-    DEBUG_PRINTF("MacRx2DataRate= %d\n",MacRx2DataRate);
-    DEBUG_PRINTF("MacRx1Delay= %d\n",MacRx1Delay);
+
     Phy.JoinedStatus = JOINED;
 
     FirstDwn = true;
-    FcntDwn = 0; 
+    FcntDwn = 0xffffffff; 
     FcntUp = 0; 
     RetryJoinCpt = 0;
     RegionSaveInFlash ( );
+		RegionSaveInFlash ( ); //@Note have to save twice in case of lowpower , have to understand why and remove this workaround
+    DEBUG_PRINTF(" DevAddr= %x\n",DevAddr);
+    DEBUG_PRINTF(" MacRx1DataRateOffset= %d\n",MacRx1DataRateOffset);
+    DEBUG_PRINTF(" MacRx2DataRate= %d\n",MacRx2DataRate);
+    DEBUG_PRINTF(" MacRx1Delay= %d\n",MacRx1Delay);
+		DEBUG_MSG(" Save In Flash After Join suceed \n");
+
 }
 
 /********************************************************/

@@ -46,7 +46,8 @@
 //uint32_t LoRaDevAddrInit     = 0x26011918;
 
 //sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
-//    SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+//SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+//LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 //int main( ) {
 //    int i;
 //    int StatusCertification = 0;
@@ -63,7 +64,7 @@
 //    * \remark  The Current implementation doesn't yet support different radio (only SX1276) 
 //    * \remark  On the future dev , the Radio Type will be a parameter of the LoraWan Objects
 //    */
-//     LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+//     
 
 //   
 
@@ -71,12 +72,6 @@
 //    * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
 //    */
 //    mcu.InitMcu ( );
-//    mcu.RtcInit ( );
-//    mcu.WatchDogStart ( );
-//    mcu.LowPowerTimerLoRaInit();
-//#if DEBUG_TRACE == 1
-//    pcf.baud( 115200 );
-//#endif    
 
 //    /*!
 //    * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
@@ -106,10 +101,10 @@
 //    while(1) {
 //        DEBUG_MSG("\n\n\n\n ");
 
-//        if ( Lp.IsJoined ( ) == JOINED ) {            
-//            LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
-//        } else {
+//        if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
 //            LpState = Lp.Join( );
+//        } else {
+//            LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
 //        }
 //        /*!
 //         * \brief 
@@ -120,7 +115,7 @@
 //         *        Therefore when the stack is active a call periodicity of roughly 300mSec is recommended.
 //         */ 
 
-//        while ( LpState != LWPSTATE_IDLE ){
+//        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
 //            LpState = Lp.LoraWanProcess( &AvailableRxPacket );
 //            wait_ms(100);
 //           // GotoSleepMSecond ( 100 );

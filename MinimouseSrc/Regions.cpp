@@ -274,7 +274,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             DistriDataRateInit[7]    = 0; 
             DistriDataRateInit[6]    = 0;
             DistriDataRateInit[5]    = 1; 
-            DistriDataRateInit[4]    = 1; 
+            DistriDataRateInit[4]    = 0; 
             DistriDataRateInit[3]    = 0;
             DistriDataRateInit[2]    = 0; 
             DistriDataRateInit[1]    = 0; 
@@ -403,9 +403,9 @@ template < class R >void LoraRegionsEU<R>::RegionLoadFromFlash ( void ){
     mcu.RestoreContext((uint8_t *)(&BackUpFlash), this->UserFlashAdress, sizeof(sBackUpFlash));
     Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash)-8 , &crcLow, &crcHigh );    
     if (( crcLow == BackUpFlash.CrcLow ) &&  ( crcHigh == BackUpFlash.CrcHigh ) ) { // explicit else = factory reset => the default value inside the constructor
-        BackUpFlash.FcntUp            +=  FLASH_UPDATE_PERIOD; //@note automatic increment
+        BackUpFlash.FcntUp                 +=  FLASH_UPDATE_PERIOD; //@note automatic increment
         BackUpFlash.NbOfReset ++;
-        this->NbOfReset  = BackUpFlash.NbOfReset;
+        this->NbOfReset                     = BackUpFlash.NbOfReset;
         this->MacTxDataRate                 = BackUpFlash.MacTxDataRate;
         this->MacTxPower                    = BackUpFlash.MacTxPower;
         this->MacChMask                     = BackUpFlash.MacChMask;
@@ -416,7 +416,8 @@ template < class R >void LoraRegionsEU<R>::RegionLoadFromFlash ( void ){
         this->MacRx1Delay                   = BackUpFlash.MacRx1Delay ;
         this->FcntUp                        = BackUpFlash.FcntUp ;
         this->FcntDwn                       = BackUpFlash.FcntDwn ;
-        this->DevAddr                       = BackUpFlash.DevAddr;
+        //this->DevAddr                       = BackUpFlash.DevAddr;
+			  this->SetDevAddr ( BackUpFlash.DevAddr );
         this->DevNonce                      = BackUpFlash.DevNonce;
         this->Phy.JoinedStatus              = ( eJoinStatus ) BackUpFlash.JoinedStatus;
         for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
@@ -490,8 +491,7 @@ template < class R >void LoraRegionsEU<R>::RegionSaveInFlash ( void ){
     Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash) - 8, &crcLow, &crcHigh );
     BackUpFlash.CrcLow  = crcLow ; 
     BackUpFlash.CrcHigh = crcHigh ;
-    mcu.StoreContext( &BackUpFlash, this->UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );
-    mcu.mwait_ms( 100 );    
+    mcu.StoreContext( &BackUpFlash, this->UserFlashAdress, ( sizeof(sBackUpFlash) >> 3 ) );  
 }
 
 template < class R >void LoraRegionsEU<R>::RegionSetBadCrcInFlash ( void ){

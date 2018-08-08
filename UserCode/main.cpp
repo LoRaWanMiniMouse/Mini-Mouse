@@ -30,6 +30,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "utilities.h"
 #include "Fragmentation.h"
 #include "FragmentationDecode.h"
+#define SX1272_BOARD 1
 
 #define FileId 4
 /*!
@@ -58,10 +59,18 @@ uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 
 uint8_t DevEuiInit[]              = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
 uint32_t LoRaDevAddrInit          = 0x26011920;
 
-SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+#ifdef SX1276_BOARD
+#define FW_VERSION     0x17
+  SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+
+#endif
+#ifdef SX1272_BOARD
+#define FW_VERSION     0x13
+    SX1272  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+#endif
 /* User Radio ISR routine */
 #define NBENCODEDFRAME 52
-#define FW_VERSION     01
+
 void UserRadioIsrFuota ( void ) {
 	  int16_t snr,rssi;
 	  uint32_t crcL, crcH;
@@ -116,7 +125,7 @@ int main( ) {
     uint8_t UserFport ;
     uint8_t UserRxFport ;
     uint8_t MsgType ;
-    uint8_t AppTimeSleeping = 6 ;
+    uint8_t AppTimeSleeping = 55;
 	  uint8_t uid[8];
     /*!
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
@@ -124,14 +133,21 @@ int main( ) {
     mcu.InitMcu ( );
     mcu.WatchDogStart ( );
 		mcu.GetUniqueId (uid); 
-	  sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
+	  sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
 		memcpy(&LoraWanKeys.DevEui[0], uid , 8);
     /*!
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
     * \remark  The Current implementation  support radio SX1276 and sx1261
     */
 
+		
+#ifdef SX1276_BOARD
     LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+#endif
+#ifdef SX1272_BOARD
+    LoraWanObject<LoraRegionsEU,SX1272> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+#endif
+  
 	  //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
   	//LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 
@@ -143,21 +159,21 @@ int main( ) {
     * \brief Restore the LoraWan Context
     */
 		DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
-		DEBUG_MSG("********************Debug Trace In flash****************** \n\n");
-    ReadTraceInFlash ( USERFLASHADRESS + 4096 );
-		
-		DEBUG_MSG("******************** Current Debug Trace****************** \n\n");
-		ReadTrace ( ExtDebugTrace );
+//		DEBUG_MSG("********************Debug Trace In flash****************** \n\n");
+//    //ReadTraceInFlash ( USERFLASHADRESS + 4096 );
+//		
+//		DEBUG_MSG("******************** Current Debug Trace****************** \n\n");
+		//ReadTrace ( ExtDebugTrace );
 		uint8_t TPointer ;
 	  TPointer = ExtDebugTrace[ TRACE_SIZE - 1]& 0xff;
     
 		for (int i  = 0; i < 200; i++){ 
 		    UserPayload [i] = (ExtDebugTrace[(uint8_t)(TPointer - i)] & 0xFF);
 		}
-	  StoreTraceInFlash( USERFLASHADRESS + 4096 );
+//	  StoreTraceInFlash( USERFLASHADRESS + 4096 );
     mcu.mwait(2);
-    //Lp.RestoreContext  ( );
-    Lp.ActivateClassC  ( );
+    Lp.RestoreContext  ( );
+    //Lp.ActivateClassC  ( );
     uint32_t FrameCounterUpTest  = 1;
 		uint32_t FrameCounterDwnTest = 0;
     while(1) {
@@ -209,7 +225,7 @@ int main( ) {
         DEBUG_MSG("\n\n");
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            mcu.GotoSleepMSecond ( 300 );
+            mcu.GotoSleepMSecond ( 100 );
             mcu.WatchDogRelease ( );	
 					   
         }
@@ -260,7 +276,7 @@ int main( ) {
          * \brief Send a ¨Packet every 120 seconds in case of join 
          *        Send a packet every AppTimeSleeping seconds in normal mode
          */
-				
+				 
         if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) && ( LpState != LWPSTATE_INVALID)){
 					  InsertTrace ( __COUNTER__, FileId ); 
             mcu.GotoSleepSecond(5);

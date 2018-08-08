@@ -266,39 +266,52 @@ void FlashPageErase( uint32_t page, uint32_t banks )
 }
 
 uint8_t EepromMcuWriteBuffer( uint32_t addr, uint8_t *buffer, uint16_t size )
-{
+{   
+    HAL_StatusTypeDef status = HAL_OK; 
     uint64_t *flash = ( uint64_t* )buffer;
-    
-   uint32_t Findpage = (addr - 0x8000000 )>>11;
-   uint32_t NumberOfPage = (size >> 11)+1; 
-   HAL_FLASH_Unlock( );
-    for (uint32_t i = 0 ; i < NumberOfPage; i ++){
-    FlashPageErase( Findpage + i, 1 );
-    }
-    
-    WRITE_REG( FLASH->CR, 0x40000000 );
+    uint32_t Findpage = (addr - 0x8000000 )>>11;
+    uint32_t NumberOfPage = (size >> 11)+1;	
 
+    HAL_FLASH_Unlock( );
+
+    for (uint32_t i = 0 ; i < NumberOfPage; i ++){
+        FlashPageErase( Findpage + i, 1 );
+    }
+    WRITE_REG( FLASH->CR, 0x40000000 );
     for( uint32_t i = 0; i < size; i++ )
     {
-        HAL_FLASH_Program( FLASH_TYPEPROGRAM_DOUBLEWORD, addr + ( 8 * i ), flash[i] );
+        if (HAL_FLASH_Program( FLASH_TYPEPROGRAM_DOUBLEWORD, addr + ( 8 * i ), flash[i] ) == HAL_OK)
+        {
+            /* Check the written value */
+            if (*(uint64_t*)(addr + ( 8 * i )) != flash[i])
+            {
+            /* Flash content doesn't match SRAM content */
+                status = HAL_ERROR;
+                break;
+            }
+				} else {
+           /* Error occurred while writing data in Flash memory */
+            status = HAL_ERROR;
+            break;
+        }
     }
-
-    HAL_FLASH_Lock( );
-
-    return SUCCESS;
+    HAL_FLASH_Lock( )		;
+    return status;
 }
 
 uint8_t EepromMcuReadBuffer( uint32_t addr, uint8_t *buffer, uint16_t size )
 {
     assert_param( buffer != NULL );
-
+    HAL_StatusTypeDef status = HAL_OK;  
     //assert_param( addr >= DATA_EEPROM_BASE );
     assert_param( buffer != NULL );
     assert_param( size < ( DATA_EEPROM_END - DATA_EEPROM_BASE ) );
-for( uint32_t i = 0; i < size; i++ )
+	  
+    for( uint32_t i = 0; i < size; i++ )
     {
-     buffer[i]= *((( uint8_t* )addr)+i);
-    }     
+        buffer[i]= *((( uint8_t* )addr)+i);
+    }
+   
     return SUCCESS;
 }
 
@@ -611,9 +624,7 @@ int McuSTM32L4::WriteFlashWithoutErase(uint8_t *buffer, uint32_t addr, uint32_t 
     int findLastAdress = 0 ;
   	int status = 0;
     uint32_t i;
-    uint32_t flashBaseAdress;
-    
-
+    uint32_t flashBaseAdress;    
     uint64_t *flash = ( uint64_t* )copyPage;
     assert_param( buffer != NULL );
     assert_param( size < ( 2048 ) );
@@ -678,8 +689,11 @@ int McuSTM32L4::StoreContext(const void *buffer, uint32_t addr, uint32_t size){
     this section have to be very robust, have to support failure mode such as  power off during flash programmation    
     This basic implementation suppose that the addr is 4 Bytes aligned and suppose also that the size can be divide by 4.
     */
-    uint16_t sizet = size & 0xFFFF;    
-    EepromMcuWriteBuffer( addr,  (uint8_t*) buffer, sizet );    
+    uint16_t sizet = size & 0xFFFF;
+    while ( EepromMcuWriteBuffer( addr,  (uint8_t*) buffer, sizet ) != HAL_OK) { // in case of infinite error watchdog will expire
+        mwait_ms ( 300 );	
+		}
+		mwait_ms ( 300 );	
     return ( 0 ); 
 } 
    
@@ -794,7 +808,6 @@ uint32_t McuSTM32L4::RtcGetTimeSecond( void )
 void McuSTM32L4::GotoSleepSecond (int duration ) {
 #if LOW_POWER_MODE == 1
     int cpt = duration ;
-    WatchDogRelease ( );
     while ( cpt > ( WATCH_DOG_PERIOD_RELEASE ) ) {
         cpt -= WATCH_DOG_PERIOD_RELEASE ;
         WakeUpAlarmSecond( WATCH_DOG_PERIOD_RELEASE );
@@ -803,7 +816,6 @@ void McuSTM32L4::GotoSleepSecond (int duration ) {
     }
     WakeUpAlarmSecond( cpt );
     sleep();
-    WatchDogRelease ( );
 # else
     int cpt = duration ;
     WatchDogRelease ( );
@@ -821,8 +833,10 @@ void McuSTM32L4::GotoSleepMSecond (int duration ) {
 #if LOW_POWER_MODE == 1
     WakeUpAlarmMSecond ( duration );
     sleep();
+	  WatchDogRelease ( );
 # else
     wait_ms ( duration ) ;
+	  WatchDogRelease ( );
 #endif
 }
 
@@ -934,7 +948,9 @@ void vprint(const char *fmt, va_list argp)
 #endif
 
 void McuSTM32L4::UartInit ( void ) {
+	#if DEBUG_TRACE == 1
     pcf.baud(115200);
+	#endif
 };
 void McuSTM32L4::MMprint( const char *fmt, ...){
 #if DEBUG_TRACE == 1

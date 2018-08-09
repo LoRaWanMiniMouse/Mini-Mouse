@@ -123,7 +123,7 @@ int main( ) {
     uint8_t UserFport ;
     uint8_t UserRxFport ;
     uint8_t MsgType ;
-    uint8_t AppTimeSleeping = 5;
+    uint8_t AppTimeSleeping = 55;
     uint8_t uid[8];
     /*!
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
@@ -139,7 +139,7 @@ int main( ) {
     */
 
 #ifdef SX1276_BOARD
-    MMServices<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 #endif
 #ifdef SX1272_BOARD
     LoraWanObject<LoraRegionsEU,SX1272> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 

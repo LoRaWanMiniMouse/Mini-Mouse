@@ -22,8 +22,9 @@ Maintainer        : Fabien Holin ( SEMTECH)
 #include "LoraWanProcess.h"
 #include "EncoderMp.h"
 
-#define PROTECTED_PORT    200
-
+#define PROTECTED_PORT     200
+#define FRAGMENTED_PORT    201
+#define FRAGMENTATION_LENGTH  10
 template < template <class R> class T, class RADIOTYPE>
     class MMServices : public LoraWanObject<T,RADIOTYPE> {
     public :
@@ -52,24 +53,33 @@ template < template <class R> class T, class RADIOTYPE>
         SsizeIn                  = sizeIn;
         SPacketType              = PacketType;
         memcpy( SdataIn, dataIn, sizeIn);
-        
-        if ( fPort == PROTECTED_PORT ) {
-            
-            encoderMp.AddDataInFifo ( SdataIn , SdataTmp );
-            status = LoraWanObject<T,RADIOTYPE>::SendPayload( fPort,  SdataTmp,  sizeIn + 1,  PacketType );
-            if ( encoderMp.SendEncodedFrame == true ) {
-                encoderMp.BuildRedundancyFrame ( SdataTmp );
-                SsizeIn++;
-                memcpy (SdataIn, SdataTmp, SsizeIn );
-                NbPacketToSend = 1;
-            } else {
-                NbPacketToSend =  0;
-            }
-        } else {
-            status = LoraWanObject<T,RADIOTYPE>::SendPayload( fPort,  dataIn,  sizeIn,  PacketType );
-            NbPacketToSend = 0;
+        switch ( fPort ) {
+    /************************************************************************************/
+    /*                                    STATE IDLE                                    */
+    /************************************************************************************/
+            case PROTECTED_PORT :
+                encoderMp.AddDataInFifo ( SdataIn , SdataTmp );
+                status = LoraWanObject<T,RADIOTYPE>::SendPayload( fPort,  SdataTmp,  sizeIn + 1,  PacketType );
+                if ( encoderMp.SendEncodedFrame == true ) {
+                    encoderMp.BuildRedundancyFrame ( SdataTmp );
+                    SsizeIn++;
+                    memcpy (SdataIn, SdataTmp, SsizeIn );
+                    NbPacketToSend = 1;
+                } else {
+                    NbPacketToSend =  0;
+                }
+                break;
+            case FRAGMENTED_PORT :
+                for (int i = 0; i < ( sizeIn / FRAGMENTATION_LENGTH )  ; i++ ) {
+                    encoderMp.AddDataInFifo ( &SdataIn [i * FRAGMENTATION_LENGTH] , SdataTmp ) ;
+                    NbPacketToSend ++;
+                }
+            default :
+                status = LoraWanObject<T,RADIOTYPE>::SendPayload( fPort,  dataIn,  sizeIn,  PacketType );
+                NbPacketToSend = 0;
+            break;
         }
-        return(status);
+    return(status);
     };
     
     eLoraWan_Process_States    LoraWanProcess          ( uint8_t* AvailableRxPacket ){

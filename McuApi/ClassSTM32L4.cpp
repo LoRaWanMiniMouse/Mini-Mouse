@@ -35,27 +35,27 @@ Maintainer        : Fabien Holin (SEMTECH)
   */
 enum
 {
-  FLASHIF_OK = 0,
-  FLASHIF_ERASEKO,
-  FLASHIF_WRITINGCTRL_ERROR,
-  FLASHIF_WRITING_ERROR,
-  FLASHIF_CRCKO,
-  FLASHIF_RECORD_ERROR,
-  FLASHIF_EMPTY,
-  FLASHIF_PROTECTION_ERRROR
+    FLASHIF_OK = 0,
+    FLASHIF_ERASEKO,
+    FLASHIF_WRITINGCTRL_ERROR,
+    FLASHIF_WRITING_ERROR,
+    FLASHIF_CRCKO,
+    FLASHIF_RECORD_ERROR,
+    FLASHIF_EMPTY,
+    FLASHIF_PROTECTION_ERRROR
 };
 
 enum{
-  FLASHIF_PROTECTION_NONE         = 0,
-  FLASHIF_PROTECTION_PCROPENABLED = 0x1,
-  FLASHIF_PROTECTION_WRPENABLED   = 0x2,
-  FLASHIF_PROTECTION_RDPENABLED   = 0x4,
+    FLASHIF_PROTECTION_NONE         = 0,
+    FLASHIF_PROTECTION_PCROPENABLED = 0x1,
+    FLASHIF_PROTECTION_WRPENABLED   = 0x2,
+    FLASHIF_PROTECTION_RDPENABLED   = 0x4,
 };
 
 /* protection update */
 enum {
-  FLASHIF_WRP_ENABLE,
-  FLASHIF_WRP_DISABLE
+    FLASHIF_WRP_ENABLE,
+    FLASHIF_WRP_DISABLE
 };
 uint32_t BankActive = 0, BFSysMem = 0;
 FLASH_OBProgramInitTypeDef OBConfig;
@@ -65,43 +65,34 @@ FLASH_OBProgramInitTypeDef OBConfig;
 #define USER_FLASH_END_ADDRESS        ((uint32_t)0x08100000)
 
 #define NVIC_VT_FLASH_B2           FLASH_START_BANK1
-#define NVIC_VT_FLASH_B1           FLASH_START_BANK2	
+#define NVIC_VT_FLASH_B1           FLASH_START_BANK2
+
 uint32_t FLASH_If_Erase(uint32_t bank_active)
 {
-  uint32_t bank_to_erase, error = 0;
-  FLASH_EraseInitTypeDef pEraseInit;
-  HAL_StatusTypeDef status = HAL_OK;
+    uint32_t bank_to_erase, error = 0;
+    FLASH_EraseInitTypeDef pEraseInit;
+    HAL_StatusTypeDef status = HAL_OK;
+    if (bank_active == 0) {
+        bank_to_erase = FLASH_BANK_2;
+    } else {
+        bank_to_erase = FLASH_BANK_1;
+    }
+    /* Unlock the Flash to enable the flash control register access *************/
+    HAL_FLASH_Unlock();
+    pEraseInit.Banks = bank_to_erase;
+    pEraseInit.NbPages = 255;
+    pEraseInit.Page = 0;
+    pEraseInit.TypeErase = FLASH_TYPEERASE_MASSERASE;
+    status = HAL_FLASHEx_Erase(&pEraseInit, &error);
 
-  if (bank_active == 0)
-  {
-    bank_to_erase = FLASH_BANK_2;
-  }
-  else
-  {
-    bank_to_erase = FLASH_BANK_1;
-  }
-
-  /* Unlock the Flash to enable the flash control register access *************/
-  HAL_FLASH_Unlock();
-
-  pEraseInit.Banks = bank_to_erase;
-  pEraseInit.NbPages = 255;
-  pEraseInit.Page = 0;
-  pEraseInit.TypeErase = FLASH_TYPEERASE_MASSERASE;
-
-  status = HAL_FLASHEx_Erase(&pEraseInit, &error);
-
-  /* Lock the Flash to disable the flash control register access (recommended
+    /* Lock the Flash to disable the flash control register access (recommended
      to protect the FLASH memory against possible unwanted operation) *********/
-  HAL_FLASH_Lock();
-
-  if (status != HAL_OK)
-  {
+    HAL_FLASH_Lock();
+    if (status != HAL_OK) {
     /* Error occurred while page erase */
-    return FLASHIF_ERASEKO;
-  }
-
-  return FLASHIF_OK;
+        return FLASHIF_ERASEKO;
+    }
+    return FLASHIF_OK;
 }
 
 /**
@@ -112,10 +103,9 @@ uint32_t FLASH_If_Erase(uint32_t bank_active)
   */
 uint32_t FLASH_If_Check(uint32_t start)
 {
-  /* checking if the data could be code (first word is stack location) */
-  if ((*(uint32_t*)start >> 24) != 0x20 ) return FLASHIF_EMPTY;
-
-  return FLASHIF_OK;
+    /* checking if the data could be code (first word is stack location) */
+    if ((*(uint32_t*)start >> 24) != 0x20 ) return FLASHIF_EMPTY;
+    return FLASHIF_OK;
 }
 
 /**
@@ -130,43 +120,36 @@ uint32_t FLASH_If_Check(uint32_t start)
   */
 uint32_t FLASH_If_Write(uint32_t destination, uint32_t *p_source, uint32_t length)
 {
-  uint32_t status = FLASHIF_OK;
-  uint32_t i = 0;
+    uint32_t status = FLASHIF_OK;
+    uint32_t i = 0;
 
-  /* Unlock the Flash to enable the flash control register access *************/
-  HAL_FLASH_Unlock();
+    /* Unlock the Flash to enable the flash control register access *************/
+    HAL_FLASH_Unlock();
 
-  /* DataLength must be a multiple of 64 bit */
-  for (i = 0; (i < length / 2) && (destination <= (USER_FLASH_END_ADDRESS - 8)); i++)
-  {
-    /* Device voltage range supposed to be [2.7V to 3.6V], the operation will
-       be done by word */
-		  
-    if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, destination, *((uint64_t *)(p_source + 2*i))) == HAL_OK)
-    {
-      /* Check the written value */
-      if (*(uint64_t*)destination != *(uint64_t *)(p_source + 2*i))
-      {
-        /* Flash content doesn't match SRAM content */
-        status = FLASHIF_WRITINGCTRL_ERROR;
-        break;
-      }
-      /* Increment FLASH destination address */
-      destination += 8;
+    /* DataLength must be a multiple of 64 bit */
+    for (i = 0; (i < length / 2) && (destination <= (USER_FLASH_END_ADDRESS - 8)); i++) {
+        /* Device voltage range supposed to be [2.7V to 3.6V], the operation will
+           be done by word */
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, destination, *((uint64_t *)(p_source + 2*i))) == HAL_OK) {
+          /* Check the written value */
+            if (*(uint64_t*)destination != *(uint64_t *)(p_source + 2*i)) {
+            /* Flash content doesn't match SRAM content */
+                status = FLASHIF_WRITINGCTRL_ERROR;
+                break;
+            }
+          /* Increment FLASH destination address */
+            destination += 8;
+        } else {
+          /* Error occurred while writing data in Flash memory */
+            status = FLASHIF_WRITING_ERROR;
+            break;
+        }
     }
-    else
-    {
-      /* Error occurred while writing data in Flash memory */
-      status = FLASHIF_WRITING_ERROR;
-      break;
-    }
-  }
 
-  /* Lock the Flash to disable the flash control register access (recommended
+    /* Lock the Flash to disable the flash control register access (recommended
      to protect the FLASH memory against possible unwanted operation) *********/
-  HAL_FLASH_Lock();
-
-  return status;
+    HAL_FLASH_Lock();
+    return status;
 }
 
 /**
@@ -174,22 +157,19 @@ uint32_t FLASH_If_Write(uint32_t destination, uint32_t *p_source, uint32_t lengt
   * @retval uint32_t FLASHIF_OK if change is applied.
   */
 uint32_t FLASH_If_WriteProtectionClear( void ) {
-		FLASH_OBProgramInitTypeDef OptionsBytesStruct1;
-		/* Unlock the Flash to enable the flash control register access *************/
-		HAL_FLASH_Unlock();
-
-		/* Unlock the Options Bytes *************************************************/
-		HAL_FLASH_OB_Unlock();
-
-		OptionsBytesStruct1.RDPLevel = OB_RDP_LEVEL_0;
-		OptionsBytesStruct1.OptionType = OPTIONBYTE_WRP;
-		OptionsBytesStruct1.WRPArea = OB_WRPAREA_BANK2_AREAA;
-		OptionsBytesStruct1.WRPEndOffset = 0x00;
-		OptionsBytesStruct1.WRPStartOffset = 0xFF;
-		HAL_FLASHEx_OBProgram(&OptionsBytesStruct1);
-
-		OptionsBytesStruct1.WRPArea = OB_WRPAREA_BANK2_AREAB;
-		HAL_FLASHEx_OBProgram(&OptionsBytesStruct1);
+    FLASH_OBProgramInitTypeDef OptionsBytesStruct1;
+    /* Unlock the Flash to enable the flash control register access *************/
+    HAL_FLASH_Unlock();
+    /* Unlock the Options Bytes *************************************************/
+    HAL_FLASH_OB_Unlock();
+    OptionsBytesStruct1.RDPLevel = OB_RDP_LEVEL_0;
+    OptionsBytesStruct1.OptionType = OPTIONBYTE_WRP;
+    OptionsBytesStruct1.WRPArea = OB_WRPAREA_BANK2_AREAA;
+    OptionsBytesStruct1.WRPEndOffset = 0x00;
+    OptionsBytesStruct1.WRPStartOffset = 0xFF;
+    HAL_FLASHEx_OBProgram(&OptionsBytesStruct1);
+    OptionsBytesStruct1.WRPArea = OB_WRPAREA_BANK2_AREAB;
+    HAL_FLASHEx_OBProgram(&OptionsBytesStruct1);
     return (0);
 }
 
@@ -200,47 +180,35 @@ uint32_t FLASH_If_WriteProtectionClear( void ) {
   */
 HAL_StatusTypeDef FLASH_If_BankSwitch(void)
 {
-  FLASH_OBProgramInitTypeDef ob_config;
-  HAL_StatusTypeDef result;
+    FLASH_OBProgramInitTypeDef ob_config;
+    HAL_StatusTypeDef result;
+    HAL_FLASH_Lock();
+    /* Clear OPTVERR bit set on virgin samples */
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR);
+    /* Get the current configuration */
+    HAL_FLASHEx_OBGetConfig( &ob_config );
+    ob_config.OptionType = OPTIONBYTE_USER;
+    ob_config.USERType = OB_USER_BFB2;
+    if ((ob_config.USERConfig) & (OB_BFB2_ENABLE)) {
+        ob_config.USERConfig = OB_BFB2_DISABLE;
+    } else {
+        ob_config.USERConfig = OB_BFB2_ENABLE;
+    }
 
-  HAL_FLASH_Lock();
-
-  /* Clear OPTVERR bit set on virgin samples */
-  __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR);
-
-  /* Get the current configuration */
-  HAL_FLASHEx_OBGetConfig( &ob_config );
-
-  ob_config.OptionType = OPTIONBYTE_USER;
-  ob_config.USERType = OB_USER_BFB2;
-  if ((ob_config.USERConfig) & (OB_BFB2_ENABLE)) /* BANK1 active for boot */
-  {
-    ob_config.USERConfig = OB_BFB2_DISABLE;
-  }
-  else
-  {
-    ob_config.USERConfig = OB_BFB2_ENABLE;
-  }
-
-  /* Initiating the modifications */
-  result = HAL_FLASH_Unlock();
-
-  /* program if unlock is successful */
-  if ( result == HAL_OK )
-  {
-    result = HAL_FLASH_OB_Unlock();
-
+    /* Initiating the modifications */
+    result = HAL_FLASH_Unlock();
+    /* program if unlock is successful */
+    if ( result == HAL_OK ) {
+        result = HAL_FLASH_OB_Unlock();
     /* program if unlock is successful*/
-    if ((READ_BIT(FLASH->CR, FLASH_CR_OPTLOCK) == RESET))
-    {
-      result = HAL_FLASHEx_OBProgram(&ob_config);
+        if ((READ_BIT(FLASH->CR, FLASH_CR_OPTLOCK) == RESET)) {
+            result = HAL_FLASHEx_OBProgram(&ob_config);
+        }
+        if (result == HAL_OK) {
+            HAL_FLASH_OB_Launch();
+        }
     }
-    if (result == HAL_OK)
-    {
-      HAL_FLASH_OB_Launch();
-    }
-  }
-  return result;
+    return result;
 }
 
 
@@ -249,16 +217,11 @@ void FlashPageErase( uint32_t page, uint32_t banks )
     // Check the parameters
     assert_param( IS_FLASH_PAGE( page ) );
     assert_param( IS_FLASH_BANK_EXCLUSIVE( banks ) );
-
-    if( ( banks & FLASH_BANK_1 ) != RESET )
-    {
+    if( ( banks & FLASH_BANK_1 ) != RESET ) {
         CLEAR_BIT( FLASH->CR, FLASH_CR_BKER );
-    }
-    else
-    {
+    } else {
         SET_BIT( FLASH->CR, FLASH_CR_BKER );
     }
-
     // Proceed to erase the page
     MODIFY_REG( FLASH->CR, FLASH_CR_PNB, ( page << 3 ) );
     SET_BIT( FLASH->CR, FLASH_CR_PER );
@@ -271,9 +234,7 @@ uint8_t EepromMcuWriteBuffer( uint32_t addr, uint8_t *buffer, uint16_t size )
     uint64_t *flash = ( uint64_t* )buffer;
     uint32_t Findpage = (addr - 0x8000000 )>>11;
     uint32_t NumberOfPage = (size >> 11)+1;	
-
     HAL_FLASH_Unlock( );
-
     for (uint32_t i = 0 ; i < NumberOfPage; i ++){
         FlashPageErase( Findpage + i, 1 );
     }
@@ -289,29 +250,25 @@ uint8_t EepromMcuWriteBuffer( uint32_t addr, uint8_t *buffer, uint16_t size )
                 status = HAL_ERROR;
                 break;
             }
-				} else {
+        } else {
            /* Error occurred while writing data in Flash memory */
             status = HAL_ERROR;
             break;
         }
     }
-    HAL_FLASH_Lock( )		;
+    HAL_FLASH_Lock( );
     return status;
 }
 
 uint8_t EepromMcuReadBuffer( uint32_t addr, uint8_t *buffer, uint16_t size )
 {
-    assert_param( buffer != NULL );
-    HAL_StatusTypeDef status = HAL_OK;  
+    assert_param( buffer != NULL ); 
     //assert_param( addr >= DATA_EEPROM_BASE );
     assert_param( buffer != NULL );
     assert_param( size < ( DATA_EEPROM_END - DATA_EEPROM_BASE ) );
-	  
-    for( uint32_t i = 0; i < size; i++ )
-    {
+    for( uint32_t i = 0; i < size; i++ ) {
         buffer[i]= *((( uint8_t* )addr)+i);
     }
-   
     return SUCCESS;
 }
 
@@ -467,45 +424,43 @@ McuSTM32L4::~McuSTM32L4(){
 /*******************************************/
 void McuSTM32L4::InitMcu( void ) {
     // system clk Done with mbed to be completed by mcu providers if mbed is removed
-
     WakeUpInit ( );
     InitSpi ( );
     NVIC_ClearPendingIRQ(RTC_WKUP_IRQn);
     NVIC_DisableIRQ(RTC_WKUP_IRQn);
     NVIC_SetVector(RTC_WKUP_IRQn, (uint32_t)RTC_IRQHandlerWakeUp);
     NVIC_EnableIRQ(RTC_WKUP_IRQn);
-
-	  RtcInit ( );
+    RtcInit ( );
     LowPowerTimerLoRaInit();
-	  UartInit ( );
-	
-	 /*For dual boot */
-	  FLASH_If_WriteProtectionClear();
-	/* Test from which bank the program runs */
-	/* Bit 8 FB_MODE: Flash Bank mode selection
-       0: Flash Bank 1 mapped at 0x0800 0000 (and aliased @0x0000 0000(1)) and Flash Bank 2
-          mapped at 0x0808 0000 (and aliased at 0x0008 0000)
-       1: Flash Bank2 mapped at 0x0800 0000 (and aliased @0x0000 0000(1)) and Flash Bank 1
-          mapped at 0x0808 0000 (and aliased at 0x0008 0000)
-					*/
+    UartInit ( );
+
+    /*For dual boot */
+    FLASH_If_WriteProtectionClear();
+    /* Test from which bank the program runs */
+    /* Bit 8 FB_MODE: Flash Bank mode selection
+    0: Flash Bank 1 mapped at 0x0800 0000 (and aliased @0x0000 0000(1)) and Flash Bank 2
+    mapped at 0x0808 0000 (and aliased at 0x0008 0000)
+    1: Flash Bank2 mapped at 0x0800 0000 (and aliased @0x0000 0000(1)) and Flash Bank 1
+    mapped at 0x0808 0000 (and aliased at 0x0008 0000)
+            */
     BankActive = READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE);
-	 if (BankActive == 0) { //bank 1
-		  DEBUG_MSG("Dual Boot is activated and code running on Bank 1 \n");
-	 } else {
-		  DEBUG_MSG("Dual Boot is activated and code running on Bank 2 \n");
-		  uint32_t result = FLASH_If_Erase( BankActive ); //Erase the 0x8080000
-		  if (result == FLASHIF_OK) {
-          DEBUG_MSG("Copying BANK1 to BANK2\n");
-          result = FLASH_If_Write( FLASH_START_BANK2, (uint32_t*)FLASH_START_BANK1, 20480);
-      }
-      if (result != FLASHIF_OK) {
-          DEBUG_PRINTF("Failure! %d \n",result);
-			 } else {
-         DEBUG_MSG("Sucess!\n");
-				 FLASH_If_BankSwitch();
-				 NVIC_SystemReset();
-			 }
-	 }		
+    if (BankActive == 0) { //bank 1
+        DEBUG_MSG("Dual Boot is activated and code running on Bank 1 \n");
+    } else {
+        DEBUG_MSG("Dual Boot is activated and code running on Bank 2 \n");
+        uint32_t result = FLASH_If_Erase( BankActive ); //Erase the 0x8080000
+        if (result == FLASHIF_OK) {
+        DEBUG_MSG("Copying BANK1 to BANK2\n");
+        result = FLASH_If_Write( FLASH_START_BANK2, (uint32_t*)FLASH_START_BANK1, 20480);
+        }
+        if (result != FLASHIF_OK) {
+            DEBUG_PRINTF("Failure! %d \n",result);
+        } else {
+            DEBUG_MSG("Sucess!\n");
+            FLASH_If_BankSwitch();
+            NVIC_SystemReset();
+        }
+    }
 }
 
 void  McuSTM32L4::Init_Irq ( PinName pin) {
@@ -618,11 +573,11 @@ int McuSTM32L4::RestoreContext(uint8_t *buffer, uint32_t addr, uint32_t size){
 }
 static uint8_t copyPage [2048] ;
 int McuSTM32L4::WriteFlashWithoutErase(uint8_t *buffer, uint32_t addr, uint32_t size){
-	  
+
     int findPage = 0 ;
     int findByteAdress = 0 ;
     int findLastAdress = 0 ;
-  	int status = 0;
+    int status = 0;
     uint32_t i;
     uint32_t flashBaseAdress;    
     uint64_t *flash = ( uint64_t* )copyPage;
@@ -631,20 +586,14 @@ int McuSTM32L4::WriteFlashWithoutErase(uint8_t *buffer, uint32_t addr, uint32_t 
     findPage = ((addr - 0x8080000 )) >> 11 ;  // 2048 page size;
     findByteAdress = ( (addr - 0x8080000 )  - ( findPage << 11 ));
     findLastAdress = findByteAdress + size ; //if >2048 across two pages !!
-
     flashBaseAdress = 0x8080000 ;
-
     HAL_FLASH_Unlock( );
 
     for( i = 0; i < 2048; i++ ) {
         copyPage[i]= *(( uint8_t* )(flashBaseAdress + (findPage * 2048))+i);
     }
-
-
     FlashPageErase(   findPage, 2 );
-
     WRITE_REG( FLASH->CR, 0x40000000 );
-
     if ( findLastAdress < 2048) { // all is done on the same page
         for( i = 0; i < size; i++ ) {
             copyPage[i + findByteAdress] = buffer [i];
@@ -658,14 +607,11 @@ int McuSTM32L4::WriteFlashWithoutErase(uint8_t *buffer, uint32_t addr, uint32_t 
         }
         for( i = 0; i < 256; i++ ) {
             status += HAL_FLASH_Program( FLASH_TYPEPROGRAM_DOUBLEWORD, flashBaseAdress + (findPage * 2048) + ( 8 * i ),  flash[i] );
-
         }
         for( i = 0; i < 2048; i++ ) { //copy the next page
             copyPage[i]= *(( uint8_t* )(flashBaseAdress + ((findPage + 1) * 2048))+i);
         }
-
-            FlashPageErase(   1 + findPage, 2 );
-        
+        FlashPageErase(   1 + findPage, 2 );
         WRITE_REG( FLASH->CR, 0x40000000 );
         for( i = 0; i < (findLastAdress - 2048); i++ ) {
             copyPage[i ] =  buffer [i + 2048 - findByteAdress ];
@@ -674,11 +620,11 @@ int McuSTM32L4::WriteFlashWithoutErase(uint8_t *buffer, uint32_t addr, uint32_t 
             status += HAL_FLASH_Program( FLASH_TYPEPROGRAM_DOUBLEWORD, flashBaseAdress + ((findPage + 1) * 2048) + ( 8 * i ),  flash[i] );
         }
     }
-		if ( status > 0 ) {
-			DEBUG_MSG("ERROR HAL FLASH \n");
-		}
-		HAL_FLASH_Lock( );
-		return ( 0 ); 
+    if ( status > 0 ) {
+        DEBUG_MSG("ERROR HAL FLASH \n");
+    }
+    HAL_FLASH_Lock( );
+    return ( 0 ); 
 }
 
 
@@ -691,9 +637,9 @@ int McuSTM32L4::StoreContext(const void *buffer, uint32_t addr, uint32_t size){
     */
     uint16_t sizet = size & 0xFFFF;
     while ( EepromMcuWriteBuffer( addr,  (uint8_t*) buffer, sizet ) != HAL_OK) { // in case of infinite error watchdog will expire
-        mwait_ms ( 300 );	
-		}
-		mwait_ms ( 300 );	
+        mwait_ms ( 300 );
+    }
+    mwait_ms ( 300 );
     return ( 0 ); 
 } 
    
@@ -833,10 +779,10 @@ void McuSTM32L4::GotoSleepMSecond (int duration ) {
 #if LOW_POWER_MODE == 1
     WakeUpAlarmMSecond ( duration );
     sleep();
-	  WatchDogRelease ( );
+    WatchDogRelease ( );
 # else
     wait_ms ( duration ) ;
-	  WatchDogRelease ( );
+    WatchDogRelease ( );
 #endif
 }
 
@@ -948,9 +894,9 @@ void vprint(const char *fmt, va_list argp)
 #endif
 
 void McuSTM32L4::UartInit ( void ) {
-	#if DEBUG_TRACE == 1
+#if DEBUG_TRACE == 1
     pcf.baud(115200);
-	#endif
+#endif
 };
 void McuSTM32L4::MMprint( const char *fmt, ...){
 #if DEBUG_TRACE == 1

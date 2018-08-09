@@ -59,6 +59,7 @@ enum
 };
 #define WL 10 //tbd dynamically
 #define CR 2 //tbd dynamically
+#define FIFO_SIZE     1000 // mean 1000 bytes  
 class EncoderMp {
     public :
     EncoderMp ( void ) { 
@@ -131,7 +132,7 @@ class EncoderMp {
     }
     uint8_t   DataCnt;
     uint8_t   RedundancyCnt;
-    uint8_t   DataFifo [ 1000 ];
+    uint8_t   DataFifo [ FIFO_SIZE ];
     uint8_t   DataSize;
     uint32_t  WLength;
     uint8_t   NbOfFrameInFifo;

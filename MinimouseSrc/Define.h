@@ -98,7 +98,7 @@ enum{
 };
 
 typedef enum {
-	  NOT_RECEIVE_ON_RXC,
+    NOT_RECEIVE_ON_RXC,
     RECEIVE_ON_RXC,
 }eIsReceiveOnRXC;
 enum{
@@ -162,7 +162,7 @@ enum {
 
 typedef enum{
     RADIO_IRQ_NONE          = 0x00,
-		SENT_PACKET_IRQ_FLAG    = 0x20,
+    SENT_PACKET_IRQ_FLAG    = 0x20,
     RECEIVE_PACKET_IRQ_FLAG = 0x40,
     BAD_PACKET_IRQ_FLAG     = 0x60,
     RXTIMEOUT_IRQ_FLAG      = 0x80, 
@@ -225,7 +225,7 @@ typedef enum {
 }eStatusChannel;
 typedef enum {
     NO_MORE_VALID_RX_PACKET,
-	  USER_RX_PACKET,
+    USER_RX_PACKET,
     USERRX_FOPTSPACKET,
     NWKRXPACKET,
     JOIN_ACCEPT_PACKET,
@@ -240,8 +240,8 @@ typedef enum {
 typedef enum {
     NO_LORA_RXPACKET_AVAILABLE,
     LORA_RX_PACKET_AVAILABLE,
-		MULTI_CAST_G0_RX_PACKET_AVAILABLE,
-	  MULTI_CAST_G1_RX_PACKET_AVAILABLE,
+    MULTI_CAST_G0_RX_PACKET_AVAILABLE,
+    MULTI_CAST_G1_RX_PACKET_AVAILABLE,
 }eUserRxPacketType;
 
 typedef enum { 
@@ -264,16 +264,16 @@ typedef enum {
 typedef enum { 
     VALID_DEV_ADDR_UNICAST,
     VALID_DEV_ADDR_MULTI_CAST_G0,
-	  VALID_DEV_ADDR_MULTI_CAST_G1,
-	  UNVALID_DEV_ADDR,
+    VALID_DEV_ADDR_MULTI_CAST_G1,
+    UNVALID_DEV_ADDR,
 }eValidDevAddr;
 
 
 typedef enum { 
     CLASS_CG0_ENABLE,
-	  CLASS_CG0_DISABLE,
-	  CLASS_CG1_ENABLE,
-	  CLASS_CG1_DISABLE,
+    CLASS_CG0_DISABLE,
+    CLASS_CG1_ENABLE,
+    CLASS_CG1_DISABLE,
 }eClassCEnable;
 /*************************/
 /*    API CRYPTO         */

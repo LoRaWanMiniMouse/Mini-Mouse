@@ -81,7 +81,7 @@ static AES_CMAC_CTX AesCmacCtx[1];
  
 void LoRaMacComputeMic( const uint8_t *buffer, uint16_t size, const uint8_t *key, uint32_t address, uint8_t dir, uint32_t sequenceCounter, uint32_t *mic )
 {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     MicBlockB0[5] = dir;
     
     MicBlockB0[6] = ( address ) & 0xFF;
@@ -111,7 +111,7 @@ void LoRaMacComputeMic( const uint8_t *buffer, uint16_t size, const uint8_t *key
 
 void LoRaMacPayloadEncrypt( const uint8_t *buffer, uint16_t size, const uint8_t *key, uint32_t address, uint8_t dir, uint32_t sequenceCounter, uint8_t *encBuffer )
 {
-  	InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     uint16_t i;
     uint8_t bufferIndex = 0;
     uint16_t ctr = 1;
@@ -157,7 +157,7 @@ void LoRaMacPayloadEncrypt( const uint8_t *buffer, uint16_t size, const uint8_t 
 
 void LoRaMacPayloadDecrypt( const uint8_t *buffer, uint16_t size, const uint8_t *key, uint32_t address, uint8_t dir, uint32_t sequenceCounter, uint8_t *decBuffer )
 {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     LoRaMacPayloadEncrypt( buffer, size, key, address, dir, sequenceCounter, decBuffer );
 }
 
@@ -177,7 +177,7 @@ void LoRaMacJoinComputeMic( const uint8_t *buffer, uint16_t size, const uint8_t 
 
 void LoRaMacJoinDecrypt( const uint8_t *buffer, uint16_t size, const uint8_t *key, uint8_t *decBuffer )
 {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     memset1( AesContext.ksch, '\0', 240 );
     aes_set_key( key, 16, &AesContext );
     aes_encrypt( buffer, decBuffer, &AesContext );
@@ -190,7 +190,7 @@ void LoRaMacJoinDecrypt( const uint8_t *buffer, uint16_t size, const uint8_t *ke
 
 void LoRaMacJoinComputeSKeys( const uint8_t *key, const uint8_t *appNonce, uint16_t devNonce, uint8_t *nwkSKey, uint8_t *appSKey )
 {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     uint8_t nonce[16];
     uint8_t *pDevNonce = ( uint8_t * )&devNonce;
     
@@ -213,14 +213,14 @@ void LoRaMacJoinComputeSKeys( const uint8_t *key, const uint8_t *appNonce, uint1
 
 void LoRaMacComputeAndAddMic(  uint8_t *buffer, uint16_t size, const uint8_t *key, uint32_t address, uint8_t dir, uint32_t sequenceCounter)
 {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     uint32_t mic;
     LoRaMacComputeMic(buffer,size, key, address,dir,  sequenceCounter,&mic );
     memcpy(&buffer[size],(uint8_t *)&mic,4);
 }
 
 int LoRaMacCheckMic(  uint8_t *buffer, uint16_t size, const uint8_t *key, uint32_t address, uint32_t sequenceCounter, uint32_t micIn ){
-	  uint32_t mic;
+    uint32_t mic;
     int status = -1 ;
     LoRaMacComputeMic( buffer,size, key, address, 1,  sequenceCounter,&mic );
     if ( mic == micIn ) {

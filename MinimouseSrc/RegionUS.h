@@ -50,22 +50,22 @@ public:
     static const uint32_t FREQMAX            = 9149000 ;// MHz/100 coded over 24 bits??
     static const int      RX2DR_INIT         = 0;
     uint8_t DistriDataRate[8];
-
-    eStatusLoRaWan RegionMaxPayloadSize   ( uint8_t sizeIn ) ;
-    void RegionSetDataRateDistribution    ( uint8_t adrMode );
-	  void RegionLoadFromFlash                      ( void ){};
-		void RegionSetBadCrcInFlash                   ( void ){};	
+    eStatusLoRaWan RegionMaxPayloadSize           ( uint8_t sizeIn ) ;
+    void RegionSetDataRateDistribution            ( uint8_t adrMode );
+    void RegionLoadFromFlash                      ( void ){};
+    void RegionSetBadCrcInFlash                   ( void ){};
     virtual void RegionGiveNextDataRate           ( void );
-		virtual void RegionSaveInFlash                      ( void ){};	
+    virtual void RegionSaveInFlash                ( void ){};
+
 protected : 
-    virtual void RegionGetCFList                  ( void );
-    virtual void RegionGiveNextChannel            ( void ); 
-    virtual void RegionSetRxConfig                ( eRxWinType type );
-    virtual void RegionSetPower                   ( uint8_t PowerCmd );
-    virtual void RegionSetMask                    ( void ) ;
-    virtual void RegionInitChannelMask            ( void );
-    virtual void RegionDecreaseDataRate           ( void );
-    virtual eStatusChannel RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMask );
+    virtual void RegionGetCFList                        ( void );
+    virtual void RegionGiveNextChannel                  ( void ); 
+    virtual void RegionSetRxConfig                      ( eRxWinType type );
+    virtual void RegionSetPower                         ( uint8_t PowerCmd );
+    virtual void RegionSetMask                          ( void ) ;
+    virtual void RegionInitChannelMask                  ( void );
+    virtual void RegionDecreaseDataRate                 ( void );
+    virtual eStatusChannel RegionBuildChannelMask       ( uint8_t ChMaskCntl, uint16_t ChMask );
     virtual eStatusLoRaWan RegionIsValidRx1DrOffset     ( uint8_t Rx1DataRateOffset );
     virtual eStatusLoRaWan RegionIsValidDataRate        ( uint8_t temp );
     virtual eStatusLoRaWan RegionIsAcceptableDataRate   ( uint8_t DataRate );
@@ -74,14 +74,12 @@ protected :
     virtual eStatusLoRaWan RegionIsValidChannelIndex    ( uint8_t ChannelIndex);
     virtual uint8_t RegionGetAdrAckLimit                ( void );
     virtual uint8_t RegionGetAdrAckDelay                ( void );
-private :
 
+private :
     uint8_t DistriDataRateInit[8];
     void TxDataRateToSfBw                  ( uint8_t dataRate );
     void Rx2DataRateToSfBw                 ( uint8_t dataRate );
     uint16_t   UnwrappedChannelMask ;                          // this variable is used for multiple linkadr cmds is region dependant at contruction use template
-    
-
 };
 
 #endif

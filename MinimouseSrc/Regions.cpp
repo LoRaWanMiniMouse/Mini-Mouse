@@ -85,7 +85,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetPower ( uint8_t PowerCmd ) {
 /* Chapter 7.1.4 LoRaWan 1.0.1 specification                        */
 /********************************************************************/
 template < class R >void LoraRegionsEU<R>::RegionGetCFList ( void ) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     for ( int i = 0 ; i < 5 ; i++ ) {
        this->MacTxFrequency [3 + i] = 100 * ( ( this->CFList[0 + ( 3 * i )] ) + ( this->CFList[1 + ( 3 * i )] << 8 )+ ( this->CFList[2 + ( 3 * i )] << 16 ) );
        this->MacRx1Frequency [3 + i] = 100 * ( ( this->CFList[0 + ( 3 * i )] ) + ( this->CFList[1 + ( 3 * i )] << 8 )+ ( this->CFList[2 + ( 3 * i )] << 16 ) );
@@ -111,7 +111,7 @@ template < class R >void LoraRegionsEU<R>::RegionGetCFList ( void ) {
 /********************************************************************/
 
 template < class R >eStatusChannel LoraRegionsEU<R>::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMask ) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     eStatusChannel status = OKCHANNEL;
     switch ( ChMaskCntl ) {
         case 0 :
@@ -143,7 +143,7 @@ template < class R >void LoraRegionsEU<R>::RegionInitChannelMask ( void ) {
     UnwrappedChannelMask = 0;
 };
 template < class R >void LoraRegionsEU<R>::RegionSetMask ( void ) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     DEBUG_MSG(" \n Mask = ");
     for (int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
         this->MacChannelIndexEnabled [i] = ( UnwrappedChannelMask >> i ) & 0x1; // @note trade off between size and code simplification
@@ -168,7 +168,7 @@ template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionMaxPayloadSize ( uint
 /********************************************************************/
 //@notereview return status
 template < class R >void LoraRegionsEU<R>::RegionSetRxConfig ( eRxWinType type ) {
-  	InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     if ( type == RX1 ) {
         this->MacRx1SfCurrent =  ( this->MacTxSfCurrent < 12 - this->MacRx1DataRateOffset) ? this->MacTxSfCurrent + this->MacRx1DataRateOffset : 12;
         this->MacRx1BwCurrent = this->MacTxBwCurrent;
@@ -199,7 +199,7 @@ template < class R >eStatusLoRaWan LoraRegionsEU<R>:: RegionIsValidDataRate ( ui
 }
     
 template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsAcceptableDataRate ( uint8_t DataRate ) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     eStatusLoRaWan status = ERRORLORAWAN;
     for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL; i++) {
         if ( ( ( UnwrappedChannelMask >> i) & 0x1) == 1 ) {
@@ -211,7 +211,7 @@ template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsAcceptableDataRate 
     return ( status );
 }
 template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsValidMacFrequency ( uint32_t Frequency) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     eStatusLoRaWan status = OKLORAWAN;
     if ( Frequency == 0) {
         return ( status );
@@ -312,7 +312,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
 }
 
 template < class R >void LoraRegionsEU<R>::RegionGiveNextDataRate( void ) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     if ( this->AdrModeSelect == STATIC_ADR_MODE ) {
         this->MacTxDataRate = this->MacTxDataRateAdr;
         this->AdrEnable = 1;
@@ -342,7 +342,7 @@ template < class R >void LoraRegionsEU<R>::RegionGiveNextDataRate( void ) {
 /*    method to update Datarate in ADR Mode                                     */
 /********************************************************************************/
 template < class R >void LoraRegionsEU<R>::RegionDecreaseDataRate ( void ) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     uint8_t ValidTemp = 0;//@notereview boolfjerrek
     while ( ( this->MacTxDataRateAdr > 0 ) && ( ValidTemp == 0 ) ) {
         this->MacTxDataRateAdr --;
@@ -369,7 +369,7 @@ template < class R >void LoraRegionsEU<R>::RegionDecreaseDataRate ( void ) {
 /*    method to set the next enable channel                                     */
 /********************************************************************************/
 template < class R >void  LoraRegionsEU<R>::RegionGiveNextChannel( void ) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     uint8_t NbOfActiveChannel = 0 ;
     for (int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
         if ( this->MacChannelIndexEnabled [i] == CHANNEL_ENABLED ) { 
@@ -385,7 +385,6 @@ template < class R >void  LoraRegionsEU<R>::RegionGiveNextChannel( void ) {
         this->MacTxFrequencyCurrent = this->MacTxFrequency[ChannelIndex];
         this->MacRx1FrequencyCurrent = this->MacRx1Frequency[ChannelIndex];
     }
-
 };
 
 template < class R >uint8_t  LoraRegionsEU<R>::RegionGetAdrAckLimit( void ) {
@@ -397,8 +396,8 @@ template < class R >uint8_t  LoraRegionsEU<R>::RegionGetAdrAckDelay( void ) {
 
 
 template < class R >void LoraRegionsEU<R>::RegionLoadFromFlash ( void ){
-	 InsertTrace ( __COUNTER__, FileId );
-   uint32_t crcLow;
+    InsertTrace ( __COUNTER__, FileId );
+    uint32_t crcLow;
     uint32_t crcHigh;
     mcu.RestoreContext((uint8_t *)(&BackUpFlash), this->UserFlashAdress, sizeof(sBackUpFlash));
     Crc64((uint8_t * )(&BackUpFlash), sizeof(sBackUpFlash)-8 , &crcLow, &crcHigh );    
@@ -417,7 +416,7 @@ template < class R >void LoraRegionsEU<R>::RegionLoadFromFlash ( void ){
         this->FcntUp                        = BackUpFlash.FcntUp ;
         this->FcntDwn                       = BackUpFlash.FcntDwn ;
         //this->DevAddr                       = BackUpFlash.DevAddr;
-			  this->SetDevAddr ( BackUpFlash.DevAddr );
+        this->SetDevAddr ( BackUpFlash.DevAddr );
         this->DevNonce                      = BackUpFlash.DevNonce;
         this->Phy.JoinedStatus              = ( eJoinStatus ) BackUpFlash.JoinedStatus;
         for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i ++ ) {
@@ -463,8 +462,8 @@ template < class R >void LoraRegionsEU<R>::RegionLoadFromFlash ( void ){
 }
 
 template < class R >void LoraRegionsEU<R>::RegionSaveInFlash ( void ){
-	  InsertTrace ( __COUNTER__, FileId );
-	  uint32_t crcLow;
+    InsertTrace ( __COUNTER__, FileId );
+    uint32_t crcLow;
     uint32_t crcHigh;
     BackUpFlash.MacTxDataRate           = this->MacTxDataRate;
     BackUpFlash.MacTxPower              = this->MacTxPower;
@@ -495,7 +494,7 @@ template < class R >void LoraRegionsEU<R>::RegionSaveInFlash ( void ){
 }
 
 template < class R >void LoraRegionsEU<R>::RegionSetBadCrcInFlash ( void ){
-	  uint32_t crcLow;
+    uint32_t crcLow;
     uint32_t crcHigh;
     BackUpFlash.MacTxDataRate           = this->MacTxDataRate;
     BackUpFlash.MacTxPower              = this->MacTxPower;
@@ -530,7 +529,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetBadCrcInFlash ( void ){
 /***********************************************************************************************/
 //@notereview function a commun
 template < class R >void LoraRegionsEU<R>:: TxDataRateToSfBw ( uint8_t dataRate ) {
-	  InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     this->MacTxModulationCurrent = LORA ;
     if ( dataRate < 6 ){ 
         this->MacTxSfCurrent = 12 - dataRate ;
@@ -547,7 +546,7 @@ template < class R >void LoraRegionsEU<R>:: TxDataRateToSfBw ( uint8_t dataRate 
     }
 }
 template < class R >void LoraRegionsEU<R>:: Rx2DataRateToSfBw ( uint8_t dataRate ) {
-  	InsertTrace ( __COUNTER__, FileId );
+    InsertTrace ( __COUNTER__, FileId );
     if ( dataRate < 6 ){ 
         this->MacRx2SfCurrent = 12 - dataRate ;
         this->MacRx2BwCurrent = BW125 ;

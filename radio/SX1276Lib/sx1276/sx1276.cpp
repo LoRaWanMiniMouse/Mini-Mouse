@@ -85,7 +85,7 @@ IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
 
     if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
         irqFlags = (IrqFlags_t) (irqFlags | SENT_PACKET_IRQ_FLAG);
-		}
+    }
 
     if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
         irqFlags = BAD_PACKET_IRQ_FLAG;
@@ -207,17 +207,16 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     Reset( );
     CalibrateImage( );
     SetOpMode( RF_OPMODE_SLEEP );
-	/* Set Lora Mode and max payload to 0x40 */
+    /* Set Lora Mode and max payload to 0x40 */
     Write( REG_OPMODE, ( Read( REG_OPMODE ) & RFLR_OPMODE_LONGRANGEMODE_MASK ) | RFLR_OPMODE_LONGRANGEMODE_ON );
     SetStandby( );
     SetRfFrequency( channel );
     uint16_t symbTimeout = ( ( TimeOutMs & 0xFFFF ) * ( ( BW + 1 ) * 125 ) ) >> SF ;
-	  if ( symbTimeout > 0x3FF ) {
-			symbTimeout = 0x3FF ;
-		}
+    if ( symbTimeout > 0x3FF ) {
+        symbTimeout = 0x3FF ;
+    }
     SetModulationParamsRxLora( SF, BW, symbTimeout);
-    
-/* Configure IRQ Rx Done or Rx timeout */
+    /* Configure IRQ Rx Done or Rx timeout */
     Write ( REG_LR_IRQFLAGSMASK, 0x3F ); 
     Write ( REG_DIOMAPPING1,0);
     Write ( REG_DIOMAPPING2, 0x00 );
@@ -226,7 +225,6 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     Write( REG_LR_FIFOADDRPTR, 0 );
     /* Receive */
     SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
-
 }
 
 void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
@@ -237,12 +235,10 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     uint8_t remainingBytes = 0;
     uint8_t firstBytesRx[LORAWAN_MIN_PACKET_SIZE] = {0x00};
     uint8_t payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
-
     SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
     SetRfFrequency( channel );
     uint8_t symbTimeout = timeOutMs / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
     SetModulationParamsRxFsk( symbTimeout );
-
     SetFifoThreshold(LORAWAN_MIN_PACKET_SIZE - 1);
     SetOpMode( RF_OPMODE_RECEIVER );
     while(!IsFskFifoLevelReached()) {

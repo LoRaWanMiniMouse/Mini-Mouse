@@ -103,7 +103,7 @@ IrqFlags_t SX126x::GetIrqFlagsLora( void ) {
 
     if ( ( irqStatus[1] & IRQ_TX_DONE ) !=0 ) {
         irqFlags = (IrqFlags_t) (irqFlags | SENT_PACKET_IRQ_FLAG);
-		}
+    }
     
     if ( ( ( irqStatus[1] & IRQ_HEADER_ERROR ) != 0 ) ||
         ( ( irqStatus[1] & IRQ_CRC_ERROR ) != 0 ) ) {
@@ -115,7 +115,7 @@ IrqFlags_t SX126x::GetIrqFlagsLora( void ) {
 
 IrqFlags_t SX126x::GetIrqFlagsFsk( void ) {
     //! \warning: FSK is under still test and not officialy supported on this driver
-	return this->GetIrqFlagsLora();
+    return this->GetIrqFlagsLora();
 }
 
 void SX126x::Reset( void ) {
@@ -130,12 +130,12 @@ void SX126x::Reset( void ) {
 }
 
 void SX126x::SendCw(uint32_t frequency){
-	  Reset();
-		SetRegulatorMode( USE_DCDC );
+    Reset();
+    SetRegulatorMode( USE_DCDC );
     SetDio2AsRfSwitchCtrl( true );
     SetStandby( STDBY_XOSC );
-		SetRfFrequency( frequency );
-		SX126x::SetTxContinuousWave( );
+    SetRfFrequency( frequency );
+    SX126x::SetTxContinuousWave( );
 }
 
 void SX126x::SendLora(
@@ -150,7 +150,6 @@ void SX126x::SendLora(
     Reset( );
     SetRegulatorMode( USE_DCDC );
     SetDio2AsRfSwitchCtrl( true );
-
     SetStandby( STDBY_XOSC );
     // Configure the radio
     SetPacketType( LORA );
@@ -163,7 +162,6 @@ void SX126x::SendLora(
     // Send the payload to the radio
     SetBufferBaseAddress( 0, 0 );
     WriteBuffer( 0, payload, payloadSize );
-
     ClearIrqStatus( IRQ_RADIO_ALL );
     // Configure IRQ
     SetDioIrqParams(
@@ -173,7 +171,6 @@ void SX126x::SendLora(
                         IRQ_RADIO_NONE
                    );
     ClearIrqStatus( IRQ_RADIO_ALL );
-    
     // Send ! No timeout here as it is already handled by the MAC
     SetTx( 0 );
 }
@@ -190,7 +187,6 @@ void SX126x::SendFsk(
     Reset( );
     SetRegulatorMode( USE_DCDC );
     SetDio2AsRfSwitchCtrl( true );
-
     SetStandby( STDBY_XOSC );
     // Configure the radio
     SetPacketType( FSK );
@@ -198,13 +194,12 @@ void SX126x::SendFsk(
     SetRfFrequency( channel );
     SetModulationParamsFsk( );
     SetPacketParamsFsk( payloadSize );
-	  ConfigureCrcCCITT();
+    ConfigureCrcCCITT();
     SetTxParams( power );
-		SetSyncWordFskLorawan();
+    SetSyncWordFskLorawan();
     // Send the payload to the radio
     SetBufferBaseAddress( 0, 0 );
     WriteBuffer( 0, payload, payloadSize );
-
     ClearIrqStatus( IRQ_RADIO_ALL );
     // Configure IRQ
     SetDioIrqParams(
@@ -214,7 +209,6 @@ void SX126x::SendFsk(
                         IRQ_RADIO_NONE
                    );
     ClearIrqStatus( IRQ_RADIO_ALL );
-
     // Send ! No timeout here as it is already handled by the MAC
     SetTx( 0 );
 }
@@ -226,7 +220,6 @@ void SX126x::RxLora(
                         uint32_t     channel,
                         uint32_t     rxTimeoutMs
                     ) {
-    
     // Configure the radio
     SetPacketType( LORA );
     SetRfFrequency( channel );
@@ -256,7 +249,7 @@ void SX126x::RxFsk(
     SetModulationParamsFsk();
     SetPacketParamsFsk( 0 );
     StopTimerOnPreamble( true );
-		SetSyncWordFskLorawan();
+    SetSyncWordFskLorawan();
     // Configure IRQ
     SetDioIrqParams(
                         IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
@@ -496,7 +489,7 @@ void SX126x::SetPacketParamsFsk( uint8_t payloadSize ) {
 
 void SX126x::ConfigureCrcCCITT(void) {
     this->SetCrcSeedFskCCITT( );
-	  this->SetCrcPolynomialFskCCITT( );
+    this->SetCrcPolynomialFskCCITT( );
 }
 
 void SX126x::SetCrcSeedFskCCITT(void) {
@@ -675,6 +668,6 @@ void SX126x::WriteRegisters( uint16_t address, uint8_t *buffer, uint16_t size ) 
 }
 
 void SX126x::WriteRegister( uint16_t address, uint8_t value ){
-	this->WriteRegisters( address, &value, 1 );
+    this->WriteRegisters( address, &value, 1 );
 }
 

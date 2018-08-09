@@ -49,7 +49,7 @@ template <template <class R> class T, class RADIOTYPE>
 eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
 
     *AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE;
-    #if LOW_POWER_MODE == 0
+    #if LOW_POWER_MODE == 1
     if ( ( IsJoined ( ) == NOT_JOINED ) && ( mcu.RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
         DEBUG_PRINTF("TOO SOON TO JOIN time is  %d time target is : %d \n",mcu.RtcGetTimeSecond( ), packet.RtcNextTimeJoinSecond);
         StateLoraWanProcess = LWPSTATE_IDLE ;

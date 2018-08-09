@@ -41,19 +41,19 @@ public:
     SX1272( PinName nss, PinName reset , PinName TxRxIt, PinName RxTimeOutIt);
     ~SX1272(){};
     void ClearIrqFlagsLora( void );
-		void ClearIrqFlagsFsk( void ){};
+    void ClearIrqFlagsFsk( void ){};
     IrqFlags_t GetIrqFlagsLora( void );
-		IrqFlags_t GetIrqFlagsFsk( void ){ return (IrqFlags_t)(0);};
+    IrqFlags_t GetIrqFlagsFsk( void ){ return (IrqFlags_t)(0);};
     void FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
-	  void FetchPayloadFsk( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi){};
+    void FetchPayloadFsk( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi){};
     void Reset( void );
     void SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power);
-		void SendFsk( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power){};
+    void SendFsk( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power){};
     void RxLora( eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
-		void RxFsk(uint32_t channel, uint16_t timeout){};
+    void RxFsk(uint32_t channel, uint16_t timeout){};
     void Sleep(  bool coldStart );
     uint8_t Read( uint8_t addr ) ;
-	  void Write( uint8_t addr, uint8_t data );
+    void Write( uint8_t addr, uint8_t data );
     uint32_t Channel;
 private:
     typedef enum {

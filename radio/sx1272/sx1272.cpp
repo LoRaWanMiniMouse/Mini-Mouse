@@ -49,21 +49,21 @@ void SX1272::FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16
 IrqFlags_t SX1272::GetIrqFlagsLora( void ) {
     uint8_t irqFlags = 0x00;
     irqFlags = Read(REG_LR_IRQFLAGS);
-		if ( ( irqFlags & IRQ_LR_RX_TX_TIMEOUT ) !=0 ) {
-			  irqFlags = RXTIMEOUT_IRQ_FLAG;
-		}
-		if ( ( irqFlags & IRQ_LR_RX_DONE ) !=0 ) {
-		  	irqFlags = RECEIVE_PACKET_IRQ_FLAG;
-		}
+    if ( ( irqFlags & IRQ_LR_RX_TX_TIMEOUT ) !=0 ) {
+        irqFlags = RXTIMEOUT_IRQ_FLAG;
+    }
+    if ( ( irqFlags & IRQ_LR_RX_DONE ) !=0 ) {
+        irqFlags = RECEIVE_PACKET_IRQ_FLAG;
+    }
 
-		if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
-		   	irqFlags = (IrqFlags_t) (irqFlags | SENT_PACKET_IRQ_FLAG);
-		}
+    if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
+        irqFlags = (IrqFlags_t) (irqFlags | SENT_PACKET_IRQ_FLAG);
+    }
 
-		if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
-			  irqFlags = BAD_PACKET_IRQ_FLAG;
-		}
-		return (IrqFlags_t) irqFlags;
+    if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
+        irqFlags = BAD_PACKET_IRQ_FLAG;
+    }
+    return (IrqFlags_t) irqFlags;
 }
 
 void SX1272::Reset( void ) {
@@ -71,7 +71,7 @@ void SX1272::Reset( void ) {
     mcu.mwait_ms( 1 );
     mcu.SetValueDigitalOutPin ( pinReset, 0);
     mcu.mwait_ms( 6 );
-	SetOpMode( RF_OPMODE_SLEEP );
+    SetOpMode( RF_OPMODE_SLEEP );
 }
 
 void SX1272::SendLora( uint8_t *payload, uint8_t payloadSize,
@@ -88,7 +88,6 @@ void SX1272::SendLora( uint8_t *payload, uint8_t payloadSize,
     Write( REG_OPMODE, ( Read( REG_OPMODE ) & RFLR_OPMODE_LONGRANGEMODE_MASK ) | RFLR_OPMODE_LONGRANGEMODE_ON );
 /* Configure Lora Tx */
     SetStandby( );
-
     SetRfFrequency( channel );
     SetModulationParamsTx( SF, BW, power );
     SetPayload( payload, payloadSize);
@@ -98,7 +97,6 @@ void SX1272::SendLora( uint8_t *payload, uint8_t payloadSize,
     Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
     Write ( REG_DIOMAPPING2, 0x00 );
 /* Send */
-		DEBUG_PRINTF("modem 1 = %x\n",Read(0x1D));
     SetOpMode( RF_OPMODE_TRANSMITTER );
 }
 
@@ -125,7 +123,7 @@ void SX1272::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
 }
 
 void SX1272::Sleep(  bool coldStart ) {
-        SetOpMode( RF_OPMODE_SLEEP );
+    SetOpMode( RF_OPMODE_SLEEP );
 }
 
 
@@ -213,7 +211,7 @@ void SX1272::SetModulationParamsTx( uint8_t SF, eBandWidth BW, int8_t power ) {
         } else {
              LowDatarateOptimize = 0x00;
         }
-		/* Set Coding rate 4/5 , Explicite Header and BW */
+     /* Set Coding rate 4/5 , Explicite Header and BW */
         ValueTemp = (0x01<<3) + ( ( BW ) << 6 )  + 0x2 +LowDatarateOptimize; 
         Write( REG_LR_MODEMCONFIG1, ValueTemp );
 
@@ -228,35 +226,33 @@ void SX1272::SetModulationParamsTx( uint8_t SF, eBandWidth BW, int8_t power ) {
          
      /* Set Public sync word */
         Write( REG_LR_SYNCWORD, 0x34);
-				 Write( REG_LR_DETECTOPTIMIZE,
-                             ( Read( REG_LR_DETECTOPTIMIZE ) &
-                             RFLR_DETECTIONOPTIMIZE_MASK ) |
-                             RFLR_DETECTIONOPTIMIZE_SF7_TO_SF12 );
-                Write( REG_LR_DETECTIONTHRESHOLD,
-                             RFLR_DETECTIONTHRESH_SF7_TO_SF12 );
+        Write( REG_LR_DETECTOPTIMIZE,
+                     ( Read( REG_LR_DETECTOPTIMIZE ) &
+                     RFLR_DETECTIONOPTIMIZE_MASK ) |
+                     RFLR_DETECTIONOPTIMIZE_SF7_TO_SF12 );
+        Write( REG_LR_DETECTIONTHRESHOLD,
+                     RFLR_DETECTIONTHRESH_SF7_TO_SF12 );
 }
 
 void SX1272::SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTimeout )
 {
     uint8_t LowDatarateOptimize;
     uint8_t ValueTemp;
-     /* Set SF */
-        ValueTemp =  ( SF << 4 ) ;
-        Write( REG_LR_MODEMCONFIG2, ValueTemp ) ;
-    
-     /* Enable/disable Low datarate optimized */
-        if( ( ( BW == 0 ) && ( ( SF == 11 ) || ( SF == 12 ) ) ) || ( ( BW == 1 ) && ( SF == 12 ) ) ) {
-             LowDatarateOptimize = 0x01;
-        } else {
-             LowDatarateOptimize = 0x00;
-        }
-		/* Set Coding rate 4/5 , Explicite Header and BW */
-        ValueTemp = (0x01<<3) + ( ( BW ) << 6 )  + 0x2 +LowDatarateOptimize; 
-        Write( REG_LR_MODEMCONFIG1, ValueTemp );
-  /* Set LSB Timeout*/
-    Write( REG_LR_SYMBTIMEOUTLSB, ( uint8_t )( symbTimeout & 0x00FF ) );
-    
+    /* Set SF */
+    ValueTemp =  ( SF << 4 ) ;
+    Write( REG_LR_MODEMCONFIG2, ValueTemp ) ;
 
+    /* Enable/disable Low datarate optimized */
+    if( ( ( BW == 0 ) && ( ( SF == 11 ) || ( SF == 12 ) ) ) || ( ( BW == 1 ) && ( SF == 12 ) ) ) {
+        LowDatarateOptimize = 0x01;
+    } else {
+        LowDatarateOptimize = 0x00;
+    }
+    /* Set Coding rate 4/5 , Explicite Header and BW */
+    ValueTemp = (0x01<<3) + ( ( BW ) << 6 )  + 0x2 +LowDatarateOptimize; 
+    Write( REG_LR_MODEMCONFIG1, ValueTemp );
+    /* Set LSB Timeout*/
+    Write( REG_LR_SYMBTIMEOUTLSB, ( uint8_t )( symbTimeout & 0x00FF ) );
  /* Set Preamble = 8 */
     Write( REG_LR_PREAMBLEMSB, 0 );
     Write( REG_LR_PREAMBLELSB, 8 );
@@ -265,11 +261,8 @@ void SX1272::SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTime
     Write( REG_LR_INVERTIQ, 0x67) ;
     Write( REG_LR_INVERTIQ2, RFLR_INVERTIQ2_ON );
 /* sensitivity optimization */
-    
     Write( REG_LR_DETECTOPTIMIZE,( Read( REG_LR_DETECTOPTIMIZE ) & RFLR_DETECTIONOPTIMIZE_MASK ) | RFLR_DETECTIONOPTIMIZE_SF7_TO_SF12 );
     Write( REG_LR_DETECTIONTHRESHOLD, RFLR_DETECTIONTHRESH_SF7_TO_SF12 );
-
- 
      /* Set Public sync word */
     Write( REG_LR_SYNCWORD, 0x34);
 }
@@ -278,20 +271,20 @@ void SX1272::SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTime
 
 void SX1272::SetPayload (uint8_t *payload, uint8_t payloadSize) {
 // Initializes the payload size
-        Write( REG_LR_PAYLOADLENGTH, payloadSize );
+    Write( REG_LR_PAYLOADLENGTH, payloadSize );
 
-        // Full buffer used for Tx            
-        Write( REG_LR_FIFOTXBASEADDR, 0 );
-        Write( REG_LR_FIFOADDRPTR, 0 );
+    // Full buffer used for Tx            
+    Write( REG_LR_FIFOTXBASEADDR, 0 );
+    Write( REG_LR_FIFOADDRPTR, 0 );
 
-        // FIFO operations can not take place in Sleep mode
-        if( ( Read( REG_OPMODE ) & ~RF_OPMODE_MASK ) == RF_OPMODE_SLEEP )
-        {
-            SetStandby( );
-            wait_ms( 1 );
-        }
-        // Write payload buffer
-        WriteFifo( payload, payloadSize );
+    // FIFO operations can not take place in Sleep mode
+    if( ( Read( REG_OPMODE ) & ~RF_OPMODE_MASK ) == RF_OPMODE_SLEEP )
+    {
+        SetStandby( );
+        wait_ms( 1 );
+    }
+    // Write payload buffer
+    WriteFifo( payload, payloadSize );
 }
 
 

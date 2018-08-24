@@ -28,10 +28,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "SX126x.h"
 #include "ApiMcu.h"
 #include "utilities.h"
-#include "Fragmentation.h"
-#include "FragmentationDecode.h"
-#include "Services.h"
-#define SX1276_BOARD 1
+
+#define SX1272_BOARD 1
 #define FileId 4
 /*!
  * \brief   BackUpFlash The LoraWan structure parameters save into the flash memory for failsafe restauration.
@@ -59,7 +57,7 @@ uint32_t LoRaDevAddrInit          = 0x26011920;
 
 #ifdef SX1276_BOARD
 #define FW_VERSION     0x17
-  SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+    SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
 
 #endif
 #ifdef SX1272_BOARD
@@ -68,51 +66,6 @@ uint32_t LoRaDevAddrInit          = 0x26011920;
 #endif
 /* User Radio ISR routine */
 #define NBENCODEDFRAME 52
-
-void UserRadioIsrFuota ( void ) {
-    int16_t snr,rssi;
-    uint32_t crcL, crcH;
-    uint8_t PayloadSize;
-    uint8_t FuotaPayload[255];
-    uint16_t NbFrame;
-    uint8_t  FrameLength;
-    static uint32_t endOfTest = 0xFFFFFFFF;
-    static uint8_t FirstTime = 0;
-    uint8_t tempvec[255];
-    mcu.WatchDogRelease ( ); 
-    int IrqFlag = RadioUser.GetIrqFlagsLora( );
-    RadioUser.ClearIrqFlagsLora( ); 
-    if ( IrqFlag == RECEIVE_PACKET_IRQ_FLAG ) {
-        RadioUser.FetchPayloadLora(&PayloadSize, FuotaPayload, &snr, &rssi );
-        RadioUser.Sleep ( false );
-        if ((FuotaPayload[1] == 0xF) && (FuotaPayload[2] == 0xA) && (FuotaPayload[3] == 0xB) && (FuotaPayload[4] == 0x4)){
-            NbFrame = (FuotaPayload[7]<<8) + FuotaPayload[8];
-            FrameLength = FuotaPayload[9];
-            if (FirstTime == 0){
-                FirstTime =1;
-                FotaParameterInit( NbFrame-NBENCODEDFRAME,NBENCODEDFRAME, FrameLength+2);
-                DEBUG_MSG("Start FW upgrade \n");
-            }
-            for (int jj = 0 ; jj < FrameLength ; jj++){
-                tempvec[jj+2] =  FuotaPayload[jj+12];
-            }
-            Crc64(&tempvec[2], FrameLength,&crcL, &crcH );
-            tempvec[0] = FuotaPayload[5];
-            tempvec[1] = FuotaPayload[6];
-            if (endOfTest == 0xFFFFFFFF) {
-                if (( FuotaPayload[10]  ==  ( crcL & 0xff )) && (FuotaPayload[11]  ==  ( ( crcL >> 8) & 0xff ))){  // check crc
-                    endOfTest = FragmentationDecodeCore( &tempvec[0], 0);
-                }
-            } else {
-                DEBUG_MSG("end of defrag\n");
-                FLASH_If_BankSwitch();
-            }
-        }
-        RadioUser.RxLora  (BW125, 7, 868100000 , 10000);			
-    } else {
-        RadioUser.RxLora  (BW125, 7, 868100000 , 10000);
-    }
-}
 
 int main( ) {
     int i;
@@ -123,7 +76,7 @@ int main( ) {
     uint8_t UserFport ;
     uint8_t UserRxFport ;
     uint8_t MsgType ;
-    uint8_t AppTimeSleeping = 55;
+    uint8_t AppTimeSleeping = 5;
     uint8_t uid[8];
     /*!
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
@@ -152,57 +105,33 @@ int main( ) {
     * \brief Restore the LoraWan Context
     */
     DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
-//  DEBUG_MSG("********************Debug Trace In flash****************** \n\n");
-//  ReadTraceInFlash ( USERFLASHADRESS + 4096 );
-//  DEBUG_MSG("******************** Current Debug Trace****************** \n\n");
-//  ReadTrace ( ExtDebugTrace );
     uint8_t TPointer ;
     TPointer = ExtDebugTrace[ TRACE_SIZE - 1]& 0xff;  
     for (int i  = 0; i < 200; i++){ 
         UserPayload [i] = (ExtDebugTrace[(uint8_t)(TPointer - i)] & 0xFF);
     }
-//  StoreTraceInFlash( USERFLASHADRESS + 4096 );
     mcu.mwait(2);
     Lp.RestoreContext  ( );
-//  Lp.ActivateClassC  ( );
-    uint32_t FrameCounterUpTest  = 1;
-    uint32_t FrameCounterDwnTest = 0;
+    Lp.SetDataRateStrategy( STATIC_ADR_MODE );
+    UserFport       = 3;
+    UserPayloadSize = 14;
+    for (int i = 0 ; i < UserPayloadSize ; i++ ) {
+        UserPayload[i]= i;
+    }
+    UserPayload[ 0 ]  = FW_VERSION ;
+    MsgType = UNCONF_DATA_UP;
     while(1) {
     /*!
-    * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 
+    * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes) + FW version. 
     */
-        if ( FrameCounterUpTest > 4 ) { 
-            UserFport       = 3;
-            UserPayloadSize = randr( 10, 40 );
-            memset( UserPayload, 0, UserPayloadSize);
-            MsgType = UNCONF_DATA_UP;
-            //PrepareFrame ( UserPayload );
-            UserPayload[ 0 ]  = FW_VERSION ;
-            UserPayload[ 1 ]  =  FrameCounterUpTest >> 24;
-            UserPayload[ 2 ]  = (FrameCounterUpTest >> 16) & 0xFF;
-            UserPayload[ 3 ]  = (FrameCounterUpTest >> 8) & 0xFF;
-            UserPayload[ 4 ]  =  FrameCounterUpTest & 0xFF;
-            UserPayload[ 5 ]  =  FrameCounterDwnTest >> 24;
-            UserPayload[ 6 ]  = (FrameCounterDwnTest >> 16) & 0xFF;
-            UserPayload[ 7 ]  = (FrameCounterDwnTest >> 8) & 0xFF;
-            UserPayload[ 8 ]  =  FrameCounterDwnTest & 0xFF;
-            UserPayload[ 9 ]  = Lp.GetNbOfReset(); // in this example adding number of reset inside the applicatif payload
-            Lp.SetDataRateStrategy( STATIC_ADR_MODE );
-        } else {  // send Trace
-            UserFport       = 4;
-            MsgType = UNCONF_DATA_UP;
-            Lp.SetDataRateStrategy( USER_DR_DISTRIBUTION );
-            UserPayloadSize = 210 ;
-        }
 
-        if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-            InsertTrace ( __COUNTER__, FileId );
-            LpState = Lp.Join( );
-        } else {
-            InsertTrace ( __COUNTER__, FileId );
-            LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
-            FrameCounterUpTest ++;
-        }
+    if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
+        InsertTrace ( __COUNTER__, FileId );
+        LpState = Lp.Join( );
+    } else {
+        InsertTrace ( __COUNTER__, FileId );
+        LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
+    }
 /*!
 * \brief 
 *        This function manages the state of the MAC and performs all the computation intensive (crypto) tasks of the MAC.
@@ -227,39 +156,11 @@ int main( ) {
         if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
             InsertTrace ( __COUNTER__, FileId );
             Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
-            FrameCounterDwnTest ++;
             DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
             for ( i = 0 ; i < UserRxPayloadSize ; i++){
                 DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
             }
             DEBUG_MSG("]\n\n\n");
-            if ( ( UserRxFport == 0x69 )&& ( UserRxPayloadSize == 5 ) ) {
-                int GoInFwUpgrade = 0;
-                for (int i = 0; i < 5 ; i++) {
-                GoInFwUpgrade = (UserRxPayload[i]-i == 0) ? GoInFwUpgrade : 1;
-                }
-                if ( GoInFwUpgrade == 0 ){
-                    Lp.SetDataRateStrategy(USER_DR_DISTRIBUTION);
-                    LpState = Lp.SendPayload( 0x69, UserPayload, UserPayloadSize, MsgType );
-                    while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) ){
-                        LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-                        mcu.GotoSleepMSecond ( 100 );
-                        mcu.WatchDogRelease ( );
-                    }
-                    DEBUG_MSG ( "START FW UPGRADE\n");
-                    mcu.AttachInterruptIn( &UserRadioIsrFuota ); // attach ISR
-                    mcu.mwait(1);
-                    RadioUser.RxLora  (BW125, 7, 868100000 , 10000);
-                    uint32_t BeginFWUpgrade = mcu.RtcGetTimeSecond( );
-                    while(1) {
-                        if ( ( mcu.RtcGetTimeSecond( ) - BeginFWUpgrade ) > 3600 ) {
-                            DEBUG_MSG ( "ERROR : TOO LATE FOR FW UPGRADE  \n");
-                            NVIC_SystemReset() ;
-                        }
-                        mcu.GotoSleepSecond ( AppTimeSleeping);
-                    }
-                }
-            }
         }
 /*!
 * \brief Send a ¨Packet every 120 seconds in case of join 

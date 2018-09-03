@@ -156,7 +156,7 @@ void SX126x::SendLora(
     //CalibrateImage( channel );
     SetRfFrequency( channel );
     SetModulationParamsLora( SF, BW );
-    SetPacketParamsLora( payloadSize );
+    SetPacketParamsLora( payloadSize, IQ_STANDARD );
     SetTxParams( power );
     WriteRegisters( REG_LORA_SYNC_WORD_MSB, ( uint8_t * ) this->LoraSyncword, 2 );
     // Send the payload to the radio
@@ -224,7 +224,7 @@ void SX126x::RxLora(
     SetPacketType( LORA );
     SetRfFrequency( channel );
     SetModulationParamsLora( SF, BW );
-    SetPacketParamsLora( 0 );
+    SetPacketParamsLora( 0, IQ_INVERTED );
     StopTimerOnPreamble( true );
     WriteRegisters( REG_LORA_SYNC_WORD_MSB, ( uint8_t * ) this->LoraSyncword, 2 );
     // Configure IRQ
@@ -462,14 +462,14 @@ void SX126x::SetModulationParamsFsk( ) {
     WriteCommand( SET_MODULATION_PARAMS, buf, 8 );
 }
 
-void SX126x::SetPacketParamsLora( uint8_t payloadSize ) {
+void SX126x::SetPacketParamsLora( uint8_t payloadSize, InvertIQ_t IqType ) {
     uint8_t buf[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     buf[0] = 0x00;  // Preamble of 0x08 symbols
     buf[1] = 0x08;
     buf[2] = 0x00;  // Explicit header (Variable packet length)
     buf[3] = payloadSize;
     buf[4] = 0x01;  // Uplink: CRC ON
-    buf[5] = IQ_STANDARD;  // Uplink: Standard IQ
+    buf[5] = (uint8_t) IqType;  // Uplink: Standard IQ
     WriteCommand( SET_PACKET_PARAMS, buf, 6 );
 }
 

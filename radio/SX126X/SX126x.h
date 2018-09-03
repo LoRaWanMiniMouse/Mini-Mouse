@@ -39,10 +39,10 @@ class SX126x {
         ~SX126x(){}; 
 
         void ClearIrqFlagsLora( void );
-		void ClearIrqFlagsFsk( void );
+        void ClearIrqFlagsFsk( void );
 
         IrqFlags_t GetIrqFlagsLora( void );
-		IrqFlags_t GetIrqFlagsFsk( void );
+        IrqFlags_t GetIrqFlagsFsk( void );
 
         void FetchPayloadLora(
             uint8_t *payloadSize,
@@ -89,7 +89,7 @@ class SX126x {
         );
 
        void Sleep( bool coldStart );
-			 void SendCw(uint32_t frequency);
+       void SendCw(uint32_t frequency);
     private:
         typedef enum {
             SLEEP,
@@ -136,7 +136,7 @@ class SX126x {
             STDBY_RC                                = 0x00,
             STDBY_XOSC                              = 0x01,
         } StandbyModes_t;
-				
+            
         typedef enum {
             USE_LDO                                 = 0x00, // default
             USE_DCDC                                = 0x01,
@@ -283,7 +283,8 @@ class SX126x {
          * \brief Sets the packet parameters for LORA
          */
         void SetPacketParamsLora(
-            uint8_t payloadSize
+            uint8_t payloadSize,
+            InvertIQ_t IqType
         );
 
         /*!
@@ -326,7 +327,7 @@ class SX126x {
          * @param [IN]  mode          Standby mode to put the radio into
          */
         void SetStandby( StandbyModes_t mode );
-				       /*!
+                   /*!
          * \brief Sets the power regulators operating mode
          * \param [in]  mode          [0: LDO, 1:DC_DC]
          */

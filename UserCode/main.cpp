@@ -29,7 +29,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "ApiMcu.h"
 #include "utilities.h"
 
-#define SX1272_BOARD 1
+
 #define FileId 4
 /*!
  * \brief   BackUpFlash The LoraWan structure parameters save into the flash memory for failsafe restauration.
@@ -55,6 +55,12 @@ uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 
 uint8_t DevEuiInit[]              = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
 uint32_t LoRaDevAddrInit          = 0x26011920;
 
+
+#ifdef SX126x_BOARD
+#define FW_VERSION     0x18
+    SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
+
+#endif
 #ifdef SX1276_BOARD
 #define FW_VERSION     0x17
     SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
@@ -90,7 +96,9 @@ int main( ) {
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
     * \remark  The Current implementation  support radio SX1276 and sx1261
     */
-
+#ifdef SX126x_BOARD
+    LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+#endif
 #ifdef SX1276_BOARD
     LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 #endif

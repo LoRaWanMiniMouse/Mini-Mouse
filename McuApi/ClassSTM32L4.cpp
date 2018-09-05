@@ -469,6 +469,7 @@ void  McuSTM32L4::Init_Irq ( PinName pin) {
     GPIO_InitTypeDef GPIO_InitStruct;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
+    
     if ( pin < 15 ) {
         pintmp = pin;
         GPIO_InitStruct.Pin = (1 << pintmp);

@@ -149,7 +149,7 @@ class SX126x {
             IRQ_PREAMBLE_DETECTED                   = 0x0004,
             IRQ_SYNCWORD_VALID                      = 0x0008,
             IRQ_HEADER_VALID                        = 0x0010,
-            IRQ_HEADER_ERROR                        = 0x0020,
+        IRQ_HEADER_ERROR                        = 0x0020,
             IRQ_CRC_ERROR                           = 0x0040,
             IRQ_CAD_DONE                            = 0x0080,
             IRQ_CAD_ACTIVITY_DETECTED               = 0x0100,

@@ -118,6 +118,7 @@ int main( ) {
     for (int i  = 0; i < 200; i++){ 
         UserPayload [i] = (ExtDebugTrace[(uint8_t)(TPointer - i)] & 0xFF);
     }
+    ReadTrace( ExtDebugTrace );
     mcu.mwait(2);
     Lp.RestoreContext  ( );
     Lp.SetDataRateStrategy( STATIC_ADR_MODE );

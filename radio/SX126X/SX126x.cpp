@@ -162,7 +162,6 @@ void SX126x::SendLora(
     // Send the payload to the radio
     SetBufferBaseAddress( 0, 0 );
     WriteBuffer( 0, payload, payloadSize );
-    ClearIrqStatus( IRQ_RADIO_ALL );
     // Configure IRQ
     SetDioIrqParams(
                         0xFFFF,
@@ -170,7 +169,6 @@ void SX126x::SendLora(
                         IRQ_RADIO_NONE,
                         IRQ_RADIO_NONE
                    );
-    ClearIrqStatus( IRQ_RADIO_ALL );
     // Send ! No timeout here as it is already handled by the MAC
     SetTx( 0 );
 }
@@ -200,15 +198,13 @@ void SX126x::SendFsk(
     // Send the payload to the radio
     SetBufferBaseAddress( 0, 0 );
     WriteBuffer( 0, payload, payloadSize );
-    ClearIrqStatus( IRQ_RADIO_ALL );
     // Configure IRQ
     SetDioIrqParams(
                         0xFFFF,
                         0xFFFF,
                         IRQ_RADIO_NONE,
                         IRQ_RADIO_NONE
-                   );
-    ClearIrqStatus( IRQ_RADIO_ALL );
+                   ); 
     // Send ! No timeout here as it is already handled by the MAC
     SetTx( 0 );
 }
@@ -221,6 +217,7 @@ void SX126x::RxLora(
                         uint32_t     rxTimeoutMs
                     ) {
     // Configure the radio
+    mcu.SetValueDigitalOutPin ( PA_10,1);
     SetPacketType( LORA );
     SetRfFrequency( channel );
     SetModulationParamsLora( SF, BW );
@@ -234,7 +231,6 @@ void SX126x::RxLora(
                         IRQ_RADIO_NONE,
                         IRQ_RADIO_NONE
                    );
-    ClearIrqStatus( IRQ_RADIO_ALL );
     SetRx( rxTimeoutMs << 6 );
 }
 

@@ -20,10 +20,14 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "ApiMcu.h"
 #include "utilities.h"
 #define FileId 6
+
+
 template class RadioContainer<SX1276>;
 template class RadioContainer<SX1272>;
 template class RadioContainer<SX126x>;
 template <class R> void RadioContainer <R>::IsrRadio( void ) {
+    
+ 
     int status = OKLORAWAN;
     uint32_t tCurrentMillisec;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond ( );
@@ -61,6 +65,8 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
                     DEBUG_PRINTF( "tcurrent %u timeout = %d, end time %u \n ", tCurrentMillisec, timeoutMs, LastTimeRxWindowsMs);
                     return;
                 }
+                DEBUG_MSG( "Receive a packet But rejected and too late to restart\n");
+                RegIrqFlag = RXTIMEOUT_IRQ_FLAG;
             } 
             break;
 
@@ -80,8 +86,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
             DEBUG_MSG ("receive It radio error\n");
             break;
     }
-    Radio->Sleep ( false );
-    
+    Radio->Sleep ( true );
     switch ( StateRadioProcess ) { 
         case RADIOSTATE_TXON : 
             InsertTrace ( __COUNTER__, FileId );

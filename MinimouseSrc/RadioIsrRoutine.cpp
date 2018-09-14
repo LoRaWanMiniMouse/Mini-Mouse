@@ -45,7 +45,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
         case RECEIVE_PACKET_IRQ_FLAG :
             InsertTrace ( __COUNTER__, FileId );
             tCurrentMillisec =  mcu.RtcGetTimeMs( );
-            DEBUG_PRINTF( "Receive a packet %d ms after tx done\n",tCurrentMillisec-TimestampRtcIsr);
+            //DEBUG_PRINTF( "Receive a packet %d ms after tx done\n",tCurrentMillisec-TimestampRtcIsr);
             status = DumpRxPayloadAndMetadata ( );
             if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
                 InsertTrace ( __COUNTER__, FileId );
@@ -83,10 +83,10 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
             break;
         
         default :
-            DEBUG_MSG ("receive It radio error\n");
+            DEBUG_PRINTF ("receive It radio error %x\n",RegIrqFlag);
             break;
     }
-    Radio->Sleep ( true );
+    Radio->Sleep ( false );
     switch ( StateRadioProcess ) { 
         case RADIOSTATE_TXON : 
             InsertTrace ( __COUNTER__, FileId );

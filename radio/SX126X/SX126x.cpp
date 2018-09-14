@@ -163,12 +163,14 @@ void SX126x::SendLora(
     SetBufferBaseAddress( 0, 0 );
     WriteBuffer( 0, payload, payloadSize );
     // Configure IRQ
+    ClearIrqFlagsLora( );
     SetDioIrqParams(
                         0xFFFF,
                         0xFFFF,
                         IRQ_RADIO_NONE,
                         IRQ_RADIO_NONE
                    );
+    ClearIrqFlagsLora( );
     // Send ! No timeout here as it is already handled by the MAC
     SetTx( 0 );
 }
@@ -217,7 +219,6 @@ void SX126x::RxLora(
                         uint32_t     rxTimeoutMs
                     ) {
     // Configure the radio
-    mcu.SetValueDigitalOutPin ( PA_10,1);
     SetPacketType( LORA );
     SetRfFrequency( channel );
     SetModulationParamsLora( SF, BW );
@@ -231,6 +232,7 @@ void SX126x::RxLora(
                         IRQ_RADIO_NONE,
                         IRQ_RADIO_NONE
                    );
+    ClearIrqFlagsLora( );
     SetRx( rxTimeoutMs << 6 );
 }
 

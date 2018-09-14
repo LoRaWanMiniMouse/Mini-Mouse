@@ -183,6 +183,7 @@ public:
     virtual eStatusLoRaWan    RegionIsValidDataRate            ( uint8_t temp )                         = 0;
     virtual eStatusLoRaWan    RegionIsAcceptableDataRate       ( uint8_t DataRate)                      = 0;
     virtual eStatusLoRaWan    RegionIsValidMacFrequency        ( uint32_t Frequency)                    = 0;
+    virtual eStatusLoRaWan    RegionIsValidMacRxFrequency      ( uint32_t Frequency)                    = 0;
     virtual eStatusLoRaWan    RegionIsValidTxPower             ( uint8_t Power )                        = 0;
     virtual eStatusLoRaWan    RegionIsValidChannelIndex        ( uint8_t ChannelIndex)                  = 0;
     virtual uint8_t           RegionGetAdrAckLimit             ( void )                                 = 0;

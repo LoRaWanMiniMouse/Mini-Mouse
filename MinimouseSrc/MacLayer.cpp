@@ -506,9 +506,11 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LinkADRPa
     /*Create "Unwrapped" chanel mask */
     RegionInitChannelMask ( );
     for ( i = 0 ; i <= NbMultiLinkAdrReq ; i++ ) {
+        DEBUG_PRINTF("MULTIPLE LINK ADR REQ , channel mask = 0x%x\n",ChMaskTemp);
         ChMaskTemp = MacNwkPayload[ NwkPayloadIndex + ( i * LINK_ADR_REQ_SIZE ) + 2 ] + ( MacNwkPayload[ NwkPayloadIndex + ( i * LINK_ADR_REQ_SIZE ) +3 ] << 8 )  ;
         ChMAstCntlTemp = (MacNwkPayload[ NwkPayloadIndex + ( i * LINK_ADR_REQ_SIZE ) + 4] & 0x70 ) >> 4 ;
         statusChannel = RegionBuildChannelMask ( ChMAstCntlTemp, ChMaskTemp ) ; 
+        DEBUG_PRINTF("MULTIPLE LINK ADR REQ , channel mask = 0x%x\n",ChMaskTemp);
         if ( statusChannel == ERROR_CHANNEL_CNTL ) { // Test ChannelCNTL not defined
             StatusAns &= 0x6 ;
             DEBUG_MSG("INVALID CHANNEL CNTL \n");
@@ -592,7 +594,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::RXParamSe
     /* Valid MacRx2Frequency And Prepare Ans */
     status = OKLORAWAN;
     MacRx2FrequencyTemp = ( MacNwkPayload[ NwkPayloadIndex + 2 ] ) + ( MacNwkPayload[ NwkPayloadIndex + 3 ] << 8 ) + ( MacNwkPayload[ NwkPayloadIndex + 4 ] << 16 );
-    status = RegionIsValidMacFrequency ( MacRx2FrequencyTemp ) ;
+    status = RegionIsValidMacRxFrequency ( MacRx2FrequencyTemp ) ;
     if (status == ERRORLORAWAN ) {
         StatusAns &= 0x3 ; 
         DEBUG_MSG ("INVALID RX2 FREQUENCY \n");
@@ -752,7 +754,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::DicChanne
     }
     /* Valid Frequency  */
     FrequencyTemp = ( MacNwkPayload[ NwkPayloadIndex + 2 ] ) + ( MacNwkPayload[ NwkPayloadIndex + 3 ] << 8 ) + ( MacNwkPayload[ NwkPayloadIndex + 4 ] << 16 );
-    status = RegionIsValidMacFrequency ( FrequencyTemp ) ;
+    status = RegionIsValidMacRxFrequency ( FrequencyTemp ) ;
     if (status == ERRORLORAWAN ) {
         StatusAns &= 0x2 ; 
         DEBUG_MSG ("INVALID FREQUENCY\n");

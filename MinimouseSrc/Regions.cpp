@@ -115,7 +115,8 @@ template < class R >eStatusChannel LoraRegionsEU<R>::RegionBuildChannelMask ( ui
     eStatusChannel status = OKCHANNEL;
     switch ( ChMaskCntl ) {
         case 0 :
-            UnwrappedChannelMask = UnwrappedChannelMask ^ ChMask; 
+            UnwrappedChannelMask = UnwrappedChannelMask & ChMask; 
+            DEBUG_PRINTF("UnwrappedChannelMask = 0x%x, ChMask = 0x%x\n",UnwrappedChannelMask,ChMask);
             for ( int i = 0 ; i < this->NUMBER_OF_CHANNEL ; i++) {
                 if ( ( ( ( UnwrappedChannelMask >> i) & 0x1 ) == 1 ) && ( this->MacTxFrequency[i] == 0) ) {  
                     status = ERROR_CHANNEL_MASK ;   // this status is used only for the last multiple link adr req
@@ -140,7 +141,7 @@ template < class R >eStatusChannel LoraRegionsEU<R>::RegionBuildChannelMask ( ui
 };
 
 template < class R >void LoraRegionsEU<R>::RegionInitChannelMask ( void ) {
-    UnwrappedChannelMask = 0;
+    UnwrappedChannelMask = 0xFFFF;
 };
 template < class R >void LoraRegionsEU<R>::RegionSetMask ( void ) {
     InsertTrace ( __COUNTER__, FileId );
@@ -219,6 +220,15 @@ template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsValidMacFrequency (
     if ( ( Frequency > FREQMAX ) || ( Frequency < FREQMIN ) ) {
         status = ERRORLORAWAN ;
         DEBUG_PRINTF ( "RECEIVE AN INVALID FREQUENCY = %d\n", Frequency);
+    }
+    return ( status );
+}
+template < class R >eStatusLoRaWan LoraRegionsEU<R>::RegionIsValidMacRxFrequency ( uint32_t Frequency) {
+    InsertTrace ( __COUNTER__, FileId );
+    eStatusLoRaWan status = OKLORAWAN;
+    if ( ( Frequency > FREQMAX ) || ( Frequency < FREQMIN ) ) {
+        status = ERRORLORAWAN ;
+        DEBUG_PRINTF ( "RECEIVE AN INVALID Rx FREQUENCY = %d\n", Frequency);
     }
     return ( status );
 }

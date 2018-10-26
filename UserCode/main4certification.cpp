@@ -1,27 +1,27 @@
-///*!
-// * \file      Main.c
-// *
-// * \brief     Description : Example main of LoRaWan MiniMouse stack
-// *
-// * \copyright Revised BSD License, see section \ref LICENSE.
-// *
-// * \code
-//  __  __ _       _                                 
-// |  \/  (_)     (_)                                
-// | \  / |_ _ __  _ _ __ ___   ___  _   _ ___  ___  
-// | |\/| | | '_ \| | '_ ` _ \ / _ \| | | / __|/ _ \
-// | |  | | | | | | | | | | | | (_) | |_| \__ \  __/ 
-// |_|  |_|_|_| |_|_|_| |_| |_|\___/ \__,_|___/\___| 
-//                                                   
-//                                                   
-// * \endcode
+/////*!
+//// * \file      Main.c
+//// *
+//// * \brief     Description : Example main of LoRaWan MiniMouse stack
+//// *
+//// * \copyright Revised BSD License, see section \ref LICENSE.
+//// *
+//// * \code
+////  __  __ _       _                                 
+//// |  \/  (_)     (_)                                
+//// | \  / |_ _ __  _ _ __ ___   ___  _   _ ___  ___  
+//// | |\/| | | '_ \| | '_ ` _ \ / _ \| | | / __|/ _ \
+//// | |  | | | | | | | | | | | | (_) | |_| \__ \  __/ 
+//// |_|  |_|_|_| |_|_|_| |_| |_|\___/ \__,_|___/\___| 
+////                                                   
+////                                                   
+//// * \endcode
 
-//Maintainer        : Fabien Holin (SEMTECH)
-//*/
-//#include "mbed.h"
-//#include "ApiMcu.h"
-//#include "LoraMacDataStoreInFlash.h"
-//#include "LoraWanProcess.h"
+////Maintainer        : Fabien Holin (SEMTECH)
+////*/
+////#include "mbed.h"
+////#include "ApiMcu.h"
+////#include "LoraMacDataStoreInFlash.h"
+////#include "LoraWanProcess.h"
 //#include "Define.h"
 //#include "utilities.h"
 //#include "UserDefine.h"
@@ -38,12 +38,17 @@
 // * \remark  For APB Devices only NwkSkey, AppSKey and devaddr are mandatory
 // * \remark  For OTA Devices only DevEUI, AppEUI and AppKey are mandatory
 // */
-//uint8_t LoRaMacNwkSKeyInit[] = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-//uint8_t LoRaMacAppSKeyInit[] = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
-//uint8_t LoRaMacAppKeyInit[]  = { 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-//uint8_t AppEuiInit[]         = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-//uint8_t DevEuiInit[]         = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x33 };    
-//uint32_t LoRaDevAddrInit     = 0x26011928;
+//uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+//uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
+//uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+////uint8_t LoRaMacAppKeyInit[]       = { 0xBB, 0xBB, 0xF6, 0x22, 0x16, 0x67, 0xDB, 0x7E, 0xA9, 0xF2, 0x99, 0x71, 0x29, 0x12, 0x1c, 0x39};
+////uint8_t AppEuiInit[]              = { 0x11 ,0x22, 0x33, 0x44, 0x44, 0x33, 0x22, 0x11 };
+////uint8_t AppEuiInit[]              = { 0x70 ,0xb3, 0xd5, 0x7E, 0xD0, 0x00, 0xFF, 0x50 };
+////uint8_t DevEuiInit[]              = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
+
+//uint8_t DevEuiInit[]              = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11 };
+//uint8_t AppEuiInit[]              = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11 };
+//uint32_t LoRaDevAddrInit          = 0x26011920;
 
 //sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
 ////SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
@@ -73,6 +78,7 @@
 //    * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
 //    */
 //    mcu.InitMcu ( );
+//   
 
 //    /*!
 //    * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes). 

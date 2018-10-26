@@ -163,14 +163,14 @@ void SX126x::SendLora(
     SetBufferBaseAddress( 0, 0 );
     WriteBuffer( 0, payload, payloadSize );
     // Configure IRQ
-    ClearIrqFlagsLora( );
+    
     SetDioIrqParams(
                         0xFFFF,
                         0xFFFF,
                         IRQ_RADIO_NONE,
                         IRQ_RADIO_NONE
                    );
-    ClearIrqFlagsLora( );
+
     // Send ! No timeout here as it is already handled by the MAC
     SetTx( 0 );
 }
@@ -226,13 +226,14 @@ void SX126x::RxLora(
     StopTimerOnPreamble( true );
     WriteRegisters( REG_LORA_SYNC_WORD_MSB, ( uint8_t * ) this->LoraSyncword, 2 );
     // Configure IRQ
+
     SetDioIrqParams(
                         IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
                         IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
                         IRQ_RADIO_NONE,
                         IRQ_RADIO_NONE
                    );
-    ClearIrqFlagsLora( );
+
     SetRx( rxTimeoutMs << 6 );
 }
 
@@ -263,6 +264,9 @@ void SX126x::Sleep( bool coldStart ) {
     uint8_t mode;
     mode = (coldStart == true) ? 0x00 : 0x04;
     WriteCommand( SET_SLEEP, &mode, 1 );
+    
+
+    
     radioMode = SLEEP;
 }
 

@@ -86,7 +86,11 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
             DEBUG_PRINTF ("receive It radio error %x\n",RegIrqFlag);
             break;
     }
+
     Radio->Sleep ( false );
+
+
+
     switch ( StateRadioProcess ) { 
         case RADIOSTATE_TXON : 
             InsertTrace ( __COUNTER__, FileId );

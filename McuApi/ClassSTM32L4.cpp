@@ -400,9 +400,31 @@ void  IrqHandlerRadio ( void ){
     } else if ( pintmp < 111 ) {
         HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 96 )) );
     } 
+   
     mcu.ExtISR();
 }
 
+void  IrqHandlerGpio ( void ){
+    int pintmp = GPIO_SENSOR;
+    if ( pintmp < 15 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << pintmp) );
+    } else if ( pintmp < 31 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 16 )) );
+    } else if ( pintmp < 47 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 32 )) );
+    } else if ( pintmp < 63 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 48 )) );
+    } else if ( pintmp < 79 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 64 )) );
+    } else if ( pintmp < 95 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 80 )) );
+    } else if ( pintmp < 111 ) {
+        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 96 )) );
+    } 
+    wait_ms(200);
+    void flip( void );
+    flip ();
+}
     
 
 /*************************************************************/
@@ -468,7 +490,8 @@ void  McuSTM32L4::Init_Irq ( PinName pin) {
     int pintmp;
     GPIO_InitTypeDef GPIO_InitStruct;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+
     
     if ( pin < 15 ) {
         pintmp = pin;
@@ -534,9 +557,15 @@ void  McuSTM32L4::Init_Irq ( PinName pin) {
             IrqNum = EXTI15_10_IRQn;
             break;
     }
-    HAL_NVIC_SetPriority(IrqNum, 0, 0);
-    NVIC_SetVector(IrqNum, (uint32_t)IrqHandlerRadio);
-    HAL_NVIC_EnableIRQ(IrqNum);
+    if (pin == GPIO_SENSOR ) {
+        HAL_NVIC_SetPriority(IrqNum, 0, 0);
+        NVIC_SetVector(IrqNum, (uint32_t)IrqHandlerGpio);
+        HAL_NVIC_EnableIRQ(IrqNum);
+    } else {
+        HAL_NVIC_SetPriority(IrqNum, 0, 0);
+        NVIC_SetVector(IrqNum, (uint32_t)IrqHandlerRadio);
+        HAL_NVIC_EnableIRQ(IrqNum);
+    }
 }    
 /******************************************************************************/
 /*                                Mcu Spi Api                                 */

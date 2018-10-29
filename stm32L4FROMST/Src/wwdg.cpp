@@ -57,7 +57,7 @@ void MX_WWDG_Init(void)
   hwwdg.Init.EWIMode = WWDG_EWI_DISABLE;
   if (HAL_WWDG_Init(&hwwdg) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    _Error_Handler( __LINE__);
   }
 
 }

@@ -366,7 +366,7 @@ void WakeUpAlarmSecond ( int delay) {
 /********************************************************************/
 /*                 Low Power Timer local functions                  */
 /********************************************************************/
-static LPTIM_HandleTypeDef hlptim1;
+
 /*!
  * Irq Handler dedicated for Low power Timer reserved for lorawan layer
  *\remark LowPowerTimerLora.timerISR() is used to callback the timer Interupt Service Routine of the current obj LoraWanObject 
@@ -540,8 +540,8 @@ static uint8_t copyPage [2048] ;
 int McuSTM32L4::WriteFlashWithoutErase(uint8_t *buffer, uint32_t addr, uint32_t size){
 
     int findPage = 0 ;
-    int findByteAdress = 0 ;
-    int findLastAdress = 0 ;
+    uint32_t findByteAdress = 0 ;
+    uint32_t findLastAdress = 0 ;
     int status = 0;
     uint32_t i;
     uint32_t flashBaseAdress;    
@@ -766,7 +766,7 @@ void McuSTM32L4::SetValueDigitalOutPin ( PinName Pin, int Value ){
         } else if ( Pin < 95 ) {
             pintmp = Pin-80;
             HAL_GPIO_WritePin(GPIOF, ( 1 << pintmp ), (GPIO_PinState) Value);
-        } else if ( Pin < 111 ) {
+        } else  {
             pintmp = Pin-96;
             HAL_GPIO_WritePin(GPIOG, ( 1 << pintmp ), (GPIO_PinState) Value);
         }
@@ -791,7 +791,7 @@ int McuSTM32L4::GetValueDigitalInPin ( PinName Pin ){
     } else if ( Pin < 95 ) {
         pintmp = Pin-80;
         return ( (int) HAL_GPIO_ReadPin(GPIOF, ( 1 << pintmp ) ) );
-    } else if ( Pin < 111 ) {
+    } else {
         pintmp = Pin-96;
         return ( (int) HAL_GPIO_ReadPin(GPIOG, ( 1 << pintmp ) ) );
     }

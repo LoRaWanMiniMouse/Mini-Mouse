@@ -57,7 +57,6 @@ extern LPTIM_HandleTypeDef hlptim1;
 
 /* USER CODE END Private defines */
 
-extern void _Error_Handler(char *, int);
 
 void MX_LPTIM1_Init(void);
 

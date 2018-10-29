@@ -61,7 +61,7 @@ void MX_LPTIM1_Init(void)
   hlptim1.Init.Input2Source = LPTIM_INPUT2SOURCE_GPIO;
   if (HAL_LPTIM_Init(&hlptim1) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    _Error_Handler( __LINE__);
   }
 
 }

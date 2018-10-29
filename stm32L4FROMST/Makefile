@@ -20,7 +20,7 @@ TARGET = stm32L4FROMST
 # building variables
 ######################################
 # debug build?
-DEBUG = 1
+DEBUG = 1C_SOURCES
 # optimization
 OPT = -Og
 
@@ -35,17 +35,20 @@ BUILD_DIR = build
 # source
 ######################################
 # C sources
-C_SOURCES =  \
-Src/main.c \
-Src/gpio.c \
-Src/i2c.c \
-Src/lptim.c \
-Src/rtc.c \
-Src/spi.c \
-Src/usart.c \
-Src/wwdg.c \
-Src/stm32l4xx_it.c \
-Src/stm32l4xx_hal_msp.c \
+CPP_SOURCES =  \
+Src/main.cpp \
+Src/gpio.cpp \
+Src/i2c.cpp \
+Src/lptim.cpp \
+Src/rtc.cpp \
+Src/spi.cpp \
+Src/usart.cpp \
+Src/wwdg.cpp \
+Src/stm32l4xx_it.cpp \
+Src/stm32l4xx_hal_msp.cpp \
+McuApi/ClassSTM32L4.cpp
+
+C_SOURCES = \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_lptim.c \
@@ -84,13 +87,14 @@ PREFIX = arm-none-eabi-
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
 ifdef GCC_PATH
-CC = $(GCC_PATH)/$(PREFIX)gcc
+CC = $(GCC_PATH)/$(PREFIX)g++
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
 else
 CC = $(PREFIX)gcc
-AS = $(PREFIX)gcc -x assembler-with-cpp
+CPP = $(PREFIX)g++
+AS = $(PREFIX)g++ -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
 endif
@@ -125,20 +129,23 @@ C_DEFS =  \
 # AS includes
 AS_INCLUDES = 
 
-# C includes
+# C includesOBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
+vpath %.c $(sort $(dir $(C_SOURCES)))
+vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 C_INCLUDES =  \
 -IInc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
--IDrivers/CMSIS/Include
-
+-IDrivers/CMSIS/Include \
+-IUserCode \
+-IMcuApi
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
-
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections  -fno-exceptions
+CPPFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -fno-rtti -fno-exceptions
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
 endif
@@ -155,7 +162,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32L476RGTx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
+LIBS =   -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
@@ -169,12 +176,18 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET
 # list of objects
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
+
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:.cpp=.o)))
+vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+
+$(BUILD_DIR)/%.o: %.cpp Makefile | $(BUILD_DIR) 
+	$(CPP) -c $(CPPFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@

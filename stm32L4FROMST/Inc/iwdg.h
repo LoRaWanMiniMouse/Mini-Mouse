@@ -57,7 +57,6 @@ extern IWDG_HandleTypeDef hiwdg;
 
 /* USER CODE END Private defines */
 
-extern void _Error_Handler(char *, int);
 
 void MX_IWDG_Init(void);
 

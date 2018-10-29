@@ -63,7 +63,7 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
-void _Error_Handler(char *, int);
+void _Error_Handler( int);
 void SystemClock_Config(void);
 #define Error_Handler() _Error_Handler(__FILE__, __LINE__)
 #ifdef __cplusplus

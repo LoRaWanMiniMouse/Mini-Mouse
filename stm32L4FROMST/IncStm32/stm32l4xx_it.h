@@ -1,14 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : WWDG.c
-  * Description        : This file provides code for the configuration
-  *                      of the WWDG instances.
+  * @file    stm32l4xx_it.h
+  * @brief   This file contains the headers of the interrupt handlers.
   ******************************************************************************
-  ** This notice applies to any and all portions of this file
-  * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
-  * inserted by the user or by software development tools
-  * are owned by their respective copyright owners.
   *
   * COPYRIGHT(c) 2018 STMicroelectronics
   *
@@ -37,58 +31,41 @@
   ******************************************************************************
   */
 
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __STM32L4xx_IT_H
+#define __STM32L4xx_IT_H
+
+#ifdef __cplusplus
+ extern "C" {
+#endif 
+
 /* Includes ------------------------------------------------------------------*/
-#include "wwdg.h"
+#include "stm32l4xx_hal.h"
 
-/* USER CODE BEGIN 0 */
+/* Exported types ------------------------------------------------------------*/
+/* Exported constants --------------------------------------------------------*/
+/* Exported macro ------------------------------------------------------------*/
+/* Exported functions ------------------------------------------------------- */
 
-/* USER CODE END 0 */
+void NMI_Handler(void);
+void HardFault_Handler(void);
+void MemManage_Handler(void);
+void BusFault_Handler(void);
+void UsageFault_Handler(void);
+void SVC_Handler(void);
+void DebugMon_Handler(void);
+void PendSV_Handler(void);
+void SysTick_Handler(void);
+void RTC_WKUP_IRQHandler(void);
+void I2C1_EV_IRQHandler(void);
+void EXTI15_10_IRQHandler(void);
+void EXTI3_IRQHandler(void);
+void LPTIM1_IRQHandler(void);
 
-WWDG_HandleTypeDef hwwdg;
-
-/* WWDG init function */
-void MX_WWDG_Init(void)
-{
-
-  hwwdg.Instance = WWDG;
-  hwwdg.Init.Prescaler = WWDG_PRESCALER_1;
-  hwwdg.Init.Window = 64;
-  hwwdg.Init.Counter = 64;
-  hwwdg.Init.EWIMode = WWDG_EWI_DISABLE;
-  if (HAL_WWDG_Init(&hwwdg) != HAL_OK)
-  {
-   
-  }
-
+#ifdef __cplusplus
 }
+#endif
 
-void HAL_WWDG_MspInit(WWDG_HandleTypeDef* wwdgHandle)
-{
-
-  if(wwdgHandle->Instance==WWDG)
-  {
-  /* USER CODE BEGIN WWDG_MspInit 0 */
-
-  /* USER CODE END WWDG_MspInit 0 */
-    /* WWDG clock enable */
-    __HAL_RCC_WWDG_CLK_ENABLE();
-  /* USER CODE BEGIN WWDG_MspInit 1 */
-
-  /* USER CODE END WWDG_MspInit 1 */
-  }
-}
- 
-
-/* USER CODE BEGIN 1 */
-
-/* USER CODE END 1 */
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
+#endif /* __STM32L4xx_IT_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

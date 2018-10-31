@@ -23,7 +23,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 static uint8_t TracePointer ;
 #ifdef DEBUG_TRACE_ENABLE
-    uint32_t ExtDebugTrace[TRACE_SIZE+4] __attribute__((section("NoInit"),zero_init));
+    uint32_t ExtDebugTrace[TRACE_SIZE+4] __attribute__((section(".NoInit")));
 #endif
 void InsertTrace (uint8_t id, uint8_t FileId) {
 #ifdef DEBUG_TRACE_ENABLE	

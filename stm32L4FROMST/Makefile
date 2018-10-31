@@ -36,9 +36,8 @@ BUILD_DIR = build
 ######################################
 # C sources
 CPP_SOURCES =  \
-Src/wwdg.cpp \
-Src/stm32l4xx_it.cpp \
-Src/stm32l4xx_hal_msp.cpp \
+SrcStm32/stm32l4xx_it.cpp \
+SrcStm32/stm32l4xx_hal_msp.cpp \
 McuApi/ClassSTM32L4.cpp\
 UserCode/appli.cpp\
 UserCode/main.cpp \
@@ -84,7 +83,7 @@ Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
-Src/system_stm32l4xx.c
+SrcStm32/system_stm32l4xx.c
 
 
 # ASM sources
@@ -145,7 +144,7 @@ AS_INCLUDES =
 vpath %.c $(sort $(dir $(C_SOURCES)))
 vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 C_INCLUDES =  \
--IInc \
+-IIncStm32 \
 -IDrivers/STM32L4xx_HAL_Driver/Inc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \

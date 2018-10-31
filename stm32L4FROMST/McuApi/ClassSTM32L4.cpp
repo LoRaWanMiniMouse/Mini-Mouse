@@ -407,29 +407,6 @@ void WakeUpAlarmSecond ( int delay) {
 }
 
 
-
-/********************************************************************/
-/*                 Low Power Timer local functions                  */
-/********************************************************************/
-
-/*!
- * Irq Handler dedicated for Low power Timer reserved for lorawan layer
- *\remark LowPowerTimerLora.timerISR() is used to callback the timer Interupt Service Routine of the current obj LoraWanObject 
- * \param [IN]  void
-InitMcu * \param [OUT] void         
- */
-
-
-
-
-/********************************************************************/
-/*                        Gpio Handler  functions                   */
-/********************************************************************/
-/**
-* @brief This function handles EXTI line[15:10] interrupts.
-
-   
-
 /*************************************************************/
 /*           Mcu Object Definition Constructor               */
 /*************************************************************/
@@ -1043,7 +1020,7 @@ uint32_t McuSTM32L4::RtcGetTimeSecond( void )
 
 /********************************************************************/
 /*                   Utilities for Uart                              */
-/********************************************************************/
+/********            //mcu.mwait_ms ( 100 );************************************************************/
 
 UART_HandleTypeDef huart;
 void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
@@ -1208,12 +1185,12 @@ IWDG_HandleTypeDef hiwdg;
  * Watch Dog Init And start with a period befor ereset set to 32 seconds
 */
 void McuSTM32L4::WatchDogStart ( void ) {
-    #if 0
+
     hiwdg.Instance = IWDG;
     hiwdg.Init.Prescaler = IWDG_PRESCALER_256;
     hiwdg.Init.Window = IWDG_WINDOW_DISABLE;
     hiwdg.Init.Reload = 0xFFF;
-    uint32_t tickstart;
+
   /* Enable IWDG. LSI is turned on automaticaly */
   __HAL_IWDG_START(&hiwdg);
 
@@ -1224,7 +1201,6 @@ void McuSTM32L4::WatchDogStart ( void ) {
   (&hiwdg)->Instance->PR = hiwdg.Init.Prescaler;
   (&hiwdg)->Instance->RLR = hiwdg.Init.Reload;
   /* Check pending flag, if previous update not done, return timeout */
-  tickstart = HAL_GetTick();
 
    /* Wait for register to be updated */
   while((&hiwdg)->Instance->SR != RESET)
@@ -1248,14 +1224,12 @@ void McuSTM32L4::WatchDogStart ( void ) {
   }
 
   /* Return function status */
-  #endif
-
 }
 /*!
  * Watch Dog Release
 */
 void McuSTM32L4::WatchDogRelease ( void ) {
-   // __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
+    __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
 };
 /******************************************************************************/
 /*                             Mcu LOwPower timer Api                         */
@@ -1265,8 +1239,6 @@ void McuSTM32L4::WatchDogRelease ( void ) {
 /*             Utilities for LowPower Timer                         */
 /********************************************************************/
 LPTIM_HandleTypeDef hlptim1;
-
-
 
 void HAL_LPTIM_MspInit(LPTIM_HandleTypeDef* lptimHandle)
 {

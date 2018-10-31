@@ -30,14 +30,6 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "utilities.h"
 #include "main.h"
 #include "stm32l4xx_hal.h"
-#include "i2c.h"
-#include "lptim.h"
-#include "rtc.h"
-#include "spi.h"
-#include "usart.h"
-#include "wwdg.h"
-#include "gpio.h"
-#include "iwdg.h"
 #include "UserDefine.h"
 #include "ApiMcu.h"
 
@@ -102,7 +94,7 @@ int main( ) {
 #define FW_VERSION     0x13
     SX1272  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
 #endif
-    //mcu.WatchDogStart ( );
+    mcu.WatchDogStart ( );
     mcu.GetUniqueId (uid); 
     sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
     memcpy(&LoraWanKeys.DevEui[0], uid , 8);
@@ -168,13 +160,10 @@ int main( ) {
         DEBUG_MSG ("new packet \n");
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            //mcu.GotoSleepMSecond ( 100 );
-            mcu.mwait_ms ( 100 );
-        }
-/*!
-            //mcu.WatchDogRelease ( );
+            mcu.GotoSleepMSecond ( 100 );
         }
 
+        mcu.WatchDogRelease ( );
         if ( LpState == LWPSTATE_ERROR ) {
             InsertTrace ( __COUNTER__, FileId );
             // user application have to save all the need
@@ -189,8 +178,7 @@ int main( ) {
             }
             DEBUG_MSG("]\n\n\n");
         }
-        DEBUG_PRINTF("radio mode = %x\n",RadioUser.Read (1) );
-/*!
+/*
 * \brief Send a �Packet every 120 seconds in case of join 
 *        Send a packet every AppTimeSleeping seconds in normal mode
 */
@@ -199,7 +187,7 @@ int main( ) {
             mcu.GotoSleepSecond(5);
         } else {
             InsertTrace ( __COUNTER__, FileId );
-            mcu.GotoSleepSecond ( 10 );
+            mcu.GotoSleepSecond ( AppTimeSleeping );
             InsertTrace ( __COUNTER__, FileId );
         }
     }

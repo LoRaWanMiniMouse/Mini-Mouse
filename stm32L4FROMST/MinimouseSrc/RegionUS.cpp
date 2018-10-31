@@ -104,7 +104,7 @@ template < class R >void LoraRegionsUS<R>::RegionSetMask ( void ) {
 /* Chapter 7.1.6 LoRaWan 1.0.1 specification                        */
 /********************************************************************/
 template < class R >eStatusLoRaWan LoraRegionsUS<R>::RegionMaxPayloadSize ( uint8_t sizeIn ) {
-    eStatusLoRaWan  status ;
+    eStatusLoRaWan  status = OKLORAWAN;
     return ( status );
 }
 
@@ -136,7 +136,7 @@ template < class R >eStatusLoRaWan LoraRegionsUS<R>::RegionIsValidRx1DrOffset ( 
 }
 
 template < class R >eStatusLoRaWan LoraRegionsUS<R>:: RegionIsValidDataRate ( uint8_t temp ) {
-    eStatusLoRaWan status ;
+    eStatusLoRaWan status = OKLORAWAN;
     return ( status );
 }
     

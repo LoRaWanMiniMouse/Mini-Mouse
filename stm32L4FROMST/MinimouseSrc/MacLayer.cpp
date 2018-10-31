@@ -498,7 +498,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::LinkADRPa
     eStatusChannel statusChannel = OKCHANNEL ;
     uint8_t StatusAns = 0x7 ; // initilised for ans answer ok 
     uint8_t ChMAstCntlTemp ; 
-    uint16_t ChMaskTemp ; 
+    uint16_t ChMaskTemp = 0; 
     uint8_t DataRateTemp;
     uint8_t TxPowerTemp;
     uint8_t NbTransTemp;

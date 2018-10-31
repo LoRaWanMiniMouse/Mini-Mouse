@@ -22,7 +22,7 @@ TARGET = stm32L4FROMST
 # debug build?
 DEBUG = 1C_SOURCES
 # optimization
-OPT = -Og
+OPT = -Os
 
 
 #######################################
@@ -36,17 +36,28 @@ BUILD_DIR = build
 ######################################
 # C sources
 CPP_SOURCES =  \
-Src/main.cpp \
-Src/gpio.cpp \
-Src/i2c.cpp \
-Src/lptim.cpp \
-Src/rtc.cpp \
-Src/spi.cpp \
-Src/usart.cpp \
 Src/wwdg.cpp \
 Src/stm32l4xx_it.cpp \
 Src/stm32l4xx_hal_msp.cpp \
-McuApi/ClassSTM32L4.cpp
+McuApi/ClassSTM32L4.cpp\
+UserCode/appli.cpp\
+UserCode/main.cpp \
+radio/sx1272/sx1272.cpp\
+radio/SX1276Lib/sx1276/sx1276.cpp\
+radio/SX126X/SX126x.cpp\
+MinimouseSrc/LoRaMacCryptoMiniMouse.cpp\
+MinimouseSrc/LoraWanProcess.cpp\
+MiniMouse/MacLayer.cpp\
+MiniMouse/MiniMouseAes.cpp\
+MiniMouse/MiniMouseCmac.cpp\
+MiniMouse/PhyLayer.cpp\
+MiniMouse/RadioIsrRoutine.cpp\
+MiniMouse/Regions.cpp\
+MiniMouse/RegionUS.cpp\
+MiniMouse/TimerIsrRoutine.cpp\
+MiniMouse/utilities.cpp
+
+
 
 C_SOURCES = \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
@@ -73,7 +84,8 @@ Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
-Src/system_stm32l4xx.c  
+Src/system_stm32l4xx.c
+
 
 # ASM sources
 ASM_SOURCES =  \
@@ -139,15 +151,19 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
 -IDrivers/CMSIS/Include \
 -IUserCode \
--IMcuApi
-
+-IMcuApi\
+-IMinimouseSrc\
+-Iradio/sx1272\
+-Iradio/SX1276Lib/registers\
+-Iradio/SX1276Lib/sx1276\
+-Iradio/SX126X
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections  -fno-exceptions
 CPPFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -fno-rtti -fno-exceptions
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -gdwarf-2
+#CFLAGS += -g -gdwarf-2
 endif
 
 
@@ -162,7 +178,9 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32L476RGTx_FLASH.ld
 
 # libraries
-LIBS =   -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys
+LIBS =   -lstdc++ -lsupc++ -lm -lc -lnosys
+
+
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 

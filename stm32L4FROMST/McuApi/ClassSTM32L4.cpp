@@ -19,44 +19,89 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "ApiMcu.h"
 #include "stm32l4xx_hal.h"
 #include "time.h"
-#include "spi.h"
-#include "rtc.h"
-#include "gpio.h"
-#include "usart.h"
-#include "stm32l4xx_it.h"
-#include "lptim.h"
-#include "main.h"
-#include "wwdg.h"
-#include "iwdg.h"
 #include "UserDefine.h"
+#include "Define.h"
+
 #if DEBUG_TRACE == 1
     #include <stdarg.h>
     #include <string.h>
 #endif
+
 #define WATCH_DOG_PERIOD_RELEASE 30 // this period have to be lower than the Watch Dog period of 32 seconds
 
 
 
 
-__STATIC_INLINE uint32_t LL_SPI_IsActiveFlag_TXE(SPI_TypeDef *SPIx)
-{
-  return (READ_BIT(SPIx->SR, SPI_SR_TXE) == (SPI_SR_TXE));
+
+
+
+/********************************************************************/
+/*                    SystemClock_Config functions                  */
+/********************************************************************/
+void SystemClock_Config(void) {
+
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_PeriphCLKInitTypeDef PeriphClkInit;
+
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = 16;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 1;
+  RCC_OscInitStruct.PLL.PLLN = 8;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
+  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK){
+   
+  }
+
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK){
+   
+  }
+ 
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2
+                              |RCC_PERIPHCLK_LPTIM1|RCC_PERIPHCLK_I2C1;
+  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+  PeriphClkInit.Lptim1ClockSelection = RCC_LPTIM1CLKSOURCE_LSI;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK){
+  
+  }
+
+    /**Configure the main internal regulator output voltage 
+    */
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK){
+  }
+
+    /**Configure the Systick interrupt time 
+    */
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+    /**Configure the Systick 
+    */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
-__STATIC_INLINE void LL_SPI_TransmitData8(SPI_TypeDef *SPIx, uint8_t TxData)
-{
-  *((__IO uint8_t *)&SPIx->DR) = TxData;
-}
 
-__STATIC_INLINE uint32_t LL_SPI_IsActiveFlag_RXNE(SPI_TypeDef *SPIx)
-{
-  return (READ_BIT(SPIx->SR, SPI_SR_RXNE) == (SPI_SR_RXNE));
-}
-
-__STATIC_INLINE uint8_t LL_SPI_ReceiveData8(SPI_TypeDef *SPIx)
-{
-  return (uint8_t)(READ_REG(SPIx->DR));
-}
 
 /********************************************************************/
 /*                           Flash local functions                  */
@@ -371,7 +416,7 @@ void WakeUpAlarmSecond ( int delay) {
  * Irq Handler dedicated for Low power Timer reserved for lorawan layer
  *\remark LowPowerTimerLora.timerISR() is used to callback the timer Interupt Service Routine of the current obj LoraWanObject 
  * \param [IN]  void
- * \param [OUT] void         
+InitMcu * \param [OUT] void         
  */
 
 
@@ -380,46 +425,10 @@ void WakeUpAlarmSecond ( int delay) {
 /********************************************************************/
 /*                        Gpio Handler  functions                   */
 /********************************************************************/
+/**
+* @brief This function handles EXTI line[15:10] interrupts.
 
-void  IrqHandlerRadio ( void ){
-    int pintmp = TX_RX_IT;
-    if ( pintmp < 15 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << pintmp) );
-    } else if ( pintmp < 31 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 16 )) );
-    } else if ( pintmp < 47 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 32 )) );
-    } else if ( pintmp < 63 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 48 )) );
-    } else if ( pintmp < 79 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 64 )) );
-    } else if ( pintmp < 95 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 80 )) );
-    } else if ( pintmp < 111 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 96 )) );
-    } 
-    pintmp = RX_TIMEOUT_IT;
-    if ( pintmp < 15 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << pintmp) );
-    } else if ( pintmp < 31 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 16 )) );
-    } else if ( pintmp < 47 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 32 )) );
-    } else if ( pintmp < 63 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 48 )) );
-    } else if ( pintmp < 79 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 64 )) );
-    } else if ( pintmp < 95 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 80 )) );
-    } else if ( pintmp < 111 ) {
-        HAL_GPIO_EXTI_IRQHandler( (1 << ( pintmp - 96 )) );
-    } 
    
-    mcu.ExtISR();
-}
-
-
-    
 
 /*************************************************************/
 /*           Mcu Object Definition Constructor               */
@@ -431,6 +440,8 @@ McuSTM32L4::McuSTM32L4(PinName mosi, PinName miso, PinName sclk )  {
     McuMiso = miso;   // don't modify
     McuSclk = sclk;   // don't modify
 }     
+
+
 McuSTM32L4::~McuSTM32L4(){
       // to be completed by mcu providers
 } 
@@ -442,29 +453,12 @@ void McuSTM32L4::InitMcu( void ) {
     // system clk Done with mbed to be completed by mcu providers if mbed is removed
       /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_LPTIM1_Init();
-  MX_USART2_UART_Init();
-  MX_SPI1_Init();
-  MX_RTC_Init();
- // MX_I2C1_Init();
-  //MX_WWDG_Init();
-  
-  
-  
+  InitGpio ( );
+  UartInit();
+  LowPowerTimerLoRaInit ( );
+  InitSpi () ;
+  RtcInit ();
 
     /*For dual boot */
     FLASH_If_WriteProtectionClear();
@@ -477,27 +471,220 @@ void McuSTM32L4::InitMcu( void ) {
             */
     BankActive = READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE);
     if (BankActive == 0) { //bank 1
-        //DEBUG_MSG("Dual Boot is activated and code running on Bank 1 \n");
+        DEBUG_MSG("Dual Boot is activated and code running on Bank 1 \n");
     } else {
-        //DEBUG_MSG("Dual Boot is activated and code running on Bank 2 \n");
+        DEBUG_MSG("Dual Boot is activated and code running on Bank 2 \n");
         uint32_t result = FLASH_If_Erase( BankActive ); //Erase the 0x8080000
         if (result == FLASHIF_OK) {
-       // DEBUG_MSG("Copying BANK1 to BANK2\n");
+        DEBUG_MSG("Copying BANK1 to BANK2\n");
         result = FLASH_If_Write( FLASH_START_BANK2, (uint32_t*)FLASH_START_BANK1, 20480);
         }
         if (result != FLASHIF_OK) {
-         //   DEBUG_PRINTF("Failure! %d \n",result);
+            DEBUG_PRINTF("Failure! %d \n",result);
         } else {
-          //  DEBUG_MSG("Sucess!\n");
+            DEBUG_MSG("Sucess!\n");
             FLASH_If_BankSwitch();
             NVIC_SystemReset();
         }
     }
 }
 
+/*******************************************/
+/*            GPIO Init                    */
+/*******************************************/
+void McuSTM32L4::InitGpio ( ) {
+      /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOH_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+   /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Pin = GPIO_PIN_All;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+    InitGpioOut ( LORA_CS );
+    InitGpioOut ( LORA_RESET );
+}
+void McuSTM32L4::InitGpioOut( PinName Pin ){
+    int port = ( Pin & 0xF0 ) >> 4 ;
+      /*Configure GPIO pin : PB6   */
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Pin   = (1 << ( Pin & 0x0F ) );
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    switch (port) {
+        case 0 : 
+            HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+            break;
+        case 1 : 
+            HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+            break;
+        case 2 : 
+            HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+            break;
+        case 4 : 
+            HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+            break;
+        case 8 : 
+            HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+            break;
+        case 16 : 
+            HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+        case 32 : 
+            HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+            break;
+        case 64 : 
+            HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+            break;
+        default:
+            break;
+    }
+}
+
+void McuSTM32L4::SetValueDigitalOutPin ( PinName Pin, int Value ){
+    int port = ( Pin & 0xF0 ) >> 4 ;
+      /*Configure GPIO pin : PB6   */
+    switch (port) {
+        case 0 : 
+            HAL_GPIO_WritePin(GPIOA, (1 << ( Pin & 0x0F ) ), (GPIO_PinState) Value);
+            break;
+        case 1 : 
+             HAL_GPIO_WritePin(GPIOB, (1 << ( Pin & 0x0F ) ), (GPIO_PinState) Value);
+            break;
+        case 2 : 
+             HAL_GPIO_WritePin(GPIOC, (1 << ( Pin & 0x0F ) ), (GPIO_PinState) Value);
+            break;
+        case 4 : 
+             HAL_GPIO_WritePin(GPIOD, (1 << ( Pin & 0x0F ) ), (GPIO_PinState) Value);
+            break;
+        case 8 : 
+             HAL_GPIO_WritePin(GPIOE, (1 << ( Pin & 0x0F ) ), (GPIO_PinState) Value);
+            break;
+        case 16 : 
+             HAL_GPIO_WritePin(GPIOF, (1 << ( Pin & 0x0F ) ), (GPIO_PinState) Value);
+        case 32 : 
+             HAL_GPIO_WritePin(GPIOG, (1 << ( Pin & 0x0F ) ), (GPIO_PinState) Value);
+            break;
+        case 64 : 
+             HAL_GPIO_WritePin(GPIOH, (1 << ( Pin & 0x0F ) ), (GPIO_PinState) Value);
+            break;
+        default:
+            break;
+    }
+}
+int McuSTM32L4::GetValueDigitalInPin ( PinName Pin ){
+      int port = ( Pin & 0xF0 ) >> 4 ;
+      /*Configure GPIO pin : PB6   */
+    switch (port) {
+        case 0 : 
+            return ( (int) HAL_GPIO_ReadPin(GPIOA, ( 1 << ( Pin & 0x0F ) ) ) );
+            break;
+        case 1 : 
+            return ( (int) HAL_GPIO_ReadPin(GPIOB, ( 1 << ( Pin & 0x0F ) ) ) );
+            break;
+        case 2 : 
+            return ( (int) HAL_GPIO_ReadPin(GPIOC, ( 1 << ( Pin & 0x0F ) ) ) );
+            break;
+        case 4 : 
+            return ( (int) HAL_GPIO_ReadPin(GPIOD, ( 1 << ( Pin & 0x0F ) ) ) );
+            break;
+        case 8 : 
+            return ( (int) HAL_GPIO_ReadPin(GPIOE, ( 1 << ( Pin & 0x0F ) ) ) );
+            break;
+        case 16 : 
+            return ( (int) HAL_GPIO_ReadPin(GPIOF, ( 1 << ( Pin & 0x0F ) ) ) );
+        case 32 : 
+            return ( (int) HAL_GPIO_ReadPin(GPIOG, ( 1 << ( Pin & 0x0F ) ) ) );
+            break;
+        case 64 : 
+            return ( (int) HAL_GPIO_ReadPin(GPIOH, ( 1 << ( Pin & 0x0F ) ) ) );
+            break;
+        default:
+            return ( (int) HAL_GPIO_ReadPin(GPIOA, ( 1 << ( Pin & 0x0F ) ) ) );
+            break;
+    }
+};
 void  McuSTM32L4::Init_Irq ( PinName pin) {
 
-}    
+    int port = ( pin & 0xF0 ) >> 4 ;
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pin =  (1 << ( pin & 0x0F ) );
+    switch (port) {
+        case 0 : 
+            HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+            break;
+        case 1 : 
+            HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+            break;
+        case 2 : 
+            HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+            break;
+        case 4 : 
+            HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+            break;
+        case 8 : 
+            HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+            break;
+        case 16 : 
+            HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+        case 32 : 
+            HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+            break;
+        case 64 : 
+            HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+            break;
+        default:
+            break;
+    }
+    switch (pin & 0x0F) {
+        case 0 :
+            HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+            HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+            break;
+        case 1 :
+            HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
+            HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+            break;
+        case 2 :
+            HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+            HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+            break;
+        case 3 :
+            HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+            HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+            break;
+        case 4 :
+            HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+            HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+            break;
+        case 5 :
+        case 6 :
+        case 7 :
+        case 8 :
+        case 9 :
+
+            HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+            HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+            break;
+        default :
+            HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+            HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+            break;
+    }
+
+} 
+  
 /******************************************************************************/
 /*                                Mcu Spi Api                                 */
 /******************************************************************************/
@@ -507,10 +694,143 @@ void  McuSTM32L4::Init_Irq ( PinName pin) {
     *  @param miso SPI Master In, Slave Out pin
     *  @param sclk SPI Clock pin
     */
+/********************************************************************/
+/*                   Utilities for SPI                              */
+/********************************************************************/
 
+SPI_HandleTypeDef hspi1;
+void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle) {
+    if (spiHandle->Instance==SPI1) {
+        __HAL_RCC_SPI1_CLK_DISABLE();
+    }
+    if (spiHandle->Instance==SPI2) {
+        __HAL_RCC_SPI2_CLK_DISABLE();
+    }
+    if (spiHandle->Instance==SPI3) {
+        __HAL_RCC_SPI3_CLK_DISABLE();
+    }
+    int port = ( LORA_SPI_MOSI & 0xF0 ) >> 4 ;
+    switch (port) {
+        case 0 : 
+            HAL_GPIO_DeInit(GPIOA, ( 1 << ( LORA_SPI_MOSI & 0x0F ) )  | ( 1 << ( LORA_SPI_MISO & 0x0F ) )  | ( 1 << ( LORA_SPI_SCLK & 0x0F ) ) );
+            break;
+        case 1 : 
+            HAL_GPIO_DeInit(GPIOB, ( 1 << ( LORA_SPI_MOSI & 0x0F ) )  | ( 1 << ( LORA_SPI_MISO & 0x0F ) )  | ( 1 << ( LORA_SPI_SCLK & 0x0F ) ) );
+            break;
+        case 2 : 
+            HAL_GPIO_DeInit(GPIOC, ( 1 << ( LORA_SPI_MOSI & 0x0F ) )  | ( 1 << ( LORA_SPI_MISO & 0x0F ) )  | ( 1 << ( LORA_SPI_SCLK & 0x0F ) ) );
+            break;
+        case 4 : 
+            HAL_GPIO_DeInit(GPIOD, ( 1 << ( LORA_SPI_MOSI & 0x0F ) )  | ( 1 << ( LORA_SPI_MISO & 0x0F ) )  | ( 1 << ( LORA_SPI_SCLK & 0x0F ) ) );
+            break;
+        case 8 : 
+           HAL_GPIO_DeInit(GPIOE, ( 1 << ( LORA_SPI_MOSI & 0x0F ) )  | ( 1 << ( LORA_SPI_MISO & 0x0F ) )  | ( 1 << ( LORA_SPI_SCLK & 0x0F ) ) );
+            break;
+        case 16 : 
+            HAL_GPIO_DeInit(GPIOF, ( 1 << ( LORA_SPI_MOSI & 0x0F ) )  | ( 1 << ( LORA_SPI_MISO & 0x0F ) )  | ( 1 << ( LORA_SPI_SCLK & 0x0F ) ) );
+            break;
+        case 32 : 
+            HAL_GPIO_DeInit(GPIOG, ( 1 << ( LORA_SPI_MOSI & 0x0F ) )  | ( 1 << ( LORA_SPI_MISO & 0x0F ) )  | ( 1 << ( LORA_SPI_SCLK & 0x0F ) ) );
+            break;
+        case 64 : 
+            HAL_GPIO_DeInit(GPIOH, ( 1 << ( LORA_SPI_MOSI & 0x0F ) )  | ( 1 << ( LORA_SPI_MISO & 0x0F ) )  | ( 1 << ( LORA_SPI_SCLK & 0x0F ) ) );
+            break;
+        default:
+            HAL_GPIO_DeInit(GPIOA, ( 1 << ( LORA_SPI_MOSI & 0x0F ) )  | ( 1 << ( LORA_SPI_MISO & 0x0F ) )  | ( 1 << ( LORA_SPI_SCLK & 0x0F ) ) );
+            break;
+    }
+}
+
+
+__STATIC_INLINE uint32_t LL_SPI_IsActiveFlag_TXE(SPI_TypeDef *SPIx)
+{
+  return (READ_BIT(SPIx->SR, SPI_SR_TXE) == (SPI_SR_TXE));
+}
+
+__STATIC_INLINE void LL_SPI_TransmitData8(SPI_TypeDef *SPIx, uint8_t TxData)
+{
+  *((__IO uint8_t *)&SPIx->DR) = TxData;
+}
+
+__STATIC_INLINE uint32_t LL_SPI_IsActiveFlag_RXNE(SPI_TypeDef *SPIx)
+{
+  return (READ_BIT(SPIx->SR, SPI_SR_RXNE) == (SPI_SR_RXNE));
+}
+
+__STATIC_INLINE uint8_t LL_SPI_ReceiveData8(SPI_TypeDef *SPIx)
+{
+  return (uint8_t)(READ_REG(SPIx->DR));
+}
+
+/********************************************************************/
+/*              END  Of  Utilities for SPI                          */
+/********************************************************************/
 void McuSTM32L4::InitSpi ( ){
 
+    hspi1.Instance = LORA_SPIx;
+    hspi1.Init.Mode = SPI_MODE_MASTER;
+    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+    hspi1.Init.NSS = SPI_NSS_SOFT;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+    hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi1.Init.CRCPolynomial = 7;
+
+    if ( LORA_SPIx == SPI1 ) {
+        __HAL_RCC_SPI1_CLK_ENABLE();
+    } else if ( LORA_SPIx == SPI2 ) {
+        __HAL_RCC_SPI2_CLK_ENABLE();
+    } else {
+        __HAL_RCC_SPI3_CLK_ENABLE();
+    }
+
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Pin       = ( 1 << ( LORA_SPI_MOSI & 0x0F ) )  | ( 1 << ( LORA_SPI_MISO & 0x0F ) )  | ( 1 << ( LORA_SPI_SCLK & 0x0F ) ) ;
+    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull      = GPIO_NOPULL;
+    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = (LORA_SPI_SCLK & 0xF );
+    int port = ( LORA_SPI_MOSI & 0xF0 ) >> 4 ;
+    switch (port) {
+        case 0 : 
+            HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+            break;
+        case 1 : 
+            HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+            break;
+        case 2 : 
+            HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+            break;
+        case 4 : 
+            HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+            break;
+        case 8 : 
+            HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+            break;
+        case 16 : 
+            HAL_GPIO_Init(GPIOF , &GPIO_InitStruct);
+            break;
+        case 32 : 
+            HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+            break;
+        case 64 : 
+            HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+            break;
+        default:
+            HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+            break;
+    }
+    if (HAL_SPI_Init(&hspi1) != HAL_OK ) {
+    }
+    __HAL_SPI_ENABLE(&hspi1); 
 }
+
+
+    
     /** Write to the SPI Slave and return the response
     *
     *  @param value Data to be sent to the SPI slave
@@ -519,13 +839,16 @@ void McuSTM32L4::InitSpi ( ){
     *    Response from the SPI slave
     */
 uint8_t McuSTM32L4::SpiWrite(int value){
-          uint8_t rxData = 0;
+        uint8_t rxData = 0;
+  
         while( LL_SPI_IsActiveFlag_TXE ( SPI1 ) == 0  ){};
         LL_SPI_TransmitData8 (SPI1, uint8_t (value&0xFF));
         while( LL_SPI_IsActiveFlag_RXNE ( SPI1 ) == 0 ){};
         rxData =  LL_SPI_ReceiveData8( SPI1 );
         return (rxData);
 }
+
+
 /******************************************************************************/
 /*                                Mcu Flash Api                               */
 /******************************************************************************/
@@ -534,7 +857,7 @@ int McuSTM32L4::RestoreContext(uint8_t *buffer, uint32_t addr, uint32_t size){
     the following code propose a lite implementation without any error cases*/
     uint16_t sizet = size & 0xFFFF;
     EepromMcuReadBuffer( addr, buffer, sizet );
-    return ( 0 ); 
+    return ( 0 );
 }
 static uint8_t copyPage [2048] ;
 int McuSTM32L4::WriteFlashWithoutErase(uint8_t *buffer, uint32_t addr, uint32_t size){
@@ -613,10 +936,67 @@ int McuSTM32L4::StoreContext(const void *buffer, uint32_t addr, uint32_t size){
 /******************************************************************************/
 /*                                Mcu RTC Api                                 */
 /******************************************************************************/
+/********************************************************************/
+/*                   Utilities for RTC                              */
+/********************************************************************/
+RTC_HandleTypeDef hrtc;
 
-void McuSTM32L4::RtcInit (void)
+
+void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
 {
 
+  if(rtcHandle->Instance==RTC)
+  {
+    __HAL_RCC_RTC_ENABLE();
+    HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
+  }
+}
+
+void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
+{
+
+  if(rtcHandle->Instance==RTC)
+  {
+    __HAL_RCC_RTC_DISABLE();
+    HAL_NVIC_DisableIRQ(RTC_WKUP_IRQn);
+  }
+} 
+
+/********************************************************************/
+/*            End Of Utilities for RTC                              */
+/********************************************************************/
+void McuSTM32L4::RtcInit (void)
+{
+  RTC_TimeTypeDef sTime;
+  RTC_DateTypeDef sDate;
+
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK) {
+  }
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK) {
+
+  }
+  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sDate.Year = 0x0;
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK) {
+  }
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK) {
+  }
 }
 
 uint32_t McuSTM32L4::RtcGetTimeMs( void )
@@ -634,7 +1014,7 @@ uint32_t McuSTM32L4::RtcGetTimeMs( void )
     timeinfo.tm_hour = timeStruct.Hours;
     timeinfo.tm_min  = timeStruct.Minutes;
     timeinfo.tm_sec  = timeStruct.Seconds;
-    // Convert to timestamp
+    // Convert to timestamp   
     time_t t = mktime(&timeinfo);
     return ( ( t * 1000 ) + ( 999 - ( ( timeStruct.SubSeconds *999) / 255 ) ) );  // get time en ms
 }
@@ -659,6 +1039,126 @@ uint32_t McuSTM32L4::RtcGetTimeSecond( void )
     return ( t );
 }
 
+
+
+/********************************************************************/
+/*                   Utilities for Uart                              */
+/********************************************************************/
+
+UART_HandleTypeDef huart;
+void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
+{
+  if(uartHandle->Instance==USART2) {
+    __HAL_RCC_USART2_CLK_DISABLE();
+    HAL_GPIO_DeInit(GPIOA, ( 1 << ( UART_TX & 0x0F ) )  | ( 1 << ( UART_RX & 0x0F ) ) );
+  }
+  if(uartHandle->Instance==USART1) {
+    __HAL_RCC_USART1_CLK_DISABLE();
+     HAL_GPIO_DeInit(GPIOA, ( 1 << ( UART_TX & 0x0F ) )  | ( 1 << ( UART_RX & 0x0F ) ) );
+  }
+
+} 
+
+/********************************************************************/
+/*              END  Of  Utilities for UART                         */
+/********************************************************************/
+
+/******************************************************************************/
+/*                           Mcu Uart Api                                     */
+/******************************************************************************/
+
+ 
+#if DEBUG_TRACE == 1
+void vprint(const char *fmt, va_list argp)
+{
+
+    char string[200];
+    if(0 < vsprintf(string,fmt,argp)) // build string
+    {
+        HAL_UART_Transmit(&huart, (uint8_t*)string, strlen(string), 0xffffff); // send message via UART
+    }
+
+}
+#endif
+
+
+void McuSTM32L4::UartInit ( void ) {
+//#if DEBUG_TRACE == 1
+
+  GPIO_InitTypeDef GPIO_InitStruct;
+  if( UART_NUM==USART2 ) {
+    __HAL_RCC_USART2_CLK_ENABLE();
+    GPIO_InitStruct.Pin       = GPIO_PIN_2|GPIO_PIN_3;
+    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull      = GPIO_NOPULL;
+    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  }
+  huart.Instance = UART_NUM;
+  huart.Init.BaudRate = 115200;
+  huart.Init.WordLength = UART_WORDLENGTH_8B;
+  huart.Init.StopBits = UART_STOPBITS_1;
+  huart.Init.Parity = UART_PARITY_NONE;
+  huart.Init.Mode = UART_MODE_TX_RX;
+  huart.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart) != HAL_OK){
+  }
+
+};
+//#endif
+
+void McuSTM32L4::MMprint( const char *fmt, ...){
+#if DEBUG_TRACE == 1
+  va_list argp;
+  va_start(argp, fmt);
+  vprint(fmt, argp);
+  va_end(argp);
+#endif
+};
+
+void sleepAndWakeUp (void) {
+  /* 
+  GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitStruct.Pin = GPIO_PIN_All;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+  __HAL_RCC_GPIOA_CLK_DISABLE();
+  __HAL_RCC_GPIOB_CLK_DISABLE();
+  __HAL_RCC_GPIOC_CLK_DISABLE();
+  __HAL_RCC_GPIOD_CLK_DISABLE();
+  __HAL_RCC_GPIOE_CLK_DISABLE();
+  __HAL_RCC_GPIOF_CLK_DISABLE();
+  __HAL_RCC_GPIOG_CLK_DISABLE();GPIO_PIN_ALL
+  __HAL_RCC_GPIOH_CLK_DISABLE();*/
+  HAL_SPI_DeInit (&hspi1);
+  HAL_UART_DeInit (&huart);
+  HAL_PWREx_EnterSTOP2Mode ( PWR_STOPENTRY_WFI );
+  HAL_Init();
+  SystemClock_Config();
+  //MX_GPIO_Init();
+  mcu.UartInit();
+  mcu.InitSpi();
+}
+
+
+void sleepAndWakeUpCool (void) {
+  
+  HAL_PWREx_EnterSTOP2Mode ( PWR_STOPENTRY_WFI );
+  SystemClock_Config();
+
+}
 /******************************************************************************/
 /*                                Mcu Sleep Api                               */
 /******************************************************************************/
@@ -668,11 +1168,11 @@ void McuSTM32L4::GotoSleepSecond (int duration ) {
     while ( cpt > ( WATCH_DOG_PERIOD_RELEASE ) ) {
         cpt -= WATCH_DOG_PERIOD_RELEASE ;
         WakeUpAlarmSecond( WATCH_DOG_PERIOD_RELEASE );
-        sleep();
+        sleepAndWakeUp();
         WatchDogRelease ( );
     }
     WakeUpAlarmSecond( cpt );
-    sleep();
+    sleepAndWakeUp();
 # else
     int cpt = duration ;
     WatchDogRelease ( );
@@ -689,7 +1189,7 @@ void McuSTM32L4::GotoSleepSecond (int duration ) {
 void McuSTM32L4::GotoSleepMSecond (int duration ) {
 #if LOW_POWER_MODE == 1
     WakeUpAlarmMSecond ( duration );
-    sleep();
+    sleepAndWakeUpCool();
     WatchDogRelease ( );
 # else
     mwait_ms ( duration ) ;
@@ -702,29 +1202,106 @@ void McuSTM32L4::GotoSleepMSecond (int duration ) {
 /*                             Mcu WatchDog Api                               */
 /******************************************************************************/
 
-static IWDG_HandleTypeDef Iwdg;
+IWDG_HandleTypeDef hiwdg;
 
 /*!
  * Watch Dog Init And start with a period befor ereset set to 32 seconds
 */
 void McuSTM32L4::WatchDogStart ( void ) {
- 
+    #if 0
+    hiwdg.Instance = IWDG;
+    hiwdg.Init.Prescaler = IWDG_PRESCALER_256;
+    hiwdg.Init.Window = IWDG_WINDOW_DISABLE;
+    hiwdg.Init.Reload = 0xFFF;
+    uint32_t tickstart;
+  /* Enable IWDG. LSI is turned on automaticaly */
+  __HAL_IWDG_START(&hiwdg);
+
+  /* Enable write access to IWDG_PR, IWDG_RLR and IWDG_WINR registers by writing
+  0x5555 in KR */
+  IWDG_ENABLE_WRITE_ACCESS(&hiwdg);
+  /* Write to IWDG registers the Prescaler & Reload values to work with */
+  (&hiwdg)->Instance->PR = hiwdg.Init.Prescaler;
+  (&hiwdg)->Instance->RLR = hiwdg.Init.Reload;
+  /* Check pending flag, if previous update not done, return timeout */
+  tickstart = HAL_GetTick();
+
+   /* Wait for register to be updated */
+  while((&hiwdg)->Instance->SR != RESET)
+  {
+
+  }
+
+  /* If window parameter is different than current value, modify window 
+  register */
+  if((&hiwdg)->Instance->WINR != hiwdg.Init.Window)
+  {
+    /* Write to IWDG WINR the IWDG_Window value to compare with. In any case,
+    even if window feature is disabled, Watchdog will be reloaded by writing 
+    windows register */
+    (&hiwdg)->Instance->WINR = hiwdg.Init.Window;
+  }
+  else
+  {
+    /* Reload IWDG counter with value defined in the reload register */
+    __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
+  }
+
+  /* Return function status */
+  #endif
+
 }
 /*!
  * Watch Dog Release
 */
 void McuSTM32L4::WatchDogRelease ( void ) {
-    HAL_IWDG_Refresh(&Iwdg);
+   // __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
 };
 /******************************************************************************/
 /*                             Mcu LOwPower timer Api                         */
 /******************************************************************************/
-void McuSTM32L4::LowPowerTimerLoRaInit ( ) {
 
+/********************************************************************/
+/*             Utilities for LowPower Timer                         */
+/********************************************************************/
+LPTIM_HandleTypeDef hlptim1;
+
+
+
+void HAL_LPTIM_MspInit(LPTIM_HandleTypeDef* lptimHandle)
+{
+  if(lptimHandle->Instance==LPTIM1) {
+    __HAL_RCC_LPTIM1_CLK_ENABLE();
+    HAL_NVIC_SetPriority(LPTIM1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(LPTIM1_IRQn);
+  }
+}
+void HAL_LPTIM_MspDeInit(LPTIM_HandleTypeDef* lptimHandle)
+{
+  if(lptimHandle->Instance==LPTIM1) {
+    __HAL_RCC_LPTIM1_CLK_DISABLE();
+    HAL_NVIC_DisableIRQ(LPTIM1_IRQn);
+  }
+} 
+
+
+/********************************************************************/
+/*       END  Of  Utilities for LowPower Timer                      */
+/********************************************************************/
+void McuSTM32L4::LowPowerTimerLoRaInit ( ) {
+    hlptim1.Instance = LPTIM1;
+    hlptim1.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
+    hlptim1.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV16;
+    hlptim1.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
+    hlptim1.Init.OutputPolarity = LPTIM_OUTPUTPOLARITY_HIGH;
+    hlptim1.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
+    hlptim1.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
+    hlptim1.Init.Input1Source = LPTIM_INPUT1SOURCE_GPIO;
+    hlptim1.Init.Input2Source = LPTIM_INPUT2SOURCE_GPIO;
+    if (HAL_LPTIM_Init(&hlptim1) != HAL_OK) {
+    }
     Func = DoNothing;
     obj = NULL;
-    //Initialize delay Systick timer for wait function
-    //TM_DELAY_Init();
 };
 /*!
  * LowPowerTimerLoRa AttachMsecond
@@ -737,65 +1314,14 @@ void McuSTM32L4::LowPowerTimerLoRaInit ( ) {
  * \remark starts the LoRaWAN dedicated timer and attaches the IRQ to the handling Interupt SErvice Routine in the LoRaWAN object.
  */
 void McuSTM32L4::StartTimerMsecond ( void (* _Func) (void *) , void * _obj, int delay){
-    Func =  _Func ;
-    obj  = _obj;
+
     int DelayMs2tick = delay * 2 + ( ( 6 * delay ) >> 7);
     HAL_LPTIM_TimeOut_Start_IT(&hlptim1, 65535, DelayMs2tick); // MCU specific
+    Func =  _Func ;
+    obj  = _obj;
 };
 
-/******************************************************************************/
-/*                           Mcu Gpio Api                                     */
-/******************************************************************************/
-void McuSTM32L4::SetValueDigitalOutPin ( PinName Pin, int Value ){
-        uint16_t pintmp ;
-        if ( Pin < 15 ) {
-            pintmp = (uint16_t) Pin;
-            HAL_GPIO_WritePin(GPIOA, ( 1 << pintmp ), (GPIO_PinState) Value);
-        } else if ( Pin < 31 ) {
-            pintmp = (uint16_t)Pin-16;
-            HAL_GPIO_WritePin(GPIOB, ( 1 << pintmp ), (GPIO_PinState) Value);
-        } else if ( Pin < 47 ) {
-            pintmp = Pin-32;
-            HAL_GPIO_WritePin(GPIOC, ( 1 << pintmp ), (GPIO_PinState) Value);
-        } else if ( Pin < 63 ) {
-            pintmp = Pin-48;
-          HAL_GPIO_WritePin(GPIOD, ( 1 << pintmp ), (GPIO_PinState) Value);
-        } else if ( Pin < 79 ) {
-            pintmp = Pin-64;
-            HAL_GPIO_WritePin(GPIOE, ( 1 << pintmp ), (GPIO_PinState) Value);
-        } else if ( Pin < 95 ) {
-            pintmp = Pin-80;
-            HAL_GPIO_WritePin(GPIOF, ( 1 << pintmp ), (GPIO_PinState) Value);
-        } else  {
-            pintmp = Pin-96;
-            HAL_GPIO_WritePin(GPIOG, ( 1 << pintmp ), (GPIO_PinState) Value);
-        }
-};
-int McuSTM32L4::GetValueDigitalInPin ( PinName Pin ){
-    uint16_t pintmp ;
-    if ( Pin < 15 ) {
-        pintmp = (uint16_t) Pin;
-        return ( (int) HAL_GPIO_ReadPin(GPIOA, ( 1 << pintmp ) ) );
-    } else if ( Pin < 31 ) {
-        pintmp = (uint16_t)Pin-16;
-        return ( (int) HAL_GPIO_ReadPin(GPIOB, ( 1 << pintmp ) ) );
-    } else if ( Pin < 47 ) {
-        pintmp = Pin-32;
-       return ( (int) HAL_GPIO_ReadPin(GPIOC, ( 1 << pintmp ) ) );
-    } else if ( Pin < 63 ) {
-        pintmp = Pin-48;
-      return ( (int) HAL_GPIO_ReadPin(GPIOD, ( 1 << pintmp ) ) );
-    } else if ( Pin < 79 ) {
-        pintmp = Pin-64;
-        return ( (int) HAL_GPIO_ReadPin(GPIOE, ( 1 << pintmp ) ) );
-    } else if ( Pin < 95 ) {
-        pintmp = Pin-80;
-        return ( (int) HAL_GPIO_ReadPin(GPIOF, ( 1 << pintmp ) ) );
-    } else {
-        pintmp = Pin-96;
-        return ( (int) HAL_GPIO_ReadPin(GPIOG, ( 1 << pintmp ) ) );
-    }
-};
+
 
 
 void  McuSTM32L4::AttachInterruptIn       (  void (* _Funcext) (void *) , void * _objext) {
@@ -805,34 +1331,17 @@ void  McuSTM32L4::AttachInterruptIn       (  void (* _Funcext) (void *) , void *
 };
 
 /******************************************************************************/
-/*                           Mcu Uart Api                                     */
+/* STM32L4xx Peripheral Interrupt Handlers                                    */
+/* Add here the Interrupt Handlers for the used peripherals.                  */
+/* For the available peripheral interrupt handler names,                      */
+/* please refer to the startup file (startup_stm32l4xx.s).                    */
 /******************************************************************************/
 
- 
-
-void vprint(const char *fmt, va_list argp)
-{
-#if DEBUG_TRACE == 1
-    char string[200];
-    if(0 < vsprintf(string,fmt,argp)) // build string
-    {
-        HAL_UART_Transmit(&huart2, (uint8_t*)string, strlen(string), 0xffffff); // send message via UART
-    }
-#endif
+/**
+* @brief This function handles RTC wake-up interrupt through EXTI line 20.
+*/
+void RTC_WKUP_IRQHandler(void) {
+  HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
 }
 
 
-
-void McuSTM32L4::UartInit ( void ) {
-#if DEBUG_TRACE == 1
-  
-#endif
-};
-void McuSTM32L4::MMprint( const char *fmt, ...){
-#if DEBUG_TRACE == 1
-  va_list argp;
-  va_start(argp, fmt);
-  vprint(fmt, argp);
-  va_end(argp);
-#endif
-};

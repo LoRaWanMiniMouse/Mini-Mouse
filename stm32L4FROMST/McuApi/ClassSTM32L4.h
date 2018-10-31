@@ -19,6 +19,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "stm32l4xx_hal.h"
 #include "stdio.h"
 #include "string.h"
+#include "stm32l4xx_hal_iwdg.h"
 
 typedef enum {
     PA_0  = 0x00,
@@ -319,6 +320,9 @@ public :
 /******************************************************************************/
 /*                           Mcu Gpio Api                                     */
 /******************************************************************************/
+    void InitGpio              ( void );
+    void InitGpioIn            ( PinName Pin );
+    void InitGpioOut           ( PinName Pin );
     void SetValueDigitalOutPin ( PinName Pin, int Value );
     int  GetValueDigitalInPin  ( PinName Pin );
     void AttachInterruptIn     (  void (* _Funcext) (void *) , void * _objext) ;
@@ -339,8 +343,12 @@ public :
 /******************************************************************************/
 /*                           Mcu wait                                         */
 /******************************************************************************/   
-    void mwait   (int delays) { };//wait ( delays );};
-    void mwait_ms (int delayms){};// wait_ms ( delayms );};
+    void mwait_ms (int delayms) {
+        HAL_Delay(delayms);
+    };
+    void mwait (int delays) {
+        HAL_Delay(1000*delays);
+    };
 
 /******************************************************************************/
 /*                           Mcu Uart Api                                     */

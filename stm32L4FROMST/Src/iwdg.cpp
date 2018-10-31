@@ -56,7 +56,7 @@ void MX_IWDG_Init(void)
   hiwdg.Init.Reload = 0xFFF;
   if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+   
   }
 
 }

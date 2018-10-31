@@ -338,7 +338,7 @@ void McuSTM32L0::UartInit ( void ) {
 #endif
 } 
 
-void McuSTM32L0::MMprint( const char *fmt, ...) {
+void McuSTM32L0::MMprint( const char *fmt, ...) {  mcu.SetValueDigitalOutPin ( pinCS, 1);
 #if DEBUG_TRACE == 1
   va_list argp;
   va_start(argp, fmt);

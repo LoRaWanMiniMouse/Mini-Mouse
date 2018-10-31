@@ -17,7 +17,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 */
 #ifndef USERDEFINE_H
 #define USERDEFINE_H
-#define SX126x_BOARD 1
+#define SX1272_BOARD 1
 
 
 /********************************************************************************/
@@ -41,13 +41,18 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define PA_BOOST_CONNECTED        0
 /*SX1276 BOARD specific */
 #else
+#define UART_NUM           USART2
+#define UART_TX            PA_2
+#define UART_RX            PA_3
+
+#define LORA_SPIx           SPI1   // select your spi number
 #define LORA_SPI_MOSI       D11
 #define LORA_SPI_MISO       D12
 #define LORA_SPI_SCLK       D13
 #define LORA_CS             D10
 #define LORA_RESET          A0
 #define TX_RX_IT            D2     // Interrupt TX/RX Done
-#define CRYSTAL_ERROR              20 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3² for a crystal error = 0.3%)
+#define CRYSTAL_ERROR              60 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3ï¿½ for a crystal error = 0.3%)
 #define BOARD_DELAY_RX_SETTING_MS  4  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
 #define PA_BOOST_CONNECTED         0 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
 #endif

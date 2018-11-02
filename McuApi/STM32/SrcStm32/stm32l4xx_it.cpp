@@ -228,9 +228,9 @@ void EXTI3_IRQHandler(void)
 
 void LPTIM1_IRQHandler(void)
 {
-  HAL_LPTIM_IRQHandler(&hlptim1);
-  HAL_LPTIM_TimeOut_Stop(&hlptim1);
-  mcu.timerISR();
+    HAL_LPTIM_IRQHandler(&hlptim1);
+    HAL_LPTIM_TimeOut_Stop(&hlptim1);
+    mcu.timerISR();
 
 }
 

@@ -1,6 +1,0 @@
---cpp -c --cpu Cortex-M4.fp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ..\UserCode -I ..\McuApi
--I.\RTE\_stm32L4FROMST
--IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\CMSIS\Include
--IC:\Keil_v5\ARM\PACK\Keil\STM32L4xx_DFP\2.0.0\Drivers\CMSIS\Device\ST\STM32L4xx\Include
--D__UVISION_VERSION="525" -D_RTE_ -DSTM32L476xx -DUSE_HAL_DRIVER -DSTM32L476xx
--o stm32l4fromst\spi.o --omf_browse stm32l4fromst\spi.crf --depend stm32l4fromst\spi.d "../Src/spi.c"

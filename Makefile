@@ -36,8 +36,8 @@ BUILD_DIR = build
 ######################################
 # C sources
 CPP_SOURCES =  \
-SrcStm32/stm32l4xx_it.cpp \
-SrcStm32/stm32l4xx_hal_msp.cpp \
+McuApi/STM32/SrcStm32/stm32l4xx_it.cpp \
+McuApi/STM32/SrcStm32/stm32l4xx_hal_msp.cpp \
 McuApi/ClassSTM32L4.cpp\
 UserCode/appli.cpp\
 UserCode/main.cpp \
@@ -59,36 +59,36 @@ MiniMouse/utilities.cpp
 
 
 C_SOURCES = \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_lptim.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_wwdg.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
-SrcStm32/system_stm32l4xx.c
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_lptim.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_wwdg.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
+McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
+McuApi/STM32/SrcStm32/system_stm32l4xx.c
 
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32l476xx.s
+McuApi/STM32/startup_stm32l476xx.s
 
 
 #######################################
@@ -144,11 +144,11 @@ AS_INCLUDES =
 vpath %.c $(sort $(dir $(C_SOURCES)))
 vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 C_INCLUDES =  \
--IIncStm32 \
--IDrivers/STM32L4xx_HAL_Driver/Inc \
--IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy \
--IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
--IDrivers/CMSIS/Include \
+-IMcuApi/STM32/IncStm32 \
+-IMcuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Inc \
+-IMcuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Inc/Legacy \
+-IMcuApi/STM32/Drivers/CMSIS/Device/ST/STM32L4xx/Include \
+-IMcuApi/STM32/Drivers/CMSIS/Include \
 -IUserCode \
 -IMcuApi\
 -IMinimouseSrc\
@@ -162,7 +162,8 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffuncti
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections  -fno-exceptions
 CPPFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -fno-rtti -fno-exceptions
 ifeq ($(DEBUG), 1)
-#CFLAGS += -g -gdwarf-2
+CFLAGS += -g 
+#-gdwarf-2
 endif
 
 
@@ -174,14 +175,14 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32L476RGTx_FLASH.ld
+LDSCRIPT = McuApi/STM32/STM32L476RGTx_FLASH.ld
 
 # libraries
 LIBS =   -lstdc++ -lsupc++ -lm -lc -lnosys
 
 
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) --specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin

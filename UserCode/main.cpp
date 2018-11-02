@@ -158,7 +158,7 @@ int main( ) {
 *        The only requirement is that this function must be called at least once between the end of the transmission and the beginning of the RX1 slot.
 *        Therefore when the stack is active a call periodicity of roughly 300mSec is recommended.
 */ 
-        DEBUG_MSG ("  new packet \n");
+        DEBUG_MSG (" new packet \n");
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
             mcu.GotoSleepMSecond ( 100 );

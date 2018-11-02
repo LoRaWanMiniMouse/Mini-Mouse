@@ -1309,11 +1309,3 @@ void  McuSTM32L4::AttachInterruptIn       (  void (* _Funcext) (void *) , void *
 /* please refer to the startup file (startup_stm32l4xx.s).                    */
 /******************************************************************************/
 
-/**
-* @brief This function handles RTC wake-up interrupt through EXTI line 20.
-*/
-void RTC_WKUP_IRQHandler(void) {
-  HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
-}
-
-

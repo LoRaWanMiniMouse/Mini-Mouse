@@ -17,14 +17,14 @@ Maintainer        : Fabien Holin (SEMTECH)
 */
 #ifndef USERDEFINE_H
 #define USERDEFINE_H
-#define SX1272_BOARD 1
+#define SX1276_BOARD 1
 
 
 /********************************************************************************/
 /*                         Application     dependant                            */
 /********************************************************************************/
 #define DEBUG_TRACE    1      // Set to 1 to activate debug traces
-#define LOW_POWER_MODE 1      // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
+#define LOW_POWER_MODE 0      // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 #define DEBUG_TRACE_ENABLE 0  // Set to 1 to activate DebugTrace 
 
 #ifdef SX126x_BOARD
@@ -54,7 +54,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define TX_RX_IT            D2     // Interrupt TX/RX Done
 #define CRYSTAL_ERROR              60 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
 #define BOARD_DELAY_RX_SETTING_MS  4  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
-#define PA_BOOST_CONNECTED         0 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
+#define PA_BOOST_CONNECTED         1 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
 #endif
 #define RX_TIMEOUT_IT       D3     // Interrupt RX TIME OUT 
 #define FLASH_UPDATE_PERIOD 32      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted

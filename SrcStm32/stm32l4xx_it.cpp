@@ -35,6 +35,7 @@
 #include "stm32l4xx.h"
 #include "stm32l4xx_it.h"
 #include "ApiMcu.h"
+#include "Define.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -211,26 +212,26 @@ void RTC_WKUP_IRQHandler(void)
 void EXTI15_10_IRQHandler(void)
 {
 
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_14);
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
-    mcu.ExtISR();
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
+  //  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+ //   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
+ //   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+ //   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_14);
+ //   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
+  mcu.ExtISR();
 }
 void EXTI3_IRQHandler(void)
 {
- 
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
-    mcu.ExtISR();
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
+  mcu.ExtISR();
 }
 
 void LPTIM1_IRQHandler(void)
 {
-    HAL_LPTIM_IRQHandler(&hlptim1);
-    HAL_LPTIM_TimeOut_Stop(&hlptim1);
-    mcu.timerISR();
+  HAL_LPTIM_IRQHandler(&hlptim1);
+  HAL_LPTIM_TimeOut_Stop(&hlptim1);
+  mcu.timerISR();
+
 }
 
 

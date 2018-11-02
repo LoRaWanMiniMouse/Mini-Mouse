@@ -125,9 +125,10 @@ void SX1276::Reset( void ) {
     mcu.SetValueDigitalOutPin ( pinReset, 0);
     mcu.mwait_ms( 1 );
     mcu.SetValueDigitalOutPin ( pinReset, 1);
-    mcu.mwait_ms( 6 );
+    mcu.mwait_ms( 1 );
     this->ResetFakeIrq();
     lastPacketRssi = 0;
+    SetOpMode( RF_OPMODE_SLEEP );
 }
 
 void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
@@ -204,7 +205,7 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
 void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs ) {
     Channel = channel;
     /* Configure Lora Rx */
-    Reset( );
+    //Reset( );  
     CalibrateImage( );
     SetOpMode( RF_OPMODE_SLEEP );
     /* Set Lora Mode and max payload to 0x40 */

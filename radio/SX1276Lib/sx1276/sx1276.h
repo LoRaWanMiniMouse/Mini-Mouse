@@ -55,7 +55,7 @@ class SX1276 {
 
         uint32_t Channel;
 
-    private:
+   // private:
         uint8_t rxBuffer[255];
         uint8_t rxPayloadSize;
         bool isFakeIrq;

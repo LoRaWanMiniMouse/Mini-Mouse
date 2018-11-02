@@ -72,7 +72,7 @@ int main( ) {
     uint8_t UserFport ;
     uint8_t UserRxFport ;
     uint8_t MsgType ;
-    uint8_t AppTimeSleeping = 5;
+    uint8_t AppTimeSleeping = 35;
     uint8_t uid[8];
     /*!
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
@@ -135,6 +135,7 @@ int main( ) {
     }
     UserPayload[ 0 ]  = FW_VERSION ;
     MsgType = UNCONF_DATA_UP;
+
     while(1) {
     /*!
     * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes) + FW version. 
@@ -157,7 +158,7 @@ int main( ) {
 *        The only requirement is that this function must be called at least once between the end of the transmission and the beginning of the RX1 slot.
 *        Therefore when the stack is active a call periodicity of roughly 300mSec is recommended.
 */ 
-        DEBUG_MSG ("new packet \n");
+        DEBUG_MSG ("  new packet \n");
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
             mcu.GotoSleepMSecond ( 100 );

@@ -74,8 +74,9 @@ int main( ) {
     uint8_t UserFport ;
     uint8_t UserRxFport ;
     uint8_t MsgType ;
-    uint8_t AppTimeSleeping = 35;
+    uint8_t AppTimeSleeping =1;
     uint8_t uid[8];
+    int StatusCertification = 0;
     /*!
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
     */
@@ -182,6 +183,14 @@ int main( ) {
                 DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
             }
             DEBUG_MSG("]\n\n\n");
+             if ( ( UserRxFport == 224 ) || ( UserRxPayloadSize == 0 ) ) {
+                DEBUG_MSG("Receive Certification Payload \n"); 
+                StatusCertification = Certification (true , &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
+           } 
+        } else {
+            if ( StatusCertification > 0 ){
+                Certification ( false ,  &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
+            }
         }
 /*
 * \brief Send a �Packet every 120 seconds in case of join 

@@ -50,6 +50,7 @@ SX126x::SX126x( PinName Busy, PinName nss, PinName reset, PinName Interrupt ):
 pinBusy( Busy ),
 pinReset( reset ),
 pinCS( nss ) {
+    mcu. InitGpioIn ( pinBusy );
     mcu.SetValueDigitalOutPin ( pinCS, 1);
     mcu.Init_Irq ( Interrupt ) ;
 }
@@ -606,7 +607,7 @@ void SX126x::SetTxParams( int8_t power ) {
    
     buf[0] = power;
     // TODO - Variable ?
-    buf[1] = 0x04; // Ramp time : 200 µs
+    buf[1] = 0x04; // Ramp time : 200 ï¿½s
     WriteCommand( SET_TX_PARAMS, buf, 2 );
 }
 

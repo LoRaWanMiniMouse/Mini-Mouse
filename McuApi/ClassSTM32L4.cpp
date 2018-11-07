@@ -526,6 +526,42 @@ void McuSTM32L4::InitGpioOut( PinName Pin ){
             break;
     }
 }
+void McuSTM32L4::InitGpioIn( PinName Pin ){
+    int port = ( Pin & 0xF0 ) >> 4 ;
+      /*Configure GPIO pin : PB6   */
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Pin   = (1 << ( Pin & 0x0F ) );
+    GPIO_InitStruct.Mode  = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    switch (port) {
+        case 0 : 
+            HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+            break;
+        case 1 : 
+            HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+            break;
+        case 2 : 
+            HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+            break;
+        case 4 : 
+            HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+            break;
+        case 8 : 
+            HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+            break;
+        case 16 : 
+            HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+        case 32 : 
+            HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+            break;
+        case 64 : 
+            HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+            break;
+        default:
+            break;
+    }
+}
 
 void McuSTM32L4::SetValueDigitalOutPin ( PinName Pin, int Value ){
     int port = ( Pin & 0xF0 ) >> 4 ;

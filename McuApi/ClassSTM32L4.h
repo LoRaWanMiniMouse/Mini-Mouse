@@ -22,6 +22,12 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "stm32l4xx_hal_iwdg.h"
 
 typedef enum {
+    LSI,
+    LSE
+} LOW_CLK_USE;
+
+
+typedef enum {
     PA_0  = 0x00,
     PA_1  = 0x01,
     PA_2  = 0x02,

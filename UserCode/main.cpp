@@ -29,7 +29,6 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "ApiMcu.h"
 #include "utilities.h"
 #include "main.h"
-#include "stm32l4xx_hal.h"
 #include "UserDefine.h"
 #include "ApiMcu.h"
 
@@ -43,9 +42,12 @@ struct sBackUpFlash BackUpFlash;
 /*!
  * \brief   Radio Interrupt Pin declarations
  */
-
-McuXX<McuSTM32L4> mcu ( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ) ;
-
+#ifdef MURATA_BOARD
+    McuXX<McuSTM32L072> mcu ( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ) ;
+#endif
+#ifdef BOARD_L4
+    McuXX<McuSTM32L4> mcu ( LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK ) ;
+#endif
 /*!
  * \brief   Parameters of the LoraWanKeys structure. 
  * \remark  For APB Devices only NwkSkey, AppSKey and devaddr are mandatory
@@ -56,9 +58,9 @@ uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 
 uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
 uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
 uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
-uint8_t DevEuiInit[]              = { 0x11, 0x22, 0x33, 0x44, 0x44, 0x33, 0xcc, 0xbb };    
+uint8_t DevEuiInit[]              = { 0x42, 0x33, 0x50, 0x0E, 0x00, 0x32, 0x00, 0x23 };    
 uint32_t LoRaDevAddrInit          = 0x26011920;
-
+sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
 
 /* User Radio ISR routine */
 #define NBENCODEDFRAME 52
@@ -78,7 +80,7 @@ int main( ) {
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
     */
     mcu.InitMcu ( );
- 
+
 
 #ifdef SX126x_BOARD
 #define FW_VERSION     0x18
@@ -96,7 +98,6 @@ int main( ) {
 #endif
     mcu.WatchDogStart ( );
     mcu.GetUniqueId (uid); 
-    sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
     memcpy(&LoraWanKeys.DevEui[0], uid , 8);
     /*!
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
@@ -162,6 +163,9 @@ int main( ) {
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
             mcu.GotoSleepMSecond ( 100 );
+            //uint8_t toto;
+            //RadioUser.ReadRegisters(0x06BD,&toto,1);
+            //DEBUG_PRINTF("mcu get time ms  = %d\n",toto);
         }
 
         mcu.WatchDogRelease ( );

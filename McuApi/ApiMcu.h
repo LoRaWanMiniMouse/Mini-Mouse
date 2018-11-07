@@ -18,9 +18,12 @@ Maintainer        : Fabien Holin (SEMTECH)
 */
 #ifndef MCUXX_H
 #define MCUXX_H
-
-
-#include "ClassSTM32L4.h"
+#include "UserDefine.h"
+#ifdef BOARD_L4
+    #include "ClassSTM32L4.h"
+#else
+    #include "ClassSTM32L072.h"
+#endif
 #include <string.h>
 template < class R >
     class McuXX : public R{
@@ -226,5 +229,9 @@ public :
 //    int userIt;
 };
 HAL_StatusTypeDef FLASH_If_BankSwitch(void);
-extern McuXX<McuSTM32L4> mcu;
+    #ifdef BOARD_L4
+        extern McuXX<McuSTM32L4> mcu;
+    #else
+        extern McuXX<McuSTM32L072> mcu;
+    #endif
 #endif

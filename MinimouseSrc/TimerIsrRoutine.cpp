@@ -28,6 +28,7 @@ template class LoraWanContainer <72,SX126x>;
 template class LoraWanContainer <16,SX1272>;
 template class LoraWanContainer <72,SX1272>;
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::IsrTimerRx1( void ) {
+    mcu.SetValueDigitalOutPin ( DEBUG , 0 ); 
     StateTimer = TIMERSTATE_SLEEP;
     InsertTrace ( __COUNTER__, FileId );
     RegionSetRxConfig ( RX1 );
@@ -39,4 +40,5 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::IsrTimerR
     InsertTrace ( __COUNTER__, FileId );
     RegionSetRxConfig ( RX2 );
     ConfigureRadioForRx2 ( );
+     mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
 };

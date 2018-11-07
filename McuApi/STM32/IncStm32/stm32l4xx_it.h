@@ -59,6 +59,7 @@ void SysTick_Handler(void);
 void RTC_WKUP_IRQHandler(void);
 void I2C1_EV_IRQHandler(void);
 void EXTI15_10_IRQHandler(void);
+void EXTI4_IRQHandler(void);
 void EXTI3_IRQHandler(void);
 void LPTIM1_IRQHandler(void);
 

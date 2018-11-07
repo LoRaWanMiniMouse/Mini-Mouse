@@ -90,7 +90,7 @@ class SX126x {
 
        void Sleep( bool coldStart );
        void SendCw(uint32_t frequency);
-    private:
+    //private:
         typedef enum {
             SLEEP,
             AWAKE

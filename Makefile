@@ -15,14 +15,14 @@
 ######################################
 TARGET = MiniMouse
 
-
+BOARD_MURATA = 1
 ######################################
 # building variables
 ######################################
 # debug build?
 DEBUG = 1C_SOURCES
 # optimization
-OPT = -Os
+OPT = -Os -g
 
 
 #######################################
@@ -36,9 +36,6 @@ BUILD_DIR = build
 ######################################
 # C sources
 CPP_SOURCES =  \
-McuApi/STM32/SrcStm32/stm32l4xx_it.cpp \
-McuApi/STM32/SrcStm32/stm32l4xx_hal_msp.cpp \
-McuApi/ClassSTM32L4.cpp\
 UserCode/appli.cpp\
 UserCode/main.cpp \
 radio/sx1272/sx1272.cpp\
@@ -56,8 +53,19 @@ MiniMouse/RegionUS.cpp\
 MiniMouse/TimerIsrRoutine.cpp\
 MiniMouse/utilities.cpp
 
+ifeq ($(BOARD_MURATA), 0)
+    CPP_SOURCES +=  \
+    McuApi/STM32/SrcStm32/stm32l4xx_it.cpp \
+    McuApi/STM32/SrcStm32/stm32l4xx_hal_msp.cpp\
+	McuApi/ClassSTM32L4.cpp 
+else
+    CPP_SOURCES +=  \
+    McuApi/STM32/SrcStm32/stm32l0xx_it.cpp \
+    McuApi/STM32/SrcStm32/stm32l0xx_hal_msp.cpp\
+	McuApi/ClassSTM32L072.cpp  
+endif
 
-
+ifeq ($(BOARD_MURATA), 0)
 C_SOURCES = \
 McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
 McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c \
@@ -84,12 +92,41 @@ McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c \
 McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
 McuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
 McuApi/STM32/SrcStm32/system_stm32l4xx.c
-
+else
+C_SOURCES = \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_i2c.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_i2c_ex.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_lptim.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc_ex.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_spi.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim_ex.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_uart.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_uart_ex.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_wwdg.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rcc.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rcc_ex.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_flash.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_flash_ex.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_flash_ramfunc.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_gpio.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_dma.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr_ex.c \
+McuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_cortex.c \
+McuApi/STM32/SrcStm32/system_stm32l0xx.c
+endif
 
 # ASM sources
-ASM_SOURCES =  \
-McuApi/STM32/startup_stm32l476xx.s
-
+ifeq ($(BOARD_MURATA), 0)
+    ASM_SOURCES =  \
+    McuApi/STM32/startup_stm32l476xx.s
+else
+    ASM_SOURCES =  \
+    McuApi/STM32/startup_stm32l072xx.s
+endif
 
 #######################################
 # binaries
@@ -116,14 +153,19 @@ BIN = $(CP) -O binary -S
 # CFLAGS
 #######################################
 # cpu
-CPU = -mcpu=cortex-m4
-
+ifeq ($(BOARD_MURATA), 0)
+    CPU = -mcpu=cortex-m4
+else
+    CPU = -mcpu=cortex-m0plus
+endif
 # fpu
-FPU = -mfpu=fpv4-sp-d16
-
+ifeq ($(BOARD_MURATA), 0)
+    FPU = -mfpu=fpv4-sp-d16
+endif
 # float-abi
-FLOAT-ABI = -mfloat-abi=hard
-
+ifeq ($(BOARD_MURATA), 0)
+    FLOAT-ABI = -mfloat-abi=hard
+endif
 # mcu
 MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 
@@ -132,10 +174,15 @@ MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 AS_DEFS = 
 
 # C defines
-C_DEFS =  \
--DUSE_HAL_DRIVER \
--DSTM32L476xx
-
+ifeq ($(BOARD_MURATA), 0)
+    C_DEFS =  \
+    -DUSE_HAL_DRIVER \
+    -DSTM32L476xx
+else
+    C_DEFS =  \
+    -DUSE_HAL_DRIVER \
+    -DSTM32L072xx
+endif
 
 # AS includes
 AS_INCLUDES = 
@@ -143,6 +190,7 @@ AS_INCLUDES =
 # C includesOBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
+ifeq ($(BOARD_MURATA), 0)
 C_INCLUDES =  \
 -IMcuApi/STM32/IncStm32 \
 -IMcuApi/STM32/Drivers/STM32L4xx_HAL_Driver/Inc \
@@ -156,13 +204,27 @@ C_INCLUDES =  \
 -Iradio/SX1276Lib/registers\
 -Iradio/SX1276Lib/sx1276\
 -Iradio/SX126X
+else
+C_INCLUDES =  \
+-IMcuApi/STM32/IncStm32 \
+-IMcuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Inc \
+-IMcuApi/STM32/Drivers/STM32L0xx_HAL_Driver/Inc/Legacy \
+-IMcuApi/STM32/Drivers/CMSIS/Device/ST/STM32L0xx/Include \
+-IMcuApi/STM32/Drivers/CMSIS/Include \
+-IUserCode \
+-IMcuApi\
+-IMinimouseSrc\
+-Iradio/sx1272\
+-Iradio/SX1276Lib/registers\
+-Iradio/SX1276Lib/sx1276\
+-Iradio/SX126X
+endif
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections  -fno-exceptions
 CPPFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -fno-rtti -fno-exceptions
 ifeq ($(DEBUG), 1)
-CFLAGS += -g 
 #-gdwarf-2
 endif
 
@@ -175,8 +237,11 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
+ifeq ($(BOARD_MURATA), 0)
 LDSCRIPT = McuApi/STM32/STM32L476RGTx_FLASH.ld
-
+else
+LDSCRIPT = McuApi/STM32/STM32L072CZYx_FLASH.ld
+endif
 # libraries
 LIBS =   -lstdc++ -lsupc++ -lm -lc -lnosys
 

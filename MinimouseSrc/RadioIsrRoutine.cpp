@@ -88,7 +88,8 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     }
     Radio->Sleep ( false );
     switch ( StateRadioProcess ) { 
-        case RADIOSTATE_TXON : 
+        case RADIOSTATE_TXON :
+        mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
             InsertTrace ( __COUNTER__, FileId );
             TimestampRtcIsr = mcu.RtcGetTimeMs ( ); //@info Timestamp only on txdone it
             StateRadioProcess = RADIOSTATE_TXFINISHED;
@@ -102,6 +103,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
        case RADIOSTATE_RX1FINISHED :
             InsertTrace ( __COUNTER__, FileId ); 
             StateRadioProcess = RADIOSTATE_IDLE;
+             mcu.SetValueDigitalOutPin ( DEBUG , 0 ); 
             break;
         case RADIOSTATE_RXC :
             StateRadioProcess = RADIOSTATE_IDLE;

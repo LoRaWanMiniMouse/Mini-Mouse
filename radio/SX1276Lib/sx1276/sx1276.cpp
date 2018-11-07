@@ -123,9 +123,9 @@ IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
 
 void SX1276::Reset( void ) {
     mcu.SetValueDigitalOutPin ( pinReset, 0);
-    mcu.mwait_ms( 1 );
+    mcu.mwait_ms( 5 );
     mcu.SetValueDigitalOutPin ( pinReset, 1);
-    mcu.mwait_ms( 1 );
+    mcu.mwait_ms( 5 );
     this->ResetFakeIrq();
     lastPacketRssi = 0;
     SetOpMode( RF_OPMODE_SLEEP );
@@ -139,6 +139,12 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
                     ) {
     Channel = channel;
     Reset( );
+    #ifdef RADIO_ANT_SWITCH_TX_RF0
+        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,1);
+    #endif
+    #ifdef RADIO_ANT_SWITCH_RX
+        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_RX,0);
+    #endif
     CalibrateImage( );
     /* Set Lora Mode and max payload to 0x40 */
     SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
@@ -166,8 +172,14 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
     uint8_t remainingBytes = payloadSize;
     Channel = channel;
     Reset( );
+    #ifdef RADIO_ANT_SWITCH_TX_RF0
+        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,1);
+    #endif
+    #ifdef RADIO_ANT_SWITCH_RX
+        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_RX,0);
+    #endif
     CalibrateImage( );
-
+    
     /* Configure FSK Tx */
     this->Sleep( false );
     SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
@@ -205,7 +217,13 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
 void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs ) {
     Channel = channel;
     /* Configure Lora Rx */
-    //Reset( );  
+    //Reset( ); 
+    #ifdef RADIO_ANT_SWITCH_TX_RF0
+        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,0);
+    #endif
+    #ifdef RADIO_ANT_SWITCH_RX
+        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_RX,1);
+    #endif 
     CalibrateImage( );
     SetOpMode( RF_OPMODE_SLEEP );
     /* Set Lora Mode and max payload to 0x40 */
@@ -230,6 +248,12 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
 
 void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     this->Reset();
+    #ifdef RADIO_ANT_SWITCH_TX_RF0
+        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,0);
+    #endif
+    #ifdef RADIO_ANT_SWITCH_RX
+        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_RX,1);
+    #endif
     Channel = channel;
     rxPayloadSize = 0;
     uint8_t bytesReceived = 0;

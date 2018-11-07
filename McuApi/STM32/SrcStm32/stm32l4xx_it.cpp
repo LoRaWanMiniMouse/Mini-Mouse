@@ -225,6 +225,11 @@ void EXTI3_IRQHandler(void)
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
   mcu.ExtISR();
 }
+void EXTI4_IRQHandler(void)
+{
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+  mcu.ExtISR();
+}
 
 void LPTIM1_IRQHandler(void)
 {

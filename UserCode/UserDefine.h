@@ -17,8 +17,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 */
 #ifndef USERDEFINE_H
 #define USERDEFINE_H
-#define SX1276_BOARD 1
-#define MURATA_BOARD 1
+
 //#define BOARD_L4 1
 /********************************************************************************/
 /*                         Application     dependant                            */

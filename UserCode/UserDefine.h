@@ -95,5 +95,5 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 
 #define USER_NUMBER_OF_RETRANSMISSION   1// Only used in case of user defined darate distribution strategy
-#define USER_DR_DISTRIBUTION_PARAMETERS 0x00000100  // Only used in case of user defined darate distribution strategy refered to doc that explain this value
+#define USER_DR_DISTRIBUTION_PARAMETERS 0x00000001  // Only used in case of user defined darate distribution strategy refered to doc that explain this value
 #endif

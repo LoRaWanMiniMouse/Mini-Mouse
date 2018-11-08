@@ -910,4 +910,17 @@ void  McuSTM32L072::AttachInterruptIn       (  void (* _Funcext) (void *) , void
 /* please refer to the startup file (startup_stm32l4xx.s).                    */
 /******************************************************************************/
 
+    void  McuSTM32L072::mwait_ms (int delayms) {
+    
+        HAL_Delay(delayms);
+    };
+    void  McuSTM32L072::mwait (int delays) {
+        HAL_Delay(1000*delays);
+    };
+    void  McuSTM32L072::waitUnderIt (uint32_t delay) {
+        for (uint32_t i = 0 ; i < delay ; i ++) {
+            __NOP;
+        }
+    };
 
+ 

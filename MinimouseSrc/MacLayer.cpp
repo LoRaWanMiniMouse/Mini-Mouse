@@ -143,11 +143,11 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx2 ( void ) {
     InsertTrace ( __COUNTER__, FileId );   
-    Phy.SetRxConfig(MacTxModulationCurrent, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
+    Phy.SetRxConfig(LORA, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
 };
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRxClassC ( void ) {
-    Phy.SetRxConfig(MacTxModulationCurrent, MacRx2Frequency, MacRx2SfCurrent-5, MacRx2BwCurrent, 10000 );
+    Phy.SetRxConfig(LORA, MacRx2Frequency, MacRx2SfCurrent-5, MacRx2BwCurrent, 10000 );
 };
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureTimerForRx ( eRxWinType type ) {

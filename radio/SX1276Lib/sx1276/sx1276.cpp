@@ -123,9 +123,9 @@ IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
 
 void SX1276::Reset( void ) {
     mcu.SetValueDigitalOutPin ( pinReset, 0);
-    mcu.mwait_ms( 5 );
+    mcu.mwait_ms( 1 );
     mcu.SetValueDigitalOutPin ( pinReset, 1);
-    mcu.mwait_ms( 5 );
+    mcu.mwait_ms( 1 );
     this->ResetFakeIrq();
     lastPacketRssi = 0;
     SetOpMode( RF_OPMODE_SLEEP );
@@ -247,7 +247,7 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
 }
 
 void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
-    this->Reset();
+ 
     #ifdef RADIO_ANT_SWITCH_TX_RF0
         mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,0);
     #endif
@@ -262,12 +262,13 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     uint8_t payloadChunkSize = FSK_THRESHOLD_REFILL_LIMIT;
     SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
     SetRfFrequency( channel );
-    uint8_t symbTimeout = timeOutMs / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
+    uint8_t symbTimeout = (timeOutMs*10) / 0.32;  // 0.32 = 16 * 1/50000  -> See datasheet for TimeoutRxPreamble
+   
     SetModulationParamsRxFsk( symbTimeout );
     SetFifoThreshold(LORAWAN_MIN_PACKET_SIZE - 1);
     SetOpMode( RF_OPMODE_RECEIVER );
+
     while(!IsFskFifoLevelReached()) {
-        mcu.mwait_ms(2);
         if(this->HasTimeouted()) {
             this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG);
             return;
@@ -278,25 +279,24 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     bytesReceived = LORAWAN_MIN_PACKET_SIZE - 1;   // -1 because the first one is the payload size, which is not included into the payload
     memcpy(rxBuffer, firstBytesRx + 1, bytesReceived);
     remainingBytes = rxPayloadSize - bytesReceived;
-
     SetFifoThreshold(payloadChunkSize - 1);
     while(remainingBytes > payloadChunkSize) {
         while(!IsFskFifoLevelReached()) {
-            mcu.mwait_ms(2);
+            mcu.waitUnderIt(3200);
         }
         ReadFifo( rxBuffer + bytesReceived, payloadChunkSize );
         bytesReceived += payloadChunkSize;
         remainingBytes = rxPayloadSize - bytesReceived;
     }
-
     SetFifoThreshold(remainingBytes - 1);
     while(!IsPayloadReady()) {
-        mcu.mwait_ms(2);
+        mcu.waitUnderIt(3200);
     }
     ReadFifo( rxBuffer + bytesReceived, remainingBytes );
     lastPacketRssi = this->GetCurrentRssi();
     this->Sleep(false);
     this->SetAndGenerateFakeIRQ(RECEIVE_PACKET_IRQ_FLAG);
+
 }
 
 void SX1276::Sleep(  bool coldStart ) {

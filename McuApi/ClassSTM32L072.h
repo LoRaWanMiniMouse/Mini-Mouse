@@ -22,6 +22,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "string.h"
 #include "stm32l0xx_hal_iwdg.h"
 #include "stm32l0xx_it.h"
+
 typedef enum {
     LSI,
     LSE
@@ -302,12 +303,9 @@ public :
 /******************************************************************************/
 /*                           Mcu wait                                         */
 /******************************************************************************/   
-    void mwait_ms (int delayms) {
-        HAL_Delay(delayms);
-    };
-    void mwait (int delays) {
-        HAL_Delay(1000*delays);
-    };
+    void mwait_ms (int delayms);
+    void mwait (int delays) ;
+    void  waitUnderIt (uint32_t delay); 
 
 /******************************************************************************/
 /*                           Mcu Uart Api                                     */

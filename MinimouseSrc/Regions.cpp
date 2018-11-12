@@ -564,6 +564,7 @@ template < class R >void LoraRegionsEU<R>:: Rx2DataRateToSfBw ( uint8_t dataRate
         this->MacRx2SfCurrent = 7;
         this->MacRx2BwCurrent = BW250 ;}
     else if ( dataRate == 7 ) {
+         this->MacRx2ModulationTypeCurrent = FSK;
         //@note tbd manage fsk case }
     }
     else {

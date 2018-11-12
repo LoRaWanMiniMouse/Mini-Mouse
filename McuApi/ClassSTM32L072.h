@@ -25,7 +25,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 typedef enum {
     LSI,
-    LSE
+    LSE,
 } eLOW_CLK_USE;
 
 typedef enum {

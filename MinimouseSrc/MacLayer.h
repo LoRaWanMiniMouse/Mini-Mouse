@@ -198,6 +198,7 @@ public:
 protected :
     uint8_t          MacTxSfCurrent;
     eModulationType  MacTxModulationCurrent;
+    eModulationType  MacRx2ModulationTypeCurrent;
     eBandWidth       MacTxBwCurrent;
     uint32_t         MacTxFrequencyCurrent;
     uint32_t         MacRx1FrequencyCurrent;

@@ -75,6 +75,8 @@ template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContain
     memset( appSKeyClassCG1, 0 , 16 );
     FcntDwnClassCG0         = 0xFFFFFFFF;  
     FcntDwnClassCG1         = 0xFFFFFFFF;  
+    MacTxModulationCurrent  = LORA;
+    MacRx2ModulationTypeCurrent = LORA;
 }; 
 
 template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::~LoraWanContainer( ) {
@@ -142,8 +144,8 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
 
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx2 ( void ) {
-    InsertTrace ( __COUNTER__, FileId );   
-    Phy.SetRxConfig(LORA, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
+    InsertTrace ( __COUNTER__, FileId );
+    Phy.SetRxConfig(MacRx2ModulationTypeCurrent, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
 };
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRxClassC ( void ) {
@@ -157,7 +159,11 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
     tCurrentMillisec =  mcu.RtcGetTimeMs( );
     if (type == RX1) {
         RegionSetRxConfig ( RX1 );
-        ComputeRxWindowParameters ( MacRx1SfCurrent, MacRx1BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 , BOARD_DELAY_RX_SETTING_MS );
+        if (MacTxModulationCurrent == LORA) {
+            ComputeRxWindowParameters ( MacRx1SfCurrent, MacRx1BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 , BOARD_DELAY_RX_SETTING_MS );
+        } else {
+            RxOffsetMs = 100; // tb reduce
+        }
         tAlarmMillisec = ( ( MacRx1Delay * 1000 )+ Phy.TimestampRtcIsr )  - tCurrentMillisec  ;
         if ( (int)(tAlarmMillisec - RxOffsetMs) < 0 ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_RX1FINISHED ;
@@ -167,7 +173,13 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
         }
     } else {
         RegionSetRxConfig ( RX2 );
-        ComputeRxWindowParameters ( MacRx2SfCurrent, MacRx2BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 + 1000 , BOARD_DELAY_RX_SETTING_MS );
+        
+        if (MacRx2ModulationTypeCurrent == LORA) {
+           ComputeRxWindowParameters ( MacRx2SfCurrent, MacRx2BwCurrent, CRYSTAL_ERROR, MacRx1Delay * 1000 + 1000 , BOARD_DELAY_RX_SETTING_MS );
+        } else {
+            RxOffsetMs = 100; // tb reduce
+        }
+       
         tAlarmMillisec = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - tCurrentMillisec  ;// @note Rx2 Dalay is alway RX1DELAY + 1 second
         if ( (int)(tAlarmMillisec - RxOffsetMs) < 0 ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_IDLE ;
@@ -988,13 +1000,17 @@ template <int NBCHANNEL, class R> void  LoraWanContainer<NBCHANNEL, R>::ComputeR
     // ClockAccuracy is set in Define.h, it is board dependent. It must be equal to error in per thousand
     InsertTrace ( __COUNTER__, FileId );  
     uint32_t RxErrorMs= ( ClockAccuracy * RxDelayMs ) / 1000; // for example with an clockaccuracy = 30 (3%)  and a rx windows set to 5s => rxerror = 150 ms 
-    int bwTemp = 125* ( BW + 1 );
-    double tSymbol = (double) (1<<SF) / (double) bwTemp;        
-    Phy.SymbolDuration = (uint32_t) tSymbol ;
-    uint8_t minRxSymbols = 6;
-    MacRxWindowSymb = (uint16_t) (MAX( ( 2 * minRxSymbols - 8 ) + (2 * RxErrorMs * bwTemp >> SF) + 1 , minRxSymbols ));
-    RxOffsetMs = ( int32_t )((ceil( ( 4.0 * tSymbol ) - ( ( MacRxWindowSymb * tSymbol ) / 2.0 ) - BoardDelayRxMs ))*(-1));
-    MacRxWindowMs = MacRxWindowSymb * tSymbol ;
+    if ( MacTxModulationCurrent == LORA) {
+        int bwTemp = 125* ( BW + 1 );
+        double tSymbol = (double) (1<<SF) / (double) bwTemp;        
+        Phy.SymbolDuration = (uint32_t) tSymbol ;
+        uint8_t minRxSymbols = 6;
+        MacRxWindowSymb = (uint16_t) (MAX( ( 2 * minRxSymbols - 8 ) + (2 * RxErrorMs * bwTemp >> SF) + 1 , minRxSymbols ));
+        RxOffsetMs = ( int32_t )((ceil( ( 4.0 * tSymbol ) - ( ( MacRxWindowSymb * tSymbol ) / 2.0 ) - BoardDelayRxMs ))*(-1));
+        MacRxWindowMs = MacRxWindowSymb * tSymbol ;
+    } else { //FSK
+        RxOffsetMs = 40;//BoardDelayRxMs + 25 + ( ( BoardDelayRxMs * ClockAccuracy ) / 1000 );
+    }
 };
 
 template <int NBCHANNEL, class R> eStatusLoRaWan  LoraWanContainer<NBCHANNEL, R>::CheckValidMulticastPayload( void ){

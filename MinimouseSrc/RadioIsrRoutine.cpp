@@ -27,7 +27,7 @@ template class RadioContainer<SX1272>;
 template class RadioContainer<SX126x>;
 template <class R> void RadioContainer <R>::IsrRadio( void ) {
     
- 
+      mcu.SetValueDigitalOutPin ( DEBUG , 0 ); 
     int status = OKLORAWAN;
     uint32_t tCurrentMillisec;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond ( );
@@ -45,7 +45,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
         case RECEIVE_PACKET_IRQ_FLAG :
             InsertTrace ( __COUNTER__, FileId );
             tCurrentMillisec =  mcu.RtcGetTimeMs( );
-            //DEBUG_PRINTF( "Receive a packet %d ms after tx done\n",tCurrentMillisec-TimestampRtcIsr);
+            DEBUG_PRINTF( "Receive a packet %d ms after tx done\n",tCurrentMillisec-TimestampRtcIsr);
             status = DumpRxPayloadAndMetadata ( );
             if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
                 InsertTrace ( __COUNTER__, FileId );
@@ -88,22 +88,24 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     }
     Radio->Sleep ( false );
     switch ( StateRadioProcess ) { 
+       
         case RADIOSTATE_TXON :
-        mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
+        
             InsertTrace ( __COUNTER__, FileId );
             TimestampRtcIsr = mcu.RtcGetTimeMs ( ); //@info Timestamp only on txdone it
             StateRadioProcess = RADIOSTATE_TXFINISHED;
             break;
-        
+           
         case RADIOSTATE_TXFINISHED :
             InsertTrace ( __COUNTER__, FileId );
             StateRadioProcess = RADIOSTATE_RX1FINISHED;
             break;
         
+        
        case RADIOSTATE_RX1FINISHED :
             InsertTrace ( __COUNTER__, FileId ); 
             StateRadioProcess = RADIOSTATE_IDLE;
-             mcu.SetValueDigitalOutPin ( DEBUG , 0 ); 
+            
             break;
         case RADIOSTATE_RXC :
             StateRadioProcess = RADIOSTATE_IDLE;
@@ -114,5 +116,6 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
             DEBUG_MSG ("receive It radio error\n");
             break;
     }
+    
 };
 

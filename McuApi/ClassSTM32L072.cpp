@@ -51,10 +51,10 @@ void SystemClock_Config(void)
 
     /**Initializes the CPU, AHB and APB busses clocks 
     */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
-   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+   RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
   RCC_OscInitStruct.HSICalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
@@ -81,8 +81,8 @@ void SystemClock_Config(void)
 
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_LPTIM1;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  PeriphClkInit.LptimClockSelection = RCC_LPTIM1CLKSOURCE_LSI;
-  PeriphClkInit.RTCClockSelection    = RCC_RTCCLKSOURCE_LSI;
+  PeriphClkInit.LptimClockSelection = RCC_LPTIM1CLKSOURCE_LSE;
+  PeriphClkInit.RTCClockSelection    = RCC_RTCCLKSOURCE_LSE;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
    
@@ -917,10 +917,9 @@ void  McuSTM32L072::AttachInterruptIn       (  void (* _Funcext) (void *) , void
     void  McuSTM32L072::mwait (int delays) {
         HAL_Delay(1000*delays);
     };
+
     void  McuSTM32L072::waitUnderIt (uint32_t delay) {
-        for (uint32_t i = 0 ; i < delay ; i ++) {
-            __NOP;
-        }
+        
     };
 
  

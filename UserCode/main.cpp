@@ -137,7 +137,7 @@ int main( ) {
     }
     UserPayload[ 0 ]  = FW_VERSION ;
     MsgType = UNCONF_DATA_UP;
-
+    Lp.NewJoin();
     while(1) {
     /*!
     * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes) + FW version. 
@@ -163,7 +163,7 @@ int main( ) {
         DEBUG_MSG (" new packet \n");
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            mcu.GotoSleepMSecond ( 100 );
+            mcu.GotoSleepMSecond ( 300 );
             //uint8_t toto;
             //RadioUser.ReadRegisters(0x06BD,&toto,1);
             //DEBUG_PRINTF("mcu get time ms  = %d\n",toto);

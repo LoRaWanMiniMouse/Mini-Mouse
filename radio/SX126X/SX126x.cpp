@@ -257,6 +257,7 @@ void SX126x::RxFsk(
                         IRQ_RADIO_NONE
                    );
     ClearIrqStatus( IRQ_RADIO_ALL );
+    rxTimeoutMs = 100 ;
     SetRx( rxTimeoutMs << 6 );
 }
 

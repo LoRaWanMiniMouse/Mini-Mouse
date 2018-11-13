@@ -545,11 +545,11 @@ void McuSTM32L072::RtcInit (void)
 
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.AsynchPrediv = 31;
   if (LOW_SPEED_CLK == LSI ) {
       hrtc.Init.SynchPrediv = ( LSI_VALUE / 128 ) -1;
   } else {
-      hrtc.Init.SynchPrediv = 255;
+      hrtc.Init.SynchPrediv = 1023;
   }
   hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
   hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
@@ -596,7 +596,7 @@ uint32_t McuSTM32L072::RtcGetTimeMs( void )
     timeinfo.tm_sec  = timeStruct.Seconds;
     // Convert to timestamp   
     time_t t = mktime(&timeinfo);
-    return ( ( t * 1000 ) + ( 999 - ( ( timeStruct.SubSeconds *999) / 255 ) ) );  // get time en ms
+    return ( ( t * 1000 ) + ( 999 - ( ( timeStruct.SubSeconds *999) / hrtc.Init.SynchPrediv ) ) );  // get time en ms
 }
 
 uint32_t McuSTM32L072::RtcGetTimeSecond( void )

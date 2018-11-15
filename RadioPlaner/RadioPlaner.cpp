@@ -41,42 +41,88 @@ ePlanerInitHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* Attach
            AttachCallBackHook0 = AttachCallBack ;
            objHook0            = objHook;
            break;
+        case 1 :
+           AttachCallBackHook1 = AttachCallBack ;
+           objHook1            = objHook;
+           break;
+        case 2 :
+           AttachCallBackHook2 = AttachCallBack ;
+           objHook2            = objHook;
+           break;
+        case 3 :
+           AttachCallBackHook3 = AttachCallBack ;
+           objHook3            = objHook;
+           break;
         default :
             return (INIT_HOOK_ERROR);
     }
     return ( INIT_HOOK_OK );
 }
 
+template <class R>
+ePlanerInitHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHook, uint8_t * HookId ){
+    ePlanerInitHookStatus status = INIT_HOOK_ERROR;
+    if ( objHook == objHook0 ) { 
+       *HookId = 0;
+        status = INIT_HOOK_OK ;
+    } else if ( objHook == objHook1 ) { 
+       *HookId = 1;
+        status = INIT_HOOK_OK ;
+    } else if ( objHook == objHook2 ) { 
+       *HookId = 2;
+        status = INIT_HOOK_OK ;
+    } else if ( objHook == objHook3 ) { 
+       *HookId = 3;
+        status = INIT_HOOK_OK ;
+    } 
+    return (status);
+}
+
+
+
 template <class R> 
-void RadioPLaner<R>::SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power ){
+void RadioPLaner<R>::SendLora( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power ){
+    int HookNum = HookId;  //@tbd it should be a parameter of thge function
+    NextBW            [ HookNum ] = BW;
+    NextSF            [ HookNum ] = SF;
+    NextChannel       [ HookNum ] = channel;
+    NextTask          [ HookNum ] = TX_LORA;
+    EndTimeTask       [ HookNum ] = EndTime;
+    StartTimeTask     [ HookNum ] = 0;
+    NextPayload       [ HookNum ] = payload;
+    NextPayloadSize   [ HookNum ] = payloadSize;
+    NextPower         [ HookNum ] = power;
+    CurrentHookToExecute          = HookNum ;
     Radio->SendLora( payload, payloadSize, SF, BW, channel, power );
 }
 
 template <class R> 
-void RadioPLaner<R>::SendFsk ( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power ){
+void RadioPLaner<R>::SendFsk ( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power ){
     Radio->SendFsk ( payload, payloadSize, channel, power );
 }
 
 template <class R> 
-void RadioPLaner<R>::RxLora  ( uint32_t TimetoRadioPlaner , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs ){
-    int HookNum = 0;  //@tbd it should be a parameter of thge function
+void RadioPLaner<R>::RxLora  (uint8_t HookId,  uint32_t StartTime , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs ){
+    int HookNum = HookId;  //@tbd it should be a parameter of thge function
     NextBW        [ HookNum ] = BW;
     NextSF        [ HookNum ] = SF;
     NextChannel   [ HookNum ] = channel;
     NextTimeOutMs [ HookNum ] = TimeOutMs;
     NextTask      [ HookNum ] = RX_LORA;
+    EndTimeTask   [ HookNum ] = 0;
+    StartTimeTask [ HookNum ] = StartTime;
     CurrentHookToExecute      = HookNum ;
-    SetAlarm ( TimetoRadioPlaner );
+    SetAlarm ( StartTime );
 }
 
 template <class R> 
-void RadioPLaner<R>::RxFsk   ( uint32_t TimetoRadioPlaner , uint32_t channel, uint16_t timeout ){
-    int HookNum = 0;  //@tbd it should be a parameter of thge function
+void RadioPLaner<R>::RxFsk   (uint8_t HookId, uint32_t StartTime , uint32_t channel, uint16_t timeout ){
+    int HookNum = HookId;  //@tbd it should be a parameter of thge function
     NextChannel   [ HookNum ] = channel;
     NextTimeOutMs [ HookNum ] = timeout;
     NextTask      [ HookNum ] = RX_FSK;
     CurrentHookToExecute      = HookNum ;
-    SetAlarm ( TimetoRadioPlaner );
+    SetAlarm ( StartTime );
 }
 
 
@@ -86,12 +132,12 @@ template <class R>
     *PlanerStatus   = PLANER_REQUEST_DONE;
     IrqFlags_t status ;
     switch ( CurrentHookToExecute ) {
-        case SEND_FSK :  
+        case TX_FSK :  
         case RX_FSK   : 
             status =  ( Radio->GetIrqFlagsLora( ) );
             Radio->ClearIrqFlagsLora( );
             break;
-        case SEND_LORA :  
+        case TX_LORA :  
         case RX_LORA   : 
             status =  ( Radio->GetIrqFlagsLora( ) );
             Radio->ClearIrqFlagsLora( );
@@ -117,8 +163,6 @@ void RadioPLaner<R>::FetchPayloadFsk( uint8_t *payloadSize, uint8_t payload[255]
 }
 
 
-
-
 template <class R>     
 void RadioPLaner<R>::SetAlarm (uint32_t alarmInMs ) {
     mcu.StartTimerMsecond( &RadioPLaner<R>::CallbackIsrTimerRadioPlaner,this, alarmInMs);
@@ -133,9 +177,9 @@ void RadioPLaner<R>::SetAlarm (uint32_t alarmInMs ) {
 template <class R>     
 void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
     switch  ( NextTask [ CurrentHookToExecute ] ) {
-        case SEND_LORA : 
+        case TX_LORA : 
             break;
-        case SEND_FSK  : 
+        case TX_FSK  : 
             break;
         case RX_LORA   :
             Radio->RxLora ( NextBW[ CurrentHookToExecute ], NextSF[ CurrentHookToExecute ], NextChannel[ CurrentHookToExecute ], NextTimeOutMs[ CurrentHookToExecute ] );

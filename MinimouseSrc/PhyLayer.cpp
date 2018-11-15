@@ -37,6 +37,7 @@ template <class R> RadioContainer <R>::RadioContainer( RadioPLaner<R> * RadioUse
     TxSf = 7;
     Radio = RadioUser;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond( );
+    Radio->GetMyHookId  ( this, &MyHookId );
 }; 
 template <class R> RadioContainer<R>::~RadioContainer( ) {
 };
@@ -73,15 +74,15 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     CurrentMod        = TxModulation;
    
     if ( TxModulation == LORA ) {
-        InsertTrace ( __COUNTER__, FileId );
-        DEBUG_PRINTF ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
-        Radio->SendLora( TxPhyPayload, TxPayloadSize, TxSf, TxBw, TxFrequency, TxPower );
+        InsertTrace     ( __COUNTER__, FileId );
+        DEBUG_PRINTF    ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
+        Radio->SendLora ( MyHookId, 2000, TxPhyPayload, TxPayloadSize, TxSf, TxBw, TxFrequency, TxPower ); //@tbd RadioPlaner  timeonair
     } else {
-        InsertTrace ( __COUNTER__, FileId );
-        DEBUG_MSG("FSK TRANSMISSION \n");
-        Radio->SendFsk( TxPhyPayload, TxPayloadSize, TxFrequency, TxPower );
+        InsertTrace    ( __COUNTER__, FileId );
+        DEBUG_MSG      ("FSK TRANSMISSION \n");
+        Radio->SendFsk ( MyHookId, 2000, TxPhyPayload, TxPayloadSize, TxFrequency, TxPower ); //@tbd RadioPlaner 
     }
-    mcu.mwait_ms(1);
+   // mcu.mwait_ms(1);
 };
 
 template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlaner , eModulationType RxModulation ,uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac ,uint32_t RxWindowMs) {
@@ -91,12 +92,12 @@ template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlan
     RxMod        = RxModulation;
     CurrentMod   = RxModulation;
     if ( RxModulation == LORA ) {
-        InsertTrace ( __COUNTER__, FileId );
-        Radio->RxLora( TimetoRadioPlaner, RxBw, RxSf, RxFrequency, RxWindowMs );
-        DEBUG_PRINTF ( "  RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw );
+        InsertTrace   ( __COUNTER__, FileId );
+        Radio->RxLora ( MyHookId, TimetoRadioPlaner, RxBw, RxSf, RxFrequency, RxWindowMs );
+        DEBUG_PRINTF  ( "  RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw );
     } else {
-        InsertTrace ( __COUNTER__, FileId );
-        Radio->RxFsk( TimetoRadioPlaner, RxFrequency, RxWindowMs );
+        InsertTrace  ( __COUNTER__, FileId );
+        Radio->RxFsk ( MyHookId, TimetoRadioPlaner, RxFrequency, RxWindowMs );
         DEBUG_PRINTF ( "  RxFrequency = %d, FSK \n", RxFrequency );
     }
 }

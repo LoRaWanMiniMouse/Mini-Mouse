@@ -60,6 +60,7 @@ public:
     eIsReceiveOnRXC        IsReceiveOnRXC;
 
 private :
+    uint8_t              MyHookId;
     uint32_t             RxFrequency;
     eBandWidth           RxBw;
     uint8_t              RxSf;

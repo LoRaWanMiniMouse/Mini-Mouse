@@ -19,10 +19,10 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 #define RADIOPLANER_H
 #include "Define.h"
 
-#define NB_HOOK 1
+#define NB_HOOK 4
 typedef enum { 
-    SEND_LORA,
-    SEND_FSK,
+    TX_LORA,
+    TX_FSK,
     RX_LORA,
     RX_FSK,
     CAD,
@@ -49,12 +49,13 @@ class RadioPLaner  {
 public:
     RadioPLaner( R* RadioUser );
     ~RadioPLaner ( ); 
-    ePlanerInitHookStatus InitHook ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHook ) ;
+    ePlanerInitHookStatus InitHook     ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHook ) ;
+    ePlanerInitHookStatus GetMyHookId  ( void * objHook, uint8_t * HookId );
 
-    void       SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power );
-    void       SendFsk ( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power );
-    void       RxLora  ( uint32_t TimetoRadioPlaner , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
-    void       RxFsk   ( uint32_t TimetoRadioPlaner , uint32_t channel, uint16_t timeout );
+    void       SendLora( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power );
+    void       SendFsk ( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power );
+    void       RxLora  ( uint8_t HookId, uint32_t StartTime , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
+    void       RxFsk   ( uint8_t HookId, uint32_t StartTime , uint32_t channel, uint16_t timeout );
     IrqFlags_t GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
     void       FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
     void       FetchPayloadFsk ( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
@@ -65,15 +66,30 @@ public:
 
 private :
 
-    void (* AttachCallBackHook0) (void * ) ;
-    void * objHook0;
+  void (* AttachCallBackHook0) (void * ) ;
+  void * objHook0;
+  void (* AttachCallBackHook1) (void * ) ;
+  void * objHook1;
+  void (* AttachCallBackHook2) (void * ) ;
+  void * objHook2;
+  void (* AttachCallBackHook3) (void * ) ;
+  void * objHook3;
+  void CallBackHook0 (void) { AttachCallBackHook0 ( objHook0 ); };   
+  void CallBackHook1 (void) { AttachCallBackHook1 ( objHook1 ); };  
+  void CallBackHook2 (void) { AttachCallBackHook2 ( objHook2 ); };  
+  void CallBackHook3 (void) { AttachCallBackHook3 ( objHook3 ); };  
 /*     isr  Timer Parameters */
            
-  eBandWidth        NextBW        [ NB_HOOK ];
-  uint8_t           NextSF        [ NB_HOOK ];
-  uint32_t          NextChannel   [ NB_HOOK ];
-  uint16_t          NextTimeOutMs [ NB_HOOK ];
-  eRadioPlanerTask  NextTask      [ NB_HOOK ];
+  eBandWidth        NextBW            [ NB_HOOK ];
+  uint8_t           NextSF            [ NB_HOOK ];
+  uint32_t          NextChannel       [ NB_HOOK ];
+  uint16_t          NextTimeOutMs     [ NB_HOOK ];
+  eRadioPlanerTask  NextTask          [ NB_HOOK ];
+  uint32_t          StartTimeTask     [ NB_HOOK ];
+  uint32_t          EndTimeTask       [ NB_HOOK ];
+  uint8_t*          NextPayload       [ NB_HOOK ];
+  uint8_t           NextPayloadSize   [ NB_HOOK ];
+  uint8_t           NextPower         [ NB_HOOK ];
   uint8_t           CurrentHookToExecute;
   
   void              SetAlarm                    ( uint32_t alarmInMs ); 
@@ -88,7 +104,6 @@ private :
   static void CallbackIsrRadioPlaner (void * obj){(reinterpret_cast<RadioPLaner< R >*>(obj))->IsrRadioPlaner();} ; 
 
   
-  void CallBackHook0 (void) { AttachCallBackHook0 ( objHook0 ); };   
 
     R* Radio;
 };

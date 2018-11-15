@@ -41,7 +41,7 @@ public:
      * \brief LoraWanObject class constructor.
      * \param DevEui LoraWan Key for OTA Devices
      */    
-    LoraWanObject(  sLoRaWanKeys LoRaWanKeys,RADIOTYPE* RadioUser, uint32_t FlashAdress ); 
+    LoraWanObject(  sLoRaWanKeys LoRaWanKeys,RadioPLaner<RADIOTYPE>* RadioUser, uint32_t FlashAdress ); 
 
 
      /*!
@@ -222,10 +222,10 @@ public:
     void                       ActivateClassC          ( void );
     void                       DeActivateClassC        ( void );
     
-    
+    T<RADIOTYPE>               packet;    
 private :
 
-    T<RADIOTYPE>               packet;
+
     eLoraWan_Process_States    StateLoraWanProcess; // for debug not private
     uint32_t                   FlashAdress ;
     eDeviceTypeClassC          ClassCActivated;
@@ -235,9 +235,8 @@ private :
     uint8_t  GetStateTimer        ( void );
     uint32_t GetFailSafeTimestamp ( void ){return packet.Phy.LastItTimeFailsafe;};
     uint8_t  GetRadioIrqFlag      ( void );
-    void RadioReset               ( void );
-    void AttachRadioIsr           ( void ) { packet.Phy.AttachIsr ( ); };
-    void DetachRadioIsr           ( void ) { packet.Phy.DetachIsr ( ); };
+
+
 };
 
 #endif

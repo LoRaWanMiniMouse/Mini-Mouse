@@ -31,7 +31,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "main.h"
 #include "UserDefine.h"
 #include "ApiMcu.h"
-
+#include "RadioPlaner.h"
 
 #define FileId 4
 /*!
@@ -58,7 +58,7 @@ uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 
 uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
 uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
 uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
-uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x31 };    
+uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x3a };    
 uint32_t LoRaDevAddrInit          = 0x26011920;
 sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
 
@@ -97,6 +97,7 @@ int main( ) {
 #define FW_VERSION     0x13
     SX1272  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
 #endif
+    RadioPLaner < SX1276 > RP( &RadioUser );
     mcu.WatchDogStart ( );
     //mcu.GetUniqueId (uid); 
     //memcpy(&LoraWanKeys.DevEui[0], uid , 8);
@@ -108,7 +109,7 @@ int main( ) {
     LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 #endif
 #ifdef SX1276_BOARD
-    LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RP,USERFLASHADRESS); 
 #endif
 #ifdef SX1272_BOARD
     LoraWanObject<LoraRegionsEU,SX1272> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
@@ -121,7 +122,9 @@ int main( ) {
     * \brief Restore the LoraWan Context
     */
     DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
-   
+    
+    RP.AttachCallBackHook0 = &(Lp.packet.Phy.CallbackIsrRadio);
+    RP.objHook0 = &(Lp.packet.Phy);
 
     //uint8_t TPointer ;
    // TPointer = ExtDebugTrace[ TRACE_SIZE - 1]& 0xff;  

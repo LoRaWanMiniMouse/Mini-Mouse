@@ -19,6 +19,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "sx1272.h"
 #include "SX126x.h"
 #include "Define.h"
+#include "RadioPlaner.h"
 #ifndef PHY_LAYER_H
 #define PHY_LAYER_H
 
@@ -26,17 +27,15 @@ Maintainer        : Fabien Holin (SEMTECH)
 template < class R >
 class RadioContainer { 
 public: 
-    RadioContainer( R * RadioUser  ); 
+    RadioContainer( RadioPLaner<R> * RadioUser  ); 
     ~RadioContainer( );
-    R* Radio;
+    RadioPLaner<R>* Radio;
     void Send              (eModulationType MacTxModulationCurrent, uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, eBandWidth TxBwMac, uint16_t TxPayloadSizeMac );
     void Receive           ( void );
     void IsrRadio          ( void ); // Isr routine implemented in IsrRoutine.cpp file
     static void CallbackIsrRadio (void * obj){(reinterpret_cast<RadioContainer< R >*>(obj))->IsrRadio();} ;
-    void AttachIsr         ( void ) ;
-    void DetachIsr         ( void ); 
     int GetRadioState      ( void );
-    void SetRxConfig       (eModulationType RxModulation, uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac , uint32_t RxWindowMs);
+    void SetRxConfig       ( uint32_t TimetoRadioPlaner , eModulationType RxModulation, uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac , uint32_t RxWindowMs);
     uint32_t               GetTxFrequency ( void );
     uint8_t                TxPhyPayload[MAX_TX_PAYLOAD_SIZE]; 
     uint8_t                RxPhyPayload[MAX_TX_PAYLOAD_SIZE]; 

@@ -25,18 +25,18 @@ Maintainer        : Fabien Holin (SEMTECH)
 template class RadioContainer<SX1276>;
 template class RadioContainer<SX1272>;
 template class RadioContainer<SX126x>;
+
+
 template <class R> void RadioContainer <R>::IsrRadio( void ) {
-    
-      mcu.SetValueDigitalOutPin ( DEBUG , 0 ); 
+  
+    mcu.SetValueDigitalOutPin ( DEBUG , 0 ); 
     int status = OKLORAWAN;
     uint32_t tCurrentMillisec;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond ( );
     if( this->CurrentMod == LORA ) {
-        RegIrqFlag = Radio->GetIrqFlagsLora( );
-        Radio->ClearIrqFlagsLora( );
+        RegIrqFlag = Radio->GetStatusLoraPlaner( );
     } else {
-        RegIrqFlag = Radio->GetIrqFlagsFsk( );
-        Radio->ClearIrqFlagsFsk( );
+        RegIrqFlag = Radio->GetStatusFskPlaner( );  
     }
     switch ( RegIrqFlag ) {
         case SENT_PACKET_IRQ_FLAG :
@@ -54,12 +54,12 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
                 if (( (int)( LastTimeRxWindowsMs - tCurrentMillisec - 5 * SymbolDuration ) > 0 ) || (StateRadioProcess == RADIOSTATE_RXC)) {
                     if ( RxMod == LORA ) {
                       if ( StateRadioProcess == RADIOSTATE_RXC ) {
-                          Radio->RxLora( RxBw, RxSf, RxFrequency, 10000);
+                          //Radio->RxLora( RxBw, RxSf, RxFrequency, 10000);  @tbdone RadioPlaner
                       } else {
-                          Radio->RxLora( RxBw, RxSf, RxFrequency, timeoutMs );
+                        //  Radio->RxLora( RxBw, RxSf, RxFrequency, timeoutMs );
                       }
                     } else {
-                        Radio->RxFsk( RxFrequency, timeoutMs );
+                       // Radio->RxFsk( RxFrequency, timeoutMs );
                     }
                     DEBUG_MSG( "Receive a packet But rejected\n");
                     DEBUG_PRINTF( "tcurrent %u timeout = %d, end time %u \n ", tCurrentMillisec, timeoutMs, LastTimeRxWindowsMs);
@@ -72,7 +72,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
 
         case RXTIMEOUT_IRQ_FLAG :
             if ( StateRadioProcess == RADIOSTATE_RXC ) {
-                Radio->RxLora( RxBw, RxSf, RxFrequency, 10000);
+               // Radio->RxLora( RxBw, RxSf, RxFrequency, 10000);@tbdone RadioPlaner
                 DEBUG_MSG( "  **************************\n " );
                 DEBUG_MSG( " *      RXC  Timeout       *\n " );
                 DEBUG_MSG( " ***************************\n " );
@@ -86,7 +86,6 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
             DEBUG_PRINTF ("receive It radio error %x\n",RegIrqFlag);
             break;
     }
-    Radio->Sleep ( false );
     switch ( StateRadioProcess ) { 
        
         case RADIOSTATE_TXON :

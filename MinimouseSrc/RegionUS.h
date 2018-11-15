@@ -34,7 +34,7 @@ class LoraRegionsUS : public LoraWanContainer<72,R> {
 
     
 public: 
-    LoraRegionsUS ( sLoRaWanKeys LoRaWanKeys, R * RadioUser, uint32_t FlashAdress ); 
+    LoraRegionsUS ( sLoRaWanKeys LoRaWanKeys, RadioPLaner<R> * RadioUser, uint32_t FlashAdress ); 
     ~LoraRegionsUS ( void ) {};
 /*********************************************************************/
 /*            Define Regional parameter                              */

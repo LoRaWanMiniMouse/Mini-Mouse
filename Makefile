@@ -55,7 +55,8 @@ MiniMouse/RadioIsrRoutine.cpp\
 MiniMouse/Regions.cpp\
 MiniMouse/RegionUS.cpp\
 MiniMouse/TimerIsrRoutine.cpp\
-MiniMouse/utilities.cpp
+MiniMouse/utilities.cpp\
+RadioPlaner/RadioPlaner.cpp
 
 ifeq ($(BOARD_MURATA), 0)
     CPP_SOURCES +=  \
@@ -222,7 +223,8 @@ C_INCLUDES =  \
 -Iradio/sx1272\
 -Iradio/SX1276Lib/registers\
 -Iradio/SX1276Lib/sx1276\
--Iradio/SX126X
+-Iradio/SX126X\
+-IRadioPlaner
 else
 C_INCLUDES =  \
 -IMcuApi/STM32/IncStm32 \
@@ -236,7 +238,8 @@ C_INCLUDES =  \
 -Iradio/sx1272\
 -Iradio/SX1276Lib/registers\
 -Iradio/SX1276Lib/sx1276\
--Iradio/SX126X
+-Iradio/SX126X\
+-IRadioPlaner
 endif
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

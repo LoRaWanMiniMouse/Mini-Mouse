@@ -27,7 +27,7 @@ template class LoraWanObject< LoraRegionsUS, SX126x >;
 template class LoraWanObject< LoraRegionsEU, SX1272 >;
 template class LoraWanObject< LoraRegionsUS, SX1272 >;
 template <template <class R> class T, class RADIOTYPE>
-LoraWanObject<T,RADIOTYPE>::LoraWanObject( sLoRaWanKeys LoRaWanKeys, RADIOTYPE * RadioUser,uint32_t FlashAdress ):packet(  LoRaWanKeys, RadioUser,FlashAdress ) {
+LoraWanObject<T,RADIOTYPE>::LoraWanObject( sLoRaWanKeys LoRaWanKeys,RadioPLaner<RADIOTYPE> * RadioUser,uint32_t FlashAdress ):packet(  LoRaWanKeys, RadioUser,FlashAdress ) {
     StateLoraWanProcess = LWPSTATE_IDLE;
     packet.MajorBits    = LORAWANR1;
     FlashAdress         = FlashAdress;
@@ -75,7 +75,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
             switch ( GetRadioState( ) ) {
                 case RADIOSTATE_IDLE :
                    // InsertTrace ( __COUNTER__, FileId );
-                    AttachRadioIsr ( );                    
+                    //AttachRadioIsr ( );                    
                     packet.ConfigureRadioAndSend( );
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
@@ -169,7 +169,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     /************************************************************************************/
         case LWPSTATE_UPDATEMAC:
             InsertTrace ( __COUNTER__, FileId );
-            DetachRadioIsr ( );
+         //   DetachRadioIsr ( );
             packet.Phy.StateRadioProcess = RADIOSTATE_IDLE;  
             DEBUG_MSG( "\n" );
             DEBUG_MSG( "  **************************\n " );
@@ -459,7 +459,8 @@ uint8_t LoraWanObject <T,RADIOTYPE> ::GetRadioIrqFlag ( void ) {
 };
 template <template <class R> class T, class RADIOTYPE> 
 void LoraWanObject <T,RADIOTYPE> ::RadioReset ( void ) {
-    packet.Phy.Radio->Reset();
+  //  packet.Phy.Radio->Reset();
+  // deprecated since radio planer
 }
 template <template <class R> class T, class RADIOTYPE> 
 uint8_t LoraWanObject <T,RADIOTYPE> ::GetNbOfReset (void){

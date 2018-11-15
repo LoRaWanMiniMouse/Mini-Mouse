@@ -29,7 +29,7 @@ template class RadioContainer<SX1276>;
 template class RadioContainer<SX1272>;
 template class RadioContainer<SX126x>;
 
-template <class R> RadioContainer <R>::RadioContainer( R * RadioUser ){
+template <class R> RadioContainer <R>::RadioContainer( RadioPLaner<R> * RadioUser ){
     StateRadioProcess = RADIOSTATE_IDLE;
     TimestampRtcIsr =0;
     TxFrequency = 868100000;
@@ -48,7 +48,7 @@ template <class R> RadioContainer<R>::~RadioContainer( ) {
 /*          Cpy data +meta data in case of reception & crc ok        */
 /*          Set Radio in Sleep Mode                                  */
 /*******************Isr Radio  ***************************************/
-template <class R> void RadioContainer <R>::AttachIsr ( void ) {
+/* template <class R> void RadioContainer <R>::AttachIsr ( void ) {
     InsertTrace ( __COUNTER__, FileId );    
    //  RadioGlobalIt.rise( callback ( this, &RadioContainer::IsrRadio ) );
     mcu.AttachInterruptIn( &RadioContainer< R >::CallbackIsrRadio,this);
@@ -56,7 +56,7 @@ template <class R> void RadioContainer <R>::AttachIsr ( void ) {
 template <class R> void RadioContainer <R>::DetachIsr ( void ) {
     InsertTrace ( __COUNTER__, FileId );
 }
-
+ */
 /************************************************************************************************/
 /*                      Public  Methods                                                         */
 /************************************************************************************************/
@@ -71,7 +71,7 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     TxPayloadSize     = TxPayloadSizeMac;
     StateRadioProcess = RADIOSTATE_TXON;
     CurrentMod        = TxModulation;
-    Radio->Reset( ); 
+   
     if ( TxModulation == LORA ) {
         InsertTrace ( __COUNTER__, FileId );
         DEBUG_PRINTF ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
@@ -84,7 +84,7 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     mcu.mwait_ms(1);
 };
 
-template <class R> void RadioContainer <R>::SetRxConfig(eModulationType RxModulation ,uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac ,uint32_t RxWindowMs) {
+template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlaner , eModulationType RxModulation ,uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac ,uint32_t RxWindowMs) {
     RxFrequency  = RxFrequencyMac;
     RxBw         = RxBwMac;
     RxSf         = RxSfMac;
@@ -92,11 +92,11 @@ template <class R> void RadioContainer <R>::SetRxConfig(eModulationType RxModula
     CurrentMod   = RxModulation;
     if ( RxModulation == LORA ) {
         InsertTrace ( __COUNTER__, FileId );
-        Radio->RxLora( RxBw, RxSf, RxFrequency, RxWindowMs );
+        Radio->RxLora( TimetoRadioPlaner, RxBw, RxSf, RxFrequency, RxWindowMs );
         DEBUG_PRINTF ( "  RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw );
     } else {
         InsertTrace ( __COUNTER__, FileId );
-        Radio->RxFsk( RxFrequency, RxWindowMs );
+        Radio->RxFsk( TimetoRadioPlaner, RxFrequency, RxWindowMs );
         DEBUG_PRINTF ( "  RxFrequency = %d, FSK \n", RxFrequency );
     }
 }

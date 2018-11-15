@@ -30,7 +30,7 @@ template < class R >
 class LoraRegionsEU : public LoraWanContainer<16,R> { 
 
 public: 
-    LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys, R * RadioUser, uint32_t FlashAdress ); 
+    LoraRegionsEU ( sLoRaWanKeys LoRaWanKeys, RadioPLaner<R> * RadioUser, uint32_t FlashAdress ); 
     ~LoraRegionsEU ( void ) {};
 /*********************************************************************/
 /*            Define Regional parameter                              */

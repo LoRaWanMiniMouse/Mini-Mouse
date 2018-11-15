@@ -29,15 +29,15 @@ template <int NBCHANNEL, class R>
 class LoraWanContainer { 
 public: 
 
-    LoraWanContainer( sLoRaWanKeys LoRaWanKeys, R * RadioUser,uint32_t FlashAdress ); 
+    LoraWanContainer( sLoRaWanKeys LoRaWanKeys, RadioPLaner<R> * RadioUser,uint32_t FlashAdress ); 
     ~LoraWanContainer( );
     static const uint8_t  NUMBER_OF_CHANNEL = NBCHANNEL; 
     void BuildTxLoraFrame                    ( void );
     void BuildJoinLoraFrame                  ( void );
     void EncryptTxFrame                      ( void );
     void ConfigureRadioAndSend               ( void );
-    void ConfigureRadioForRx1                ( void );
-    void ConfigureRadioForRx2                ( void );
+    void ConfigureRadioForRx1                ( uint32_t TimetoRadioPlaner );
+    void ConfigureRadioForRx2                ( uint32_t TimetoRadioPlaner );
     void ConfigureRadioForRxClassC           ( void );
     void ConfigureTimerForRx                 ( eRxWinType type );
     void UpdateMacLayer                      ( void );

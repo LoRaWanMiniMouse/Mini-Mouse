@@ -24,7 +24,7 @@ Maintainer        : Fabien Holin ( SEMTECH)
 template class LoraRegionsUS<SX1276>;
 template class LoraRegionsUS<SX126x>;
 template class LoraRegionsUS<SX1272>;
-template < class R > LoraRegionsUS<R>::LoraRegionsUS ( sLoRaWanKeys LoRaWanKeys, R * RadioUser, uint32_t FlashAdress) : LoraWanContainer<72,R>  ( LoRaWanKeys, RadioUser, FlashAdress ){
+template < class R > LoraRegionsUS<R>::LoraRegionsUS ( sLoRaWanKeys LoRaWanKeys, RadioPLaner<R> * RadioUser, uint32_t FlashAdress) : LoraWanContainer<72,R>  ( LoRaWanKeys, RadioUser, FlashAdress ){
     
     memset( this->MacChannelIndexEnabled, CHANNEL_DISABLED, this->NUMBER_OF_CHANNEL );
     memset( this->MacMinDataRateChannel, 0, this->NUMBER_OF_CHANNEL );

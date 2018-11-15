@@ -33,7 +33,7 @@ template class LoraWanContainer <16,SX1272>;
 template class LoraWanContainer <72,SX1272>;
 template class LoraWanContainer <72,SX1276>;
 template class LoraWanContainer <72,SX126x>;
-template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys, R * RadioUser,uint32_t FlashAdress):Phy( RadioUser ) { 
+template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys, RadioPLaner<R>* RadioUser,uint32_t FlashAdress):Phy( RadioUser ) { 
     StateTimer = TIMERSTATE_SLEEP;
     AvailableRxPacketForUser = NO_LORA_RXPACKET_AVAILABLE;
     memcpy( appSKey, LoRaWanKeys.LoRaMacAppSKey, 16 );
@@ -133,9 +133,8 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
 /************************************************************************************************************************************/
 
 
-template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx1 ( void ) {
-    InsertTrace ( __COUNTER__, FileId );
-    Phy.SetRxConfig(MacTxModulationCurrent,MacRx1FrequencyCurrent, MacRx1SfCurrent, MacRx1BwCurrent, MacRxWindowMs);
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx1 (  uint32_t TimetoRadioPlaner  ) {
+    Phy.SetRxConfig(TimetoRadioPlaner ,MacTxModulationCurrent,MacRx1FrequencyCurrent, MacRx1SfCurrent, MacRx1BwCurrent, MacRxWindowMs);
 };
 /************************************************************************************************************************************/
 /*                                              ConfigureRadioForRx2 +  ConfigureTimerForRx                                         */
@@ -143,13 +142,13 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
 /************************************************************************************************************************************/
 
 
-template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx2 ( void ) {
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx2 ( uint32_t TimetoRadioPlaner ) {
     InsertTrace ( __COUNTER__, FileId );
-    Phy.SetRxConfig(MacRx2ModulationTypeCurrent, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
+    Phy.SetRxConfig(TimetoRadioPlaner, MacRx2ModulationTypeCurrent, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
 };
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRxClassC ( void ) {
-    Phy.SetRxConfig(LORA, MacRx2Frequency, MacRx2SfCurrent-5, MacRx2BwCurrent, 10000 );
+    Phy.SetRxConfig(0,LORA, MacRx2Frequency, MacRx2SfCurrent-5, MacRx2BwCurrent, 10000 ); //@tbd RadioPlaner "0 ""
 };
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureTimerForRx ( eRxWinType type ) {
@@ -168,8 +167,11 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
         if ( (int)(tAlarmMillisec - RxOffsetMs) < 0 ) {// too late to launch a timer
             Phy.StateRadioProcess = RADIOSTATE_RX1FINISHED ;
         } else { 
-            SetAlarm( tAlarmMillisec - RxOffsetMs , type );
+           // SetAlarm( tAlarmMillisec - RxOffsetMs , type );
+            RegionSetRxConfig ( RX1 );
             Phy.LastTimeRxWindowsMs =  ( ( MacRx1Delay * 1000 )+ Phy.TimestampRtcIsr ) - RxOffsetMs + MacRxWindowMs ; // timestamp of the end of rx1 windows
+            DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
+            ConfigureRadioForRx1 ( tAlarmMillisec - RxOffsetMs );
         }
     } else {
         RegionSetRxConfig ( RX2 );
@@ -185,11 +187,15 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
             Phy.StateRadioProcess = RADIOSTATE_IDLE ;
             DEBUG_PRINTF( " error case negative Timer %d ms\n", tAlarmMillisec );
         } else { 
-            SetAlarm( tAlarmMillisec - RxOffsetMs, type );
+            //SetAlarm( tAlarmMillisec - RxOffsetMs, type );
+            RegionSetRxConfig ( RX2 );
             Phy.LastTimeRxWindowsMs = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - RxOffsetMs + MacRxWindowMs ; // timestamp of the end of rx2 windows
+            DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
+            ConfigureRadioForRx2 ( tAlarmMillisec - RxOffsetMs );
+        
         }
     }
-    DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
+   
 }
 /************************************************************************************************************************************/
 /*                                              DecodeRxFRame                                                                       */

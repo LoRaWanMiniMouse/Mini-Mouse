@@ -31,6 +31,21 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
 }; 
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 }
+template <class R>
+ePlanerInitHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHook ) {
+    if ( HookId > NB_HOOK ) {
+        return ( INIT_HOOK_ERROR );
+    }
+    switch ( HookId ){
+        case 0 :
+           AttachCallBackHook0 = AttachCallBack ;
+           objHook0            = objHook;
+           break;
+        default :
+            return (INIT_HOOK_ERROR);
+    }
+    return ( INIT_HOOK_OK );
+}
 
 template <class R> 
 void RadioPLaner<R>::SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power ){
@@ -50,7 +65,7 @@ void RadioPLaner<R>::RxLora  ( uint32_t TimetoRadioPlaner , eBandWidth BW, uint8
     NextChannel   [ HookNum ] = channel;
     NextTimeOutMs [ HookNum ] = TimeOutMs;
     NextTask      [ HookNum ] = RX_LORA;
-    NextHookToExecute         = HookNum ;
+    CurrentHookToExecute      = HookNum ;
     SetAlarm ( TimetoRadioPlaner );
 }
 
@@ -60,25 +75,37 @@ void RadioPLaner<R>::RxFsk   ( uint32_t TimetoRadioPlaner , uint32_t channel, ui
     NextChannel   [ HookNum ] = channel;
     NextTimeOutMs [ HookNum ] = timeout;
     NextTask      [ HookNum ] = RX_FSK;
+    CurrentHookToExecute      = HookNum ;
     SetAlarm ( TimetoRadioPlaner );
 }
 
 
 template <class R> 
-IrqFlags_t RadioPLaner<R>::GetStatusLoraPlaner( void ){
+  IrqFlags_t RadioPLaner<R>::GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus ){
+    *IrqTimestampMs = mcu.RtcGetTimeMs ();
+    *PlanerStatus   = PLANER_REQUEST_DONE;
     IrqFlags_t status ;
-    status =  ( Radio->GetIrqFlagsLora( ) );
-    Radio->ClearIrqFlagsLora( );
+    switch ( CurrentHookToExecute ) {
+        case SEND_FSK :  
+        case RX_FSK   : 
+            status =  ( Radio->GetIrqFlagsLora( ) );
+            Radio->ClearIrqFlagsLora( );
+            break;
+        case SEND_LORA :  
+        case RX_LORA   : 
+            status =  ( Radio->GetIrqFlagsLora( ) );
+            Radio->ClearIrqFlagsLora( );
+            break;
+        case CAD:    
+        default : 
+            status =  ( Radio->GetIrqFlagsLora( ) );
+            Radio->ClearIrqFlagsLora( );
+            break;
+    }
     return (status);
 };
 
-template <class R>     
-IrqFlags_t RadioPLaner<R>::GetStatusFskPlaner( void ){
-    IrqFlags_t status ;
-    status =  ( Radio->GetIrqFlagsFsk( ) );
-    Radio->ClearIrqFlagsFsk(  );
-    return (status);
-};
+
 
 template <class R>     
 void RadioPLaner<R>::FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi){
@@ -105,16 +132,16 @@ void RadioPLaner<R>::SetAlarm (uint32_t alarmInMs ) {
 
 template <class R>     
 void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
-    switch  ( NextTask [ NextHookToExecute ] ) {
+    switch  ( NextTask [ CurrentHookToExecute ] ) {
         case SEND_LORA : 
             break;
         case SEND_FSK  : 
             break;
         case RX_LORA   :
-            Radio->RxLora ( NextBW[ NextHookToExecute ], NextSF[ NextHookToExecute ], NextChannel[ NextHookToExecute ], NextTimeOutMs[ NextHookToExecute ] );
+            Radio->RxLora ( NextBW[ CurrentHookToExecute ], NextSF[ CurrentHookToExecute ], NextChannel[ CurrentHookToExecute ], NextTimeOutMs[ CurrentHookToExecute ] );
             break;
         case RX_FSK    :
-            Radio->RxFsk(NextChannel[ NextHookToExecute ], NextTimeOutMs[ NextHookToExecute ]);
+            Radio->RxFsk(NextChannel[ CurrentHookToExecute ], NextTimeOutMs[ CurrentHookToExecute ]);
             break;
         case CAD :
             break;
@@ -130,6 +157,7 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
 /************************************************************************************/
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
+    IrqTimeStampMs = mcu.RtcGetTimeMs( );
     CallBackHook0 ( );
     Radio->Sleep( false );
 } 

@@ -57,7 +57,6 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     #endif
 
     if ( ( mcu.RtcGetTimeSecond( ) - GetFailSafeTimestamp () ) > 120 ) {
-        RadioReset ( ) ;
         StateLoraWanProcess = LWPSTATE_ERROR ;
         DEBUG_MSG ( "ERROR : FAILSAFE EVENT OCCUR \n");
         // NVIC_SystemReset() move into the user main;
@@ -189,7 +188,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
                 RtcTargetTimer = mcu.RtcGetTimeSecond( ) + randr( 2, 6 ); 
                 StateLoraWanProcess = LWPSTATE_TXwait;
             } else {
-                RadioReset ( ) ; 
+                //RadioReset ( ) ; @tbd Radioplaner 
                 if (( ClassCActivated == CLASS_C_NOT_ACTIVATED ) || ( *AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) ){
                     StateLoraWanProcess = LWPSTATE_IDLE;
                 } else {
@@ -300,7 +299,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::SendPayload ( uint8_t fPor
             return ( LWPSTATE_INVALID );
         }
     }
-    RadioReset ( ) ; 
+
     CopyUserPayload( dataIn,sizeIn );
     packet.UserPayloadSize = sizeIn;
     packet.fPort = fPort;
@@ -457,11 +456,8 @@ template <template <class R> class T, class RADIOTYPE>
 uint8_t LoraWanObject <T,RADIOTYPE> ::GetRadioIrqFlag ( void ) {
     return packet.Phy.RegIrqFlag;
 };
-template <template <class R> class T, class RADIOTYPE> 
-void LoraWanObject <T,RADIOTYPE> ::RadioReset ( void ) {
-  //  packet.Phy.Radio->Reset();
-  // deprecated since radio planer
-}
+
+
 template <template <class R> class T, class RADIOTYPE> 
 uint8_t LoraWanObject <T,RADIOTYPE> ::GetNbOfReset (void){
     return packet.NbOfReset;

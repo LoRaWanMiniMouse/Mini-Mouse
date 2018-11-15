@@ -35,41 +35,54 @@ typedef enum {
     RADIO_IN_IDLE,
 }eRadioState;
 
+typedef enum { 
+    PLANER_REQUEST_DONE,
+    PLANER_REQUEST_CANCELED, 
+}ePlanerStatus;
 
+typedef enum { 
+    INIT_HOOK_OK,
+    INIT_HOOK_ERROR 
+}ePlanerInitHookStatus;
 template < class R > 
 class RadioPLaner  { 
 public:
     RadioPLaner( R* RadioUser );
     ~RadioPLaner ( ); 
+    ePlanerInitHookStatus InitHook ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHook ) ;
 
-    void SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power );
-    void SendFsk ( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power );
-    void RxLora  ( uint32_t TimetoRadioPlaner , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
-    void RxFsk   ( uint32_t TimetoRadioPlaner , uint32_t channel, uint16_t timeout );
-    IrqFlags_t GetStatusLoraPlaner ( void );
-    IrqFlags_t GetStatusFskPlaner  ( void );
-    void FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
-    void FetchPayloadFsk ( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
-    void (* AttachCallBackHook0) (void * ) ;
-    void * objHook0;
+    void       SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power );
+    void       SendFsk ( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power );
+    void       RxLora  ( uint32_t TimetoRadioPlaner , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
+    void       RxFsk   ( uint32_t TimetoRadioPlaner , uint32_t channel, uint16_t timeout );
+    IrqFlags_t GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
+    void       FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
+    void       FetchPayloadFsk ( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
+    
     
       
    
 
 private :
+
+    void (* AttachCallBackHook0) (void * ) ;
+    void * objHook0;
 /*     isr  Timer Parameters */
+           
   eBandWidth        NextBW        [ NB_HOOK ];
   uint8_t           NextSF        [ NB_HOOK ];
   uint32_t          NextChannel   [ NB_HOOK ];
   uint16_t          NextTimeOutMs [ NB_HOOK ];
   eRadioPlanerTask  NextTask      [ NB_HOOK ];
-  uint8_t           NextHookToExecute;
+  uint8_t           CurrentHookToExecute;
+  
   void              SetAlarm                    ( uint32_t alarmInMs ); 
   void              IsrTimerRadioPlaner         ( void );
   static void       CallbackIsrTimerRadioPlaner ( void * obj ) { ( reinterpret_cast<RadioPLaner<R>*>(obj) )->IsrTimerRadioPlaner(); };
 
 
 /*     isr Radio Parameter   */
+  uint32_t          IrqTimeStampMs;
   eRadioState       CurrentRadioState;
   void IsrRadioPlaner                ( void ); // Isr routine implemented in IsrRoutine.cpp file
   static void CallbackIsrRadioPlaner (void * obj){(reinterpret_cast<RadioPLaner< R >*>(obj))->IsrRadioPlaner();} ; 

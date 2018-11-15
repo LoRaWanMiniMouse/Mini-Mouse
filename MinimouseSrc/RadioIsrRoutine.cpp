@@ -19,6 +19,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "Define.h"
 #include "ApiMcu.h"
 #include "utilities.h"
+#include "RadioPlaner.h"
 #define FileId 6
 
 
@@ -32,19 +33,15 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     mcu.SetValueDigitalOutPin ( DEBUG , 0 ); 
     int status = OKLORAWAN;
     uint32_t tCurrentMillisec;
+    ePlanerStatus PlanerStatus;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond ( );
-    if( this->CurrentMod == LORA ) {
-        RegIrqFlag = Radio->GetStatusLoraPlaner( );
-    } else {
-        RegIrqFlag = Radio->GetStatusFskPlaner( );  
-    }
+    RegIrqFlag = Radio->GetStatusPlaner ( &tCurrentMillisec, &PlanerStatus );
     switch ( RegIrqFlag ) {
         case SENT_PACKET_IRQ_FLAG :
             break;
 
         case RECEIVE_PACKET_IRQ_FLAG :
             InsertTrace ( __COUNTER__, FileId );
-            tCurrentMillisec =  mcu.RtcGetTimeMs( );
             DEBUG_PRINTF( "Receive a packet %d ms after tx done\n",tCurrentMillisec-TimestampRtcIsr);
             status = DumpRxPayloadAndMetadata ( );
             if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
@@ -91,7 +88,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
         case RADIOSTATE_TXON :
         
             InsertTrace ( __COUNTER__, FileId );
-            TimestampRtcIsr = mcu.RtcGetTimeMs ( ); //@info Timestamp only on txdone it
+            TimestampRtcIsr = tCurrentMillisec; //@info Timestamp only on txdone it
             StateRadioProcess = RADIOSTATE_TXFINISHED;
             break;
            

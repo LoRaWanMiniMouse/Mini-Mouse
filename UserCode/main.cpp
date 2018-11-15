@@ -122,9 +122,8 @@ int main( ) {
     * \brief Restore the LoraWan Context
     */
     DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
-    
-    RP.AttachCallBackHook0 = &(Lp.packet.Phy.CallbackIsrRadio);
-    RP.objHook0 = &(Lp.packet.Phy);
+    RP.InitHook ( 0 ,  &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
+
 
     //uint8_t TPointer ;
    // TPointer = ExtDebugTrace[ TRACE_SIZE - 1]& 0xff;  

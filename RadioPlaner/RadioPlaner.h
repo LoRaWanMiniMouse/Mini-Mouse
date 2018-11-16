@@ -33,7 +33,7 @@ public:
     /* Note : StartTime , EndTime : relative value to be discuss */
 
     void Send ( STask stask, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParamIn );
-    void Rx   ( uint8_t HookId, uint32_t StartTime , SRadioParam sRadioParamIn, uint16_t TimeOutMsec );
+    void Rx   ( STask stask, SRadioParam sRadioParamIn, uint16_t TimeOutMsec );
     void GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
     void FetchPayload    ( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
     

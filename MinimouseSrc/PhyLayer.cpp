@@ -105,8 +105,13 @@ template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlan
     sRadioParam.HeaderMode      = EXPLICIT_HEADER;
     sRadioParam.PreambuleLength = 8;
     sRadioParam.Modulation      = RxModulation;
-
-    Radio->Rx( MyHookId, TimetoRadioPlaner,sRadioParam , RxWindowMs );
+    
+    STask stask ;
+    stask.HookId         = MyHookId;
+    stask.StartTime      = TimetoRadioPlaner;
+    stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
+    stask.TaskTimingType = TASK_AT_TIME;
+    Radio->Rx( stask, sRadioParam , RxWindowMs );
 
     if ( RxModulation == LORA ) {
         InsertTrace   ( __COUNTER__, FileId );

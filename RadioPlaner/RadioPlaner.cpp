@@ -104,11 +104,11 @@ void RadioPLaner<R>::Send( STask stask, uint8_t *payload, uint8_t payloadSize, S
 
 
 template <class R> 
-void RadioPLaner<R>::Rx (uint8_t HookId,  uint32_t StartTime , SRadioParam sRadioParamIn, uint16_t TimeOutMsec ){
-   
+void RadioPLaner<R>::Rx (STask stask , SRadioParam sRadioParamIn, uint16_t TimeOutMsec ){
+    uint8_t HookId = stask.HookId;
     TaskType      [ HookId ] = TASK_RX_LORA;
     DurationTask  [ HookId ] = mcu.RtcGetTimeMs() + 0;
-    StartTimeTask [ HookId ] = mcu.RtcGetTimeMs() + StartTime;
+    StartTimeTask [ HookId ] = mcu.RtcGetTimeMs() + stask.StartTime;
     sRadioParam   [ HookId ] = sRadioParamIn;
     TimeOutMs [ HookId ]     = TimeOutMsec;
     CallPlanerArbitrer ( );

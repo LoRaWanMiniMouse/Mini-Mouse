@@ -32,13 +32,11 @@ public:
 
     /* Note : StartTime , EndTime : relative value to be discuss */
 
-    void       SendLora( uint8_t HookId, eTimingTypeTask TaskTimingType ,uint32_t StartTime, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParam );
-    void       SendFsk ( uint8_t HookId, eTimingTypeTask TaskTimingType ,uint32_t StartTime, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParam );
-    void       RxLora  ( uint8_t HookId, uint32_t StartTime , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMsec );
-    void       RxFsk   ( uint8_t HookId, uint32_t StartTime , uint32_t channel, uint16_t TimeOutMsec );
-    void       GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
-    void       FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
-    void       FetchPayloadFsk ( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
+    void Send ( uint8_t HookId, eTimingTypeTask TaskTimingType ,uint32_t StartTime, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParamIn );
+     void Rx  ( uint8_t HookId, uint32_t StartTime , SRadioParam sRadioParamIn, uint16_t TimeOutMsec );
+    void GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
+    void FetchPayload    ( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
+    
     
     
       
@@ -72,7 +70,7 @@ private :
 
 
   ePlanerTimerState PlanerTimerState;
-
+  SRadioParam       sRadioParam   [ NB_HOOK ];
   eBandWidth        Bw            [ NB_HOOK ];
   uint8_t           Sf            [ NB_HOOK ];
   uint32_t          Channel       [ NB_HOOK ];

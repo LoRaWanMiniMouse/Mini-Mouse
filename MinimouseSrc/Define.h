@@ -261,6 +261,22 @@ typedef enum {
     FSK
 }eModulationType;
 
+typedef enum {
+    CRC_YES,
+    CRC_NO
+}eCrcMode;
+
+typedef enum {
+    IQ_NORMAL,
+    IQ_INVERTED
+}eIqMode;
+
+typedef enum {
+    IMPLICIT_HEADER,
+    EXPLICIT_HEADER
+}eHeaderMode;
+
+
 typedef enum { 
     VALID_DEV_ADDR_UNICAST,
     VALID_DEV_ADDR_MULTI_CAST_G0,

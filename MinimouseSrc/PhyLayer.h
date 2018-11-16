@@ -41,8 +41,8 @@ public:
     uint8_t                TxPhyPayload[MAX_TX_PAYLOAD_SIZE]; 
     uint8_t                RxPhyPayload[MAX_TX_PAYLOAD_SIZE]; 
     uint8_t                RxPhyPayloadSize;
-    int                    RxPhyPayloadSnr;
-    int                    RxPhyPayloadRssi;
+    int16_t                RxPhyPayloadSnr;
+    int16_t                RxPhyPayloadRssi;
     uint16_t               TxPayloadSize;
     uint32_t               DevAddrIsr ; // a copy of the devaddr to be tested in the isr routine + devaddrclassCG0 & devaddrclasccG1
     eClassCEnable          ClassCG0EnableIsr; 
@@ -72,6 +72,7 @@ private :
     uint8_t              TxPower;
     uint8_t              TxSf;
     eBandWidth           TxBw;
+
     
     int                  DumpRxPayloadAndMetadata ( void );
     eValidDevAddr        CheckDevAddr (uint32_t devAddrToTest); 

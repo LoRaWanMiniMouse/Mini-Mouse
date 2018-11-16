@@ -69,20 +69,22 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     sRadioParam.Power           = TxPowerMac;
     sRadioParam.Sf              = TxSfMac;
     sRadioParam.Bw              = TxBwMac;
-    sRadioParam.Mod             = TxModulation;
+    sRadioParam.Modulation      = TxModulation;
+    sRadioParam.CrcMode         = CRC_YES;
+    sRadioParam.IqMode          = IQ_NORMAL;
+    sRadioParam.HeaderMode      = EXPLICIT_HEADER;
+    sRadioParam.PreambuleLength = 8;
+
+    Radio->Send (MyHookId,TASK_ASSAP, 0, 2000, TxPhyPayload, TxPayloadSizeMac, sRadioParam ); //@tbd RadioPlaner  timeonair
 
     if ( TxModulation == LORA ) {
-        InsertTrace     ( __COUNTER__, FileId );
+        InsertTrace    ( __COUNTER__, FileId );
         DEBUG_PRINTF    ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequencyMac, TxSfMac,TxBwMac, TxPayloadSizeMac) ; 
-        Radio->SendLora ( MyHookId,TASK_ASSAP, 0, 2000, TxPhyPayload, TxPayloadSizeMac, sRadioParam ); //@tbd RadioPlaner  timeonair
-
     } else {
         InsertTrace    ( __COUNTER__, FileId );
         DEBUG_MSG      ("FSK TRANSMISSION \n");
-        Radio->SendFsk ( MyHookId, TASK_ASSAP, 0, 2000, TxPhyPayload, TxPayloadSizeMac, sRadioParam ); //@tbd RadioPlaner 
     }
     StateRadioProcess = RADIOSTATE_TXON;
-   // mcu.mwait_ms(1);
 };
 
 template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlaner , eModulationType RxModulation ,uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac ,uint32_t RxWindowMs) {
@@ -91,13 +93,22 @@ template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlan
     RxSf         = RxSfMac;
     RxMod        = RxModulation;
     CurrentMod   = RxModulation;
+    sRadioParam.Frequency       = RxFrequencyMac;
+    sRadioParam.Sf              = RxSfMac;
+    sRadioParam.Bw              = RxBwMac;
+    sRadioParam.CrcMode         = CRC_NO;
+    sRadioParam.IqMode          = IQ_INVERTED;
+    sRadioParam.HeaderMode      = EXPLICIT_HEADER;
+    sRadioParam.PreambuleLength = 8;
+    sRadioParam.Modulation      = RxModulation;
+
+    Radio->Rx( MyHookId, TimetoRadioPlaner,sRadioParam , RxWindowMs );
+
     if ( RxModulation == LORA ) {
         InsertTrace   ( __COUNTER__, FileId );
-        Radio->RxLora ( MyHookId, TimetoRadioPlaner, RxBw, RxSf, RxFrequency, RxWindowMs );
         DEBUG_PRINTF  ( "  RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw );
     } else {
         InsertTrace  ( __COUNTER__, FileId );
-        Radio->RxFsk ( MyHookId, TimetoRadioPlaner, RxFrequency, RxWindowMs );
         DEBUG_PRINTF ( "  RxFrequency = %d, FSK \n", RxFrequency );
     }
 }
@@ -138,16 +149,13 @@ template <class R> eValidDevAddr RadioContainer<R>::CheckDevAddr (uint32_t devAd
 template <class R> int RadioContainer<R>::DumpRxPayloadAndMetadata ( void ) {
     int16_t snr;
     int16_t rssi;
-    if( CurrentMod == LORA ) {
-        Radio->FetchPayloadLora( &RxPhyPayloadSize, RxPhyPayload, &snr, &rssi );
-    } else {
-        Radio->FetchPayloadFsk( &RxPhyPayloadSize, RxPhyPayload, &snr, &rssi );
-    }
+    Radio->FetchPayload( &RxPhyPayloadSize, RxPhyPayload, &snr, &rssi );
     RxPhyPayloadSnr = (int) snr;
     RxPhyPayloadRssi= (int) rssi;
    /* check Mtype */
     int status = OKLORAWAN;
     InsertTrace ( __COUNTER__, FileId );	
+    DEBUG_PRINTF ("paylod size receive = %d\n", RxPhyPayloadSize);
     uint8_t MtypeRxtmp = RxPhyPayload[0] >> 5 ;
     if (( MtypeRxtmp == JOINREQUEST) || ( MtypeRxtmp == UNCONF_DATA_UP ) || ( MtypeRxtmp == CONF_DATA_UP) || ( MtypeRxtmp == REJOIN_REQUEST )) {
         status += ERRORLORAWAN;

@@ -22,9 +22,15 @@ struct SRadioParam {
     uint32_t             Frequency;
     eBandWidth           Bw;
     uint8_t              Sf;
-    eModulationType      Mod;
     uint8_t              Power;
+    eCrcMode             CrcMode;
+    eIqMode              IqMode;
+    eHeaderMode          HeaderMode;
+    uint8_t              PreambuleLength;
+    eModulationType      Modulation;
 };
+
+
 
 #define NB_HOOK 4
 /* to be discuss the following enum order is important because it define the priority order Min Num = hiest priority) */
@@ -43,8 +49,10 @@ typedef enum {
 }eTimingTypeTask;
 
 typedef enum { 
-    RADIO_IN_TX,
-    RADIO_IN_RX,
+    RADIO_IN_TX_LORA,
+    RADIO_IN_TX_FSK,
+    RADIO_IN_RX_LORA,
+    RADIO_IN_RX_FSK,
     RADIO_IN_CAD,
     RADIO_IN_IDLE,
 }eRadioState;

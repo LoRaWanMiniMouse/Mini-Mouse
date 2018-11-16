@@ -84,8 +84,8 @@ template <class R>
 void RadioPLaner<R>::SendLora( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power ){
    
     TaskType          [ HookId ] = TASK_TX_LORA;
-    EndTimeTask       [ HookId ] = EndTime;
-    StartTimeTask     [ HookId ] = 0;
+    EndTimeTask       [ HookId ] = mcu.RtcGetTimeMs() + EndTime;
+    StartTimeTask     [ HookId ] = mcu.RtcGetTimeMs() + 0;
 
     Bw            [ HookId ] = BW;
     Sf            [ HookId ] = SF;
@@ -101,8 +101,8 @@ template <class R>
 void RadioPLaner<R>::SendFsk ( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power ){
 
     TaskType          [ HookId ] = TASK_TX_FSK;
-    EndTimeTask       [ HookId ] = EndTime;
-    StartTimeTask     [ HookId ] = 0;
+    EndTimeTask       [ HookId ] = mcu.RtcGetTimeMs() + EndTime;
+    StartTimeTask     [ HookId ] = mcu.RtcGetTimeMs() + 0;
 
     Channel       [ HookId ] = channel;
     Payload       [ HookId ] = payload;
@@ -115,8 +115,8 @@ template <class R>
 void RadioPLaner<R>::RxLora  (uint8_t HookId,  uint32_t StartTime , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMsec ){
    
     TaskType      [ HookId ] = TASK_RX_LORA;
-    EndTimeTask   [ HookId ] = 0;
-    StartTimeTask [ HookId ] = StartTime;
+    EndTimeTask   [ HookId ] = mcu.RtcGetTimeMs() + 0;
+    StartTimeTask [ HookId ] = mcu.RtcGetTimeMs() + StartTime;
     Bw        [ HookId ] = BW;
     Sf        [ HookId ] = SF;
     Channel   [ HookId ] = channel;
@@ -127,7 +127,10 @@ void RadioPLaner<R>::RxLora  (uint8_t HookId,  uint32_t StartTime , eBandWidth B
 
 template <class R> 
 void RadioPLaner<R>::RxFsk   (uint8_t HookId, uint32_t StartTime , uint32_t channel, uint16_t TimeOutMsec ){
- 
+    TaskType      [ HookId ] = TASK_RX_FSK;
+    EndTimeTask   [ HookId ] = mcu.RtcGetTimeMs() + 0;
+    StartTimeTask [ HookId ] = mcu.RtcGetTimeMs() + StartTime;
+
     Channel   [ HookId ] = channel;
     TimeOutMs [ HookId ] = TimeOutMsec;
     TaskType  [ HookId ] = TASK_RX_FSK;
@@ -207,7 +210,7 @@ void  RadioPLaner<R>::LaunchTask ( void ){
             Radio->SendLora( Payload[Id], PayloadSize[Id], Sf[Id], Bw[Id], Channel[Id], Power[Id] );
             break;
         case TASK_RX_LORA :
-            SetAlarm ( StartTimeTask [Id] );
+            SetAlarm ( StartTimeTask [Id] - mcu.RtcGetTimeMs() );
             break;
         case TASK_TX_FSK :
         case TASK_RX_FSK :

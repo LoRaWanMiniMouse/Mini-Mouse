@@ -28,6 +28,11 @@ template class RadioPLaner<SX126x>;
 template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
     mcu.AttachInterruptIn( &RadioPLaner< R >::CallbackIsrRadioPlaner,this); // attach it radio
     Radio = RadioUser;
+    for ( int i = 0 ; i < NB_HOOK; i++ ) { 
+        TaskType      [ i ] = TASK_IDLE;
+        StartTimeTask [ i ] = 0;
+        EndTimeTask   [ i ] = 0;
+    }
 }; 
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 }
@@ -81,33 +86,34 @@ ePlanerInitHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHook, uint8_t * 
   
 
 template <class R> 
-void RadioPLaner<R>::SendLora( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power ){
+void RadioPLaner<R>::SendLora( uint8_t HookId, eTimingTypeTask TaskTimingType ,uint32_t StartTime, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParam){
    
     TaskType          [ HookId ] = TASK_TX_LORA;
     EndTimeTask       [ HookId ] = mcu.RtcGetTimeMs() + EndTime;
     StartTimeTask     [ HookId ] = mcu.RtcGetTimeMs() + 0;
 
-    Bw            [ HookId ] = BW;
-    Sf            [ HookId ] = SF;
-    Channel       [ HookId ] = channel;
+    Bw            [ HookId ] = sRadioParam.Bw;
+    Sf            [ HookId ] = sRadioParam.Sf;
+    Channel       [ HookId ] = sRadioParam.Frequency;
+    Power         [ HookId ] = sRadioParam.Power;
     Payload       [ HookId ] = payload;
     PayloadSize   [ HookId ] = payloadSize;
-    Power         [ HookId ] = power;
     CallPlanerArbitrer ( );
   
 }
 
 template <class R> 
-void RadioPLaner<R>::SendFsk ( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power ){
+void RadioPLaner<R>::SendFsk ( uint8_t HookId, eTimingTypeTask TaskTimingType ,uint32_t StartTime, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParam ){
 
     TaskType          [ HookId ] = TASK_TX_FSK;
     EndTimeTask       [ HookId ] = mcu.RtcGetTimeMs() + EndTime;
     StartTimeTask     [ HookId ] = mcu.RtcGetTimeMs() + 0;
 
-    Channel       [ HookId ] = channel;
+    Channel       [ HookId ] = sRadioParam.Frequency;
+    Power         [ HookId ] = sRadioParam.Power;
     Payload       [ HookId ] = payload;
     PayloadSize   [ HookId ] = payloadSize;
-    Power         [ HookId ] = power;
+
     CallPlanerArbitrer (  );
 }
 
@@ -137,31 +143,34 @@ void RadioPLaner<R>::RxFsk   (uint8_t HookId, uint32_t StartTime , uint32_t chan
     CallPlanerArbitrer (  );
    
 }
-
-
 template <class R> 
-  IrqFlags_t RadioPLaner<R>::GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus ){
-    *IrqTimestampMs = mcu.RtcGetTimeMs ();
-    *PlanerStatus   = PLANER_REQUEST_DONE;
-    IrqFlags_t status ;
-    switch ( CurrentHookToExecute ) {
-        case TASK_TX_FSK :  
-        case TASK_RX_FSK   : 
-            status =  ( Radio->GetIrqFlagsLora( ) );
-            Radio->ClearIrqFlagsLora( );
-            break;
-        case TASK_TX_LORA :  
-        case TASK_RX_LORA   : 
-            status =  ( Radio->GetIrqFlagsLora( ) );
-            Radio->ClearIrqFlagsLora( );
-            break;
-        case TASK_CAD:    
-        default : 
-            status =  ( Radio->GetIrqFlagsLora( ) );
-            Radio->ClearIrqFlagsLora( );
-            break;
-    }
-    return (status);
+ void RadioPLaner<R> :: ComputePlanerStatus (void ) {
+        IrqFlags_t status  = ( Radio->GetIrqFlagsLora( ) );
+        Radio->ClearIrqFlagsLora( );
+        switch (status) {
+            case SENT_PACKET_IRQ_FLAG    :
+                RadioPlanerStatus = PLANER_TX_DONE ;  
+                break;
+            case RECEIVE_PACKET_IRQ_FLAG : 
+                RadioPlanerStatus = PLANER_RX_PACKET;
+                break; 
+            case RXTIMEOUT_IRQ_FLAG      : 
+                RadioPlanerStatus = PLANER_RX_TIMEOUT;
+                break;
+            default:
+                if (RadioPlanerState == RADIO_IN_TX ) {
+                    RadioPlanerStatus = PLANER_TX_CANCELED ;
+                } else {
+                    RadioPlanerStatus = PLANER_RX_CANCELED ;
+                }
+                break;
+        }
+}
+ 
+template <class R> 
+  void RadioPLaner<R>::GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus ){
+    *IrqTimestampMs = IrqTimeStampMs;
+    *PlanerStatus   = RadioPlanerStatus;
 };
 
 
@@ -196,8 +205,17 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( void ){
        // callback to aborted task 
        //blabla
        // updatez time in scheduler
-
-    CurrentHookToExecute  = HOOK_0 ;//HOOKID0
+       int i;
+       int j; 
+       for ( i = TASK_IDLE ; i >= TASK_RX_LORA ; i-- ) { // Task Priority
+           for ( j = ( NB_HOOK - 1 ) ; j >= HOOK_0 ; j-- ) { // Hook priority
+               if ( TaskType [ j ] == i ) {
+                   //CurrentHookToExecute  = (uint8_t) j ;//HOOKID0 
+               }
+           }
+       
+       }
+    CurrentHookToExecute  = HOOK_0; 
     LaunchTask ( );
     
 }
@@ -205,7 +223,10 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( void ){
 template <class R> 
 void  RadioPLaner<R>::LaunchTask ( void ){
     uint8_t Id = CurrentHookToExecute;
+
     switch ( TaskType [ Id ] ) {
+        case TASK_IDLE    :
+            break;
         case TASK_TX_LORA :
             Radio->SendLora( Payload[Id], PayloadSize[Id], Sf[Id], Bw[Id], Channel[Id], Power[Id] );
             break;
@@ -231,24 +252,24 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
     PlanerTimerState = TIMER_IDLE ;
     switch  ( TaskType [ CurrentHookToExecute ] ) {
         case TASK_TX_LORA : 
-            PlanerRadioState = RADIO_TX ;
+            RadioPlanerState = RADIO_IN_TX ;
             break;
         case TASK_TX_FSK  :
-            PlanerRadioState = RADIO_TX ; 
+            RadioPlanerState = RADIO_IN_TX ; 
             break;
         case TASK_RX_LORA   :
             Radio->RxLora ( Bw[ CurrentHookToExecute ], Sf[ CurrentHookToExecute ], Channel[ CurrentHookToExecute ], TimeOutMs[ CurrentHookToExecute ] );
-            PlanerRadioState = RADIO_RX ;
+            RadioPlanerState = RADIO_IN_RX ;
             break;
         case TASK_RX_FSK    :
             Radio->RxFsk(Channel[ CurrentHookToExecute ], TimeOutMs[ CurrentHookToExecute ]);
-            PlanerRadioState = RADIO_RX ;
+            RadioPlanerState = RADIO_IN_RX ;
             break;
         case TASK_CAD :
-            PlanerRadioState = RADIO_CAD ;
+            RadioPlanerState = RADIO_IN_CAD ;
             break;
         default :
-            PlanerRadioState = RADIO_IDLE;
+            RadioPlanerState = RADIO_IN_IDLE;
             break;    
     }
 }              
@@ -261,8 +282,11 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
+    ComputePlanerStatus ( ); // get irq flag 
+    // get fifo 
     CallBackHook0 ( );
+    // launch arbitrer 
     Radio->Sleep( false );
-    PlanerRadioState = RADIO_IDLE;
+    RadioPlanerState = RADIO_IN_IDLE;
 } 
 

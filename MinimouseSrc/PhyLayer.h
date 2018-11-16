@@ -24,6 +24,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define PHY_LAYER_H
 
 
+
 template < class R >
 class RadioContainer { 
 public: 
@@ -48,7 +49,7 @@ public:
     eClassCEnable          ClassCG1EnableIsr; 
     uint32_t               DevAddrClassCG0Isr;
     uint32_t               DevAddrClassCG1Isr;
-    IrqFlags_t             RegIrqFlag;
+    ePlanerStatus          PlanerStatus;
     eJoinStatus            JoinedStatus; // used in isr routine to not filter on devaddr
     int                    StateRadioProcess;
     uint32_t               TimestampRtcIsr;
@@ -61,6 +62,7 @@ public:
 
 private :
     uint8_t              MyHookId;
+    SRadioParam          sRadioParam; 
     uint32_t             RxFrequency;
     eBandWidth           RxBw;
     uint8_t              RxSf;
@@ -70,7 +72,7 @@ private :
     uint8_t              TxPower;
     uint8_t              TxSf;
     eBandWidth           TxBw;
-
+    
     int                  DumpRxPayloadAndMetadata ( void );
     eValidDevAddr        CheckDevAddr (uint32_t devAddrToTest); 
 };

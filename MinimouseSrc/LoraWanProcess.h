@@ -234,7 +234,7 @@ private :
     void CopyUserPayload          ( const uint8_t* dataIn, const uint8_t sizeIn );
     uint8_t  GetStateTimer        ( void );
     uint32_t GetFailSafeTimestamp ( void ){return packet.Phy.LastItTimeFailsafe;};
-    uint8_t  GetRadioIrqFlag      ( void );
+    ePlanerStatus  GetPlanerStatus      ( void );
 
 
 };

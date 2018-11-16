@@ -84,12 +84,9 @@ IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
     }
 
     if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
-        irqFlags = (IrqFlags_t) (irqFlags | SENT_PACKET_IRQ_FLAG);
+        irqFlags = (IrqFlags_t) ( SENT_PACKET_IRQ_FLAG);
     }
 
-    if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
-        irqFlags = BAD_PACKET_IRQ_FLAG;
-    }
     return (IrqFlags_t) irqFlags;
 }
 

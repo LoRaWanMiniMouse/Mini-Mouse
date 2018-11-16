@@ -100,7 +100,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     /************************************************************************************/
         case LWPSTATE_RX1:
             if ( GetRadioState( ) == RADIOSTATE_RX1FINISHED ) {
-                if ( GetRadioIrqFlag ( ) == RECEIVE_PACKET_IRQ_FLAG) {
+                if ( GetPlanerStatus ( ) == PLANER_RX_PACKET) {
                     InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
@@ -127,7 +127,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
         case LWPSTATE_RX2:
                             
             if ( GetRadioState( ) == RADIOSTATE_IDLE ) {
-                if ( GetRadioIrqFlag ( ) == RECEIVE_PACKET_IRQ_FLAG) {
+                 if ( GetPlanerStatus ( ) == PLANER_RX_PACKET) {
                     InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
@@ -215,7 +215,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     /************************************************************************************/
          case LWPSTATE_RX_CLASSC:
             if ( GetRadioState( ) == RADIOSTATE_IDLE ) {
-                if ( GetRadioIrqFlag ( ) == RECEIVE_PACKET_IRQ_FLAG) {
+                 if ( GetPlanerStatus ( ) == PLANER_RX_PACKET) {
                     DEBUG_MSG( "\n" );
                     DEBUG_MSG( "  **************************\n " );
                     DEBUG_MSG( " * Receive a downlink RXC  *\n " );
@@ -453,8 +453,8 @@ uint8_t LoraWanObject <T,RADIOTYPE> ::GetRadioState ( void ) {
 };
  
 template <template <class R> class T, class RADIOTYPE> 
-uint8_t LoraWanObject <T,RADIOTYPE> ::GetRadioIrqFlag ( void ) {
-    return packet.Phy.RegIrqFlag;
+ePlanerStatus LoraWanObject <T,RADIOTYPE> ::GetPlanerStatus ( void ) {
+    return packet.Phy.PlanerStatus;
 };
 
 

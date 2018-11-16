@@ -18,16 +18,29 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 #ifndef DEFINE_RADIOPLANER_H
 #define DEFINE_RADIOPLANER_H
 
+struct SRadioParam {
+    uint32_t             Frequency;
+    eBandWidth           Bw;
+    uint8_t              Sf;
+    eModulationType      Mod;
+    uint8_t              Power;
+};
 
 #define NB_HOOK 4
+/* to be discuss the following enum order is important because it define the priority order Min Num = hiest priority) */
 typedef enum {
-    TASK_IDLE, 
+    TASK_RX_LORA,
+    TASK_RX_FSK, 
     TASK_TX_LORA,
     TASK_TX_FSK,
-    TASK_RX_LORA,
-    TASK_RX_FSK,
     TASK_CAD,
+    TASK_IDLE,
 }eRadioPlanerTask;
+typedef enum {
+    TASK_AT_TIME,
+    TASK_NOW,
+    TASK_ASSAP, 
+}eTimingTypeTask;
 
 typedef enum { 
     RADIO_IN_TX,
@@ -37,9 +50,15 @@ typedef enum {
 }eRadioState;
 
 typedef enum { 
-    PLANER_REQUEST_DONE,
-    PLANER_REQUEST_CANCELED, 
-}ePlanerStatus;
+    PLANER_RX_CANCELED, 
+    PLANER_TX_CANCELED, 
+    PLANER_RX_CRC_ERROR,
+    PLANER_CAD_POSITIVE,
+    PLANER_CAD_NEGATIVE,
+    PLANER_TX_DONE,
+    PLANER_RX_PACKET,
+    PLANER_RX_TIMEOUT 
+} ePlanerStatus;
 
 typedef enum { 
     INIT_HOOK_OK,
@@ -52,12 +71,6 @@ typedef enum {
 }ePlanerTimerState;
 
 
-typedef enum { 
-    RADIO_IDLE,
-    RADIO_TX,
-    RADIO_RX,
-    RADIO_CAD 
-}ePlanerRadioState;
 
 enum { 
     HOOK_0,

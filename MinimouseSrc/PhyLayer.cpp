@@ -24,6 +24,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "ApiMcu.h"
 #include "UserDefine.h"
 #include "utilities.h"
+#include "DefineRadioPlaner.h"
 #define FileId 3
 template class RadioContainer<SX1276>;
 template class RadioContainer<SX1272>;
@@ -63,25 +64,24 @@ template <class R> void RadioContainer <R>::DetachIsr ( void ) {
 /************************************************************************************************/
  //@note Partionning Public/private not yet finalized
  
-
 template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, eBandWidth TxBwMac, uint16_t TxPayloadSizeMac ) { //@note could/should be merge with tx config
-    TxFrequency       = TxFrequencyMac; 
-    TxPower           = TxPowerMac;
-    TxSf              = TxSfMac;
-    TxBw              = TxBwMac;
-    TxPayloadSize     = TxPayloadSizeMac;
-    StateRadioProcess = RADIOSTATE_TXON;
-    CurrentMod        = TxModulation;
-   
+    sRadioParam.Frequency       = TxFrequencyMac;
+    sRadioParam.Power           = TxPowerMac;
+    sRadioParam.Sf              = TxSfMac;
+    sRadioParam.Bw              = TxBwMac;
+    sRadioParam.Mod             = TxModulation;
+
     if ( TxModulation == LORA ) {
         InsertTrace     ( __COUNTER__, FileId );
-        DEBUG_PRINTF    ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequency, TxSf,TxBw, TxPayloadSize) ; 
-        Radio->SendLora ( MyHookId, 2000, TxPhyPayload, TxPayloadSize, TxSf, TxBw, TxFrequency, TxPower ); //@tbd RadioPlaner  timeonair
+        DEBUG_PRINTF    ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequencyMac, TxSfMac,TxBwMac, TxPayloadSizeMac) ; 
+        Radio->SendLora ( MyHookId,TASK_ASSAP, 0, 2000, TxPhyPayload, TxPayloadSizeMac, sRadioParam ); //@tbd RadioPlaner  timeonair
+
     } else {
         InsertTrace    ( __COUNTER__, FileId );
         DEBUG_MSG      ("FSK TRANSMISSION \n");
-        Radio->SendFsk ( MyHookId, 2000, TxPhyPayload, TxPayloadSize, TxFrequency, TxPower ); //@tbd RadioPlaner 
+        Radio->SendFsk ( MyHookId, TASK_ASSAP, 0, 2000, TxPhyPayload, TxPayloadSizeMac, sRadioParam ); //@tbd RadioPlaner 
     }
+    StateRadioProcess = RADIOSTATE_TXON;
    // mcu.mwait_ms(1);
 };
 

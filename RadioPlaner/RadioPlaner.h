@@ -32,11 +32,11 @@ public:
 
     /* Note : StartTime , EndTime : relative value to be discuss */
 
-    void       SendLora( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power );
-    void       SendFsk ( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power );
+    void       SendLora( uint8_t HookId, eTimingTypeTask TaskTimingType ,uint32_t StartTime, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParam );
+    void       SendFsk ( uint8_t HookId, eTimingTypeTask TaskTimingType ,uint32_t StartTime, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParam );
     void       RxLora  ( uint8_t HookId, uint32_t StartTime , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMsec );
     void       RxFsk   ( uint8_t HookId, uint32_t StartTime , uint32_t channel, uint16_t TimeOutMsec );
-    IrqFlags_t GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
+    void       GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
     void       FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
     void       FetchPayloadFsk ( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
     
@@ -63,8 +63,10 @@ private :
   uint32_t          StartTimeTask     [ NB_HOOK ];
   uint32_t          EndTimeTask       [ NB_HOOK ];
 
-  void CallPlanerArbitrer ( void );
-  void LaunchTask ( void );
+  void CallPlanerArbitrer  ( void );
+  void LaunchTask          ( void );
+  void ComputePlanerStatus ( void );
+  ePlanerStatus RadioPlanerStatus;
 /*     isr  Timer Parameters */
            
 
@@ -86,7 +88,7 @@ private :
 
 
 /*     isr Radio Parameter   */
-  ePlanerRadioState PlanerRadioState;
+  eRadioState       RadioPlanerState;
   uint32_t          IrqTimeStampMs;
   eRadioState       CurrentRadioState;
   void IsrRadioPlaner                ( void ); // Isr routine implemented in IsrRoutine.cpp file

@@ -20,27 +20,28 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "ApiMcu.h"
 #include "utilities.h"
 #include "RadioPlaner.h"
+#include "DefineRadioPlaner.h"
 #define FileId 6
 
 
 template class RadioContainer<SX1276>;
 template class RadioContainer<SX1272>;
 template class RadioContainer<SX126x>;
-
-
+   
 template <class R> void RadioContainer <R>::IsrRadio( void ) {
   
     mcu.SetValueDigitalOutPin ( DEBUG , 0 ); 
     int status = OKLORAWAN;
     uint32_t tCurrentMillisec;
-    ePlanerStatus PlanerStatus;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond ( );
-    RegIrqFlag = Radio->GetStatusPlaner ( &tCurrentMillisec, &PlanerStatus );
-    switch ( RegIrqFlag ) {
-        case SENT_PACKET_IRQ_FLAG :
+    Radio->GetStatusPlaner ( &tCurrentMillisec, &PlanerStatus );
+   
+
+    switch ( PlanerStatus ) {
+        case PLANER_TX_DONE :
             break;
 
-        case RECEIVE_PACKET_IRQ_FLAG :
+        case PLANER_RX_PACKET :
             InsertTrace ( __COUNTER__, FileId );
             DEBUG_PRINTF( "Receive a packet %d ms after tx done\n",tCurrentMillisec-TimestampRtcIsr);
             status = DumpRxPayloadAndMetadata ( );
@@ -63,11 +64,11 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
                     return;
                 }
                 DEBUG_MSG( "Receive a packet But rejected and too late to restart\n");
-                RegIrqFlag = RXTIMEOUT_IRQ_FLAG;
+                PlanerStatus = PLANER_RX_TIMEOUT;
             } 
             break;
 
-        case RXTIMEOUT_IRQ_FLAG :
+        case PLANER_RX_TIMEOUT :
             if ( StateRadioProcess == RADIOSTATE_RXC ) {
                // Radio->RxLora( RxBw, RxSf, RxFrequency, 10000);@tbdone RadioPlaner
                 DEBUG_MSG( "  **************************\n " );
@@ -75,12 +76,12 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
                 DEBUG_MSG( " ***************************\n " );
                 return;
             }
-    
-        case BAD_PACKET_IRQ_FLAG :
             break;
-        
+    
+        case PLANER_TX_CANCELED :
+        case PLANER_RX_CANCELED :
         default :
-            DEBUG_PRINTF ("receive It radio error %x\n",RegIrqFlag);
+            DEBUG_PRINTF ("receive It radio error %x\n",PlanerStatus);
             break;
     }
     switch ( StateRadioProcess ) { 

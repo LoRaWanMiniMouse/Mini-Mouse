@@ -60,7 +60,7 @@ private :
   uint32_t          StartTimeTask     [ NB_HOOK ];
   uint32_t          EndTimeTask       [ NB_HOOK ];
 
-  void AddTaskInPlanerArbitrer ( uint8_t HookId );
+  void CallPlanerArbitrer ( void );
   void LaunchTask ( void );
 /*     isr  Timer Parameters */
            

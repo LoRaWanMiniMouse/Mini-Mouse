@@ -59,4 +59,10 @@ typedef enum {
     RADIO_CAD 
 }ePlanerRadioState;
 
+enum { 
+    HOOK_0,
+    HOOK_1,
+    HOOK_2,
+    HOOK_3
+};
 #endif

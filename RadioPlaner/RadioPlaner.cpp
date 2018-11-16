@@ -93,13 +93,22 @@ void RadioPLaner<R>::SendLora( uint8_t HookId, uint32_t EndTime, uint8_t *payloa
     Payload       [ HookId ] = payload;
     PayloadSize   [ HookId ] = payloadSize;
     Power         [ HookId ] = power;
-    AddTaskInPlanerArbitrer ( HookId );
+    CallPlanerArbitrer ( );
   
 }
 
 template <class R> 
 void RadioPLaner<R>::SendFsk ( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power ){
-    Radio->SendFsk ( payload, payloadSize, channel, power );
+
+    TaskType          [ HookId ] = TASK_TX_FSK;
+    EndTimeTask       [ HookId ] = EndTime;
+    StartTimeTask     [ HookId ] = 0;
+
+    Channel       [ HookId ] = channel;
+    Payload       [ HookId ] = payload;
+    PayloadSize   [ HookId ] = payloadSize;
+    Power         [ HookId ] = power;
+    CallPlanerArbitrer (  );
 }
 
 template <class R> 
@@ -112,7 +121,7 @@ void RadioPLaner<R>::RxLora  (uint8_t HookId,  uint32_t StartTime , eBandWidth B
     Sf        [ HookId ] = SF;
     Channel   [ HookId ] = channel;
     TimeOutMs [ HookId ] = TimeOutMsec;
-    AddTaskInPlanerArbitrer ( HookId );
+    CallPlanerArbitrer ( );
    
 }
 
@@ -122,7 +131,7 @@ void RadioPLaner<R>::RxFsk   (uint8_t HookId, uint32_t StartTime , uint32_t chan
     Channel   [ HookId ] = channel;
     TimeOutMs [ HookId ] = TimeOutMsec;
     TaskType  [ HookId ] = TASK_RX_FSK;
-    AddTaskInPlanerArbitrer ( HookId );
+    CallPlanerArbitrer (  );
    
 }
 
@@ -178,14 +187,14 @@ void RadioPLaner<R>::SetAlarm (uint32_t alarmInMs ) {
 /************************************************************************************/
 
 template <class R> 
-void  RadioPLaner<R>::AddTaskInPlanerArbitrer ( uint8_t HookId ){
+void  RadioPLaner<R>::CallPlanerArbitrer ( void ){
        // @ tbd done arbiter task in our case only one hook so always elected
        // probably abort task if it is amandatory 
        // callback to aborted task 
        //blabla
        // updatez time in scheduler
 
-    CurrentHookToExecute     = HookId ;
+    CurrentHookToExecute  = HOOK_0 ;//HOOKID0
     LaunchTask ( );
     
 }

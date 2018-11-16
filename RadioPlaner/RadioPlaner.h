@@ -31,8 +31,8 @@ public:
 
     void       SendLora( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power );
     void       SendFsk ( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power );
-    void       RxLora  ( uint8_t HookId, uint32_t StartTime , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
-    void       RxFsk   ( uint8_t HookId, uint32_t StartTime , uint32_t channel, uint16_t timeout );
+    void       RxLora  ( uint8_t HookId, uint32_t StartTime , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMsec );
+    void       RxFsk   ( uint8_t HookId, uint32_t StartTime , uint32_t channel, uint16_t TimeOutMsec );
     IrqFlags_t GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
     void       FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
     void       FetchPayloadFsk ( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
@@ -60,21 +60,21 @@ private :
   uint32_t          StartTimeTask     [ NB_HOOK ];
   uint32_t          EndTimeTask       [ NB_HOOK ];
 
-
-  
+  void AddTaskInPlanerArbitrer ( uint8_t HookId );
+  void LaunchTask ( void );
 /*     isr  Timer Parameters */
            
 
 
   ePlanerTimerState PlanerTimerState;
-  
-  eBandWidth        NextBW            [ NB_HOOK ];
-  uint8_t           NextSF            [ NB_HOOK ];
-  uint32_t          NextChannel       [ NB_HOOK ];
-  uint16_t          NextTimeOutMs     [ NB_HOOK ];
-  uint8_t*          NextPayload       [ NB_HOOK ];
-  uint8_t           NextPayloadSize   [ NB_HOOK ];
-  uint8_t           NextPower         [ NB_HOOK ];
+
+  eBandWidth        Bw            [ NB_HOOK ];
+  uint8_t           Sf            [ NB_HOOK ];
+  uint32_t          Channel       [ NB_HOOK ];
+  uint16_t          TimeOutMs     [ NB_HOOK ];
+  uint8_t*          Payload       [ NB_HOOK ];
+  uint8_t           PayloadSize   [ NB_HOOK ];
+  uint8_t           Power         [ NB_HOOK ];
   uint8_t           CurrentHookToExecute;
   
   void              SetAlarm                    ( uint32_t alarmInMs ); 

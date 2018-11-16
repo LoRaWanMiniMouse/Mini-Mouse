@@ -78,7 +78,7 @@ ePlanerInitHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHook, uint8_t * 
     return (status);
 }
 
-
+  
 
 template <class R> 
 void RadioPLaner<R>::SendLora( uint8_t HookId, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power ){
@@ -87,14 +87,14 @@ void RadioPLaner<R>::SendLora( uint8_t HookId, uint32_t EndTime, uint8_t *payloa
     EndTimeTask       [ HookId ] = EndTime;
     StartTimeTask     [ HookId ] = 0;
 
-    NextBW            [ HookId ] = BW;
-    NextSF            [ HookId ] = SF;
-    NextChannel       [ HookId ] = channel;
-    NextPayload       [ HookId ] = payload;
-    NextPayloadSize   [ HookId ] = payloadSize;
-    NextPower         [ HookId ] = power;
-    CurrentHookToExecute          = HookId ;
-    Radio->SendLora( payload, payloadSize, SF, BW, channel, power );
+    Bw            [ HookId ] = BW;
+    Sf            [ HookId ] = SF;
+    Channel       [ HookId ] = channel;
+    Payload       [ HookId ] = payload;
+    PayloadSize   [ HookId ] = payloadSize;
+    Power         [ HookId ] = power;
+    AddTaskInPlanerArbitrer ( HookId );
+  
 }
 
 template <class R> 
@@ -103,27 +103,27 @@ void RadioPLaner<R>::SendFsk ( uint8_t HookId, uint32_t EndTime, uint8_t *payloa
 }
 
 template <class R> 
-void RadioPLaner<R>::RxLora  (uint8_t HookId,  uint32_t StartTime , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs ){
+void RadioPLaner<R>::RxLora  (uint8_t HookId,  uint32_t StartTime , eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMsec ){
    
     TaskType      [ HookId ] = TASK_RX_LORA;
     EndTimeTask   [ HookId ] = 0;
     StartTimeTask [ HookId ] = StartTime;
-    NextBW        [ HookId ] = BW;
-    NextSF        [ HookId ] = SF;
-    NextChannel   [ HookId ] = channel;
-    NextTimeOutMs [ HookId ] = TimeOutMs;
-    CurrentHookToExecute      = HookId ;
-    SetAlarm ( StartTime );
+    Bw        [ HookId ] = BW;
+    Sf        [ HookId ] = SF;
+    Channel   [ HookId ] = channel;
+    TimeOutMs [ HookId ] = TimeOutMsec;
+    AddTaskInPlanerArbitrer ( HookId );
+   
 }
 
 template <class R> 
-void RadioPLaner<R>::RxFsk   (uint8_t HookId, uint32_t StartTime , uint32_t channel, uint16_t timeout ){
+void RadioPLaner<R>::RxFsk   (uint8_t HookId, uint32_t StartTime , uint32_t channel, uint16_t TimeOutMsec ){
  
-    NextChannel   [ HookId ] = channel;
-    NextTimeOutMs [ HookId ] = timeout;
-    TaskType      [ HookId ] = TASK_RX_FSK;
-    CurrentHookToExecute      = HookId ;
-    SetAlarm ( StartTime );
+    Channel   [ HookId ] = channel;
+    TimeOutMs [ HookId ] = TimeOutMsec;
+    TaskType  [ HookId ] = TASK_RX_FSK;
+    AddTaskInPlanerArbitrer ( HookId );
+   
 }
 
 
@@ -171,8 +171,46 @@ void RadioPLaner<R>::SetAlarm (uint32_t alarmInMs ) {
 }
 
 
+
 /************************************************************************************/
-/*                                 Timer Isr Routine                             */
+/*                                 Planer Arbiter                                   */
+/*                                                                                  */
+/************************************************************************************/
+
+template <class R> 
+void  RadioPLaner<R>::AddTaskInPlanerArbitrer ( uint8_t HookId ){
+       // @ tbd done arbiter task in our case only one hook so always elected
+       // probably abort task if it is amandatory 
+       // callback to aborted task 
+       //blabla
+       // updatez time in scheduler
+
+    CurrentHookToExecute     = HookId ;
+    LaunchTask ( );
+    
+}
+
+template <class R> 
+void  RadioPLaner<R>::LaunchTask ( void ){
+    uint8_t Id = CurrentHookToExecute;
+    switch ( TaskType [ Id ] ) {
+        case TASK_TX_LORA :
+            Radio->SendLora( Payload[Id], PayloadSize[Id], Sf[Id], Bw[Id], Channel[Id], Power[Id] );
+            break;
+        case TASK_RX_LORA :
+            SetAlarm ( StartTimeTask [Id] );
+            break;
+        case TASK_TX_FSK :
+        case TASK_RX_FSK :
+        case TASK_CAD    :
+        default :
+        break;
+    } 
+}
+
+
+/************************************************************************************/
+/*                                 Timer Isr Routine                                */
 /*                               Called when Alarm expires                          */
 /************************************************************************************/
 
@@ -187,11 +225,11 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
             PlanerRadioState = RADIO_TX ; 
             break;
         case TASK_RX_LORA   :
-            Radio->RxLora ( NextBW[ CurrentHookToExecute ], NextSF[ CurrentHookToExecute ], NextChannel[ CurrentHookToExecute ], NextTimeOutMs[ CurrentHookToExecute ] );
+            Radio->RxLora ( Bw[ CurrentHookToExecute ], Sf[ CurrentHookToExecute ], Channel[ CurrentHookToExecute ], TimeOutMs[ CurrentHookToExecute ] );
             PlanerRadioState = RADIO_RX ;
             break;
         case TASK_RX_FSK    :
-            Radio->RxFsk(NextChannel[ CurrentHookToExecute ], NextTimeOutMs[ CurrentHookToExecute ]);
+            Radio->RxFsk(Channel[ CurrentHookToExecute ], TimeOutMs[ CurrentHookToExecute ]);
             PlanerRadioState = RADIO_RX ;
             break;
         case TASK_CAD :

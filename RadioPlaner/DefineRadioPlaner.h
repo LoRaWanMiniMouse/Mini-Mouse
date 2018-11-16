@@ -29,7 +29,18 @@ struct SRadioParam {
     uint8_t              PreambuleLength;
     eModulationType      Modulation;
 };
+typedef enum {
+    TASK_AT_TIME,
+    TASK_NOW,
+    TASK_ASSAP, 
+}eTimingTypeTask;
 
+struct STask {
+    uint8_t  HookId ;
+    uint32_t StartTime ; // absolute Ms
+    uint32_t TaskDuration  ;  
+    eTimingTypeTask TaskTimingType ;
+};
 
 
 #define NB_HOOK 4
@@ -42,11 +53,7 @@ typedef enum {
     TASK_CAD,
     TASK_IDLE,
 }eRadioPlanerTask;
-typedef enum {
-    TASK_AT_TIME,
-    TASK_NOW,
-    TASK_ASSAP, 
-}eTimingTypeTask;
+
 
 typedef enum { 
     RADIO_IN_TX_LORA,

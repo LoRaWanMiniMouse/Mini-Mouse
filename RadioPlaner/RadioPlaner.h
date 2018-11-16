@@ -32,8 +32,8 @@ public:
 
     /* Note : StartTime , EndTime : relative value to be discuss */
 
-    void Send ( uint8_t HookId, eTimingTypeTask TaskTimingType ,uint32_t StartTime, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParamIn );
-     void Rx  ( uint8_t HookId, uint32_t StartTime , SRadioParam sRadioParamIn, uint16_t TimeOutMsec );
+    void Send ( STask stask, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParamIn );
+    void Rx   ( uint8_t HookId, uint32_t StartTime , SRadioParam sRadioParamIn, uint16_t TimeOutMsec );
     void GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
     void FetchPayload    ( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
     
@@ -59,7 +59,7 @@ private :
 
   eRadioPlanerTask  TaskType          [ NB_HOOK ];
   uint32_t          StartTimeTask     [ NB_HOOK ];
-  uint32_t          EndTimeTask       [ NB_HOOK ];
+  uint32_t          DurationTask      [ NB_HOOK ];
 
   void CallPlanerArbitrer  ( void );
   void LaunchTask          ( void );

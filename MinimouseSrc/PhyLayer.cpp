@@ -74,8 +74,12 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     sRadioParam.IqMode          = IQ_NORMAL;
     sRadioParam.HeaderMode      = EXPLICIT_HEADER;
     sRadioParam.PreambuleLength = 8;
-
-    Radio->Send (MyHookId,TASK_ASSAP, 0, 2000, TxPhyPayload, TxPayloadSizeMac, sRadioParam ); //@tbd RadioPlaner  timeonair
+    STask stask ;
+    stask.HookId         = MyHookId;
+    stask.StartTime      = 0;
+    stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
+    stask.TaskTimingType = TASK_ASSAP;
+    Radio->Send (stask, TxPhyPayload, TxPayloadSizeMac, sRadioParam ); //@tbd RadioPlaner  timeonair
 
     if ( TxModulation == LORA ) {
         InsertTrace    ( __COUNTER__, FileId );

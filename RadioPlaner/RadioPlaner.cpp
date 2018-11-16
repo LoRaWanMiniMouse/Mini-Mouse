@@ -31,7 +31,7 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
     for ( int i = 0 ; i < NB_HOOK; i++ ) { 
         TaskType      [ i ] = TASK_IDLE;
         StartTimeTask [ i ] = 0;
-        EndTimeTask   [ i ] = 0;
+        DurationTask  [ i ] = 0;
     }
 }; 
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
@@ -86,11 +86,15 @@ ePlanerInitHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHook, uint8_t * 
   
 
 template <class R> 
-void RadioPLaner<R>::Send( uint8_t HookId, eTimingTypeTask TaskTimingType ,uint32_t StartTime, uint32_t EndTime, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParamIn){
-   
-    TaskType          [ HookId ] = TASK_TX_LORA;
-    EndTimeTask       [ HookId ] = EndTime;
-    StartTimeTask     [ HookId ] = 0;
+void RadioPLaner<R>::Send( STask stask, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParamIn){
+    uint8_t HookId = stask.HookId;
+    if ( sRadioParamIn.Modulation == LORA) {
+        TaskType [ HookId ] = TASK_TX_LORA;  
+    } else {
+        TaskType [ HookId ] = TASK_TX_FSK;  
+    }
+    DurationTask      [ HookId ] = stask.TaskDuration;
+    StartTimeTask     [ HookId ] = stask.StartTime;
     sRadioParam       [ HookId ] = sRadioParamIn;
     Payload           [ HookId ] = payload;
     PayloadSize       [ HookId ] = payloadSize;
@@ -103,7 +107,7 @@ template <class R>
 void RadioPLaner<R>::Rx (uint8_t HookId,  uint32_t StartTime , SRadioParam sRadioParamIn, uint16_t TimeOutMsec ){
    
     TaskType      [ HookId ] = TASK_RX_LORA;
-    EndTimeTask   [ HookId ] = mcu.RtcGetTimeMs() + 0;
+    DurationTask  [ HookId ] = mcu.RtcGetTimeMs() + 0;
     StartTimeTask [ HookId ] = mcu.RtcGetTimeMs() + StartTime;
     sRadioParam   [ HookId ] = sRadioParamIn;
     TimeOutMs [ HookId ]     = TimeOutMsec;

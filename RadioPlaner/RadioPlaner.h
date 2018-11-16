@@ -18,32 +18,9 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 #ifndef RADIOPLANER_H
 #define RADIOPLANER_H
 #include "Define.h"
+#include "DefineRadioPlaner.h"
 
-#define NB_HOOK 4
-typedef enum { 
-    TX_LORA,
-    TX_FSK,
-    RX_LORA,
-    RX_FSK,
-    CAD,
-}eRadioPlanerTask;
 
-typedef enum { 
-    RADIO_IN_TX,
-    RADIO_IN_RX,
-    RADIO_IN_CAD,
-    RADIO_IN_IDLE,
-}eRadioState;
-
-typedef enum { 
-    PLANER_REQUEST_DONE,
-    PLANER_REQUEST_CANCELED, 
-}ePlanerStatus;
-
-typedef enum { 
-    INIT_HOOK_OK,
-    INIT_HOOK_ERROR 
-}ePlanerInitHookStatus;
 template < class R > 
 class RadioPLaner  { 
 public:
@@ -78,15 +55,23 @@ private :
   void CallBackHook1 (void) { AttachCallBackHook1 ( objHook1 ); };  
   void CallBackHook2 (void) { AttachCallBackHook2 ( objHook2 ); };  
   void CallBackHook3 (void) { AttachCallBackHook3 ( objHook3 ); };  
+
+  eRadioPlanerTask  TaskType          [ NB_HOOK ];
+  uint32_t          StartTimeTask     [ NB_HOOK ];
+  uint32_t          EndTimeTask       [ NB_HOOK ];
+
+
+  
 /*     isr  Timer Parameters */
            
+
+
+  ePlanerTimerState PlanerTimerState;
+  
   eBandWidth        NextBW            [ NB_HOOK ];
   uint8_t           NextSF            [ NB_HOOK ];
   uint32_t          NextChannel       [ NB_HOOK ];
   uint16_t          NextTimeOutMs     [ NB_HOOK ];
-  eRadioPlanerTask  NextTask          [ NB_HOOK ];
-  uint32_t          StartTimeTask     [ NB_HOOK ];
-  uint32_t          EndTimeTask       [ NB_HOOK ];
   uint8_t*          NextPayload       [ NB_HOOK ];
   uint8_t           NextPayloadSize   [ NB_HOOK ];
   uint8_t           NextPower         [ NB_HOOK ];
@@ -98,6 +83,7 @@ private :
 
 
 /*     isr Radio Parameter   */
+  ePlanerRadioState PlanerRadioState;
   uint32_t          IrqTimeStampMs;
   eRadioState       CurrentRadioState;
   void IsrRadioPlaner                ( void ); // Isr routine implemented in IsrRoutine.cpp file

@@ -37,6 +37,8 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
         objHook[ i ]              = NULL;
     }
     HookToExecute = 0xFF;
+    RadioPlanerState = RADIO_IDLE;
+    PlanerTimerState = TIMER_IDLE;
 }
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 }
@@ -189,11 +191,23 @@ void  RadioPLaner<R>:: ComputeRanking ( void ) { //@tbd implementation should be
 }
 template <class R> 
 uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
-    uint8_t HookToExecuteTmp  = sTask[ Ranking [ 0 ] ].HookId ;
-    uint32_t TimeOfHookToExecuteTmp = sTask[ Ranking [ 0 ] ].StartTime ;
+    uint8_t HookToExecuteTmp;
+    uint32_t TimeOfHookToExecuteTmp;
     uint32_t TempTime;
     uint8_t index ;
-    for (int i = 1 ; i < NB_HOOK; i++ ) {
+    int k ;
+    for ( k = 0 ; k < NB_HOOK; k++ ) {
+        index = Ranking [ k ] ;
+        if (sTask[ index ].TaskType < TASK_IDLE) {
+            HookToExecuteTmp        = sTask[ index ].HookId ;
+            TimeOfHookToExecuteTmp  = sTask[ index ].StartTime ;
+            break;
+        }
+    }
+    if (k == NB_HOOK ) {
+        return (NO_NEW_TASK_TO_LAUNCH);
+    }
+    for (int i = k ; i < NB_HOOK; i++ ) {
         index = Ranking [ i ] ;
         if ( sTask[ index ].TaskType < TASK_IDLE ) {
             TempTime =  sTask[ index ].StartTime + sTask[ index ].TaskDuration ;
@@ -303,7 +317,7 @@ void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
      sTask[Id].TaskType = TASK_IDLE;  
     CallBackHook( Id );
     HookToExecute = 0xFF;
-    //CallPlanerArbitrer (); 
+    CallPlanerArbitrer (); 
     Radio->Sleep( false );
    
 } 

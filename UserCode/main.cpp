@@ -178,7 +178,7 @@ int main( ) {
         DEBUG_MSG (" new packet \n");
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ||  ( Lp2State != LWPSTATE_IDLE ) && ( Lp2State != LWPSTATE_ERROR ) && ( Lp2State != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            Lp2State = Lp2.LoraWanProcess( &AvailableRxPacket );
+           // Lp2State = Lp2.LoraWanProcess( &AvailableRxPacket );
             mcu.GotoSleepMSecond ( 300 );
         }
 

@@ -52,8 +52,8 @@ class RadioPLaner  {
 public:
     RadioPLaner( R* RadioUser );
     ~RadioPLaner ( ); 
-    eHookStatus InitHook     ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHook ) ;
-    eHookStatus GetMyHookId  ( void * objHook, uint8_t * HookId );
+    eHookStatus InitHook     ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHookIn ) ;
+    eHookStatus GetMyHookId  ( void * objHookIn, uint8_t * HookId );
 
 
     /* Note : @tbd : return a status enqueue error case if task already running */
@@ -65,19 +65,11 @@ public:
 
 private :
 
-  void (* AttachCallBackHook0) (void * ) ;
-  void * objHook0;
-  void (* AttachCallBackHook1) (void * ) ;
-  void * objHook1;
-  void (* AttachCallBackHook2) (void * ) ;
-  void * objHook2;
-  void (* AttachCallBackHook3) (void * ) ;
-  void * objHook3;
-  void CallBackHook0 (void) { AttachCallBackHook0 ( objHook0 ); };   
-  void CallBackHook1 (void) { AttachCallBackHook1 ( objHook1 ); };  
-  void CallBackHook2 (void) { AttachCallBackHook2 ( objHook2 ); };  
-  void CallBackHook3 (void) { AttachCallBackHook3 ( objHook3 ); };  
-  
+  void (* AttachCallBackHook[NB_HOOK]) (void * ) ;
+  void * objHook[NB_HOOK];
+  void CallBackHook (uint8_t HookId) { 
+          AttachCallBackHook[HookId] ( objHook[HookId] ); 
+  }     
   SRadioParam       sRadioParam   [ NB_HOOK ];
   STask             sTask         [ NB_HOOK ];
   uint8_t*          Payload       [ NB_HOOK ];

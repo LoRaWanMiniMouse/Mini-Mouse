@@ -18,6 +18,7 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 #ifndef DEFINE_RADIOPLANER_H
 #define DEFINE_RADIOPLANER_H
 
+#define NB_HOOK 4
 #define RadioPlanerTimeOut 20000 // A task couldn't be stay inside the Radioplaner more than 20 second except the background tasks . 
 struct SRadioParam {
     uint32_t             Frequency;
@@ -56,10 +57,6 @@ struct STask {
     eTimingTypeTask   TaskTimingType ;
     eRadioPlanerTask  TaskType  ; 
 };
-
-
-#define NB_HOOK 4
-
 
 typedef enum { 
     PLANER_RX_CANCELED, 

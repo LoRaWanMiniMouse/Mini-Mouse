@@ -46,30 +46,13 @@ template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 /***********************************************************************************************/
 
 template <class R>
-eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHook ) {
+eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHookIn ) {
     if ( HookId > NB_HOOK ) {
         return ( HOOK_ERROR );
     }
-    switch ( HookId ){
-        case 0 :
-           AttachCallBackHook0 = AttachCallBack ;
-           objHook0            = objHook;
-           break;
-        case 1 :
-           AttachCallBackHook1 = AttachCallBack ;
-           objHook1            = objHook;
-           break;
-        case 2 :
-           AttachCallBackHook2 = AttachCallBack ;
-           objHook2            = objHook;
-           break;
-        case 3 :
-           AttachCallBackHook3 = AttachCallBack ;
-           objHook3            = objHook;
-           break;
-        default :
-            return (HOOK_ERROR);
-    }
+
+    AttachCallBackHook [ HookId ] = AttachCallBack ;
+    objHook[ HookId ]             = objHookIn; 
     return ( HOOK_OK );
 }
 
@@ -77,20 +60,14 @@ eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* AttachCallBack) 
 /*                            RadioPlaner GetMyHookId Method                                   */
 /***********************************************************************************************/
 template <class R>
-eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHook, uint8_t * HookId ){
-    eHookStatus status = HOOK_OK;
-    if ( objHook == objHook0 ) { 
-       *HookId = 0;
-    } else if ( objHook == objHook1 ) { 
-       *HookId = 1;  
-    } else if ( objHook == objHook2 ) { 
-       *HookId = 2; 
-    } else if ( objHook == objHook3 ) { 
-       *HookId = 3;
-    } else {
-        status = HOOK_ERROR ;   
+eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t * HookId ){
+    for (int i = 0 ; i < NB_HOOK ; i ++) {
+        if ( objHook == objHook[i] ){
+            * HookId = i ;
+            return ( HOOK_OK );
+        } 
     }
-    return (status);
+    return (HOOK_ERROR);
 }
 
   
@@ -138,7 +115,6 @@ template <class R>
 
 template <class R>  //@tbd ma   nage all error case
  void RadioPLaner<R> :: ComputePlanerStatus (void ) {
-    eHookStatus status = HOOK_OK;
     uint8_t Id = CurrentHookToExecute;
     IrqFlags_t IrqRadio  = ( Radio->GetIrqFlagsLora( ) );
     Radio->ClearIrqFlagsLora( ); 
@@ -149,7 +125,7 @@ template <class R>  //@tbd ma   nage all error case
         case RECEIVE_PACKET_IRQ_FLAG : 
             RadioPlanerStatus = PLANER_RX_PACKET;
             // Push Fifo
-            status = Read_RadioFifo ( sTask[Id].TaskType );
+            Read_RadioFifo ( sTask[Id].TaskType );
             break; 
         case RXTIMEOUT_IRQ_FLAG      : 
             RadioPlanerStatus = PLANER_RX_TIMEOUT;
@@ -254,9 +230,10 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
 /************************************************************************************/
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
+    uint8_t Id = CurrentHookToExecute;
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
     ComputePlanerStatus ( ); 
-    CallBackHook0 ( );
+    CallBackHook( Id );
     // launch arbitrer 
     Radio->Sleep( false );
     RadioPlanerState = RADIO_IDLE;

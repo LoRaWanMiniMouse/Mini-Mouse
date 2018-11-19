@@ -127,7 +127,8 @@ int main( ) {
     //DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
     RP.InitHook ( 0 ,  &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
 
-
+   RP.ComputePriority (  ) ;
+   RP.ComputeRanking ( );
     //uint8_t TPointer ;
    // TPointer = ExtDebugTrace[ TRACE_SIZE - 1]& 0xff;  
    // for (int i  = 0; i < 200; i++){ 

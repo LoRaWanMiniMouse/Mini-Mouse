@@ -63,7 +63,7 @@ public:
     void GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
    
 
-private :
+//private :
 
   void (* AttachCallBackHook[NB_HOOK]) (void * ) ;
   void * objHook[NB_HOOK];
@@ -74,13 +74,22 @@ private :
   STask             sTask         [ NB_HOOK ];
   uint8_t*          Payload       [ NB_HOOK ];
   uint8_t*          PayloadSize   [ NB_HOOK ]; 
-  uint8_t           CurrentHookToExecute;
+  uint8_t           HookToExecute;
+  uint32_t          TimeOfHookToExecute;
   
-
+/************************************************************************************/
+/*                                 Planer Utilities                                 */
+/*                                                                                  */
+/************************************************************************************/
   void CallPlanerArbitrer  ( void );
   void LaunchTask          ( void );
   void ComputePlanerStatus ( void );
-  
+  void ComputePriority     ( void );
+  void SelectTheNextTask   ( void );
+  void ComputeRanking      ( void );
+  uint8_t FindHighestPriotity ( uint8_t * vec, uint8_t length );
+  uint8_t Ranking [ NB_HOOK ]; 
+
   eHookStatus Read_RadioFifo ( eRadioPlanerTask  TaskType );
   ePlanerStatus RadioPlanerStatus;
 /*     isr  Timer Parameters */

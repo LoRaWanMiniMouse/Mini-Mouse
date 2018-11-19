@@ -37,7 +37,8 @@ struct SRadioParam {
 typedef enum {
     TASK_AT_TIME,
     TASK_NOW,
-    TASK_ASSAP, 
+    TASK_ASSAP,
+    NO_TASK, 
 }eTimingTypeTask;
 
 typedef enum {
@@ -55,7 +56,8 @@ struct STask {
     uint32_t          StartTime ; // absolute Ms
     uint32_t          TaskDuration  ;  
     eTimingTypeTask   TaskTimingType ;
-    eRadioPlanerTask  TaskType  ; 
+    eRadioPlanerTask  TaskType  ;
+    uint8_t           Priority; 
 };
 
 typedef enum { 

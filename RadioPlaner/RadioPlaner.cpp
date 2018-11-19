@@ -33,7 +33,7 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
         sTask[ i ].TaskType       = TASK_IDLE;
         sTask[ i ].StartTime      = 0;
         sTask[ i ].TaskDuration   = 0;
-        sTask[ i ].TaskTimingType = TASK_ASSAP;
+        sTask[ i ].TaskTimingType = NO_TASK;
     }
 }
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
@@ -50,7 +50,6 @@ eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* AttachCallBack) 
     if ( HookId > NB_HOOK ) {
         return ( HOOK_ERROR );
     }
-
     AttachCallBackHook [ HookId ] = AttachCallBack ;
     objHook[ HookId ]             = objHookIn; 
     return ( HOOK_OK );
@@ -83,7 +82,6 @@ void RadioPLaner<R>::EnqueueTask( STask *staskIn, uint8_t *payload, uint8_t *pay
     PayloadSize       [ HookId ] = payloadSize;
     //tb implemented check if already running task and return error
     CallPlanerArbitrer ( );
-  
 }
 
 
@@ -98,11 +96,6 @@ template <class R>
 };
 
 
-
-
-
-
-
 /************************************************************************************************/
 /*                      Private  Methods                                                        */
 /************************************************************************************************/
@@ -114,7 +107,7 @@ template <class R>
 
 template <class R>  //@tbd ma   nage all error case
  void RadioPLaner<R> :: ComputePlanerStatus (void ) {
-    uint8_t Id = CurrentHookToExecute;
+    uint8_t Id = HookToExecute;
     IrqFlags_t IrqRadio  = ( Radio->GetIrqFlagsLora( ) );
     Radio->ClearIrqFlagsLora( ); 
     switch ( IrqRadio ) {
@@ -152,24 +145,73 @@ eHookStatus  RadioPLaner<R>:: Read_RadioFifo ( eRadioPlanerTask  TaskType) {
     }
     return status;
 }
+template <class R> 
+void  RadioPLaner<R>:: ComputePriority ( void ) {
+    for (int i = 0 ; i < NB_HOOK ; i++ ){
+        sTask [ i ].Priority = (  sTask [ i ].TaskTimingType * NB_HOOK ) + i ; // the lowest value is the highest priority.
+    }
+}
+template <class R> 
+uint8_t  RadioPLaner<R>:: FindHighestPriotity ( uint8_t * vec,  uint8_t length ) {
+    uint8_t HighPrio = 0xFF ;
+    uint8_t Index = 0;
+    for (int i = 0 ; i < length ; i++ ){
+        if ( vec [ i ] <= HighPrio ) {
+            HighPrio = vec [ i ];
+            Index = i; 
+        }
+    }
+    return ( Index );
+}
 
-
+template <class R> 
+void  RadioPLaner<R>:: ComputeRanking ( void ) { //@tbd implementation should be optimized but very few hooks
+    int i;
+    uint8_t Index;
+    uint8_t RankTemp [NB_HOOK];
+    for (int i = 0 ; i < NB_HOOK; i++ ) {
+        RankTemp [ i ] =  sTask [ i ].Priority;
+    } 
+    for (i = 0 ; i < NB_HOOK; i ++) {
+        Index = FindHighestPriotity ( RankTemp,  NB_HOOK );
+        RankTemp [ Index ] = 0xFF;
+        Ranking [ i ] = Index ;
+    }
+}
+template <class R> 
+void  RadioPLaner<R>::SelectTheNextTask( void ) {
+    HookToExecute  = sTask[ Ranking [ 0 ] ].HookId ;
+    TimeOfHookToExecute = sTask[ Ranking [ 0 ] ].StartTime ;
+    uint32_t TempTime;
+    uint8_t index ;
+    for (int i = 1 ; i < NB_HOOK; i++ ) {
+        index = Ranking [ i ] ;
+        if ( sTask[ index ].TaskType < TASK_IDLE ) {
+            TempTime =  sTask[ index ].StartTime + sTask[ index ].TaskDuration ;
+            if ( ( TempTime - TimeOfHookToExecute ) > 0 ) {   //@relative to avoid issues in case of wrapping
+                TimeOfHookToExecute = sTask[ index ].StartTime ;
+                HookToExecute       = sTask[ index ].HookId ;
+            }
+        }
+    }
+}
 /************************************************************************************/
 /*                                 Planer Arbiter                                   */
 /*                                                                                  */
 /************************************************************************************/
 
 template <class R> 
-void  RadioPLaner<R>::CallPlanerArbitrer ( void ){
-  
-    CurrentHookToExecute  = HOOK_0; 
+void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
+    ComputePriority    ( );
+    ComputeRanking     ( ); 
+    SelectTheNextTask  ( ); // Store the result in the variable HookToExecute
     LaunchTask ( );
     
 }
 
 template <class R> 
 void  RadioPLaner<R>::LaunchTask ( void ){
-    uint8_t Id = CurrentHookToExecute;
+    uint8_t Id = HookToExecute;
      switch ( sTask[ Id ].TaskType) {
         case TASK_IDLE    :
             break;
@@ -196,7 +238,7 @@ void  RadioPLaner<R>::LaunchTask ( void ){
 
 template <class R>     
 void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
-    uint8_t Id = CurrentHookToExecute;
+    uint8_t Id = HookToExecute;
     PlanerTimerState = TIMER_IDLE ;
     switch  ( sTask[ Id ].TaskType ) {
         case TASK_TX_LORA : 
@@ -229,7 +271,7 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
 /************************************************************************************/
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
-    uint8_t Id = CurrentHookToExecute;
+    uint8_t Id = HookToExecute;
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
     ComputePlanerStatus ( ); 
     CallBackHook( Id );

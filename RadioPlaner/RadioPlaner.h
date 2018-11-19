@@ -81,12 +81,12 @@ public:
 /*                                 Planer Utilities                                 */
 /*                                                                                  */
 /************************************************************************************/
-  void CallPlanerArbitrer  ( void );
-  void LaunchTask          ( void );
-  void ComputePlanerStatus ( void );
-  void ComputePriority     ( void );
-  void SelectTheNextTask   ( void );
-  void ComputeRanking      ( void );
+  void CallPlanerArbitrer     ( void );
+  void LaunchTask             ( void );
+  void ComputePlanerStatus    ( void );
+  void ComputePriority        ( void );
+  uint8_t SelectTheNextTask   ( void );
+  void ComputeRanking         ( void );
   uint8_t FindHighestPriotity ( uint8_t * vec, uint8_t length );
   uint8_t Ranking [ NB_HOOK ]; 
 

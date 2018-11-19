@@ -160,12 +160,12 @@ int main( ) {
        // InsertTrace ( __COUNTER__, FileId );
 
         LpState  = Lp.Join( );
-        Lp2State = Lp2.Join( );
+       // Lp2State = Lp2.Join( );
     } else {
 
        // InsertTrace ( __COUNTER__, FileId );
         LpState  = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
-        Lp2State = Lp2.SendPayload( UserFport, UserPayload, UserPayloadSize+4, MsgType );
+       // Lp2State = Lp2.SendPayload( UserFport, UserPayload, UserPayloadSize+4, MsgType );
     }
 /*!
 * \brief 

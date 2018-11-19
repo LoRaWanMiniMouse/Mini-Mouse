@@ -36,6 +36,7 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
         sTask[ i ].TaskTimingType = NO_TASK;
         objHook[ i ]              = NULL;
     }
+    HookToExecute = 0xFF;
 }
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 }
@@ -180,22 +181,34 @@ void  RadioPLaner<R>:: ComputeRanking ( void ) { //@tbd implementation should be
         RankTemp [ Index ] = 0xFF;
         Ranking [ i ] = Index ;
     }
+    DEBUG_MSG (" Ranking = ");
+    for (int i =0 ; i <NB_HOOK; i++  ){
+        DEBUG_PRINTF ("%d ",Ranking [ i ]);
+    }
+    DEBUG_MSG (" \n\n");
 }
 template <class R> 
-void  RadioPLaner<R>::SelectTheNextTask( void ) {
-    HookToExecute  = sTask[ Ranking [ 0 ] ].HookId ;
-    TimeOfHookToExecute = sTask[ Ranking [ 0 ] ].StartTime ;
+uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
+    uint8_t HookToExecuteTmp  = sTask[ Ranking [ 0 ] ].HookId ;
+    uint32_t TimeOfHookToExecuteTmp = sTask[ Ranking [ 0 ] ].StartTime ;
     uint32_t TempTime;
     uint8_t index ;
     for (int i = 1 ; i < NB_HOOK; i++ ) {
         index = Ranking [ i ] ;
         if ( sTask[ index ].TaskType < TASK_IDLE ) {
             TempTime =  sTask[ index ].StartTime + sTask[ index ].TaskDuration ;
-            if ( ( TempTime - TimeOfHookToExecute ) > 0 ) {   //@relative to avoid issues in case of wrapping
-                TimeOfHookToExecute = sTask[ index ].StartTime ;
-                HookToExecute       = sTask[ index ].HookId ;
+            if ( ( TempTime - TimeOfHookToExecuteTmp ) < 0 ) {   //@relative to avoid issues in case of wrapping
+                TimeOfHookToExecuteTmp = sTask[ index ].StartTime ;
+                HookToExecuteTmp       = sTask[ index ].HookId ;
             }
         }
+    }
+    if ( HookToExecuteTmp == HookToExecute ) {
+        return (NO_NEW_TASK_TO_LAUNCH);
+    } else {
+        HookToExecute       = HookToExecuteTmp;
+        TimeOfHookToExecute = TimeOfHookToExecuteTmp ;
+        return (NEW_TASK_TO_LAUNCH);
     }
 }
 /************************************************************************************/
@@ -205,11 +218,19 @@ void  RadioPLaner<R>::SelectTheNextTask( void ) {
 
 template <class R> 
 void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
+
     ComputePriority    ( );
     ComputeRanking     ( ); 
-    SelectTheNextTask  ( ); // Store the result in the variable HookToExecute
-    DEBUG_PRINTF ("Launch new task for hook id = %d\n",HookToExecute);
-    LaunchTask ( );
+    if ( SelectTheNextTask ( ) == NEW_TASK_TO_LAUNCH ) { // Store the result in the variable HookToExecute
+        if (RadioPlanerState == RADIO_BUSY) {
+            DEBUG_PRINTF("CAn't launch new task for hook = %dbecause radio is running\n",HookToExecute);
+        } else if (PlanerTimerState == TIMER_BUSY) {
+            DEBUG_PRINTF("CAn't launch new task for hook = %d because Timer is running\n",HookToExecute);
+        } else {
+            LaunchTask ( );
+            DEBUG_PRINTF ("Launch new task for hook id = %d start time at %d\n",HookToExecute, TimeOfHookToExecute);
+        }
+    }
     
 }
 
@@ -275,12 +296,15 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
 /************************************************************************************/
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
+    RadioPlanerState = RADIO_IDLE;
     uint8_t Id = HookToExecute;
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
-    ComputePlanerStatus ( ); 
+    ComputePlanerStatus ( );
+     sTask[Id].TaskType = TASK_IDLE;  
     CallBackHook( Id );
-    CallPlanerArbitrer (); 
+    HookToExecute = 0xFF;
+    //CallPlanerArbitrer (); 
     Radio->Sleep( false );
-    RadioPlanerState = RADIO_IDLE;
+   
 } 
 

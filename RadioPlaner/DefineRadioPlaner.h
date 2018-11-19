@@ -95,4 +95,6 @@ enum {
     HOOK_2,
     HOOK_3
 };
+#define NEW_TASK_TO_LAUNCH    0
+#define NO_NEW_TASK_TO_LAUNCH 1
 #endif

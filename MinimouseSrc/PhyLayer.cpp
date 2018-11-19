@@ -78,7 +78,7 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     sRadioParam.TimeOutMs       = 0;
     STask stask ;
     stask.HookId         = MyHookId;
-    stask.StartTime      = 0;
+    stask.StartTime      = mcu.RtcGetTimeMs();
     stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
     stask.TaskTimingType = TASK_ASSAP;
     stask.TaskType = ( TxModulation == LORA ) ? TASK_TX_LORA : TASK_TX_FSK;

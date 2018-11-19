@@ -38,6 +38,13 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
 }
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 }
+/************************************************************************************************/
+/*                      Public  Methods                                                         */
+/************************************************************************************************/
+/***********************************************************************************************/
+/*                       RadioPlaner Init Method                                               */
+/***********************************************************************************************/
+
 template <class R>
 eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHook ) {
     if ( HookId > NB_HOOK ) {
@@ -66,6 +73,9 @@ eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* AttachCallBack) 
     return ( HOOK_OK );
 }
 
+/***********************************************************************************************/
+/*                            RadioPlaner GetMyHookId Method                                   */
+/***********************************************************************************************/
 template <class R>
 eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHook, uint8_t * HookId ){
     eHookStatus status = HOOK_OK;
@@ -84,7 +94,9 @@ eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHook, uint8_t * HookId ){
 }
 
   
-
+/***********************************************************************************************/
+/*                            RadioPlaner EnqueueTask Method                                   */
+/***********************************************************************************************/
 template <class R> 
 void RadioPLaner<R>::EnqueueTask( STask staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam sRadioParamIn ){
 
@@ -98,6 +110,31 @@ void RadioPLaner<R>::EnqueueTask( STask staskIn, uint8_t *payload, uint8_t *payl
   
 }
 
+
+/***********************************************************************************************/
+/*                            RadioPlaner GetPlanerStatus Method                               */
+/***********************************************************************************************/
+
+template <class R> 
+  void RadioPLaner<R>::GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus ){
+    *IrqTimestampMs = IrqTimeStampMs;
+    *PlanerStatus   = RadioPlanerStatus;
+};
+
+
+
+
+
+
+
+/************************************************************************************************/
+/*                      Private  Methods                                                        */
+/************************************************************************************************/
+
+/************************************************************************************/
+/*                                 Planer Utilities                                 */
+/*                                                                                  */
+/************************************************************************************/
 
 template <class R>  //@tbd ma   nage all error case
  void RadioPLaner<R> :: ComputePlanerStatus (void ) {
@@ -122,22 +159,11 @@ template <class R>  //@tbd ma   nage all error case
     }
 }
  
-template <class R> 
-  void RadioPLaner<R>::GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus ){
-    *IrqTimestampMs = IrqTimeStampMs;
-    *PlanerStatus   = RadioPlanerStatus;
-};
-
-
-
 template <class R>     
 void RadioPLaner<R>::SetAlarm (uint32_t alarmInMs ) {
     PlanerTimerState = TIMER_BUSY ;
     mcu.StartTimerMsecond( &RadioPLaner<R>::CallbackIsrTimerRadioPlaner,this, alarmInMs);
 }
-
-
-
 
 template <class R> 
 eHookStatus  RadioPLaner<R>:: Read_RadioFifo ( eRadioPlanerTask  TaskType) {
@@ -229,8 +255,7 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
-    ComputePlanerStatus ( ); // get irq flag 
-    // get fifo finally not put here becaus if  status error no data fifo to push or put inside the status to be decide
+    ComputePlanerStatus ( ); 
     CallBackHook0 ( );
     // launch arbitrer 
     Radio->Sleep( false );

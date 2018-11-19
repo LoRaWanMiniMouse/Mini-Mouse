@@ -18,6 +18,7 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 #ifndef DEFINE_RADIOPLANER_H
 #define DEFINE_RADIOPLANER_H
 
+#define RadioPlanerTimeOut 20000 // A task couldn't be stay inside the Radioplaner more than 20 second except the background tasks . 
 struct SRadioParam {
     uint32_t             Frequency;
     eBandWidth           Bw;
@@ -28,6 +29,9 @@ struct SRadioParam {
     eHeaderMode          HeaderMode;
     uint8_t              PreambuleLength;
     eModulationType      Modulation;
+    uint32_t             TimeOutMs;
+    int16_t *            Snr;
+    int16_t *            Rssi;
 };
 typedef enum {
     TASK_AT_TIME,
@@ -35,16 +39,6 @@ typedef enum {
     TASK_ASSAP, 
 }eTimingTypeTask;
 
-struct STask {
-    uint8_t  HookId ;
-    uint32_t StartTime ; // absolute Ms
-    uint32_t TaskDuration  ;  
-    eTimingTypeTask TaskTimingType ;
-};
-
-
-#define NB_HOOK 4
-/* to be discuss the following enum order is important because it define the priority order Min Num = hiest priority) */
 typedef enum {
     TASK_RX_LORA,
     TASK_RX_FSK, 
@@ -55,14 +49,17 @@ typedef enum {
 }eRadioPlanerTask;
 
 
-typedef enum { 
-    RADIO_IN_TX_LORA,
-    RADIO_IN_TX_FSK,
-    RADIO_IN_RX_LORA,
-    RADIO_IN_RX_FSK,
-    RADIO_IN_CAD,
-    RADIO_IN_IDLE,
-}eRadioState;
+struct STask {
+    uint8_t           HookId ;
+    uint32_t          StartTime ; // absolute Ms
+    uint32_t          TaskDuration  ;  
+    eTimingTypeTask   TaskTimingType ;
+    eRadioPlanerTask  TaskType  ; 
+};
+
+
+#define NB_HOOK 4
+
 
 typedef enum { 
     PLANER_RX_CANCELED, 
@@ -76,9 +73,15 @@ typedef enum {
 } ePlanerStatus;
 
 typedef enum { 
-    INIT_HOOK_OK,
-    INIT_HOOK_ERROR 
-}ePlanerInitHookStatus;
+    HOOK_OK,
+    HOOK_ERROR 
+}eHookStatus;
+
+
+typedef enum {
+    RADIO_IDLE, 
+    RADIO_BUSY
+}eRadioState;
 
 typedef enum { 
     TIMER_IDLE,

@@ -65,6 +65,8 @@ sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKe
 /* User Radio ISR routine */
 #define NBENCODEDFRAME 52
 
+
+
 int main( ) {
     int i;
     uint8_t UserPayloadSize ;
@@ -81,6 +83,7 @@ int main( ) {
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
     */
     mcu.InitMcu ( );
+
 
 
 #ifdef SX126x_BOARD
@@ -167,10 +170,7 @@ int main( ) {
         DEBUG_MSG (" new packet \n");
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            mcu.GotoSleepMSecond ( 100 );
-            //uint8_t toto;
-            //RadioUser.ReadRegisters(0x06BD,&toto,1);
-            //DEBUG_PRINTF("mcu get time ms  = %d\n",toto);
+            mcu.GotoSleepMSecond ( 300 );
         }
 
         mcu.WatchDogRelease ( );
@@ -205,7 +205,7 @@ int main( ) {
             mcu.GotoSleepSecond(5);
         } else {
             InsertTrace ( __COUNTER__, FileId );
-            mcu.GotoSleepSecond ( AppTimeSleeping );
+            mcu.GotoSleepSecond ( 30 );
             InsertTrace ( __COUNTER__, FileId );
         }
     }

@@ -14,6 +14,32 @@ Description       : RadioPlaner objets.
 License           : Revised BSD License, see LICENSE.TXT file include in the project
 
 Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
+ * \remark        : 
+ * Each Tasks enqueued inside the radio planer should Provide :
+ *              Task descriptor : 
+                                    struct STask {
+                                        uint8_t           HookId ;
+                                        uint32_t          StartTime ; // absolute Ms
+                                        uint32_t          TaskDuration  ;  
+                                        eTimingTypeTask   TaskTimingType ;
+                                        eRadioPlanerTask  TaskType  ; 
+                                    };
+
+                RadioParameter:     struct SRadioParam {
+                                            uint32_t             Frequency;
+                                            eBandWidth           Bw;
+                                            uint8_t              Sf;
+                                            uint8_t              Power;
+                                            eCrcMode             CrcMode;
+                                            eIqMode              IqMode;
+                                            eHeaderMode          HeaderMode;
+                                            uint8_t              PreambuleLength;
+                                            eModulationType      Modulation;
+                                };
+                BufferParameter : *Buffer + BufferSize 
+         
+                                                                                                
+
 */
 #ifndef RADIOPLANER_H
 #define RADIOPLANER_H
@@ -26,20 +52,15 @@ class RadioPLaner  {
 public:
     RadioPLaner( R* RadioUser );
     ~RadioPLaner ( ); 
-    ePlanerInitHookStatus InitHook     ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHook ) ;
-    ePlanerInitHookStatus GetMyHookId  ( void * objHook, uint8_t * HookId );
+    eHookStatus InitHook     ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHook ) ;
+    eHookStatus GetMyHookId  ( void * objHook, uint8_t * HookId );
 
 
-    /* Note : StartTime , EndTime : relative value to be discuss */
+    /* Note : @tbd : return a status enqueue error case if task already running */
+ 
 
-    void Send ( STask stask, uint8_t *payload, uint8_t payloadSize, SRadioParam sRadioParamIn );
-    void Rx   ( STask stask, SRadioParam sRadioParamIn, uint16_t TimeOutMsec );
+    void EnqueueTask     ( STask staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam sRadioParamIn );
     void GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
-    void FetchPayload    ( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
-    
-    
-    
-      
    
 
 private :
@@ -56,30 +77,24 @@ private :
   void CallBackHook1 (void) { AttachCallBackHook1 ( objHook1 ); };  
   void CallBackHook2 (void) { AttachCallBackHook2 ( objHook2 ); };  
   void CallBackHook3 (void) { AttachCallBackHook3 ( objHook3 ); };  
-
-  eRadioPlanerTask  TaskType          [ NB_HOOK ];
-  uint32_t          StartTimeTask     [ NB_HOOK ];
-  uint32_t          DurationTask      [ NB_HOOK ];
+  
+  SRadioParam       sRadioParam   [ NB_HOOK ];
+  STask             sTask         [ NB_HOOK ];
+  uint8_t*          Payload       [ NB_HOOK ];
+  uint8_t*          PayloadSize   [ NB_HOOK ]; 
+  uint8_t           CurrentHookToExecute;
+  
 
   void CallPlanerArbitrer  ( void );
   void LaunchTask          ( void );
   void ComputePlanerStatus ( void );
+  
+  eHookStatus Read_RadioFifo ( eRadioPlanerTask  TaskType );
   ePlanerStatus RadioPlanerStatus;
 /*     isr  Timer Parameters */
-           
-
-
+        
   ePlanerTimerState PlanerTimerState;
-  SRadioParam       sRadioParam   [ NB_HOOK ];
-  eBandWidth        Bw            [ NB_HOOK ];
-  uint8_t           Sf            [ NB_HOOK ];
-  uint32_t          Channel       [ NB_HOOK ];
-  uint16_t          TimeOutMs     [ NB_HOOK ];
-  uint8_t*          Payload       [ NB_HOOK ];
-  uint8_t           PayloadSize   [ NB_HOOK ];
-  uint8_t           Power         [ NB_HOOK ];
-  uint8_t           CurrentHookToExecute;
-  
+
   void              SetAlarm                    ( uint32_t alarmInMs ); 
   void              IsrTimerRadioPlaner         ( void );
   static void       CallbackIsrTimerRadioPlaner ( void * obj ) { ( reinterpret_cast<RadioPLaner<R>*>(obj) )->IsrTimerRadioPlaner(); };
@@ -91,10 +106,10 @@ private :
   eRadioState       CurrentRadioState;
   void IsrRadioPlaner                ( void ); // Isr routine implemented in IsrRoutine.cpp file
   static void CallbackIsrRadioPlaner (void * obj){(reinterpret_cast<RadioPLaner< R >*>(obj))->IsrRadioPlaner();} ; 
-
   
+  R* Radio;
 
-    R* Radio;
+
 };
 
 #endif

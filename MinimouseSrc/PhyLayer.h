@@ -43,7 +43,7 @@ public:
     uint8_t                RxPhyPayloadSize;
     int16_t                RxPhyPayloadSnr;
     int16_t                RxPhyPayloadRssi;
-    uint16_t               TxPayloadSize;
+    uint8_t               TxPayloadSize;
     uint32_t               DevAddrIsr ; // a copy of the devaddr to be tested in the isr routine + devaddrclassCG0 & devaddrclasccG1
     eClassCEnable          ClassCG0EnableIsr; 
     eClassCEnable          ClassCG1EnableIsr; 

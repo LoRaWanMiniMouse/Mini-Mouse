@@ -171,7 +171,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
             RegionSetRxConfig ( RX1 );
             Phy.LastTimeRxWindowsMs =  ( ( MacRx1Delay * 1000 )+ Phy.TimestampRtcIsr ) - RxOffsetMs + MacRxWindowMs ; // timestamp of the end of rx1 windows
             DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
-            ConfigureRadioForRx1 ( tAlarmMillisec - RxOffsetMs );
+            ConfigureRadioForRx1 ( mcu.RtcGetTimeMs () + tAlarmMillisec - RxOffsetMs );
         }
     } else {
         RegionSetRxConfig ( RX2 );
@@ -191,7 +191,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
             RegionSetRxConfig ( RX2 );
             Phy.LastTimeRxWindowsMs = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - RxOffsetMs + MacRxWindowMs ; // timestamp of the end of rx2 windows
             DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
-            ConfigureRadioForRx2 ( tAlarmMillisec - RxOffsetMs );
+            ConfigureRadioForRx2 ( mcu.RtcGetTimeMs () + tAlarmMillisec - RxOffsetMs );
         
         }
     }

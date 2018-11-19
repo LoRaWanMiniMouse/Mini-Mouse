@@ -34,6 +34,7 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
         sTask[ i ].StartTime      = 0;
         sTask[ i ].TaskDuration   = 0;
         sTask[ i ].TaskTimingType = NO_TASK;
+        objHook[ i ]              = NULL;
     }
 }
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
@@ -46,12 +47,13 @@ template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 /***********************************************************************************************/
 
 template <class R>
-eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHookIn ) {
-    if ( HookId > NB_HOOK ) {
+eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookIdIn,  void (* AttachCallBack) (void * ), void * objHookIn ) {
+    if ( HookIdIn > NB_HOOK ) {
         return ( HOOK_ERROR );
     }
-    AttachCallBackHook [ HookId ] = AttachCallBack ;
-    objHook[ HookId ]             = objHookIn; 
+    
+    AttachCallBackHook [ HookIdIn ] = AttachCallBack ;
+    objHook[ HookIdIn ]             = objHookIn; 
     return ( HOOK_OK );
 }
 
@@ -59,10 +61,10 @@ eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* AttachCallBack) 
 /*                            RadioPlaner GetMyHookId Method                                   */
 /***********************************************************************************************/
 template <class R>
-eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t * HookId ){
+eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t * HookIdIn ){
     for (int i = 0 ; i < NB_HOOK ; i ++) {
         if ( objHookIn == objHook[i] ){
-            * HookId = i ;
+            *HookIdIn = i ;
             return ( HOOK_OK );
         } 
     }
@@ -81,6 +83,7 @@ void RadioPLaner<R>::EnqueueTask( STask *staskIn, uint8_t *payload, uint8_t *pay
     Payload           [ HookId ] = payload;
     PayloadSize       [ HookId ] = payloadSize;
     //tb implemented check if already running task and return error
+    DEBUG_PRINTF ("enqueu task for hook id = %d\n",HookId);
     CallPlanerArbitrer ( );
 }
 
@@ -205,6 +208,7 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
     ComputePriority    ( );
     ComputeRanking     ( ); 
     SelectTheNextTask  ( ); // Store the result in the variable HookToExecute
+    DEBUG_PRINTF ("Launch new task for hook id = %d\n",HookToExecute);
     LaunchTask ( );
     
 }
@@ -275,7 +279,7 @@ void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
     ComputePlanerStatus ( ); 
     CallBackHook( Id );
-    // launch arbitrer 
+    CallPlanerArbitrer (); 
     Radio->Sleep( false );
     RadioPlanerState = RADIO_IDLE;
 } 

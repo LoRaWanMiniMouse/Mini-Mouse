@@ -112,7 +112,8 @@ int main( ) {
     LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 #endif
 #ifdef SX1276_BOARD
-    LoraWanObject<LoraRegionsEU,SX1276> Lp( LoraWanKeys,&RP,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsEU,SX1276> Lp ( LoraWanKeys,&RP,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsEU,SX1276> Lp2( LoraWanKeys,&RP,USERFLASHADRESS); 
 #endif
 #ifdef SX1272_BOARD
     LoraWanObject<LoraRegionsEU,SX1272> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
@@ -120,15 +121,15 @@ int main( ) {
     //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
     //LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
     uint8_t AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE ;
-    eLoraWan_Process_States LpState = LWPSTATE_IDLE;    
+    eLoraWan_Process_States LpState = LWPSTATE_IDLE;
+    eLoraWan_Process_States Lp2State = LWPSTATE_IDLE;        
     /*!
     * \brief Restore the LoraWan Context
     */
     //DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
     RP.InitHook ( 0 ,  &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
-
-   RP.ComputePriority (  ) ;
-   RP.ComputeRanking ( );
+    RP.InitHook ( 2 ,  &(Lp2.packet.Phy.CallbackIsrRadio), &(Lp2.packet.Phy) );
+  
     //uint8_t TPointer ;
    // TPointer = ExtDebugTrace[ TRACE_SIZE - 1]& 0xff;  
    // for (int i  = 0; i < 200; i++){ 
@@ -146,6 +147,10 @@ int main( ) {
     UserPayload[ 0 ]  = FW_VERSION ;
     MsgType = UNCONF_DATA_UP;
     Lp.NewJoin();
+
+    Lp2.RestoreContext  ( );
+    Lp2.SetDataRateStrategy( STATIC_ADR_MODE );
+    Lp2.NewJoin();
     while(1) {
     /*!
     * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes) + FW version. 
@@ -154,11 +159,13 @@ int main( ) {
     if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
        // InsertTrace ( __COUNTER__, FileId );
 
-        LpState = Lp.Join( );
+        LpState  = Lp.Join( );
+        Lp2State = Lp2.Join( );
     } else {
 
        // InsertTrace ( __COUNTER__, FileId );
-        LpState = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
+        LpState  = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
+        Lp2State = Lp2.SendPayload( UserFport, UserPayload, UserPayloadSize+4, MsgType );
     }
 /*!
 * \brief 
@@ -169,8 +176,9 @@ int main( ) {
 *        Therefore when the stack is active a call periodicity of roughly 300mSec is recommended.
 */ 
         DEBUG_MSG (" new packet \n");
-        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
+        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ||  ( Lp2State != LWPSTATE_IDLE ) && ( Lp2State != LWPSTATE_ERROR ) && ( Lp2State != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
+            Lp2State = Lp2.LoraWanProcess( &AvailableRxPacket );
             mcu.GotoSleepMSecond ( 300 );
         }
 

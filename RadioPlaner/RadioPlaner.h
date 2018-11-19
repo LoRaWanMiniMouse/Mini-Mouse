@@ -52,8 +52,8 @@ class RadioPLaner  {
 public:
     RadioPLaner( R* RadioUser );
     ~RadioPLaner ( ); 
-    eHookStatus InitHook     ( uint8_t HookId,  void (* AttachCallBack) (void * ), void * objHookIn ) ;
-    eHookStatus GetMyHookId  ( void * objHookIn, uint8_t * HookId );
+    eHookStatus InitHook     ( uint8_t HookIdIn,  void (* AttachCallBack) (void * ), void * objHookIn ) ;
+    eHookStatus GetMyHookId  ( void * objHookIn, uint8_t * HookIdIn );
 
 
     /* Note : @tbd : return a status enqueue error case if task already running */

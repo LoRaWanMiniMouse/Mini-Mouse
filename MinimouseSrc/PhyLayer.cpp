@@ -38,7 +38,6 @@ template <class R> RadioContainer <R>::RadioContainer( RadioPLaner<R> * RadioUse
     TxSf = 7;
     Radio = RadioUser;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond( );
-    Radio->GetMyHookId  ( this, &MyHookId );
 }; 
 template <class R> RadioContainer<R>::~RadioContainer( ) {
 };
@@ -65,6 +64,7 @@ template <class R> void RadioContainer <R>::DetachIsr ( void ) {
  //@note Partionning Public/private not yet finalized
  
 template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, eBandWidth TxBwMac, uint16_t TxPayloadSizeMac ) { //@note could/should be merge with tx config
+    Radio->GetMyHookId  ( this, &MyHookId );
     TxPayloadSize               = (uint8_t)TxPayloadSizeMac;
     sRadioParam.Frequency       = TxFrequencyMac;
     sRadioParam.Power           = TxPowerMac;

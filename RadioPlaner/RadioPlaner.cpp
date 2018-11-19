@@ -151,11 +151,22 @@ eHookStatus  RadioPLaner<R>:: Read_RadioFifo ( eRadioPlanerTask  TaskType) {
     }
     return status;
 }
+
+template <class R> 
+void  RadioPLaner<R>::UpdateTaskTab      ( void ) {
+    for (int i = 0 ; i < NB_HOOK ; i++ ){
+        if ( sTask [ i ].TaskTimingType == TASK_ASSAP ) {
+            sTask [ i ].StartTime = mcu.RtcGetTimeMs(); //@note manage timeout 
+        }
+    }
+
+};
 template <class R> 
 void  RadioPLaner<R>:: ComputePriority ( void ) {
     for (int i = 0 ; i < NB_HOOK ; i++ ){
         sTask [ i ].Priority = (  sTask [ i ].TaskTimingType * NB_HOOK ) + i ; // the lowest value is the highest priority.
     }
+
 }
 template <class R> 
 uint8_t  RadioPLaner<R>:: FindHighestPriotity ( uint8_t * vec,  uint8_t length ) {
@@ -232,7 +243,7 @@ uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
 
 template <class R> 
 void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
-
+    UpdateTaskTab      ( );
     ComputePriority    ( );
     ComputeRanking     ( ); 
     if ( SelectTheNextTask ( ) == NEW_TASK_TO_LAUNCH ) { // Store the result in the variable HookToExecute
@@ -310,11 +321,12 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
 /************************************************************************************/
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
+    DEBUG_PRINTF("receive it for hook %d\n",HookToExecute);
     RadioPlanerState = RADIO_IDLE;
     uint8_t Id = HookToExecute;
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
     ComputePlanerStatus ( );
-     sTask[Id].TaskType = TASK_IDLE;  
+     sTask[Id].TaskTimingType = NO_TASK;  
     CallBackHook( Id );
     HookToExecute = 0xFF;
     CallPlanerArbitrer (); 

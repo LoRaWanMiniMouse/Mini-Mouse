@@ -81,6 +81,7 @@ public:
 /*                                 Planer Utilities                                 */
 /*                                                                                  */
 /************************************************************************************/
+  void UpdateTaskTab          ( void );
   void CallPlanerArbitrer     ( void );
   void LaunchTask             ( void );
   void ComputePlanerStatus    ( void );

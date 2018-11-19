@@ -62,7 +62,7 @@ eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookId,  void (* AttachCallBack) 
 template <class R>
 eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t * HookId ){
     for (int i = 0 ; i < NB_HOOK ; i ++) {
-        if ( objHook == objHook[i] ){
+        if ( objHookIn == objHook[i] ){
             * HookId = i ;
             return ( HOOK_OK );
         } 
@@ -75,11 +75,10 @@ eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t * HookId )
 /*                            RadioPlaner EnqueueTask Method                                   */
 /***********************************************************************************************/
 template <class R> 
-void RadioPLaner<R>::EnqueueTask( STask staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam sRadioParamIn ){
-
-    uint8_t HookId = staskIn.HookId;
-    sTask             [ HookId ] = staskIn;
-    sRadioParam       [ HookId ] = sRadioParamIn;
+void RadioPLaner<R>::EnqueueTask( STask *staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam *sRadioParamIn ){
+    uint8_t HookId = staskIn->HookId;
+    sTask             [ HookId ] = *staskIn;
+    sRadioParam       [ HookId ] = *sRadioParamIn;
     Payload           [ HookId ] = payload;
     PayloadSize       [ HookId ] = payloadSize;
     //tb implemented check if already running task and return error

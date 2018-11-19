@@ -83,7 +83,7 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     stask.TaskTimingType = TASK_ASSAP;
     stask.TaskType = ( TxModulation == LORA ) ? TASK_TX_LORA : TASK_TX_FSK;
  
-    Radio->EnqueueTask (stask, TxPhyPayload, &TxPayloadSize, sRadioParam ); //@tbd RadioPlaner  timeonair
+    Radio->EnqueueTask (&stask, TxPhyPayload, &TxPayloadSize, &sRadioParam ); //@tbd RadioPlaner  timeonair
 
     if ( TxModulation == LORA ) {
         InsertTrace    ( __COUNTER__, FileId );
@@ -119,7 +119,7 @@ template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlan
     stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
     stask.TaskTimingType = TASK_AT_TIME;
     stask.TaskType = (RxModulation == LORA ) ? TASK_RX_LORA : TASK_RX_FSK;
-    Radio->EnqueueTask (stask, RxPhyPayload, &RxPhyPayloadSize, sRadioParam ); //@tbd RadioPlaner  timeonair
+    Radio->EnqueueTask (&stask, RxPhyPayload, &RxPhyPayloadSize, &sRadioParam ); //@tbd RadioPlaner  timeonair
     if ( RxModulation == LORA ) {
         InsertTrace   ( __COUNTER__, FileId );
         DEBUG_PRINTF  ( "  RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw );

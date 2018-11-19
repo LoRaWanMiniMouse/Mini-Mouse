@@ -59,7 +59,7 @@ public:
     /* Note : @tbd : return a status enqueue error case if task already running */
  
 
-    void EnqueueTask     ( STask staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam sRadioParamIn );
+    void EnqueueTask     ( STask* staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam *sRadioParamIn );
     void GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
    
 

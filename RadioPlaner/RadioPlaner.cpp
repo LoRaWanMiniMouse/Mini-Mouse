@@ -99,7 +99,7 @@ void RadioPLaner<R>::EnqueueTask( STask *staskIn, uint8_t *payload, uint8_t *pay
     Payload           [ HookId ] = payload;
     PayloadSize       [ HookId ] = payloadSize;
     //tb implemented check if already running task and return error
-    DEBUG_PRINTF ("                     enqueu task for hook id = %d\n",HookId);
+   // DEBUG_PRINTF ("                     enqueu task for hook id = %d\n",HookId);
     CallPlanerArbitrer ( );
 }
 
@@ -211,9 +211,9 @@ void  RadioPLaner<R>:: ComputeRanking ( void ) { //@tbd implementation should be
 }
 template <class R> 
 uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
-    DEBUG_MSG ("                                                  call Select Next Task");
-    PrintTask ( 0 );
-    PrintTask ( 2 );
+    //DEBUG_MSG ("                                                  call Select Next Task");
+    //PrintTask ( 0 );
+    //PrintTask ( 2 );
     uint8_t HookToExecuteTmp = 0xFF;
     uint32_t TimeOfHookToExecuteTmp;
     uint32_t TempTime;
@@ -254,11 +254,10 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
     UpdateTaskTab      ( );
     ComputePriority    ( );
     ComputeRanking     ( ); 
-    uint8_t a = SelectTheNextTask ( );
     if ( SelectTheNextTask() == SCHEDULED_TASK ) { // Store the result in the variable HookToExecut
             LaunchTimer ( );
-            DEBUG_MSG ("                                                ");
-            DEBUG_PRINTF ("Launch new task for hook id = %d start time at %d\n",HookToExecute, TimeOfHookToExecute);
+        //    DEBUG_MSG ("                                                ");
+        //    DEBUG_PRINTF ("Launch new task for hook id = %d start time at %d\n",HookToExecute, TimeOfHookToExecute);
     } else {
             DEBUG_MSG ("                                                ");
             DEBUG_MSG (" No More Active Task inside the RadioPlaner \n");
@@ -362,7 +361,7 @@ template <class R>
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
     sCurrentTask.TaskType = TASK_IDLE;
-    DEBUG_PRINTF("                                                       receive it for hook %d\n",HookToExecute);
+  //  DEBUG_PRINTF("                                                       receive it for hook %d\n",HookToExecute);
     ComputePlanerStatus ( );
     CallBackHook( sCurrentTask.HookId );
     Radio->Sleep( false );

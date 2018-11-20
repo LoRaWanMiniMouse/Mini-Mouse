@@ -909,7 +909,7 @@ void  McuSTM32L072::AttachInterruptIn       (  void (* _Funcext) (void *) , void
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32l4xx.s).                    */
 /******************************************************************************/
-
+volatile static uint32_t tempo;
     void  McuSTM32L072::mwait_ms (int delayms) {
     
         HAL_Delay(delayms);
@@ -919,7 +919,10 @@ void  McuSTM32L072::AttachInterruptIn       (  void (* _Funcext) (void *) , void
     };
 
     void  McuSTM32L072::waitUnderIt (uint32_t delay) {
-        
+        for (uint32_t i = 0 ; i < delay * (HSE_VALUE / 1000) ; i++)
+        {
+            tempo++;
+        }
     };
 
  

@@ -303,9 +303,9 @@ public :
 /******************************************************************************/
 /*                           Mcu wait                                         */
 /******************************************************************************/   
-    void mwait_ms (int delayms);
-    void mwait (int delays) ;
-    void  waitUnderIt (uint32_t delay); 
+    void mwait_ms    ( int delayms );
+    void mwait       ( int delays ) ;
+    void waitUnderIt ( uint32_t delay ); 
 
 /******************************************************************************/
 /*                           Mcu Uart Api                                     */

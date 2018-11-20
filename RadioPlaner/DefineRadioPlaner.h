@@ -38,7 +38,7 @@ typedef enum {
     TASK_AT_TIME,
     TASK_NOW,
     TASK_ASSAP,
-    NO_TASK, 
+    TASK_BACKGROUND,
 }eTimingTypeTask;
 
 typedef enum {
@@ -58,6 +58,7 @@ struct STask {
     eTimingTypeTask   TaskTimingType ;
     eRadioPlanerTask  TaskType  ;
     uint8_t           Priority; 
+    uint8_t           TokenDebug;
 };
 
 typedef enum { 
@@ -88,13 +89,7 @@ typedef enum {
 }ePlanerTimerState;
 
 
-
-enum { 
-    HOOK_0,
-    HOOK_1,
-    HOOK_2,
-    HOOK_3
-};
-#define NEW_TASK_TO_LAUNCH    0
-#define NO_NEW_TASK_TO_LAUNCH 1
+#define NO_MORE_TASK    0
+#define SCHEDULED_TASK  1
+#define MARGIN_DELAY    3
 #endif

@@ -72,6 +72,8 @@ public:
   }     
   SRadioParam       sRadioParam   [ NB_HOOK ];
   STask             sTask         [ NB_HOOK ];
+  STask             sCurrentTask   ;
+  STask             sNextTask      ;
   uint8_t*          Payload       [ NB_HOOK ];
   uint8_t*          PayloadSize   [ NB_HOOK ]; 
   uint8_t           HookToExecute;
@@ -83,12 +85,12 @@ public:
 /************************************************************************************/
   void UpdateTaskTab          ( void );
   void CallPlanerArbitrer     ( void );
-  void LaunchTask             ( void );
   void ComputePlanerStatus    ( void );
   void ComputePriority        ( void );
-  uint8_t SelectTheNextTask   ( void );
   void ComputeRanking         ( void );
-  uint8_t FindHighestPriotity ( uint8_t * vec, uint8_t length );
+  void LaunchCurrentTask      ( void );
+  uint8_t SelectTheNextTask   ( void );
+  uint8_t FindHighestPriority ( uint8_t * vec, uint8_t length );
   uint8_t Ranking [ NB_HOOK ]; 
 
   eHookStatus Read_RadioFifo ( eRadioPlanerTask  TaskType );
@@ -96,7 +98,7 @@ public:
 /*     isr  Timer Parameters */
         
   ePlanerTimerState PlanerTimerState;
-
+  void              LaunchTimer ( void );
   void              SetAlarm                    ( uint32_t alarmInMs ); 
   void              IsrTimerRadioPlaner         ( void );
   static void       CallbackIsrTimerRadioPlaner ( void * obj ) { ( reinterpret_cast<RadioPLaner<R>*>(obj) )->IsrTimerRadioPlaner(); };
@@ -110,6 +112,15 @@ public:
   static void CallbackIsrRadioPlaner (void * obj){(reinterpret_cast<RadioPLaner< R >*>(obj))->IsrRadioPlaner();} ; 
   
   R* Radio;
+
+
+/************************************************************************************/
+/*                                 DEBUG Utilities                                 */
+/*                                                                                  */
+/************************************************************************************/
+void PrintTask ( uint8_t HookIdIn );
+
+
 
 
 };

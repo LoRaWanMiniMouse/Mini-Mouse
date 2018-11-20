@@ -120,9 +120,9 @@ IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
 
 void SX1276::Reset( void ) {
     mcu.SetValueDigitalOutPin ( pinReset, 0);
-    mcu.mwait_ms( 3 );
+    mcu.waitUnderIt( 3 );
     mcu.SetValueDigitalOutPin ( pinReset, 1);
-    mcu.mwait_ms( 3 );
+    mcu.waitUnderIt( 3 );
     this->ResetFakeIrq();
     lastPacketRssi = 0;
     SetOpMode( RF_OPMODE_SLEEP );

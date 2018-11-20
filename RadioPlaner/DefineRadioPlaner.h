@@ -47,7 +47,8 @@ typedef enum {
     TASK_TX_LORA,
     TASK_TX_FSK,
     TASK_CAD,
-    TASK_IDLE,
+    TASK_ABORTED,
+    TASK_EMPTY,
 }eRadioPlanerTask;
 
 

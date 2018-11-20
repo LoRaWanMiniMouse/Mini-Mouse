@@ -72,8 +72,9 @@ public:
   }     
   SRadioParam       sRadioParam   [ NB_HOOK ];
   STask             sTask         [ NB_HOOK ];
-  STask             sCurrentTask   ;
-  STask             sNextTask      ;
+  STask             sRadioRunningTask;
+  STask             sTimerRunningTask;
+  STask             sNextTask;
   uint8_t*          Payload       [ NB_HOOK ];
   uint8_t*          PayloadSize   [ NB_HOOK ]; 
   uint8_t           HookToExecute;
@@ -98,7 +99,7 @@ public:
 /*     isr  Timer Parameters */
         
   ePlanerTimerState PlanerTimerState;
-  void              LaunchTimer ( void );
+  //void              LaunchTimer ( void );
   void              SetAlarm                    ( uint32_t alarmInMs ); 
   void              IsrTimerRadioPlaner         ( void );
   static void       CallbackIsrTimerRadioPlaner ( void * obj ) { ( reinterpret_cast<RadioPLaner<R>*>(obj) )->IsrTimerRadioPlaner(); };

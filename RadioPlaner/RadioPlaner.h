@@ -86,7 +86,7 @@ public:
 /************************************************************************************/
   void UpdateTaskTab          ( void );
   void CallPlanerArbitrer     ( void );
-  void ComputePlanerStatus    ( void );
+  void ComputePlanerStatus    ( uint8_t HookIdIn );
   void ComputePriority        ( void );
   void ComputeRanking         ( void );
   void LaunchCurrentTask      ( void );
@@ -94,7 +94,7 @@ public:
   uint8_t FindHighestPriority ( uint8_t * vec, uint8_t length );
   uint8_t Ranking [ NB_HOOK ]; 
 
-  eHookStatus Read_RadioFifo ( eRadioPlanerTask  TaskType );
+  eHookStatus Read_RadioFifo ( STask TaskIn );
   ePlanerStatus RadioPlanerStatus;
 /*     isr  Timer Parameters */
         

@@ -126,8 +126,8 @@ template <class R>
 /************************************************************************************/
 
 template <class R>  //@tbd ma   nage all error case
- void RadioPLaner<R> :: ComputePlanerStatus (void ) {   //rename
-    uint8_t Id = HookToExecute;
+ void RadioPLaner<R> :: ComputePlanerStatus ( uint8_t HookIdIn ) {   //rename
+    uint8_t Id = HookIdIn;
     IrqFlags_t IrqRadio  = ( Radio->GetIrqFlagsLora( ) );
     Radio->ClearIrqFlagsLora( ); 
     switch ( IrqRadio ) {
@@ -137,7 +137,7 @@ template <class R>  //@tbd ma   nage all error case
         case RECEIVE_PACKET_IRQ_FLAG : 
             RadioPlanerStatus = PLANER_RX_PACKET;
             // Push Fifo
-            Read_RadioFifo ( sTask[Id].TaskType );
+            Read_RadioFifo ( sTask[Id] );
             break; 
         case RXTIMEOUT_IRQ_FLAG      : 
             RadioPlanerStatus = PLANER_RX_TIMEOUT;
@@ -153,12 +153,12 @@ void RadioPLaner<R>::SetAlarm (uint32_t alarmInMs ) {
 }
 
 template <class R> 
-eHookStatus  RadioPLaner<R>:: Read_RadioFifo ( eRadioPlanerTask  TaskType) {
+eHookStatus  RadioPLaner<R>:: Read_RadioFifo ( STask TaskIn) {
     eHookStatus status = HOOK_OK;
-    uint8_t Id = sRadioRunningTask.TaskType;
-    if (TaskType == TASK_RX_LORA ) {
+    uint8_t Id = TaskIn.HookId;
+    if (TaskIn.TaskType == TASK_RX_LORA ) {
         Radio->FetchPayloadLora( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
-    } else if ( TaskType == TASK_RX_FSK ) {
+    } else if ( TaskIn.TaskType  == TASK_RX_FSK ) {
         Radio->FetchPayloadFsk( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
     } else {
         status = HOOK_ERROR;
@@ -329,11 +329,11 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     uint8_t Id = sRadioRunningTask.HookId;
-    FreeStask ( &sRadioRunningTask );
+     FreeStask ( &sRadioRunningTask );
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
     DEBUG_PRINTFRP("                                                       receive it for hook %d\n",HookToExecute);
-    ComputePlanerStatus ( );
-    CallBackHook( sTask[Id].HookId );
+    ComputePlanerStatus ( Id );
+    CallBackHook( Id );
     FreeStask (&sTask[Id]);
     Radio->Sleep( false );
     CallPlanerArbitrer (); 

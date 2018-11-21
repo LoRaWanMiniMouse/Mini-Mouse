@@ -27,12 +27,12 @@ template class RadioPLaner<SX1272>;
 template class RadioPLaner<SX126x>;
 
 
-void FreeStask (STask task ) {
-    task.HookId          = NB_HOOK;
-    task.StartTime       = 0;
-    task.TaskDuration    = 0; 
-    task.TaskTimingType  = TASK_BACKGROUND;
-    task.TaskType        = TASK_EMPTY;
+void FreeStask (STask *task ) {
+    task->HookId          = 0xFF;
+    task->StartTime       = 0;
+    task->TaskDuration    = 0; 
+    task->TaskTimingType  = TASK_BACKGROUND;
+    task->TaskType        = TASK_EMPTY;
 }
 
 
@@ -47,8 +47,9 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
         sTask[ i ].TaskTimingType = TASK_BACKGROUND;
         objHook[ i ]              = NULL;
     }
-    FreeStask ( sTimerRunningTask );
-    FreeStask ( sRadioRunningTask );
+    FreeStask ( &sTimerRunningTask );
+    FreeStask ( &sRadioRunningTask );
+    FreeStask ( &sNextTask );
     HookToExecute = 0xFF;
     RadioPlanerState = RADIO_IDLE;
     PlanerTimerState = TIMER_IDLE;
@@ -99,7 +100,7 @@ void RadioPLaner<R>::EnqueueTask( STask *staskIn, uint8_t *payload, uint8_t *pay
     Payload           [ HookId ] = payload;
     PayloadSize       [ HookId ] = payloadSize;
     //tb implemented check if already running task and return error
-   // DEBUG_PRINTF ("                     enqueu task for hook id = %d\n",HookId);
+   // DEBUG_MSGRP ("                     enqueu task for hook id = %d\n",HookId);
     CallPlanerArbitrer ( );
 }
 
@@ -210,7 +211,7 @@ void  RadioPLaner<R>:: ComputeRanking ( void ) { //@tbd implementation should be
 }
 template <class R> 
 uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
-    //DEBUG_MSG ("                                                  call Select Next Task");
+    //DEBUG_MSGRP ("                                                  call Select Next Task");
     //PrintTask ( 0 );
     //PrintTask ( 2 );
     uint8_t HookToExecuteTmp = 0xFF;
@@ -240,7 +241,6 @@ uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
         }
     }
     sNextTask = sTask[ HookToExecuteTmp ];
-    sTask [ HookToExecuteTmp ].TaskType = TASK_EMPTY ;    
     return (SCHEDULED_TASK);
 }
 /************************************************************************************/
@@ -252,29 +252,30 @@ template <class R>
 void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
     UpdateTaskTab      ( );
     ComputePriority    ( );
-    ComputeRanking     ( ); 
+    ComputeRanking     ( );
     if ( SelectTheNextTask() == SCHEDULED_TASK ) { // Store the result in the variable HookToExecut
-   
-        if  ( sNextTask.HookId == sTimerRunningTask.HookId ) {
-              DEBUG_MSG ("                                         Nothing New \n");
+         PrintTask ( sNextTask ); 
+        if  ( ( sNextTask.HookId == sTimerRunningTask.HookId ) && (PlanerTimerState = TIMER_IDLE  ) ) {
+              DEBUG_MSGRP ("                                             Nothing New \n");
         } else {
             uint32_t CurrentTime = mcu.RtcGetTimeMs () + MARGIN_DELAY ;
-            uint32_t delay = sNextTask.StartTime - CurrentTime ;
+            int delay = sNextTask.StartTime - CurrentTime ;
+            DEBUG_PRINTFRP ( "                                                         delay = %d, Currentime = %d \n ",delay,CurrentTime);
             if ( delay > 0 ) {
-                 DEBUG_MSG ("                                          New TAsk Schedule delay\n");
+                 DEBUG_PRINTFRP ("                                                     New TAsk Schedule delay %d\n",delay);
                 sTimerRunningTask = sNextTask; 
                 PlanerTimerState  = TIMER_BUSY ;
                 SetAlarm ( delay );
             } else {   // Meaning task should be running Now => call Radio
-                 DEBUG_MSG ("                                          New TAsk Scheduleimmediate\n");
+                 DEBUG_MSGRP ("                                                           New TAsk Schedule Immediate\n");
                 sRadioRunningTask = sNextTask;
-                FreeStask ( sNextTask ) ;
+                FreeStask ( &sNextTask ) ;
                 LaunchCurrentTask ();
             }
         }
     } else {
-            DEBUG_MSG ("                                                ");
-            DEBUG_MSG (" No More Active Task inside the RadioPlaner \n");
+            DEBUG_MSGRP ("                                                ");
+            DEBUG_MSGRP (" No More Active Task inside the RadioPlaner \n");
     }
     
 }
@@ -285,9 +286,11 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
 template <class R> 
 void  RadioPLaner<R>::LaunchCurrentTask ( void ){
      uint8_t Id = sRadioRunningTask.HookId;
-     switch ( sRadioRunningTask.TaskType) {
+     DEBUG_MSGRP("                                                                 Start Radio");
+     PrintTask ( sTask[Id] ); 
+     switch ( sTask[Id].TaskType) {
         case TASK_TX_LORA :
-            Radio->SendLora( Payload[Id], *PayloadSize[Id], sRadioParam[Id].Sf, sRadioParam[Id].Bw, sRadioParam[Id].Frequency, sRadioParam[Id].Power );
+             Radio->SendLora( Payload[Id], *PayloadSize[Id], sRadioParam[Id].Sf, sRadioParam[Id].Bw, sRadioParam[Id].Frequency, sRadioParam[Id].Power );
             break;
         case TASK_RX_LORA :
             Radio->RxLora ( sRadioParam[Id].Bw, sRadioParam[Id].Sf, sRadioParam[Id].Frequency, sRadioParam[Id].TimeOutMs);
@@ -308,13 +311,12 @@ void  RadioPLaner<R>::LaunchCurrentTask ( void ){
 
 template <class R>     
 void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
+    DEBUG_MSGRP ("                                            Timer Expire\n");
     if (sRadioRunningTask.TaskType < TASK_EMPTY) {
-                DEBUG_MSG ("                                                ");
-                DEBUG_MSG ("Radio already running\n");
+                DEBUG_MSGRP ("                                                ");
+                DEBUG_MSGRP ("Radio already running\n");
                 while(1){}
-    } else {
-        sRadioRunningTask = sNextTask;
-    }
+    } 
     PlanerTimerState = TIMER_IDLE ;
     CallPlanerArbitrer ();
 }              
@@ -326,11 +328,13 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
 /************************************************************************************/
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
+    uint8_t Id = sRadioRunningTask.HookId;
+    FreeStask ( &sRadioRunningTask );
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
-  //  DEBUG_PRINTF("                                                       receive it for hook %d\n",HookToExecute);
+    DEBUG_PRINTFRP("                                                       receive it for hook %d\n",HookToExecute);
     ComputePlanerStatus ( );
-    CallBackHook( sRadioRunningTask.HookId );
-    FreeStask ( sRadioRunningTask );
+    CallBackHook( sTask[Id].HookId );
+    FreeStask (&sTask[Id]);
     Radio->Sleep( false );
     CallPlanerArbitrer (); 
 } 
@@ -349,47 +353,47 @@ void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
 /*                      DEBUG UTILITIES                                                         */
 /************************************************************************************************/
 template <class R> 
-void  RadioPLaner<R>::PrintTask ( uint8_t HookIdIn ) {
-    DEBUG_MSG("\n");
-    DEBUG_PRINTF ("                                              Elected Task = %d HookId = %d ",HookToExecute , HookIdIn );
-    switch (sTask[HookIdIn].TaskType) {
+void  RadioPLaner<R>::PrintTask ( STask TaskIn ) {
+    DEBUG_MSGRP("\n");
+    DEBUG_PRINTFRP ("                                              RadioRunning Task = %d TimerRunningTask = %d HookId = %d ",sRadioRunningTask.HookId , sTimerRunningTask.HookId,TaskIn.HookId );
+    switch (TaskIn.TaskType) {
         case  TASK_RX_LORA : 
-            DEBUG_MSG (" TASK_RX_LORA ");
+            DEBUG_MSGRP (" TASK_RX_LORA ");
             break;
         case  TASK_RX_FSK :
-            DEBUG_MSG (" TASK_RX_FSK ");
+            DEBUG_MSGRP (" TASK_RX_FSK ");
             break;
         case  TASK_TX_LORA : 
-            DEBUG_MSG (" TASK_TX_LORA ");
+            DEBUG_MSGRP (" TASK_TX_LORA ");
             break;
         case  TASK_TX_FSK :
-            DEBUG_MSG (" TASK_TX_FSK ");
+            DEBUG_MSGRP (" TASK_TX_FSK ");
             break;
         case  TASK_CAD :
-            DEBUG_MSG (" TASK_CAD ");
+            DEBUG_MSGRP (" TASK_CAD ");
             break;
         case  TASK_EMPTY : 
-            DEBUG_MSG (" TASK_EMPTY ");
+            DEBUG_MSGRP (" TASK_EMPTY ");
             break;
         default :
-           DEBUG_MSG (" TASK_ERROR ");
+           DEBUG_MSGRP (" TASK_ERROR ");
             break;
     };
-    DEBUG_PRINTF (" StartTime  @%d with priority = %d",sTask[HookIdIn].StartTime,sTask[HookIdIn].Priority);
-    switch (sTask[HookIdIn].TaskTimingType) {
+    DEBUG_PRINTFRP (" StartTime  @%d with priority = %d",TaskIn.StartTime,TaskIn.Priority);
+    switch (TaskIn.TaskTimingType) {
         case  TASK_AT_TIME : 
-            DEBUG_MSG (" TASK_AT_TIME ");
+            DEBUG_MSGRP (" TASK_AT_TIME ");
             break;
         case  TASK_NOW :
-            DEBUG_MSG (" TASK_NOW ");
+            DEBUG_MSGRP (" TASK_NOW ");
             break;
         case  TASK_ASSAP : 
-            DEBUG_MSG (" TASK_ASSAP ");
+            DEBUG_MSGRP (" TASK_ASSAP ");
             break;
         case  TASK_BACKGROUND : 
-            DEBUG_MSG (" TASK_BACKGROUND ");
+            DEBUG_MSGRP (" TASK_BACKGROUND ");
         default :
-           DEBUG_MSG (" TASK_PRIORITY_ERROR ");
+           DEBUG_MSGRP (" TASK_PRIORITY_ERROR ");
     };
-    DEBUG_MSG("\n");
+    DEBUG_MSGRP("\n");
 }

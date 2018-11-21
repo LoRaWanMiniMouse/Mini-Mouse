@@ -24,13 +24,23 @@ Maintainer        : Fabien Holin (SEMTECH)
 /*             The section behind haven't to be modified by user                */
 /********************************************************************************/
 
+#if DEBUG_RP == 1
+    #define DEBUG_MSGRP(str)               mcu.MMprint(str)
+    #define DEBUG_PRINTFRP(fmt, args...)   mcu.MMprint(fmt, args)
+#else
+    #define DEBUG_MSGRP(str)            
+    #define DEBUG_PRINTFRP(fmt, args...)
+#endif
+
 
 #if DEBUG_TRACE == 1
 #include "ApiMcu.h"
 
 #define DEBUG_MSG(str)               mcu.MMprint(str)
+
 //#define DEBUG_PRINTF(fmt, args...)   DEBUG_PRINTF("  %s:%d: "fmt, __FUNCTION__, __LINE__, args)
 #define DEBUG_PRINTF(fmt, args...)   mcu.MMprint(fmt, args)
+
 #define DEBUG_SPRINTF(fmt, args...)  mcu.MMprint("  %s:%d: "fmt, args)
 #define DEBUG_ARRAY(a,b,c)           for(a=0;a!=0;){}
     

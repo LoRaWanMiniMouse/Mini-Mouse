@@ -119,7 +119,7 @@ public:
 /*                                 DEBUG Utilities                                 */
 /*                                                                                  */
 /************************************************************************************/
-void PrintTask ( uint8_t HookIdIn );
+void PrintTask ( STask TaskIn);
 
 
 

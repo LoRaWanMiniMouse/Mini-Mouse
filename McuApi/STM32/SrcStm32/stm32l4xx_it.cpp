@@ -218,12 +218,12 @@ void EXTI15_10_IRQHandler(void)
  //   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
  //   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_14);
  //   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
-  mcu.ExtISR();
+  //mcu.ExtISR();
 }
 void EXTI3_IRQHandler(void)
 {
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
-  mcu.ExtISR();
+  //mcu.ExtISR();
 }
 void EXTI4_IRQHandler(void)
 {

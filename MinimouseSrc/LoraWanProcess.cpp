@@ -86,9 +86,9 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
                 case RADIOSTATE_TXFINISHED :
                     InsertTrace ( __COUNTER__, FileId );
                     packet.ConfigureTimerForRx ( RX1 );
-                    if ( ClassCActivated == CLASS_C_ACTIVATED ) {
+                    /*if ( ClassCActivated == CLASS_C_ACTIVATED ) {
                         packet.ConfigureRadioForRxClassC ();
-                    } 
+                    } */
                     StateLoraWanProcess = LWPSTATE_RX1;
                     break ;
                 default :
@@ -169,7 +169,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     /************************************************************************************/
         case LWPSTATE_UPDATEMAC:
             InsertTrace ( __COUNTER__, FileId );
-            DetachRadioIsr ( );
+            //DetachRadioIsr ( );
             packet.Phy.StateRadioProcess = RADIOSTATE_IDLE;  
             DEBUG_MSG( "\n" );
             DEBUG_MSG( "  **************************\n " );

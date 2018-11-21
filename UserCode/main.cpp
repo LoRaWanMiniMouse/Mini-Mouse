@@ -59,8 +59,8 @@ uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 
 uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
 uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
 uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x31 };    
-uint32_t LoRaDevAddrInit          = 0x26011920;
-sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
+uint32_t LoRaDevAddrInit          = 0xCAFE0666;
+sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
 
 /* User Radio ISR routine */
 #define NBENCODEDFRAME 52
@@ -130,7 +130,7 @@ int main( ) {
    // }
     //ReadTrace( ExtDebugTrace );
     mcu.mwait(2);
-    Lp.RestoreContext  ( );
+    //Lp.RestoreContext  ( );
     Lp.SetDataRateStrategy( STATIC_ADR_MODE );
     UserFport       = 3;
     UserPayloadSize = 14;
@@ -138,7 +138,7 @@ int main( ) {
         UserPayload[i]= i;
     }
     UserPayload[ 0 ]  = FW_VERSION ;
-    MsgType = UNCONF_DATA_UP;
+    MsgType = CONF_DATA_UP;
     Lp.NewJoin();
     while(1) {
     /*!

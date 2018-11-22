@@ -920,7 +920,7 @@ template <int NBCHANNEL, class R> int LoraWanContainer<NBCHANNEL, R>::ExtractRxF
     /* manage Fctrl Byte      */
     /**************************/
     if (status == ERRORLORAWAN ) {
-        DEBUG_PRINTF(" ERROR %x\n ", DevAddrtmp );
+        DEBUG_PRINTF(" ERROR Bad DevAddr %x\n ", DevAddrtmp );
     }
     return (status);
 }

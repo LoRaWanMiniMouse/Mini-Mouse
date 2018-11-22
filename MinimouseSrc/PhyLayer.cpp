@@ -80,8 +80,8 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     stask.HookId         = MyHookId;
     stask.StartTime      = mcu.RtcGetTimeMs();
     stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
-    stask.TaskTimingType = TASK_ASSAP;
-    stask.TaskType = ( TxModulation == LORA ) ? TASK_TX_LORA : TASK_TX_FSK;
+    stask.State    = TASK_ASAP;
+    stask.TaskType = ( TxModulation == LORA ) ? TX_LORA : TX_FSK;
  
     Radio->EnqueueTask (&stask, TxPhyPayload, &TxPayloadSize, &sRadioParam ); //@tbd RadioPlaner  timeonair
 
@@ -117,8 +117,8 @@ template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlan
     stask.HookId         = MyHookId;
     stask.StartTime      = TimetoRadioPlaner;
     stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
-    stask.TaskTimingType = TASK_AT_TIME;
-    stask.TaskType = (RxModulation == LORA ) ? TASK_RX_LORA : TASK_RX_FSK;
+    stask.State    = TASK_SCHEDULE;
+    stask.TaskType = (RxModulation == LORA ) ? RX_LORA : RX_FSK;
     
     Radio->EnqueueTask (&stask, RxPhyPayload, &RxPhyPayloadSize, &sRadioParam ); //@tbd RadioPlaner  timeonair
     if ( RxModulation == LORA ) {

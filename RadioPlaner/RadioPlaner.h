@@ -86,8 +86,8 @@ public:
 /************************************************************************************/
   void UpdateTaskTab          ( void );
   void CallPlanerArbitrer     ( void );
-  void ComputePlanerStatus    ( uint8_t HookIdIn );
-  void ComputePriority        ( void );
+  void GetIRQStatus           ( uint8_t HookIdIn );
+
   void ComputeRanking         ( void );
   void LaunchCurrentTask      ( void );
   uint8_t SelectTheNextTask   ( void );
@@ -106,10 +106,11 @@ public:
 
 
 /*     isr Radio Parameter   */
-  eRadioState       RadioPlanerState;
   uint32_t          IrqTimeStampMs;
-  eRadioState       CurrentRadioState;
+
   void IsrRadioPlaner                ( void ); // Isr routine implemented in IsrRoutine.cpp file
+  void AbortTaskInRadio              ( void );
+  void CallAbortedTAsk               ( void );
   static void CallbackIsrRadioPlaner (void * obj){(reinterpret_cast<RadioPLaner< R >*>(obj))->IsrRadioPlaner();} ; 
   
   R* Radio;

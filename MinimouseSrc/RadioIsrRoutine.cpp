@@ -81,7 +81,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
         case PLANER_TX_CANCELED :
         case PLANER_RX_CANCELED :
         default :
-            DEBUG_PRINTF ("receive It radio error %x\n",PlanerStatus);
+            DEBUG_PRINTF ("receive It radio error %d\n",PlanerStatus);
             break;
     }
     switch ( StateRadioProcess ) { 

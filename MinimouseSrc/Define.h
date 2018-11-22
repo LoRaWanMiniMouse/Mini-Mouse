@@ -24,7 +24,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 /*             The section behind haven't to be modified by user                */
 /********************************************************************************/
 
-#if DEBUG_RP == 1
+#if DEBUG_TRACERP == 1
     #define DEBUG_MSGRP(str)               mcu.MMprint(str)
     #define DEBUG_PRINTFRP(fmt, args...)   mcu.MMprint(fmt, args)
 #else

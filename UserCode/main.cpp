@@ -58,10 +58,11 @@ uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 
 uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
 uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
 uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
-uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x40 };    
+uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x55 };    
+uint8_t DevEuiInit2[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x42 };    
 uint32_t LoRaDevAddrInit          = 0x26011920;
 sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
-
+sLoRaWanKeys  LoraWanKeys2 ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit2, LoRaDevAddrInit,OTA_DEVICE};
 /* User Radio ISR routine */
 #define NBENCODEDFRAME 52
 
@@ -113,14 +114,15 @@ int main( ) {
 #endif
 #ifdef SX1276_BOARD
     LoraWanObject<LoraRegionsEU,SX1276> Lp ( LoraWanKeys,&RP,USERFLASHADRESS); 
-    LoraWanObject<LoraRegionsEU,SX1276> Lp2( LoraWanKeys,&RP,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsEU,SX1276> Lp2( LoraWanKeys2,&RP,USERFLASHADRESS2); 
 #endif
 #ifdef SX1272_BOARD
     LoraWanObject<LoraRegionsEU,SX1272> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
 #endif
     //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
     //LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
-    uint8_t AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE ;
+    uint8_t AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
+    uint8_t AvailableRxPacket2 = NO_LORA_RXPACKET_AVAILABLE ;
     eLoraWan_Process_States LpState = LWPSTATE_IDLE;
     eLoraWan_Process_States Lp2State = LWPSTATE_IDLE;        
     /*!
@@ -151,22 +153,30 @@ int main( ) {
     Lp2.RestoreContext  ( );
     Lp2.SetDataRateStrategy( STATIC_ADR_MODE );
     Lp2.NewJoin();
+    static int cpt = 0;
     while(1) {
     /*!
     * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes) + FW version. 
     */
-
+     
     if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
        // InsertTrace ( __COUNTER__, FileId );
-
         LpState  = Lp.Join( );
-        //Lp2State = Lp2.Join( );
+        if ( ( Lp2.IsJoined ( ) == NOT_JOINED ) && ( Lp2.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
+          //  Lp2State = Lp2.Join( );
+        }
     } else {
+        if ( (cpt %2) == 0){
+            LpState  = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
+        }
+        if ( ( Lp2.IsJoined ( ) == NOT_JOINED ) && ( Lp2.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
+           // Lp2State = Lp2.Join( );
+        } else {
+            //Lp2State = Lp2.SendPayload( UserFport, UserPayload, UserPayloadSize+4, MsgType );
+        }
 
-       // InsertTrace ( __COUNTER__, FileId );
-        LpState  = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
-        //Lp2State = Lp2.SendPayload( UserFport, UserPayload, UserPayloadSize+4, MsgType );
     }
+    cpt++;
 /*!
 * \brief 
 *        This function manages the state of the MAC and performs all the computation intensive (crypto) tasks of the MAC.
@@ -176,14 +186,18 @@ int main( ) {
 *        Therefore when the stack is active a call periodicity of roughly 300mSec is recommended.
 */ 
         DEBUG_MSG (" new packet \n");
-        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ||  ( Lp2State != LWPSTATE_IDLE ) && ( Lp2State != LWPSTATE_ERROR ) && ( Lp2State != LWPSTATE_INVALID) ){
-            LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-           // Lp2State = Lp2.LoraWanProcess( &AvailableRxPacket );
-            mcu.GotoSleepMSecond ( 300 );
+        while ( ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) )||  ( ( Lp2State != LWPSTATE_IDLE ) && ( Lp2State != LWPSTATE_ERROR ) && ( Lp2State != LWPSTATE_INVALID) )) {
+            if ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ) {
+                LpState = Lp.LoraWanProcess( &AvailableRxPacket );
+            }
+            if (( Lp2State != LWPSTATE_IDLE ) && ( Lp2State != LWPSTATE_ERROR ) && ( Lp2State != LWPSTATE_INVALID)) {
+            Lp2State = Lp2.LoraWanProcess( &AvailableRxPacket2 );
+            }
+            mcu.GotoSleepMSecond ( 100 );
         }
 
         mcu.WatchDogRelease ( );
-        if ( LpState == LWPSTATE_ERROR ) {
+        if (( LpState == LWPSTATE_ERROR ) || ( Lp2State == LWPSTATE_ERROR )) {
             InsertTrace ( __COUNTER__, FileId );
             // user application have to save all the need
             NVIC_SystemReset();
@@ -205,6 +219,16 @@ int main( ) {
                 Certification ( false ,  &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
             }
         }
+
+         if ( AvailableRxPacket2 != NO_LORA_RXPACKET_AVAILABLE ) { 
+            InsertTrace ( __COUNTER__, FileId );
+            Lp2.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
+            DEBUG_PRINTF("Receive on port %d  an Applicative Downlink foor hook2\n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+            for ( i = 0 ; i < UserRxPayloadSize ; i++){
+                DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+            }
+            DEBUG_MSG("]\n\n\n");
+         }
 /*
 * \brief Send a �Packet every 120 seconds in case of join 
 *        Send a packet every AppTimeSleeping seconds in normal mode
@@ -214,7 +238,7 @@ int main( ) {
             mcu.GotoSleepSecond(5);
         } else {
             InsertTrace ( __COUNTER__, FileId );
-            mcu.GotoSleepSecond ( 30 );
+            mcu.GotoSleepSecond ( 10 );
             InsertTrace ( __COUNTER__, FileId );
         }
     }

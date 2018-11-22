@@ -34,30 +34,31 @@ struct SRadioParam {
     int16_t *            Snr;
     int16_t *            Rssi;
 };
-typedef enum {
-    TASK_AT_TIME,
-    TASK_NOW,
-    TASK_ASSAP,
-    TASK_BACKGROUND,
-}eTimingTypeTask;
+
 
 typedef enum {
-    TASK_RX_LORA,
-    TASK_RX_FSK, 
-    TASK_TX_LORA,
-    TASK_TX_FSK,
-    TASK_CAD,
-    TASK_ABORTED,
-    TASK_EMPTY,
+    RX_LORA,
+    RX_FSK, 
+    TX_LORA,
+    TX_FSK,
+    CAD,
+    NONE,
 }eRadioPlanerTask;
 
+typedef enum {
+    TASK_SCHEDULE,
+    TASK_ASAP,
+    TASK_RUNNING,
+    TASK_ABORTED,
+    TASK_FINISHED,
+}PlanerState;
 
 struct STask {
     uint8_t           HookId ;
     uint32_t          StartTime ; // absolute Ms
     uint32_t          TaskDuration  ;  
-    eTimingTypeTask   TaskTimingType ;
     eRadioPlanerTask  TaskType  ;
+    PlanerState       State;
     uint8_t           Priority; 
     uint8_t           TokenDebug;
 };
@@ -77,12 +78,6 @@ typedef enum {
     HOOK_OK,
     HOOK_ERROR 
 }eHookStatus;
-
-
-typedef enum {
-    RADIO_IDLE, 
-    RADIO_BUSY
-}eRadioState;
 
 typedef enum { 
     TIMER_IDLE,

@@ -46,7 +46,7 @@ Maintainer        : Fabien Holin (SEMTECH)
     #define RADIO_ANT_SWITCH_TX_BOOST PC_1
     #define RADIO_TCX0_POWER          PA_12
     #define DEBUG                     PA_10
-    #define CRYSTAL_ERROR              50 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
+    #define CRYSTAL_ERROR              20 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
     #define BOARD_DELAY_RX_SETTING_MS  2  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
     #define PA_BOOST_CONNECTED         0 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
     #define USERFLASHADRESS 0x8080000U   // start flash adress to store lorawan context

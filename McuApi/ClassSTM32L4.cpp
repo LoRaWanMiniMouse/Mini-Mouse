@@ -697,6 +697,25 @@ void  McuSTM32L4::Init_Irq ( PinName pin) {
     }
 
 } 
+
+void  McuSTM32L4::EnableIrqExtGpio ( void ){
+    HAL_NVIC_EnableIRQ ( EXTI0_IRQn );
+    HAL_NVIC_EnableIRQ ( EXTI1_IRQn );
+    HAL_NVIC_EnableIRQ ( EXTI2_IRQn );
+    HAL_NVIC_EnableIRQ ( EXTI3_IRQn );
+    HAL_NVIC_EnableIRQ ( EXTI4_IRQn );
+    HAL_NVIC_EnableIRQ ( EXTI9_5_IRQn );
+    HAL_NVIC_EnableIRQ ( EXTI15_10_IRQn );
+}
+void  McuSTM32L4::DisableIrqExtGpio ( void ){
+    HAL_NVIC_DisableIRQ ( EXTI0_IRQn );
+    HAL_NVIC_DisableIRQ ( EXTI1_IRQn );
+    HAL_NVIC_DisableIRQ ( EXTI2_IRQn );
+    HAL_NVIC_DisableIRQ ( EXTI3_IRQn );
+    HAL_NVIC_DisableIRQ ( EXTI4_IRQn );
+    HAL_NVIC_DisableIRQ ( EXTI9_5_IRQn );
+    HAL_NVIC_DisableIRQ ( EXTI15_10_IRQn );
+}
   
 /******************************************************************************/
 /*                                Mcu Spi Api                                 */
@@ -1292,7 +1311,12 @@ void HAL_LPTIM_MspDeInit(LPTIM_HandleTypeDef* lptimHandle)
   }
 } 
 
-
+void McuSTM32L4::LowPowerTimerDisableIrq ( ) {
+     HAL_NVIC_DisableIRQ(LPTIM1_IRQn);
+}
+void McuSTM32L4::LowPowerTimerEnableIrq ( ) {
+     HAL_NVIC_EnableIRQ(LPTIM1_IRQn);
+}
 /********************************************************************/
 /*       END  Of  Utilities for LowPower Timer                      */
 /********************************************************************/

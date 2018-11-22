@@ -798,6 +798,8 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::DicChanne
 /********************************************************************************************************************************/
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateJoinProcedure ( void ) { //@note tbd add valid test 
+    uint32_t c1 = mcu.RtcGetTimeMs();
+    DEBUG_PRINTF ("GET Time %d\n",c1 );
     InsertTrace ( __COUNTER__, FileId );
     uint8_t AppNonce[6];
     int i;
@@ -820,13 +822,15 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateJoi
     FcntDwn = 0xffffffff; 
     FcntUp = 0; 
     RetryJoinCpt = 0;
-    RegionSaveInFlash ( );
+  
     RegionSaveInFlash ( ); //@Note have to save twice in case of lowpower , have to understand why and remove this workaround
     DEBUG_PRINTF(" DevAddr= %x\n",DevAddr);
     DEBUG_PRINTF(" MacRx1DataRateOffset= %d\n",MacRx1DataRateOffset);
     DEBUG_PRINTF(" MacRx2DataRate= %d\n",MacRx2DataRate);
     DEBUG_PRINTF(" MacRx1Delay= %d\n",MacRx1Delay);
     DEBUG_MSG(" Save In Flash After Join suceed \n");
+     uint32_t c2 = mcu.RtcGetTimeMs();
+    DEBUG_PRINTF ("GET Time %d Join duration =%d\n",c2,c2-c1 );
 }
 
 /********************************************************/

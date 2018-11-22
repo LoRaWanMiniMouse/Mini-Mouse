@@ -47,7 +47,8 @@ LoraWanObject <T,RADIOTYPE> ::~LoraWanObject() {
 
 template <template <class R> class T, class RADIOTYPE> 
 eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
-
+    uint8_t MyHookId;
+    packet.Phy.Radio->GetMyHookId  ( &(this->packet.Phy) , &MyHookId );
     *AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE;
     #if LOW_POWER_MODE == 1
     if ( ( IsJoined ( ) == NOT_JOINED ) && ( mcu.RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){
@@ -76,10 +77,10 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
                    // InsertTrace ( __COUNTER__, FileId );
                     //AttachRadioIsr ( );                    
                     packet.ConfigureRadioAndSend( );
-                    DEBUG_MSG( "\n" );
-                    DEBUG_MSG( "  **************************\n " );
-                    DEBUG_MSG( " *       Send Payload     *\n " );
-                    DEBUG_MSG( " **************************\n " );
+                    DEBUG_MSG    ( "\n" );
+                    DEBUG_MSG    ( "  *************************************\n " );
+                    DEBUG_PRINTF ( " *       Send Payload  HOOK ID = %d   *\n ", MyHookId);
+                    DEBUG_MSG    ( " **************************************\n " );
                     break ; 
             
                 case RADIOSTATE_TXFINISHED :
@@ -103,16 +104,16 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
                 if ( GetPlanerStatus ( ) == PLANER_RX_PACKET) {
                     InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
-                    DEBUG_MSG( "  **************************\n " );
-                    DEBUG_MSG( " * Receive a downlink RX1 *\n " );
-                    DEBUG_MSG( " **************************\n " );
+                    DEBUG_MSG    ( "  ******************************************\n " );
+                    DEBUG_PRINTF ( " *Receive a downlink RX1 for Hook Id= %d   *\n ", MyHookId);
+                    DEBUG_MSG    ( " *******************************************\n " );
                     StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK;
                 } else { 
                     InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
-                    DEBUG_MSG( "  **************************\n " );
-                    DEBUG_MSG( " *      RX1 Timeout       *\n " );
-                    DEBUG_MSG( " **************************\n " );
+                    DEBUG_MSG     ( "  *************************************\n " );
+                    DEBUG_PRINTF  ( " * RX1 Timeout for Hook Id = %d       *\n ", MyHookId);
+                    DEBUG_MSG     ( " **************************************\n " );
                     packet.ConfigureTimerForRx ( RX2 );
                     if ( ClassCActivated == CLASS_C_ACTIVATED ) {
                          packet.ConfigureRadioForRxClassC ();
@@ -130,16 +131,16 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
                  if ( GetPlanerStatus ( ) == PLANER_RX_PACKET) {
                     InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
-                    DEBUG_MSG( "  **************************\n " );
-                    DEBUG_MSG( " * Receive a downlink RX2 *\n " );
-                    DEBUG_MSG( " **************************\n " );
+                     DEBUG_MSG   ( "  ********************************************\n " );
+                    DEBUG_PRINTF ( " *  Receive a downlink RX2 for Hook Id = %d  *\n ", MyHookId);
+                    DEBUG_MSG    ( " *********************************************\n " );
                     StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK; 
                 } else {
                     InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
-                    DEBUG_MSG( "  **************************\n " );
-                    DEBUG_MSG( " *      RX2 Timeout       *\n " );
-                    DEBUG_MSG( " **************************\n " );
+                     DEBUG_MSG    ( "  *************************************\n " );
+                    DEBUG_PRINTF  ( " * RX2 Timeout for Hook Id = %d       *\n ", MyHookId);
+                    DEBUG_MSG     ( " **************************************\n " );
                     StateLoraWanProcess = LWPSTATE_UPDATEMAC;
                 }
             }
@@ -157,9 +158,9 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
         case LWPSTATE_PROCESSDOWNLINK:
             InsertTrace ( __COUNTER__, FileId );
             DEBUG_MSG( "\n" );
-            DEBUG_MSG( "  **************************\n " );
-            DEBUG_MSG( " * Process Downlink       *\n " );
-            DEBUG_MSG( " **************************\n " );
+            DEBUG_MSG     ( " *************************************\n " );
+            DEBUG_PRINTF  ( " Process Downlink  for Hook Id  = %d *\n ", MyHookId);
+            DEBUG_MSG     ( " *************************************\n " );
             ValidRxPacket = packet.DecodeRxFrame( ); // return NOVALIDRXPACKET or  USERRX_FOPTSPACKET or NWKRXPACKET or JOIN_ACCEPT_PACKET.
             StateLoraWanProcess = LWPSTATE_UPDATEMAC;
             break;
@@ -171,9 +172,9 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
          //   DetachRadioIsr ( );
             packet.Phy.StateRadioProcess = RADIOSTATE_IDLE;  
             DEBUG_MSG( "\n" );
-            DEBUG_MSG( "  **************************\n " );
-            DEBUG_MSG( " *       UpdateMac        *\n " );
-            DEBUG_MSG( " **************************\n " );
+            DEBUG_MSG( "  *********************************\n " );
+            DEBUG_PRINTF  ( " Update Mac for Hook Id = %d *\n ", MyHookId);
+            DEBUG_MSG( " **********************************\n " );
             if ( ValidRxPacket == JOIN_ACCEPT_PACKET){
                 packet.UpdateJoinProcedure( );
                 packet.RegionSetDataRateDistribution( packet.AdrModeSelect);//@note because datarate Distribution has been changed during join

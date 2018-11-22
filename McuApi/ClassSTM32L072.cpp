@@ -314,7 +314,17 @@ void  McuSTM32L072::Init_Irq ( PinName pin) {
     }
 
 } 
-  
+
+void  McuSTM32L072::EnableIrqExtGpio ( void ){
+    HAL_NVIC_EnableIRQ ( EXTI0_1_IRQn );
+    HAL_NVIC_EnableIRQ ( EXTI2_3_IRQn );
+    HAL_NVIC_EnableIRQ ( EXTI4_15_IRQn );
+}
+void  McuSTM32L072::DisableIrqExtGpio ( void ){
+    HAL_NVIC_DisableIRQ ( EXTI0_1_IRQn );
+    HAL_NVIC_DisableIRQ ( EXTI2_3_IRQn );
+    HAL_NVIC_DisableIRQ ( EXTI4_15_IRQn );
+}
 /******************************************************************************/
 /*                                Mcu Spi Api                                 */
 /******************************************************************************/
@@ -868,6 +878,13 @@ void McuSTM32L072::LowPowerTimerLoRaInit ( ) {
     Func = DoNothing;
     obj = NULL;
 };
+
+void McuSTM32L072::LowPowerTimerDisableIrq ( ) {
+     HAL_NVIC_DisableIRQ(LPTIM1_IRQn);
+}
+void McuSTM32L072::LowPowerTimerEnableIrq ( ) {
+     HAL_NVIC_EnableIRQ(LPTIM1_IRQn);
+}
 /*!
  * LowPowerTimerLoRa AttachMsecond
  *

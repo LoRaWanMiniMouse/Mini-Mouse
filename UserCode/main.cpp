@@ -163,16 +163,16 @@ int main( ) {
        // InsertTrace ( __COUNTER__, FileId );
         LpState  = Lp.Join( );
         if ( ( Lp2.IsJoined ( ) == NOT_JOINED ) && ( Lp2.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-          //  Lp2State = Lp2.Join( );
+               Lp2State = Lp2.Join( );
         }
     } else {
         if ( (cpt %2) == 0){
             LpState  = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
         }
         if ( ( Lp2.IsJoined ( ) == NOT_JOINED ) && ( Lp2.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-           // Lp2State = Lp2.Join( );
+              Lp2State = Lp2.Join( );
         } else {
-            //Lp2State = Lp2.SendPayload( UserFport, UserPayload, UserPayloadSize+4, MsgType );
+              Lp2State = Lp2.SendPayload( UserFport, UserPayload, UserPayloadSize+4, MsgType );
         }
 
     }

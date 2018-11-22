@@ -52,78 +52,59 @@ class RadioPLaner  {
 public:
     RadioPLaner( R* RadioUser );
     ~RadioPLaner ( ); 
-    eHookStatus InitHook     ( uint8_t HookIdIn,  void (* AttachCallBack) (void * ), void * objHookIn ) ;
-    eHookStatus GetMyHookId  ( void * objHookIn, uint8_t * HookIdIn );
-
-
-    /* Note : @tbd : return a status enqueue error case if task already running */
- 
-
-    void EnqueueTask     ( STask* staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam *sRadioParamIn );
-    void GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
+    eHookStatus InitHook         ( uint8_t HookIdIn,  void (* AttachCallBack) (void * ), void * objHookIn ) ;
+    eHookStatus GetMyHookId      ( void * objHookIn, uint8_t * HookIdIn );
+    eHookStatus EnqueueTask      ( STask* staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam *sRadioParamIn );
+    void        GetStatusPlaner  ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
    
 
-//private :
+  
+ 
 
-  void (* AttachCallBackHook[NB_HOOK]) (void * ) ;
-  void * objHook[NB_HOOK];
-  void CallBackHook (uint8_t HookId) { 
-          AttachCallBackHook[HookId] ( objHook[HookId] ); 
-  }     
+private :
+
+
+  R*                Radio;     
+  STask             sNextTask;
   SRadioParam       sRadioParam   [ NB_HOOK ];
   STask             sTask         [ NB_HOOK ];
-  STask             sRadioRunningTask;
-  STask             sTimerRunningTask;
-  STask             sNextTask;
   uint8_t*          Payload       [ NB_HOOK ];
-  uint8_t*          PayloadSize   [ NB_HOOK ]; 
+  uint8_t*          PayloadSize   [ NB_HOOK ];
+  uint8_t           Ranking       [ NB_HOOK ];  
   uint8_t           HookToExecute;
   uint32_t          TimeOfHookToExecute;
-  
+  ePlanerStatus     RadioPlanerStatus;
+  ePlanerTimerState PlanerTimerState;
+  uint8_t           RadioTaskId;  
+  uint8_t           TimerTaskId;
+  uint32_t          IrqTimeStampMs;          
+  void *            objHook[NB_HOOK];
 /************************************************************************************/
 /*                                 Planer Utilities                                 */
 /*                                                                                  */
 /************************************************************************************/
-  void UpdateTaskTab          ( void );
-  void CallPlanerArbitrer     ( void );
-  void GetIRQStatus           ( uint8_t HookIdIn );
-
-  void ComputeRanking         ( void );
-  void LaunchCurrentTask      ( void );
-  uint8_t SelectTheNextTask   ( void );
-  uint8_t FindHighestPriority ( uint8_t * vec, uint8_t length );
-  uint8_t Ranking [ NB_HOOK ]; 
-
-  eHookStatus Read_RadioFifo ( STask TaskIn );
-  ePlanerStatus RadioPlanerStatus;
-/*     isr  Timer Parameters */
-        
-  ePlanerTimerState PlanerTimerState;
-  //void              LaunchTimer ( void );
-  void              SetAlarm                    ( uint32_t alarmInMs ); 
-  void              IsrTimerRadioPlaner         ( void );
-  static void       CallbackIsrTimerRadioPlaner ( void * obj ) { ( reinterpret_cast<RadioPLaner<R>*>(obj) )->IsrTimerRadioPlaner(); };
-
-
-/*     isr Radio Parameter   */
-  uint32_t          IrqTimeStampMs;
-
-  void IsrRadioPlaner                ( void ); // Isr routine implemented in IsrRoutine.cpp file
-  void AbortTaskInRadio              ( void );
-  void CallAbortedTAsk               ( void );
-  static void CallbackIsrRadioPlaner (void * obj){(reinterpret_cast<RadioPLaner< R >*>(obj))->IsrRadioPlaner();} ; 
-  
-  R* Radio;
-
-
+  void        UpdateTaskTab                   ( void );
+  void        CallPlanerArbitrer              ( void );
+  void        GetIRQStatus                    ( uint8_t HookIdIn );
+  void        ComputeRanking                  ( void );
+  void        LaunchCurrentTask               ( void );
+  uint8_t     SelectTheNextTask               ( void );
+  uint8_t     FindHighestPriority             ( uint8_t * vec, uint8_t length );
+  eHookStatus Read_RadioFifo                  ( STask TaskIn );
+  void        SetAlarm                        ( uint32_t alarmInMs ); 
+  void        IsrTimerRadioPlaner             ( void );
+  void        IsrRadioPlaner                  ( void ); // Isr routine implemented in IsrRoutine.cpp file
+  void        AbortTaskInRadio                ( void );
+  void        CallAbortedTAsk                 ( void );
+  void        (* AttachCallBackHook[NB_HOOK]) (void * ) ;
+  static void CallbackIsrTimerRadioPlaner     ( void * obj )   { ( reinterpret_cast<RadioPLaner<R>*>(obj) )->IsrTimerRadioPlaner(); };
+  static void CallbackIsrRadioPlaner          ( void * obj )   { ( reinterpret_cast<RadioPLaner< R >*>(obj))->IsrRadioPlaner();} ; 
+  void        CallBackHook                    (uint8_t HookId) { AttachCallBackHook[HookId] ( objHook[HookId] ); };  
 /************************************************************************************/
 /*                                 DEBUG Utilities                                 */
 /*                                                                                  */
 /************************************************************************************/
 void PrintTask ( STask TaskIn);
-
-
-
 
 };
 

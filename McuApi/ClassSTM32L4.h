@@ -315,8 +315,9 @@ public :
     * \remark the code  Func =  _Func ; and obj  = _obj; isn't mcu dependent , and could be keep as already implemented
     * \remark starts the LoRaWAN dedicated timer and attaches the IRQ to the handling Interupt Service Routine in the LoRaWAN object.
     */
-    void StartTimerMsecond     ( void (* _Func) (void *) , void * _obj, int delay) ;
-        
+    void StartTimerMsecond       ( void (* _Func) (void *) , void * _obj, int delay) ;
+    void LowPowerTimerDisableIrq ( void );     
+    void LowPowerTimerEnableIrq  ( void );     
     /*!
     *  timerISR
     * \remark    Do Not Modify 
@@ -327,6 +328,8 @@ public :
 /*                           Mcu Gpio Api                                     */
 /******************************************************************************/
     void InitGpio              ( void );
+    void DisableIrqExtGpio     ( void );
+    void EnableIrqExtGpio      ( void );
     void InitGpioIn            ( PinName Pin );
     void InitGpioOut           ( PinName Pin );
     void SetValueDigitalOutPin ( PinName Pin, int Value );

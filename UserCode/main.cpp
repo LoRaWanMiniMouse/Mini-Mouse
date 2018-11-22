@@ -58,9 +58,9 @@ uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 
 uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
 uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
 uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
-uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x31 };    
-uint32_t LoRaDevAddrInit          = 0xCAFE0666;
-sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE};
+uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x55 };    
+uint32_t LoRaDevAddrInit          = 0x22222222;
+sLoRaWanKeys  LoraWanKeys ={LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE};
 
 /* User Radio ISR routine */
 #define NBENCODEDFRAME 52
@@ -98,8 +98,8 @@ int main( ) {
     SX1272  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
 #endif
     mcu.WatchDogStart ( );
-    //mcu.GetUniqueId (uid); 
-    //memcpy(&LoraWanKeys.DevEui[0], uid , 8);
+    mcu.GetUniqueId (uid); 
+    memcpy(&LoraWanKeys.DevEui[0], uid , 8);
     /*!
     * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
     * \remark  The Current implementation  support radio SX1276 and sx1261
@@ -130,7 +130,7 @@ int main( ) {
    // }
     //ReadTrace( ExtDebugTrace );
     mcu.mwait(2);
-    //Lp.RestoreContext  ( );
+    Lp.RestoreContext  ( );
     Lp.SetDataRateStrategy( STATIC_ADR_MODE );
     UserFport       = 3;
     UserPayloadSize = 14;
@@ -138,7 +138,7 @@ int main( ) {
         UserPayload[i]= i;
     }
     UserPayload[ 0 ]  = FW_VERSION ;
-    MsgType = CONF_DATA_UP;
+    MsgType = UNCONF_DATA_UP;
     Lp.NewJoin();
     while(1) {
     /*!
@@ -165,10 +165,7 @@ int main( ) {
         DEBUG_MSG (" new packet \n");
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID) ){
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            mcu.GotoSleepMSecond ( 100 );
-            //uint8_t toto;
-            //RadioUser.ReadRegisters(0x06BD,&toto,1);
-            //DEBUG_PRINTF("mcu get time ms  = %d\n",toto);
+            mcu.GotoSleepMSecond ( 300 );
         }
 
         mcu.WatchDogRelease ( );

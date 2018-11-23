@@ -77,8 +77,7 @@ int main( ) {
     uint8_t UserFport ;
     uint8_t UserRxFport ;
     uint8_t MsgType ;
-    uint8_t AppTimeSleeping =1;
-    uint8_t uid[8];
+    uint8_t AppTimeSleeping =10;
     int StatusCertification = 0;
     /*!
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
@@ -103,6 +102,7 @@ int main( ) {
 #endif
     RadioPLaner < SX1276 > RP( &RadioUser );
     mcu.WatchDogStart ( );
+     //uint8_t uid[8];
     //mcu.GetUniqueId (uid); 
     //memcpy(&LoraWanKeys.DevEui[0], uid , 8);
     /*!
@@ -132,12 +132,6 @@ int main( ) {
     RP.InitHook ( 0 ,  &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
     RP.InitHook ( 2 ,  &(Lp2.packet.Phy.CallbackIsrRadio), &(Lp2.packet.Phy) );
      
-
-
-    MMTab<uint8_t,16> Tab;
-    Tab[1] = 8;
-    Tab[19] = 12;
-    DEBUG_PRINTF ("tab[1] = %d\n", Tab[1]);
 
     //uint8_t TPointer ;
    // TPointer = ExtDebugTrace[ TRACE_SIZE - 1]& 0xff;  
@@ -245,7 +239,7 @@ int main( ) {
             mcu.GotoSleepSecond(5);
         } else {
             InsertTrace ( __COUNTER__, FileId );
-            mcu.GotoSleepSecond ( 10 );
+            mcu.GotoSleepSecond ( AppTimeSleeping );
             InsertTrace ( __COUNTER__, FileId );
         }
     }

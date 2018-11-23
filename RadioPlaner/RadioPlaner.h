@@ -49,21 +49,19 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 template <  class R , uint32_t TAB_LENGTH> 
 class MMTab {
   public :
-   MMTab ( ) {
-      MaxLength = TAB_LENGTH;
-    }
+   MMTab ( ) {}
   R& operator[] (uint32_t index) {
-      if ( index >= MaxLength ) {
-        DEBUG_MSG(" ERROR Index of the Tab is out of scope \n");
+      if ( index >= TAB_LENGTH ) {
+        DEBUG_PRINTF(" ERROR Index of the Tab is out of scope : Index MAX = %d and index is %d size of type = %d\n",TAB_LENGTH,index,sizeof(R));
+        while(1){}
+        return Tab[0];
       } else {
-        CurrentIndex = index;
         return Tab[index];
-      }
+      };
   };
 
   R  Tab [ TAB_LENGTH ];
-  uint32_t MaxLength ;
-  uint32_t CurrentIndex;
+  //uint32_t MaxLength ;
 };
 
 
@@ -81,13 +79,14 @@ private :
  
   R*                Radio;     
   STask             sNextTask;
-  SRadioParam       sRadioParam   [ NB_HOOK ];
-  STask             sTask         [ NB_HOOK ];
-  uint8_t*          Payload       [ NB_HOOK ];
-  uint8_t*          PayloadSize   [ NB_HOOK ];
-  uint8_t           Ranking       [ NB_HOOK ];  
+  MMTab < SRadioParam , NB_HOOK >   sRadioParam;
+  MMTab < STask       , NB_HOOK >   sTask;
+  MMTab < uint8_t*    , NB_HOOK >    Payload;
+  MMTab < uint8_t*    , NB_HOOK >    PayloadSize;
+  MMTab < uint8_t     , NB_HOOK >    Ranking;  
   uint8_t           HookToExecute;
   uint32_t          TimeOfHookToExecute;
+  ePlanerStatus     RadioPlanerStatus;
   ePlanerTimerState PlanerTimerState;
   uint8_t           RadioTaskId;  
   uint8_t           TimerTaskId;

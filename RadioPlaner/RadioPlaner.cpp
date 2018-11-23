@@ -28,26 +28,13 @@ template class RadioPLaner<SX126x>;
 
 
 void FreeStask (STask *task ) {
-    task->HookId          = 0xFF;
+    task->HookId          = 0x0;
     task->StartTime       = 0;
     task->TaskDuration    = 0; 
     task->TaskType        = NONE;
     task->State           = TASK_FINISHED;
 }
- STask             sNextTask;
-  SRadioParam       sRadioParam   [ NB_HOOK ];
-  STask             sTask         [ NB_HOOK ];
-  uint8_t*          Payload       [ NB_HOOK ];
-  uint8_t*          PayloadSize   [ NB_HOOK ];
-  uint8_t           Ranking       [ NB_HOOK ];  
-  uint8_t           HookToExecute;
-  uint32_t          TimeOfHookToExecute;
-  ePlanerStatus     RadioPlanerStatus;
-  ePlanerTimerState PlanerTimerState;
-  uint8_t           RadioTaskId;  
-  uint8_t           TimerTaskId;
-  uint32_t          IrqTimeStampMs;          
-  void *            objHook[NB_HOOK];
+
 
 template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
     mcu.AttachInterruptIn( &RadioPLaner< R >::CallbackIsrRadioPlaner,this); // attach it radio
@@ -61,8 +48,8 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
         objHook[ i ]              = NULL;
     }
     FreeStask ( &sNextTask );
-    RadioTaskId          = 0xFF;
-    TimerTaskId          = 0xFF;
+    RadioTaskId          = 0;
+    TimerTaskId          = 0;
     HookToExecute        = 0;
     TimeOfHookToExecute  = 0;
     IrqTimeStampMs       = 0;

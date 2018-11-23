@@ -17,7 +17,7 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 */
 #ifndef DEFINE_RADIOPLANER_H
 #define DEFINE_RADIOPLANER_H
-
+#include "Define.h"
 #define NB_HOOK 4
 #define RadioPlanerTimeOut 20000 // A task couldn't be stay inside the Radioplaner more than 20 second except the background tasks . 
 struct SRadioParam {

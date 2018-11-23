@@ -57,13 +57,8 @@ public:
     eHookStatus EnqueueTask      ( STask* staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam *sRadioParamIn );
     void        GetStatusPlaner  ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
    
-
-  
- 
-
 private :
-
-
+ 
   R*                Radio;     
   STask             sNextTask;
   SRadioParam       sRadioParam   [ NB_HOOK ];
@@ -73,7 +68,6 @@ private :
   uint8_t           Ranking       [ NB_HOOK ];  
   uint8_t           HookToExecute;
   uint32_t          TimeOfHookToExecute;
-  ePlanerStatus     RadioPlanerStatus;
   ePlanerTimerState PlanerTimerState;
   uint8_t           RadioTaskId;  
   uint8_t           TimerTaskId;

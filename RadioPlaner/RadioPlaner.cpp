@@ -34,7 +34,20 @@ void FreeStask (STask *task ) {
     task->TaskType        = NONE;
     task->State           = TASK_FINISHED;
 }
-
+ STask             sNextTask;
+  SRadioParam       sRadioParam   [ NB_HOOK ];
+  STask             sTask         [ NB_HOOK ];
+  uint8_t*          Payload       [ NB_HOOK ];
+  uint8_t*          PayloadSize   [ NB_HOOK ];
+  uint8_t           Ranking       [ NB_HOOK ];  
+  uint8_t           HookToExecute;
+  uint32_t          TimeOfHookToExecute;
+  ePlanerStatus     RadioPlanerStatus;
+  ePlanerTimerState PlanerTimerState;
+  uint8_t           RadioTaskId;  
+  uint8_t           TimerTaskId;
+  uint32_t          IrqTimeStampMs;          
+  void *            objHook[NB_HOOK];
 
 template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
     mcu.AttachInterruptIn( &RadioPLaner< R >::CallbackIsrRadioPlaner,this); // attach it radio
@@ -48,9 +61,12 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
         objHook[ i ]              = NULL;
     }
     FreeStask ( &sNextTask );
-    RadioTaskId = 0;
-    HookToExecute = 0xFF;
-    PlanerTimerState = TIMER_IDLE;
+    RadioTaskId          = 0xFF;
+    TimerTaskId          = 0xFF;
+    HookToExecute        = 0;
+    TimeOfHookToExecute  = 0;
+    IrqTimeStampMs       = 0;
+    PlanerTimerState     = TIMER_IDLE;
 }
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 }

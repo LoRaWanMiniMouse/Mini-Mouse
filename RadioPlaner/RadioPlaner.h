@@ -83,7 +83,9 @@ private :
   MMTab < STask       , NB_HOOK >   sTask;
   MMTab < uint8_t*    , NB_HOOK >    Payload;
   MMTab < uint8_t*    , NB_HOOK >    PayloadSize;
-  MMTab < uint8_t     , NB_HOOK >    Ranking;  
+  MMTab < uint8_t     , NB_HOOK >    Ranking;
+  MMTab < void*       , NB_HOOK >    objHook;    
+  //void *            objHook[NB_HOOK];
   uint8_t           HookToExecute;
   uint32_t          TimeOfHookToExecute;
   ePlanerStatus     RadioPlanerStatus;
@@ -91,7 +93,7 @@ private :
   uint8_t           RadioTaskId;  
   uint8_t           TimerTaskId;
   uint32_t          IrqTimeStampMs;          
-  void *            objHook[NB_HOOK];
+  
 /************************************************************************************/
 /*                                 Planer Utilities                                 */
 /*                                                                                  */

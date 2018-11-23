@@ -131,7 +131,14 @@ int main( ) {
     //DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
     RP.InitHook ( 0 ,  &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
     RP.InitHook ( 2 ,  &(Lp2.packet.Phy.CallbackIsrRadio), &(Lp2.packet.Phy) );
-  
+     
+
+
+    MMTab<uint8_t,16> Tab;
+    Tab[1] = 8;
+    Tab[19] = 12;
+    DEBUG_PRINTF ("tab[1] = %d\n", Tab[1]);
+
     //uint8_t TPointer ;
    // TPointer = ExtDebugTrace[ TRACE_SIZE - 1]& 0xff;  
    // for (int i  = 0; i < 200; i++){ 

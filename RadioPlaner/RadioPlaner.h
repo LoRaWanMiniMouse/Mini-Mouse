@@ -46,6 +46,26 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 #include "Define.h"
 #include "DefineRadioPlaner.h"
 
+template <  class R , uint32_t TAB_LENGTH> 
+class MMTab {
+  public :
+   MMTab ( ) {
+      MaxLength = TAB_LENGTH;
+    }
+  R& operator[] (uint32_t index) {
+      if ( index >= MaxLength ) {
+        DEBUG_MSG(" ERROR Index of the Tab is out of scope \n");
+      } else {
+        CurrentIndex = index;
+        return Tab[index];
+      }
+  };
+
+  R  Tab [ TAB_LENGTH ];
+  uint32_t MaxLength ;
+  uint32_t CurrentIndex;
+};
+
 
 template < class R > 
 class RadioPLaner  { 

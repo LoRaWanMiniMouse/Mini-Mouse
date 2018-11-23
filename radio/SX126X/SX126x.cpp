@@ -224,7 +224,13 @@ void SX126x::RxLora(
     SetRfFrequency( channel );
     SetModulationParamsLora( SF, BW );
     SetPacketParamsLora( 0, IQ_INVERTED );
-    StopTimerOnPreamble( true );
+    //StopTimerOnPreamble( true );
+    StopTimerOnPreamble( false );
+    //uint8_t tmp = 8;
+    //uint8_t PreambuleSymbNumL = 20;
+    //WriteRegister( 0x73B, PreambuleSymbNumL );
+    //WriteCommand( (OpCode_t)0xA0, &tmp, 1 );
+
     WriteRegisters( REG_LORA_SYNC_WORD_MSB, ( uint8_t * ) this->LoraSyncword, 2 );
     // Configure IRQ
     SetDioIrqParams(
@@ -235,6 +241,8 @@ void SX126x::RxLora(
                    );
     ClearIrqFlagsLora( );
     SetRx( rxTimeoutMs << 6 );
+    //rxTimeoutMs = 2000;
+    //SetRx( rxTimeoutMs << 6 );
 }
 
 void SX126x::RxFsk(

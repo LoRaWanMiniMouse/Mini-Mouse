@@ -45,25 +45,25 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 #define RADIOPLANER_H
 #include "Define.h"
 #include "DefineRadioPlaner.h"
+#include <string>   
 
 template <  class R , uint32_t TAB_LENGTH> 
-class MMTab {
-  public :
-   MMTab ( ) {}
+struct MMTab {
+  std::string Name;
   R& operator[] (uint32_t index) {
       if ( index >= TAB_LENGTH ) {
-        DEBUG_PRINTF(" ERROR Index of the Tab is out of scope : Index MAX = %d and index is %d size of type = %d\n",TAB_LENGTH,index,sizeof(R));
+        DEBUG_PRINTF(" ERROR Index of Tab named : %s is out of scope : Index MAX = %d and index is %d \n",Name.c_str(),TAB_LENGTH,index);
         while(1){}
         return Tab[0];
       } else {
         return Tab[index];
       };
   };
-
   R  Tab [ TAB_LENGTH ];
   //uint32_t MaxLength ;
 };
 
+#define INIT_TAB( Type, Length, Name )   MMTab < Type, Length > Name = {#Name " Declared In File " __FILE__ }
 
 template < class R > 
 class RadioPLaner  { 
@@ -79,13 +79,13 @@ private :
  
   R*                Radio;     
   STask             sNextTask;
-  MMTab < SRadioParam , NB_HOOK >   sRadioParam;
-  MMTab < STask       , NB_HOOK >   sTask;
-  MMTab < uint8_t*    , NB_HOOK >    Payload;
-  MMTab < uint8_t*    , NB_HOOK >    PayloadSize;
-  MMTab < uint8_t     , NB_HOOK >    Ranking;
-  MMTab < void*       , NB_HOOK >    objHook;    
-  //void *            objHook[NB_HOOK];
+  INIT_TAB( SRadioParam, NB_HOOK, sRadioParam );
+  INIT_TAB( STask      , NB_HOOK, sTask       );
+  INIT_TAB( uint8_t*   , NB_HOOK, Payload     );
+  INIT_TAB( uint8_t*   , NB_HOOK, PayloadSize );
+  INIT_TAB( uint8_t    , NB_HOOK, Ranking     );
+  INIT_TAB( void*      , NB_HOOK, objHook     );
+
   uint8_t           HookToExecute;
   uint32_t          TimeOfHookToExecute;
   ePlanerStatus     RadioPlanerStatus;

@@ -78,10 +78,10 @@ eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookIdIn,  void (* AttachCallBack
 /*                            RadioPlaner GetMyHookId Method                                   */
 /***********************************************************************************************/
 template <class R>
-eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t * HookIdIn ){
+eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t& HookIdIn ){
     for (int i = 0 ; i < NB_HOOK ; i ++) {
         if ( objHookIn == objHook[i] ){
-            *HookIdIn = i ;
+            HookIdIn = i ;
             return ( HOOK_OK );
         } 
     }
@@ -93,19 +93,19 @@ eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t * HookIdIn
 /*                            RadioPlaner EnqueueTask Method                                   */
 /***********************************************************************************************/
 template <class R> 
-eHookStatus RadioPLaner<R>::EnqueueTask( STask *staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam *sRadioParamIn ){
+eHookStatus RadioPLaner<R>::EnqueueTask( STask& staskIn, uint8_t *payload, uint8_t &payloadSize, SRadioParam& sRadioParamIn ){
 
 // if running task up to now reject
      
     // change NOW AT TIME
-    uint8_t HookId = staskIn->HookId;
+    uint8_t HookId = staskIn.HookId;
     if ( sTask [ HookId ].State == TASK_RUNNING ) {
         DEBUG_MSGRP (" Enqueue Task Impossible because your task already running Too BE MANAGE LATER WITh ABORT current job\n");
         return ( HOOK_ERROR);  
     }
     
-    sTask             [ HookId ] = *staskIn;
-    sRadioParam       [ HookId ] = *sRadioParamIn;
+    sTask             [ HookId ] = staskIn;
+    sRadioParam       [ HookId ] = sRadioParamIn;
     Payload           [ HookId ] = payload;
     PayloadSize       [ HookId ] = payloadSize;
     //tb implemented check if already running task and return error
@@ -183,6 +183,7 @@ uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
             }
         }
     }
+ 
     sNextTask = sTask[ HookToExecuteTmp ];
     return (SCHEDULED_TASK);
 }
@@ -287,9 +288,9 @@ eHookStatus  RadioPLaner<R>:: Read_RadioFifo ( STask TaskIn) {
     eHookStatus status = HOOK_OK;
     uint8_t Id = TaskIn.HookId;
     if (TaskIn.TaskType == RX_LORA ) {
-        Radio->FetchPayloadLora( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
+        Radio->FetchPayloadLora( &PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
     } else if ( TaskIn.TaskType  == RX_FSK ) {
-        Radio->FetchPayloadFsk( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
+        Radio->FetchPayloadFsk( &PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
     } else {
         status = HOOK_ERROR;
     }
@@ -326,7 +327,7 @@ void  RadioPLaner<R>::LaunchCurrentTask ( void ){
      PrintTask ( sTask[Id] ); 
      switch ( sTask[Id].TaskType) {
         case TX_LORA :
-            Radio->SendLora( Payload[Id], *PayloadSize[Id], sRadioParam[Id].Sf, sRadioParam[Id].Bw, sRadioParam[Id].Frequency, sRadioParam[Id].Power );
+            Radio->SendLora( Payload[Id], PayloadSize[Id], sRadioParam[Id].Sf, sRadioParam[Id].Bw, sRadioParam[Id].Frequency, sRadioParam[Id].Power );
             break;
         case RX_LORA :
             Radio->RxLora ( sRadioParam[Id].Bw, sRadioParam[Id].Sf, sRadioParam[Id].Frequency, sRadioParam[Id].TimeOutMs);

@@ -48,7 +48,7 @@ LoraWanObject <T,RADIOTYPE> ::~LoraWanObject() {
 template <template <class R> class T, class RADIOTYPE> 
 eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* AvailableRxPacket ) {
     uint8_t MyHookId;
-    packet.Phy.Radio->GetMyHookId  ( &(this->packet.Phy) , &MyHookId );
+    packet.Phy.Radio->GetMyHookId  ( &(this->packet.Phy) , MyHookId );
     *AvailableRxPacket = NO_LORA_RXPACKET_AVAILABLE;
     #if LOW_POWER_MODE == 1
     if ( ( IsJoined ( ) == NOT_JOINED ) && ( mcu.RtcGetTimeSecond( ) < packet.RtcNextTimeJoinSecond ) ){

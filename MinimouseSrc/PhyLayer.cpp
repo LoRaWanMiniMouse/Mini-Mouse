@@ -64,7 +64,7 @@ template <class R> void RadioContainer <R>::DetachIsr ( void ) {
  //@note Partionning Public/private not yet finalized
  
 template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , uint32_t TxFrequencyMac, uint8_t TxPowerMac, uint8_t TxSfMac, eBandWidth TxBwMac, uint16_t TxPayloadSizeMac ) { //@note could/should be merge with tx config
-    Radio->GetMyHookId  ( this, &MyHookId );
+    Radio->GetMyHookId  ( this, MyHookId );
     TxPayloadSize               = (uint8_t)TxPayloadSizeMac;
     sRadioParam.Frequency       = TxFrequencyMac;
     sRadioParam.Power           = TxPowerMac;
@@ -83,7 +83,7 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     stask.State    = TASK_ASAP;
     stask.TaskType = ( TxModulation == LORA ) ? TX_LORA : TX_FSK;
  
-    Radio->EnqueueTask (&stask, TxPhyPayload, &TxPayloadSize, &sRadioParam ); //@tbd RadioPlaner  timeonair
+    Radio->EnqueueTask (stask, TxPhyPayload, TxPayloadSize, sRadioParam ); //@tbd RadioPlaner  timeonair
 
     if ( TxModulation == LORA ) {
         InsertTrace    ( __COUNTER__, FileId );
@@ -120,7 +120,7 @@ template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlan
     stask.State    = TASK_SCHEDULE;
     stask.TaskType = (RxModulation == LORA ) ? RX_LORA : RX_FSK;
     
-    Radio->EnqueueTask (&stask, RxPhyPayload, &RxPhyPayloadSize, &sRadioParam ); //@tbd RadioPlaner  timeonair
+    Radio->EnqueueTask (stask, RxPhyPayload, RxPhyPayloadSize, sRadioParam ); //@tbd RadioPlaner  timeonair
     if ( RxModulation == LORA ) {
         InsertTrace   ( __COUNTER__, FileId );
         DEBUG_PRINTF  ( "  RxFrequency = %d, RxSf = %d , RxBw = %d \n", RxFrequency, RxSf,RxBw );

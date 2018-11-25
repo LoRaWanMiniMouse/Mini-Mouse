@@ -45,25 +45,7 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 #define RADIOPLANER_H
 #include "Define.h"
 #include "DefineRadioPlaner.h"
-#include <string>   
 
-template <  class R , uint32_t TAB_LENGTH> 
-struct MMTab {
-  std::string Name;
-  R& operator[] (uint32_t index) {
-      if ( index >= TAB_LENGTH ) {
-        DEBUG_PRINTF(" ERROR Index of Tab named : %s is out of scope : Index MAX = %d and index is %d \n",Name.c_str(),TAB_LENGTH,index);
-        while(1){}
-        return Tab[0];
-      } else {
-        return Tab[index];
-      };
-  };
-  R  Tab [ TAB_LENGTH ];
-  //uint32_t MaxLength ;
-};
-
-#define INIT_TAB( Type, Length, Name )   MMTab < Type, Length > Name = {#Name " Declared In File " __FILE__ }
 
 template < class R > 
 class RadioPLaner  { 
@@ -71,20 +53,20 @@ public:
     RadioPLaner( R* RadioUser );
     ~RadioPLaner ( ); 
     eHookStatus InitHook         ( uint8_t HookIdIn,  void (* AttachCallBack) (void * ), void * objHookIn ) ;
-    eHookStatus GetMyHookId      ( void * objHookIn, uint8_t * HookIdIn );
-    eHookStatus EnqueueTask      ( STask* staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam *sRadioParamIn );
+    eHookStatus GetMyHookId      ( void * objHookIn, uint8_t& HookIdIn );
+    eHookStatus EnqueueTask      ( STask& staskIn, uint8_t *payload, uint8_t& payloadSize, SRadioParam& sRadioParamIn );
     void        GetStatusPlaner  ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
    
 private :
  
   R*                Radio;     
   STask             sNextTask;
-  INIT_TAB( SRadioParam, NB_HOOK, sRadioParam );
-  INIT_TAB( STask      , NB_HOOK, sTask       );
-  INIT_TAB( uint8_t*   , NB_HOOK, Payload     );
-  INIT_TAB( uint8_t*   , NB_HOOK, PayloadSize );
-  INIT_TAB( uint8_t    , NB_HOOK, Ranking     );
-  INIT_TAB( void*      , NB_HOOK, objHook     );
+  DECLARE_ARRAY( SRadioParam, NB_HOOK, sRadioParam );
+  DECLARE_ARRAY( STask      , NB_HOOK, sTask       );
+  DECLARE_ARRAY( uint8_t*   , NB_HOOK, Payload     );
+  DECLARE_ARRAY( uint8_t    , NB_HOOK, PayloadSize );
+  DECLARE_ARRAY( uint8_t    , NB_HOOK, Ranking     );
+  DECLARE_ARRAY( void*      , NB_HOOK, objHook     );
 
   uint8_t           HookToExecute;
   uint32_t          TimeOfHookToExecute;

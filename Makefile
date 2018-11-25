@@ -204,6 +204,7 @@ endif
 ifeq ($(BOARD_L4), 1)
     C_DEFS += -DBOARD_L4  
 endif
+    c_DEFS += -DDEBUG_ARRAY
 # AS includes
 AS_INCLUDES = 
 

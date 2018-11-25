@@ -158,7 +158,7 @@ eHookStatus RadioPLaner<R>::AbortTask ( STask& staskIn ) { //Open Question Calla
 /***********************************************************************************************/
 
 template <class R> 
-void RadioPLaner<R>::GetStatusPlaner ( uint32_t & IrqTimestampMs, ePlanerStatus &PlanerStatus ) {
+void RadioPLaner<R>::GetStatusPlaner ( uint32_t & IrqTimestampMs, ePlanerStatus & PlanerStatus ) {
     IrqTimestampMs = IrqTimeStampMs;
     PlanerStatus   = RadioPlanerStatus;
 }
@@ -186,8 +186,9 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
                 SetAlarm ( delay );
             }
         } else if ( delay < MARGIN_DELAY_NEG ) { // Have To Abort task (just set flag aborted is impossible because may be no more task in scheduler) 
-            FreeStask    ( sTask [ sNextTask.HookId ] );
-            CallBackHook ( sNextTask.HookId );
+            DEBUG_PRINTFRP ( "Purge Old Task delay = %d\n", delay );
+            FreeStask      ( sTask [ sNextTask.HookId ] );
+            CallBackHook   ( sNextTask.HookId );
         } else { // Have To Launch Radio
             if ( sTask [ RadioTaskId ].State == TASK_RUNNING ) { // Radio is already Running Have to abort current Task
                     if ( sTask [ RadioTaskId ].HookId != sNextTask.HookId ) {
@@ -204,8 +205,8 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
             }
         }
     } else {
-            DEBUG_MSGRP ("                                              ");
-            DEBUG_MSGRP (" No More Active Task inside the RadioPlaner \n");
+            DEBUG_MSGRP ( "                                              " );
+            DEBUG_MSGRP ( " No More Active Task inside the RadioPlaner \n" );
     }
 }
 
@@ -215,10 +216,9 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
 /************************************************************************************/
 
 template <class R>     
-void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
-    //DEBUG_MSGRP ("                                            Timer Expire\n");
+void RadioPLaner<R>::IsrTimerRadioPlaner ( void ) {
     PlanerTimerState = TIMER_IDLE ;
-    CallPlanerArbitrer ();
+    CallPlanerArbitrer ( );
 }              
 
 
@@ -229,14 +229,14 @@ void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
-
-    GetIRQStatus ( RadioTaskId );
-    DEBUG_PRINTFRP("                                                                 Receive It Radio for HookID = %d\n",RadioTaskId);
-    CallBackHook ( RadioTaskId );
-    FreeStask ( sTask[RadioTaskId] );
-    CallAbortedTAsk ();
-    Radio->Sleep( false );
-    CallPlanerArbitrer (); 
+    GetIRQStatus    ( RadioTaskId );
+    DEBUG_MSGRP     ( "                                               " );
+    DEBUG_PRINTFRP  ( " Receive It Radio for HookID = %d\n",RadioTaskId );
+    CallBackHook    ( RadioTaskId );
+    FreeStask       ( sTask[RadioTaskId] );
+    CallAbortedTAsk ( );
+    Radio->Sleep ( false );
+    CallPlanerArbitrer ( ); 
 } 
 
 

@@ -89,5 +89,5 @@ typedef enum {
 #define NO_MORE_TASK      0
 #define SCHEDULED_TASK    1
 #define MARGIN_DELAY      3  // for 3 ms
-#define MARGIN_DELAY_NEG -5  // for 5 ms
+#define MARGIN_DELAY_NEG -500  // for 500 ms
 #endif

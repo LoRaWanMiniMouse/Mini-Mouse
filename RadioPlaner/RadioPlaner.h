@@ -55,10 +55,11 @@ public:
     eHookStatus InitHook         ( uint8_t HookIdIn,  void (* AttachCallBack) (void * ), void * objHookIn ) ;
     eHookStatus GetMyHookId      ( void * objHookIn, uint8_t& HookIdIn );
     eHookStatus EnqueueTask      ( STask& staskIn, uint8_t *payload, uint8_t& payloadSize, SRadioParam& sRadioParamIn );
-    void        GetStatusPlaner  ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus );
-   
-private :
+    eHookStatus AbortTask        ( STask& staskIn );
+    void        GetStatusPlaner  ( uint32_t& IrqTimestampMs, ePlanerStatus& PlanerStatus );
  
+private :
+
   R*                Radio;     
   STask             sNextTask;
   DECLARE_ARRAY( SRadioParam, NB_HOOK, sRadioParam );
@@ -80,7 +81,7 @@ private :
 /*                                 Planer Utilities                                 */
 /*                                                                                  */
 /************************************************************************************/
-  void        UpdateTaskTab                   ( void );
+  void        UpdateTimeTaskASAP              ( uint32_t CurrentTimeIn );
   void        CallPlanerArbitrer              ( void );
   void        GetIRQStatus                    ( uint8_t HookIdIn );
   void        ComputeRanking                  ( void );

@@ -99,6 +99,8 @@ public :
     ~McuSTM32L072 ( );
     void InitMcu ( void );
     void Init_Irq ( PinName pin);
+    void DisableIrq ( void ) { DisableIrqExtGpio ( ) ; LowPowerTimerDisableIrq ( ); };
+    void EnableIrq  ( void ) { EnableIrqExtGpio ( ) ; LowPowerTimerEnableIrq ( ); };
 /******************************************************************************/
 /*                                Mcu Spi Api                                 */
 /******************************************************************************/
@@ -333,6 +335,8 @@ public :
         DevEui[1] =(uint8_t)((uid>>16)&0xFF);
         DevEui[0] =(uint8_t)((uid>>24)&0xFF);
     }
+
+
 private :
     /*!
     *  Low power timer

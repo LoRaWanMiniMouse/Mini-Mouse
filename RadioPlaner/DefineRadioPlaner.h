@@ -76,7 +76,8 @@ typedef enum {
 
 typedef enum { 
     HOOK_OK,
-    HOOK_ERROR 
+    HOOK_ID_ERROR,
+    TASK_ALREADY_RUNNING, 
 }eHookStatus;
 
 typedef enum { 
@@ -85,7 +86,8 @@ typedef enum {
 }ePlanerTimerState;
 
 
-#define NO_MORE_TASK    0
-#define SCHEDULED_TASK  1
-#define MARGIN_DELAY    3
+#define NO_MORE_TASK      0
+#define SCHEDULED_TASK    1
+#define MARGIN_DELAY      3  // for 3 ms
+#define MARGIN_DELAY_NEG -5  // for 5 ms
 #endif

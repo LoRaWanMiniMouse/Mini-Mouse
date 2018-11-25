@@ -26,16 +26,23 @@ template class RadioPLaner<SX1276>;
 template class RadioPLaner<SX1272>;
 template class RadioPLaner<SX126x>;
 
-
-void FreeStask (STask *task ) {
-    task->HookId          = 0x0;
-    task->StartTime       = 0;
-    task->TaskDuration    = 0; 
-    task->TaskType        = NONE;
-    task->State           = TASK_FINISHED;
+/************************************************************************************/
+/*                                 Planer Utilities                                 */
+/*                                                                                  */
+/************************************************************************************/
+void FreeStask (STask & task ) {
+    task.HookId          = 0x0;
+    task.StartTime       = 0;
+    task.TaskDuration    = 0; 
+    task.TaskType        = NONE;
+    task.State           = TASK_FINISHED;
 }
 
 
+/************************************************************************************/
+/*                                 Planer Class Implementation                      */
+/*                                                                                  */
+/************************************************************************************/
 template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
     mcu.AttachInterruptIn( &RadioPLaner< R >::CallbackIsrRadioPlaner,this); // attach it radio
     Radio = RadioUser;
@@ -47,7 +54,7 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
         sTask[ i ].State          = TASK_FINISHED;
         objHook[ i ]              = NULL;
     }
-    FreeStask ( &sNextTask );
+    FreeStask ( sNextTask );
     RadioTaskId          = 0;
     TimerTaskId          = 0;
     HookToExecute        = 0;
@@ -67,10 +74,10 @@ template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 template <class R>
 eHookStatus RadioPLaner<R>::InitHook ( uint8_t HookIdIn,  void (* AttachCallBack) (void * ), void * objHookIn ) {
     if ( HookIdIn > NB_HOOK ) {
-        return ( HOOK_ERROR );
+        return ( HOOK_ID_ERROR );
     }
     AttachCallBackHook [ HookIdIn ] = AttachCallBack ;
-    objHook[ HookIdIn ]             = objHookIn; 
+    objHook            [ HookIdIn ] = objHookIn; 
     return ( HOOK_OK );
 }
 
@@ -85,7 +92,7 @@ eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t& HookIdIn 
             return ( HOOK_OK );
         } 
     }
-    return (HOOK_ERROR);
+    return (HOOK_ID_ERROR);
 }
 
 
@@ -93,65 +100,153 @@ eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t& HookIdIn 
 /*                            RadioPlaner EnqueueTask Method                                   */
 /***********************************************************************************************/
 template <class R> 
-eHookStatus RadioPLaner<R>::EnqueueTask( STask& staskIn, uint8_t *payload, uint8_t &payloadSize, SRadioParam& sRadioParamIn ){
-
-// if running task up to now reject
-     
-    // change NOW AT TIME
+eHookStatus RadioPLaner<R>::EnqueueTask ( STask& staskIn, uint8_t *payload, uint8_t &payloadSize, SRadioParam& sRadioParamIn ) {
+    mcu.DisableIrq ( );
     uint8_t HookId = staskIn.HookId;
-    if ( sTask [ HookId ].State == TASK_RUNNING ) {
-        DEBUG_MSGRP (" Enqueue Task Impossible because your task already running Too BE MANAGE LATER WITh ABORT current job\n");
-        return ( HOOK_ERROR);  
+     if ( HookId > NB_HOOK ) {
+        mcu.EnableIrq ( ); 
+        return ( HOOK_ID_ERROR );
     }
+    if ( sTask [ HookId ].State == TASK_RUNNING ) {
+        DEBUG_MSGRP (" Enqueue Task Impossible because the Task is already running\n");
+        mcu.EnableIrq ( );
+        return ( TASK_ALREADY_RUNNING );  
+    }
+    sTask       [ HookId ] = staskIn;
+    sRadioParam [ HookId ] = sRadioParamIn;
+    Payload     [ HookId ] = payload;
+    PayloadSize [ HookId ] = payloadSize;
     
-    sTask             [ HookId ] = staskIn;
-    sRadioParam       [ HookId ] = sRadioParamIn;
-    Payload           [ HookId ] = payload;
-    PayloadSize       [ HookId ] = payloadSize;
-    //tb implemented check if already running task and return error
-   // DEBUG_MSGRP ("                     enqueu task for hook id = %d\n",HookId);
-   
     sTask [ HookId ].Priority = (  sTask [ HookId ].State * NB_HOOK ) + HookId;
     ComputeRanking     ( );
     CallPlanerArbitrer ( );
-    return(HOOK_OK);
+    mcu.EnableIrq      ( );
+    return ( HOOK_OK );
 }
-
-
+/***********************************************************************************************/
+/*                            RadioPlaner Abort Method                                         */
+/***********************************************************************************************/
 template <class R> 
-void  RadioPLaner<R>:: ComputeRanking ( void ) { //@tbd implementation should be optimized but very few hooks
-    int i;
-    uint8_t Index;
-    uint8_t RankTemp [NB_HOOK];
-    for (int i = 0 ; i < NB_HOOK; i++ ) {
-        RankTemp [ i ] =  sTask [ i ].Priority;
+eHookStatus RadioPLaner<R>::AbortTask ( STask& staskIn ) { //Open Question Callaback or not uptoNow No
+    mcu.DisableIrq ( );
+    uint8_t HookId = staskIn.HookId;
+    if ( HookId > NB_HOOK ) {
+        mcu.EnableIrq ( ); 
+        return ( HOOK_ID_ERROR );
     } 
-    for (i = 0 ; i < NB_HOOK; i ++) {
-        Index = FindHighestPriority ( RankTemp,  NB_HOOK );
-        RankTemp [ Index ] = 0xFF;
-        Ranking [ i ] = Index ;
+    if ( sTask [ HookId ].State == TASK_RUNNING ) {
+        Radio->Sleep ( false );  
     }
-}  
+    FreeStask ( sTask [ HookId ] );
+    CallPlanerArbitrer ( );
+    mcu.EnableIrq ( );
+    return ( HOOK_OK ); 
+}
+
+/***********************************************************************************************/
+/*                            RadioPlaner GetPlanerStatus Method                               */
+/*       ePlanerStatus could be :                                                              */     
+/*                PLANER_RX_CANCELED,                                                          */
+/*                PLANER_TX_CANCELED,                                                          */
+/*                PLANER_RX_CRC_ERROR,                                                         */
+/*                PLANER_CAD_POSITIVE,                                                         */
+/*                PLANER_CAD_NEGATIVE,                                                         */
+/*                PLANER_TX_DONE,                                                              */
+/*                PLANER_RX_PACKET,                                                            */
+/*                PLANER_RX_TIMEOUT                                                            */
+/*                                                                                             */
+/***********************************************************************************************/
 
 template <class R> 
-uint8_t  RadioPLaner<R>:: FindHighestPriority ( uint8_t * vec,  uint8_t length ) {
-    uint8_t HighPrio = 0xFF ;
-    uint8_t Index = 0;
-    for (int i = 0 ; i < length ; i++ ){
-        if ( vec [ i ] <= HighPrio ) {
-            HighPrio = vec [ i ];
-            Index = i; 
-        }
-    }
-    return ( Index );
+void RadioPLaner<R>::GetStatusPlaner ( uint32_t & IrqTimestampMs, ePlanerStatus &PlanerStatus ) {
+    IrqTimestampMs = IrqTimeStampMs;
+    PlanerStatus   = RadioPlanerStatus;
 }
+
+
+/************************************************************************************************/
+/*                      Privates   Methods                                                      */
+/************************************************************************************************/
 
 /************************************************************************************/
-/*                                 Selec tNext Task                                 */
+/*                                 Planer Arbiter                                   */
 /*                                                                                  */
 /************************************************************************************/
 
+template <class R> 
+void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
+    uint32_t CurrentTime = mcu.RtcGetTimeMs ( ) + MARGIN_DELAY ;
+    UpdateTimeTaskASAP ( CurrentTime );
+    if ( SelectTheNextTask ( ) == SCHEDULED_TASK ) { // Next Task Exist
+        int delay = sNextTask.StartTime - CurrentTime ;
+        if ( delay > 0 ) { // Have To Launch A Timer
+            if ( ! ( ( PlanerTimerState == TIMER_BUSY ) && ( sNextTask.HookId == TimerTaskId ) ) ) {
+                TimerTaskId       = sNextTask.HookId; 
+                PlanerTimerState  = TIMER_BUSY ;
+                SetAlarm ( delay );
+            }
+        } else if ( delay < MARGIN_DELAY_NEG ) { // Have To Abort task (just set flag aborted is impossible because may be no more task in scheduler) 
+            FreeStask    ( sTask [ sNextTask.HookId ] );
+            CallBackHook ( sNextTask.HookId );
+        } else { // Have To Launch Radio
+            if ( sTask [ RadioTaskId ].State == TASK_RUNNING ) { // Radio is already Running Have to abort current Task
+                    if ( sTask [ RadioTaskId ].HookId != sNextTask.HookId ) {
+                        sTask [ RadioTaskId ].State = TASK_ABORTED;
+                        Radio->Sleep ( false );
+                        RadioTaskId = sNextTask.HookId;
+                        sTask [ RadioTaskId ].State = TASK_RUNNING;
+                        LaunchCurrentTask ( ); 
+                    } // else case already managed during enqueue Task 
+            } else { // radio is sleeping
+                    RadioTaskId = sNextTask.HookId;
+                    sTask [ RadioTaskId ].State = TASK_RUNNING;
+                    LaunchCurrentTask ( );
+            }
+        }
+    } else {
+            DEBUG_MSGRP ("                                              ");
+            DEBUG_MSGRP (" No More Active Task inside the RadioPlaner \n");
+    }
+}
 
+/************************************************************************************/
+/*                                 Timer Isr Routine                                */
+/*                               Called when Alarm expires                          */
+/************************************************************************************/
+
+template <class R>     
+void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
+    //DEBUG_MSGRP ("                                            Timer Expire\n");
+    PlanerTimerState = TIMER_IDLE ;
+    CallPlanerArbitrer ();
+}              
+
+
+/************************************************************************************/
+/*                                 Radio Isr Routine                                */
+/*                             Called when Radio raises It                          */
+/************************************************************************************/
+template <class R> 
+void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
+    IrqTimeStampMs = mcu.RtcGetTimeMs( );
+
+    GetIRQStatus ( RadioTaskId );
+    DEBUG_PRINTFRP("                                                                 Receive It Radio for HookID = %d\n",RadioTaskId);
+    CallBackHook ( RadioTaskId );
+    FreeStask ( sTask[RadioTaskId] );
+    CallAbortedTAsk ();
+    Radio->Sleep( false );
+    CallPlanerArbitrer (); 
+} 
+
+
+
+
+
+/************************************************************************************/
+/*                                 Planer Utilities                                 */
+/*                                                                                  */
+/************************************************************************************/
 template <class R> 
 uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
     //DEBUG_MSGRP ("                                                  call Select Next Task");
@@ -187,74 +282,35 @@ uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
     sNextTask = sTask[ HookToExecuteTmp ];
     return (SCHEDULED_TASK);
 }
-/************************************************************************************/
-/*                                 Planer Arbiter                                   */
-/*                                                                                  */
-/************************************************************************************/
+
 
 template <class R> 
-void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
-    UpdateTaskTab      ( );
-  
-    if ( SelectTheNextTask() == SCHEDULED_TASK ) { // Next Task Exist
-        uint32_t CurrentTime = mcu.RtcGetTimeMs () + MARGIN_DELAY ;
-        int delay = sNextTask.StartTime - CurrentTime ;
-        if ( delay > 0 ) { // Require A Timer
-            if ( ( PlanerTimerState == TIMER_BUSY ) && ( sNextTask.HookId == TimerTaskId ) ) {  
-            } else {
-                TimerTaskId = sNextTask.HookId; 
-                PlanerTimerState  = TIMER_BUSY ;
-                SetAlarm ( delay );
-            }
-        } else { // Have To Launch Radio
-                if ( sTask[RadioTaskId].State == TASK_RUNNING ) { // Radio is already Running Have to abort current Task
-                    if ( sTask[RadioTaskId].HookId != sNextTask.HookId ) {
-                      ///  DEBUG_MSGRP("\n");
-                      //  DEBUG_PRINTFRP ("                        ABORTED                      RadioRunning Task = %d TimerRunningTask = %d Next TAsk = %d ",sRadioRunningTask.HookId , sTimerRunningTask.HookId,sNextTask.HookId);
-                        sTask[RadioTaskId].State = TASK_ABORTED;
-                        Radio->Sleep( false );
-                        RadioTaskId = sNextTask.HookId;
-                        sTask[RadioTaskId].State= TASK_RUNNING;
-                        LaunchCurrentTask ( ); 
-                    } else {
-                       // radio  is already executing nextTask ? do nothing , faudra gerer le cas collision sur le meme thread
-                    }
-
-                } else { // radio is sleeping
-                    RadioTaskId = sNextTask.HookId;
-                    sTask[RadioTaskId].State= TASK_RUNNING;
-                    LaunchCurrentTask ( );
-                }
-        }
-    } else {
-            DEBUG_MSGRP ("                                              ");
-            DEBUG_MSGRP (" No More Active Task inside the RadioPlaner \n");
+void  RadioPLaner<R>:: ComputeRanking ( void ) { //@tbd implementation should be optimized but very few hooks
+    int i;
+    uint8_t Index;
+    uint8_t RankTemp [NB_HOOK];
+    for (int i = 0 ; i < NB_HOOK; i++ ) {
+        RankTemp [ i ] =  sTask [ i ].Priority;
+    } 
+    for (i = 0 ; i < NB_HOOK; i ++) {
+        Index = FindHighestPriority ( RankTemp,  NB_HOOK );
+        RankTemp [ Index ] = 0xFF;
+        Ranking [ i ] = Index ;
     }
-}
-
-
-
-
-
-/***********************************************************************************************/
-/*                            RadioPlaner GetPlanerStatus Method                               */
-/***********************************************************************************************/
+}  
 
 template <class R> 
-  void RadioPLaner<R>::GetStatusPlaner ( uint32_t * IrqTimestampMs, ePlanerStatus *PlanerStatus ){
-    *IrqTimestampMs = IrqTimeStampMs;
-    *PlanerStatus   = RadioPlanerStatus;
-};
-
-
-/************************************************************************************************/
-/*                      Private  Methods                                                        */
-/************************************************************************************************/
-
-/************************************************************************************/
-/*                                 Planer Utilities                                 */
-/*                                                                                  */
-/************************************************************************************/
+uint8_t  RadioPLaner<R>:: FindHighestPriority ( uint8_t * vec,  uint8_t length ) {
+    uint8_t HighPrio = 0xFF ;
+    uint8_t Index = 0;
+    for (int i = 0 ; i < length ; i++ ){
+        if ( vec [ i ] <= HighPrio ) {
+            HighPrio = vec [ i ];
+            Index = i; 
+        }
+    }
+    return ( Index );
+}
 
 template <class R>  //@tbd ma   nage all error case
  void RadioPLaner<R> :: GetIRQStatus ( uint8_t HookIdIn ) {   //rename
@@ -292,17 +348,16 @@ eHookStatus  RadioPLaner<R>:: Read_RadioFifo ( STask TaskIn) {
     } else if ( TaskIn.TaskType  == RX_FSK ) {
         Radio->FetchPayloadFsk( &PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
     } else {
-        status = HOOK_ERROR;
+        status = HOOK_ID_ERROR;
     }
     return status;
 }
 
 template <class R> 
-void  RadioPLaner<R>::UpdateTaskTab      ( void ) {
-    uint32_t CurrentTime =  mcu.RtcGetTimeMs() ;
-    for (int i = 0 ; i < NB_HOOK ; i++ ){
+void  RadioPLaner<R>::UpdateTimeTaskASAP ( uint32_t CurrentTimeIn ) {
+    for ( int i = 0 ; i < NB_HOOK ; i++ ) {
         if ( sTask [ i ].State == TASK_ASAP ) {
-            sTask [ i ].StartTime = CurrentTime ;
+            sTask [ i ].StartTime = CurrentTimeIn ;
         }
     }
 };
@@ -315,7 +370,7 @@ void  RadioPLaner<R>::CallAbortedTAsk ( void ) {
         if ( sTask[i].State == TASK_ABORTED ) {
             DEBUG_PRINTFRP("callback for aborted hook %d\n",i);
             CallBackHook ( i );
-            FreeStask ( &sTask[i] );
+            FreeStask ( sTask[i] );
         }
     }
 }
@@ -339,37 +394,6 @@ void  RadioPLaner<R>::LaunchCurrentTask ( void ){
         break;
     } 
 }
-
-
-/************************************************************************************/
-/*                                 Timer Isr Routine                                */
-/*                               Called when Alarm expires                          */
-/************************************************************************************/
-
-template <class R>     
-void RadioPLaner<R>::IsrTimerRadioPlaner( void ) {
-    //DEBUG_MSGRP ("                                            Timer Expire\n");
-    PlanerTimerState = TIMER_IDLE ;
-    CallPlanerArbitrer ();
-}              
-
-
-/************************************************************************************/
-/*                                 Radio Isr Routine                                */
-/*                             Called when Radio raises It                          */
-/************************************************************************************/
-template <class R> 
-void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
-    IrqTimeStampMs = mcu.RtcGetTimeMs( );
-
-    GetIRQStatus ( RadioTaskId );
-    DEBUG_PRINTFRP("                                                                 Receive It Radio for HookID = %d\n",RadioTaskId);
-    CallBackHook ( RadioTaskId );
-    FreeStask (&sTask[RadioTaskId]);
-    CallAbortedTAsk ();
-    Radio->Sleep( false );
-    CallPlanerArbitrer (); 
-} 
 
 
 

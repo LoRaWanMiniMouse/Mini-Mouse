@@ -34,7 +34,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     int status = OKLORAWAN;
     uint32_t tCurrentMillisec;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond ( );
-    Radio->GetStatusPlaner ( &tCurrentMillisec, &PlanerStatus );
+    Radio->GetStatusPlaner ( tCurrentMillisec, PlanerStatus );
    
 
     switch ( PlanerStatus ) {

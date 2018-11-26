@@ -314,7 +314,7 @@ void RadioPLaner<R>::GetIRQStatus ( uint8_t HookIdIn ) {
             break;
         case RECEIVE_PACKET_IRQ_FLAG : 
             RadioPlanerStatus = PLANER_RX_PACKET;
-            Read_RadioFifo ( sTask [ HookIdIn ] );
+            ReadRadioFifo ( sTask [ HookIdIn ] );
             break; 
         case RXTIMEOUT_IRQ_FLAG      : 
             RadioPlanerStatus = PLANER_RX_TIMEOUT;
@@ -325,7 +325,7 @@ void RadioPLaner<R>::GetIRQStatus ( uint8_t HookIdIn ) {
 }
 
 template <class R> 
-eHookStatus  RadioPLaner<R>::Read_RadioFifo ( STask TaskIn ) {
+eHookStatus  RadioPLaner<R>::ReadRadioFifo ( STask TaskIn ) {
     eHookStatus status = HOOK_OK;
     uint8_t Id = TaskIn.HookId;
     if (TaskIn.TaskType == RX_LORA ) {

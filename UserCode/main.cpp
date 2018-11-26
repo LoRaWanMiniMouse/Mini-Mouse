@@ -206,6 +206,7 @@ int main( ) {
             NVIC_SystemReset();
         }
         if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
+            AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
             InsertTrace ( __COUNTER__, FileId );
             Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
             DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
@@ -213,17 +214,18 @@ int main( ) {
                 DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
             }
             DEBUG_MSG("]\n\n\n");
-             if ( ( UserRxFport == 224 ) || ( UserRxPayloadSize == 0 ) ) {
+            if ( ( UserRxFport == 224 ) || ( UserRxPayloadSize == 0 ) ) {
                 DEBUG_MSG("Receive Certification Payload \n"); 
                 StatusCertification = Certification (true , &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
-           } 
+            } 
         } else {
             if ( StatusCertification > 0 ){
                 Certification ( false ,  &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
             }
         }
 
-         if ( AvailableRxPacket2 != NO_LORA_RXPACKET_AVAILABLE ) { 
+        if ( AvailableRxPacket2 != NO_LORA_RXPACKET_AVAILABLE ) { 
+            AvailableRxPacket2  = NO_LORA_RXPACKET_AVAILABLE ;
             InsertTrace ( __COUNTER__, FileId );
             Lp2.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
             DEBUG_PRINTF("Receive on port %d  an Applicative Downlink foor hook2\n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
@@ -231,7 +233,7 @@ int main( ) {
                 DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
             }
             DEBUG_MSG("]\n\n\n");
-         }
+        }
 /*
 * \brief Send a �Packet every 120 seconds in case of join 
 *        Send a packet every AppTimeSleeping seconds in normal mode
@@ -262,10 +264,10 @@ void _Error_Handler( int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  while(1)
-  {
-      DEBUG_MSG ("ERROR\n");
-  }
+    while(1)
+    {
+        DEBUG_MSG ("ERROR\n");
+    }
   /* USER CODE END Error_Handler_Debug */
 }
 

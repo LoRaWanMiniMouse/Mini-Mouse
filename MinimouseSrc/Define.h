@@ -57,18 +57,17 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 template <  class R , uint32_t TAB_LENGTH> 
 struct MMTab {
-  std::string Name;
-  R& operator[] (uint32_t index) {
-      if ( index >= TAB_LENGTH ) {
-        DEBUG_PRINTF(" ERROR Index of Tab named : %s is out of scope : Index MAX = %d and index is %d \n",Name.c_str(),TAB_LENGTH,index);
-        while(1){}
-        return Tab[0];
-      } else {
-        return Tab[index];
-      };
-  };
-  R  Tab [ TAB_LENGTH ];
-  //uint32_t MaxLength ;
+    std::string Name;
+    R& operator[] ( uint32_t index ) {
+        if ( index >= TAB_LENGTH ) {
+            DEBUG_PRINTF(" ERROR Index of Tab named : %s is out of scope : Index MAX = %d and index is %d \n",Name.c_str(),TAB_LENGTH,index);
+            while(1){}
+            return Tab[ TAB_LENGTH - 1 ];
+        } else {
+            return Tab[ index ];
+        };
+    };
+    R  Tab [ TAB_LENGTH ];
 };
 #ifdef DEBUG_ARRAY
     #define DECLARE_ARRAY( Type, Length, Name )   MMTab < Type, Length > Name = {#Name " Declared In File " __FILE__ }

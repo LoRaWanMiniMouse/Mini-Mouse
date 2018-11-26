@@ -100,10 +100,10 @@ eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t& HookIdIn 
 /*                            RadioPlaner EnqueueTask Method                                   */
 /***********************************************************************************************/
 template <class R> 
-eHookStatus RadioPLaner<R>::EnqueueTask ( STask& staskIn, uint8_t *payload, uint8_t &payloadSize, SRadioParam& sRadioParamIn ) {
+eHookStatus RadioPLaner<R>::EnqueueTask ( STask& staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam& sRadioParamIn ) {
     mcu.DisableIrq ( );
     uint8_t HookId = staskIn.HookId;
-     if ( HookId > NB_HOOK ) {
+    if ( HookId > NB_HOOK ) {
         mcu.EnableIrq ( ); 
         return ( HOOK_ID_ERROR );
     }
@@ -240,37 +240,31 @@ void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
 } 
 
 
-
-
-
 /************************************************************************************/
 /*                                 Planer Utilities                                 */
 /*                                                                                  */
 /************************************************************************************/
 template <class R> 
-uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
-    //DEBUG_MSGRP ("                                                  call Select Next Task");
-    //PrintTask ( 0 );
-    //PrintTask ( 2 );
-    uint8_t HookToExecuteTmp = 0xFF;
+uint8_t  RadioPLaner<R>::SelectTheNextTask ( void ) {
+    uint8_t  HookToExecuteTmp = 0xFF;
     uint32_t TimeOfHookToExecuteTmp;
     uint32_t TempTime;
-    uint8_t index ;
+    uint8_t  index ;
     int k ;
-    for ( k = 0 ; k < NB_HOOK; k++ ) {
+    for ( k = 0; k < NB_HOOK; k++ ) {
         index = Ranking [ k ] ;
-        if (sTask[ index ].State < TASK_ABORTED) {  // Mean   TASK_SCHEDULE or TASK_ASAP or TASK_RUNNING,
-            HookToExecuteTmp        = sTask[ index ].HookId ;
-            TimeOfHookToExecuteTmp  = sTask[ index ].StartTime ;
+        if ( sTask [ index ].State < TASK_ABORTED ) {  // Mean   TASK_SCHEDULE or TASK_ASAP or TASK_RUNNING,
+            HookToExecuteTmp        = sTask [ index ].HookId ;
+            TimeOfHookToExecuteTmp  = sTask [ index ].StartTime ;
             break;
         }
     }
-    if (k == NB_HOOK ) {
-        return (NO_MORE_TASK);
+    if ( k == NB_HOOK ) {
+        return ( NO_MORE_TASK );
     }
-    for (int i = k ; i < NB_HOOK; i++ ) {
+    for ( int i = k; i < NB_HOOK; i++ ) {
         index = Ranking [ i ] ;
-        if ( sTask[ index ].State < TASK_ABORTED ) {
+        if ( sTask [ index ].State < TASK_ABORTED ) {
             TempTime =  sTask[ index ].StartTime + sTask[ index ].TaskDuration ;
             if ( ( TempTime - TimeOfHookToExecuteTmp ) < 0 ) {   //@relative to avoid issues in case of wrapping
                 TimeOfHookToExecuteTmp = sTask[ index ].StartTime ;
@@ -278,32 +272,30 @@ uint8_t  RadioPLaner<R>::SelectTheNextTask( void ) {
             }
         }
     }
- 
-    sNextTask = sTask[ HookToExecuteTmp ];
-    return (SCHEDULED_TASK);
+    sNextTask = sTask [ HookToExecuteTmp ];
+    return ( SCHEDULED_TASK );
 }
 
-
 template <class R> 
-void  RadioPLaner<R>:: ComputeRanking ( void ) { //@tbd implementation should be optimized but very few hooks
+void  RadioPLaner<R>::ComputeRanking ( void ) { //@tbd implementation should be optimized but very few hooks
     int i;
     uint8_t Index;
-    uint8_t RankTemp [NB_HOOK];
-    for (int i = 0 ; i < NB_HOOK; i++ ) {
+    DECLARE_ARRAY( uint8_t, NB_HOOK, RankTemp );
+    for ( int i = 0; i < NB_HOOK; i++ ) {
         RankTemp [ i ] =  sTask [ i ].Priority;
     } 
-    for (i = 0 ; i < NB_HOOK; i ++) {
-        Index = FindHighestPriority ( RankTemp,  NB_HOOK );
+    for ( i = 0 ; i < NB_HOOK; i ++ ) {
+        Index = FindHighestPriority ( &( RankTemp [ 0 ] ),  NB_HOOK );
         RankTemp [ Index ] = 0xFF;
         Ranking [ i ] = Index ;
     }
 }  
 
 template <class R> 
-uint8_t  RadioPLaner<R>:: FindHighestPriority ( uint8_t * vec,  uint8_t length ) {
+uint8_t  RadioPLaner<R>::FindHighestPriority ( uint8_t * vec,  uint8_t length ) {
     uint8_t HighPrio = 0xFF ;
     uint8_t Index = 0;
-    for (int i = 0 ; i < length ; i++ ){
+    for ( int i = 0; i < length; i++ ) {
         if ( vec [ i ] <= HighPrio ) {
             HighPrio = vec [ i ];
             Index = i; 
@@ -312,10 +304,9 @@ uint8_t  RadioPLaner<R>:: FindHighestPriority ( uint8_t * vec,  uint8_t length )
     return ( Index );
 }
 
-template <class R>  //@tbd ma   nage all error case
- void RadioPLaner<R> :: GetIRQStatus ( uint8_t HookIdIn ) {   //rename
-    uint8_t Id = HookIdIn;
-    IrqFlags_t IrqRadio  = ( Radio->GetIrqFlagsLora( ) );
+template <class R> 
+void RadioPLaner<R>::GetIRQStatus ( uint8_t HookIdIn ) {  
+    IrqFlags_t IrqRadio  = ( Radio->GetIrqFlagsLora ( ) );
     Radio->ClearIrqFlagsLora( ); 
     switch ( IrqRadio ) {
         case SENT_PACKET_IRQ_FLAG    :
@@ -323,8 +314,7 @@ template <class R>  //@tbd ma   nage all error case
             break;
         case RECEIVE_PACKET_IRQ_FLAG : 
             RadioPlanerStatus = PLANER_RX_PACKET;
-            // Push Fifo
-            Read_RadioFifo ( sTask[Id] );
+            Read_RadioFifo ( sTask [ HookIdIn ] );
             break; 
         case RXTIMEOUT_IRQ_FLAG      : 
             RadioPlanerStatus = PLANER_RX_TIMEOUT;
@@ -333,24 +323,25 @@ template <class R>  //@tbd ma   nage all error case
             break;
     }
 }
- 
-template <class R>     
-void RadioPLaner<R>::SetAlarm (uint32_t alarmInMs ) {
-    mcu.StartTimerMsecond( &RadioPLaner<R>::CallbackIsrTimerRadioPlaner,this, alarmInMs);
-}
 
 template <class R> 
-eHookStatus  RadioPLaner<R>:: Read_RadioFifo ( STask TaskIn) {
+eHookStatus  RadioPLaner<R>::Read_RadioFifo ( STask TaskIn ) {
     eHookStatus status = HOOK_OK;
     uint8_t Id = TaskIn.HookId;
     if (TaskIn.TaskType == RX_LORA ) {
-        Radio->FetchPayloadLora( &PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
+        Radio->FetchPayloadLora( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
+        DEBUG_PRINTF (" rx size payload Inside radio planer= %d \n", *PayloadSize [ Id ] );
     } else if ( TaskIn.TaskType  == RX_FSK ) {
-        Radio->FetchPayloadFsk( &PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
+        Radio->FetchPayloadFsk( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
     } else {
         status = HOOK_ID_ERROR;
     }
     return status;
+}
+
+template <class R>     
+void RadioPLaner<R>::SetAlarm (uint32_t alarmInMs ) {
+    mcu.StartTimerMsecond( &RadioPLaner<R>::CallbackIsrTimerRadioPlaner,this, alarmInMs);
 }
 
 template <class R> 
@@ -360,43 +351,39 @@ void  RadioPLaner<R>::UpdateTimeTaskASAP ( uint32_t CurrentTimeIn ) {
             sTask [ i ].StartTime = CurrentTimeIn ;
         }
     }
-};
-
-
+}
 
 template <class R> 
 void  RadioPLaner<R>::CallAbortedTAsk ( void ) {
     for (int i = 0; i < NB_HOOK; i ++ ) {
-        if ( sTask[i].State == TASK_ABORTED ) {
+        if ( sTask [ i ].State == TASK_ABORTED ) {
             DEBUG_PRINTFRP("callback for aborted hook %d\n",i);
             CallBackHook ( i );
-            FreeStask ( sTask[i] );
+            FreeStask ( sTask [ i ] );
         }
     }
 }
 
 template <class R> 
-void  RadioPLaner<R>::LaunchCurrentTask ( void ){
-     uint8_t Id = RadioTaskId;
-     DEBUG_MSGRP("                      Start Radio ");
-     PrintTask ( sTask[Id] ); 
-     switch ( sTask[Id].TaskType) {
+void  RadioPLaner<R>::LaunchCurrentTask ( void ) {
+    uint8_t Id = RadioTaskId;
+    DEBUG_PRINTFRP ( "                                     Launch Task ID %d and start Radio \n",Id );
+    //PrintTask  ( sTask [ Id ] ); 
+    switch ( sTask [ Id ].TaskType ) {
         case TX_LORA :
-            Radio->SendLora( Payload[Id], PayloadSize[Id], sRadioParam[Id].Sf, sRadioParam[Id].Bw, sRadioParam[Id].Frequency, sRadioParam[Id].Power );
+            Radio->SendLora( Payload [ Id ], *PayloadSize [ Id ], sRadioParam [ Id ].Sf, sRadioParam [ Id ].Bw, sRadioParam [ Id ].Frequency, sRadioParam[ Id ].Power );
             break;
         case RX_LORA :
-            Radio->RxLora ( sRadioParam[Id].Bw, sRadioParam[Id].Sf, sRadioParam[Id].Frequency, sRadioParam[Id].TimeOutMs);
+            Radio->RxLora ( sRadioParam [ Id ].Bw, sRadioParam [ Id ].Sf, sRadioParam [ Id ].Frequency, sRadioParam [ Id ].TimeOutMs);
             break;
         case TX_FSK :
+        DEBUG_MSG("error\n");
         case RX_FSK :
         case CAD    :
         default :
         break;
     } 
 }
-
-
-
 
 /************************************************************************************************/
 /*                      DEBUG UTILITIES                                                         */
@@ -425,7 +412,7 @@ void  RadioPLaner<R>::PrintTask ( STask TaskIn ) {
             DEBUG_MSGRP (" TASK_EMPTY ");
             break;
         default :
-           DEBUG_MSGRP (" TASK_ERROR ");
+            DEBUG_MSGRP (" TASK_ERROR ");
             break;
     };
     DEBUG_PRINTFRP (" StartTime  @%d with priority = %d",TaskIn.StartTime,TaskIn.Priority);

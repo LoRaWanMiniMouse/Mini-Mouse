@@ -22,9 +22,9 @@ Maintainer        : Fabien Holin (SEMTECH)
 /********************************************************************************/
 /*                         Application     dependant                            */
 /********************************************************************************/
-#define DEBUG_TRACERP    1  
-#define DEBUG_TRACE    1      // Set to 1 to activate debug traces
-#define LOW_POWER_MODE 0     // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
+#define DEBUG_TRACERP      1  
+#define DEBUG_TRACE        1      // Set to 1 to activate debug traces
+#define LOW_POWER_MODE     0     // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 #define DEBUG_TRACE_ENABLE 0  // Set to 1 to activate DebugTrace 
 
 #define LOW_SPEED_CLK  LSE    //
@@ -72,6 +72,7 @@ Maintainer        : Fabien Holin (SEMTECH)
         #define BOARD_DELAY_RX_SETTING_MS  4  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
         #define PA_BOOST_CONNECTED         1 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
         #define USERFLASHADRESS 0x807E000U   // start flash adress to store lorawan context 
+        #define USERFLASHADRESS2 USERFLASHADRESS - 2000 
 
     #else
         #define UART_NUM           USART2
@@ -91,6 +92,7 @@ Maintainer        : Fabien Holin (SEMTECH)
         #define PA_BOOST_CONNECTED         0 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
         #define RX_TIMEOUT_IT       D3     // Interrupt RX TIME OUT 
         #define USERFLASHADRESS 0x807E000U   // start flash adress to store lorawan context
+        #define USERFLASHADRESS2 USERFLASHADRESS - 2000 
     #endif
     #endif 
 #define FLASH_UPDATE_PERIOD 32      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted

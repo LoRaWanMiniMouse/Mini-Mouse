@@ -145,6 +145,8 @@ public :
     ~McuSTM32L4 ( );
     void InitMcu ( void );
     void Init_Irq ( PinName pin);
+    void DisableIrq ( void ) { DisableIrqExtGpio ( ) ; LowPowerTimerDisableIrq ( ); };
+    void EnableIrq  ( void ) { EnableIrqExtGpio  ( ) ; LowPowerTimerEnableIrq  ( ); };
 /******************************************************************************/
 /*                                Mcu Spi Api                                 */
 /******************************************************************************/

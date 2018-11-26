@@ -89,20 +89,20 @@ int main( ) {
 #ifdef SX126x_BOARD
 #define FW_VERSION     0x18
     SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
-
+    RadioPLaner < SX126x > RP( &RadioUser );
 #endif
 #ifdef SX1276_BOARD
 #define FW_VERSION     0x17
     SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
-
+    RadioPLaner < SX1276 > RP( &RadioUser );
 #endif
 #ifdef SX1272_BOARD
 #define FW_VERSION     0x13
     SX1272  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+    RadioPLaner < SX1272 > RP( &RadioUser );
 #endif
-    RadioPLaner < SX1276 > RP( &RadioUser );
     mcu.WatchDogStart ( );
-     //uint8_t uid[8];
+    //uint8_t uid[8];
     //mcu.GetUniqueId (uid); 
     //memcpy(&LoraWanKeys.DevEui[0], uid , 8);
     /*!
@@ -110,14 +110,16 @@ int main( ) {
     * \remark  The Current implementation  support radio SX1276 and sx1261
     */
 #ifdef SX126x_BOARD
-    LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsEU,SX126x> Lp ( LoraWanKeys,&RP,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsEU,SX126x> Lp2( LoraWanKeys2,&RP,USERFLASHADRESS2); 
 #endif
 #ifdef SX1276_BOARD
     LoraWanObject<LoraRegionsEU,SX1276> Lp ( LoraWanKeys,&RP,USERFLASHADRESS); 
     LoraWanObject<LoraRegionsEU,SX1276> Lp2( LoraWanKeys2,&RP,USERFLASHADRESS2); 
 #endif
 #ifdef SX1272_BOARD
-    LoraWanObject<LoraRegionsEU,SX1272> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsEU,SX1272> Lp ( LoraWanKeys,&RP,USERFLASHADRESS); 
+    LoraWanObject<LoraRegionsEU,SX1272> Lp2( LoraWanKeys2,&RP,USERFLASHADRESS2); 
 #endif
     //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
     //LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 

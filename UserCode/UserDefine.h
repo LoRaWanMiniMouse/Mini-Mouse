@@ -95,9 +95,9 @@ Maintainer        : Fabien Holin (SEMTECH)
         #define USERFLASHADRESS2 USERFLASHADRESS - 2000 
     #endif
     #endif 
+
+
 #define FLASH_UPDATE_PERIOD 32      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted
-
-
 #define USER_NUMBER_OF_RETRANSMISSION   1// Only used in case of user defined darate distribution strategy
 #define USER_DR_DISTRIBUTION_PARAMETERS 0x00000001  // Only used in case of user defined darate distribution strategy refered to doc that explain this value
 #endif

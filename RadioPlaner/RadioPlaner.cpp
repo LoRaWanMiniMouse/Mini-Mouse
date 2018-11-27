@@ -239,12 +239,11 @@ void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     GetIRQStatus             ( RadioTaskId );
     DEBUG_PRINTFRP           ( " Receive It Radio for HookID = %d\n",RadioTaskId );
     sStatisticRP.UpdateState ( IrqTimeStampMs, RadioTaskId ) ;
-    FreeStask                ( sTask [ RadioTaskId ] );
+    FreeStask                ( sTask [ RadioTaskId ] );  // be careful have to free task before callback because call back can enqueue task and so call arbitrer
+    Radio->Sleep             ( false ); // be careful put radio in sleep before callback because callback can restart the radio immediatly
     CallBackHook             ( RadioTaskId );
-    Radio->Sleep             ( false );
     CallPlanerArbitrer       (   __FUNCTION__ ); 
     CallAbortedTask          ( );
-    
 } 
 
 
@@ -333,13 +332,13 @@ void RadioPLaner<R>::GetIRQStatus ( uint8_t HookIdIn ) {
 }
 
 template <class R> 
-eHookStatus  RadioPLaner<R>::ReadRadioFifo ( STask TaskIn ) {
+eHookStatus  RadioPLaner<R>::ReadRadioFifo ( STask TaskIn ) { 
     eHookStatus status = HOOK_OK;
     uint8_t Id = TaskIn.HookId;
     if (TaskIn.TaskType == RX_LORA ) {
-        Radio->FetchPayloadLora( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
+        Radio->FetchPayloadLora ( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
     } else if ( TaskIn.TaskType  == RX_FSK ) {
-        Radio->FetchPayloadFsk( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
+        Radio->FetchPayloadFsk ( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
     } else {
         status = HOOK_ID_ERROR;
     }
@@ -365,7 +364,7 @@ void  RadioPLaner<R>::CallAbortedTask ( void ) {
     for (int i = 0; i < NB_HOOK; i ++ ) {
         if ( sTask [ i ].State == TASK_ABORTED ) {
             DEBUG_PRINTFRP("callback for aborted hook %d\n",i);
-            FreeStask ( sTask [ i ] );
+            FreeStask ( sTask [ i ] );  // be careful have to free task before callback because call back can enqueue task and so call arbitrer
             CallBackHook ( i );
         }
     }

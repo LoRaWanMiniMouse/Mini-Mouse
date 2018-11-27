@@ -89,7 +89,7 @@ private :
   void        LaunchCurrentTask               ( void );
   uint8_t     SelectTheNextTask               ( void );
   uint8_t     FindHighestPriority             ( uint8_t * vec, uint8_t length );
-  eHookStatus ReadRadioFifo                  ( STask TaskIn );
+  eHookStatus ReadRadioFifo                   ( STask TaskIn );
   void        SetAlarm                        ( uint32_t alarmInMs ); 
   void        IsrTimerRadioPlaner             ( void );
   void        IsrRadioPlaner                  ( void ); // Isr routine implemented in IsrRoutine.cpp file

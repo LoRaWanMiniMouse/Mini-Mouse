@@ -123,7 +123,6 @@ template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlan
     stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
     stask.State    = TASK_SCHEDULE;
     stask.TaskType = (RxModulation == LORA ) ? RX_LORA : RX_FSK;
-    
     Radio->EnqueueTask (stask, RxPhyPayload, &RxPhyPayloadSize, sRadioParam ); //@tbd RadioPlaner  timeonair
     if ( RxModulation == LORA ) {
         InsertTrace   ( __COUNTER__, FileId );

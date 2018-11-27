@@ -1,7 +1,7 @@
 /*!
- * \file      Main4certification.c
+ * \file      MainTest2.c
  *
- * \brief     Description : Lorawan Stack example
+ * \brief     Description :Description : Set 2 hooks : 2 MiniMouse Lorawan class A hook 
  *
  * \copyright Revised BSD License, see section \ref LICENSE.
  *

@@ -136,7 +136,8 @@ eHookStatus RadioPLaner<R>::AbortTask ( STask& staskIn ) { //Open Question Calla
         return ( HOOK_ID_ERROR );
     } 
     if ( sTask [ HookId ].State == TASK_RUNNING ) {
-        Radio->Sleep ( false );  
+        Radio->Sleep ( false );
+        sStatisticRP.UpdateState ( IrqTimeStampMs, RadioTaskId ) ;  
     }
     FreeStask ( sTask [ HookId ] );
     CallPlanerArbitrer ( );
@@ -195,6 +196,7 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( void ) {
                     if ( sTask [ RadioTaskId ].HookId != sNextTask.HookId ) {
                         sTask [ RadioTaskId ].State = TASK_ABORTED;
                         Radio->Sleep ( false );
+                        sStatisticRP.UpdateState ( IrqTimeStampMs, RadioTaskId ) ;
                         RadioTaskId = sNextTask.HookId;
                         sTask [ RadioTaskId ].State = TASK_RUNNING;
                         LaunchCurrentTask ( ); 

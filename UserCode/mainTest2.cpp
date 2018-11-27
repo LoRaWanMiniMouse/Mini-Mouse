@@ -176,9 +176,9 @@ int mainTest2( ) {
             Lp2State = Lp2.LoraWanProcess( &AvailableRxPacket2 );
             }
             mcu.GotoSleepMSecond ( 100 );
+            mcu.WatchDogRelease ( );
         }
-
-        mcu.WatchDogRelease ( );
+        RP.GetStatistic ( );
         if (( LpState == LWPSTATE_ERROR ) || ( Lp2State == LWPSTATE_ERROR )) {
             InsertTrace ( __COUNTER__, FileId );
             // user application have to save all the need

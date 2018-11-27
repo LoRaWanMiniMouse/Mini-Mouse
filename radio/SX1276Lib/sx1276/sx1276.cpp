@@ -233,6 +233,7 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     if ( symbTimeout > 0x3FF ) {
         symbTimeout = 0x3FF ;
     }
+    //DEBUG_PRINTF ( "symbTimeout = %d\n",symbTimeout);
     SetModulationParamsRxLora( SF, BW, symbTimeout);
     /* Configure IRQ Rx Done or Rx timeout */
     Write ( REG_LR_IRQFLAGSMASK, 0x3F ); 
@@ -242,8 +243,12 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     Write( REG_LR_FIFORXBASEADDR, 0 );
     Write( REG_LR_FIFOADDRPTR, 0 );
     /* Receive */
-    SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
-      mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
+    if ( TimeOutMs == 0 ) {
+        SetOpMode( RFLR_OPMODE_RECEIVER );
+    } else {
+        SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
+    }
+    mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
 }
 
 void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {

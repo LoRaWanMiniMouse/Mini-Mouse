@@ -95,13 +95,13 @@ typedef struct SStatisticRP {
     uint32_t InternalCounterTx ;
     void PrintStat ( void ) { 
         for (int i = 0 ; i < NB_HOOK ; i++) {
-            DEBUG_PRINTFRP ( "Tx Comsumption Hook [%d] = %d \n ", i, StatTxConsumptionMs [ i ] );
+            DEBUG_PRINTF ( "Tx Comsumption Hook [%d] = %d \n ", i, StatTxConsumptionMs [ i ] );
         }
         for (int i = 0 ; i < NB_HOOK ; i++) {
-            DEBUG_PRINTFRP ( "Rx Comsumption Hook [%d] = %d \n ", i, StatRxConsumptionMs [ i ] );
+            DEBUG_PRINTF ( "Rx Comsumption Hook [%d] = %d \n ", i, StatRxConsumptionMs [ i ] );
         }
-            DEBUG_PRINTFRP ( "Tx Total Comsumption     = %d \n ",TotalTxConsumptionMs );
-            DEBUG_PRINTFRP ( "Rx Total Comsumption     = %d \n ",TotalRxConsumptionMs );
+            DEBUG_PRINTF ( "Tx Total Comsumption     = %d \n ",TotalTxConsumptionMs );
+            DEBUG_PRINTF ( "Rx Total Comsumption     = %d \n ",TotalRxConsumptionMs );
     }
     void InitStat ( void ) {
         for (int i = 0 ; i < NB_HOOK ; i++) {

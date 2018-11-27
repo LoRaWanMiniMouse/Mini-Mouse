@@ -25,8 +25,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 /********************************************************************************/
 
 #if DEBUG_TRACERP == 1
-    #define DEBUG_MSGRP(str)               mcu.MMprint(str)
-    #define DEBUG_PRINTFRP(fmt, args...)   mcu.MMprint(fmt, args)
+    #define DEBUG_MSGRP(str)               mcu.MMprint("                                                                  ") ; mcu.MMprint(str)
+    #define DEBUG_PRINTFRP(fmt, args...)   mcu.MMprint("                                                                  ") ; mcu.MMprint(fmt, args)
 #else
     #define DEBUG_MSGRP(str)            
     #define DEBUG_PRINTFRP(fmt, args...)

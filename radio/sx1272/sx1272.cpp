@@ -118,7 +118,11 @@ void SX1272::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     Write( REG_LR_FIFORXBASEADDR, 0 );
     Write( REG_LR_FIFOADDRPTR, 0 );
 /* Receive */
-    SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
+    if ( TimeOutMs == 0 ) {
+        SetOpMode( RFLR_OPMODE_RECEIVER );
+    } else {
+        SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
+    }
 
 }
 

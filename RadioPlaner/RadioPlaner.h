@@ -94,7 +94,7 @@ private :
   void        IsrTimerRadioPlaner             ( void );
   void        IsrRadioPlaner                  ( void ); // Isr routine implemented in IsrRoutine.cpp file
   void        AbortTaskInRadio                ( void );
-  void        CallAbortedTAsk                 ( void );
+  void        CallAbortedTask                 ( void );
   void        (* AttachCallBackHook[NB_HOOK]) (void * ) ;
   static void CallbackIsrTimerRadioPlaner     ( void * obj )   { ( reinterpret_cast<RadioPLaner<R>*>(obj) )->IsrTimerRadioPlaner(); };
   static void CallbackIsrRadioPlaner          ( void * obj )   { ( reinterpret_cast<RadioPLaner< R >*>(obj))->IsrRadioPlaner();} ; 

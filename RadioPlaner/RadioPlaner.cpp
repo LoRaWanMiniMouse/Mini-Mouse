@@ -61,6 +61,7 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
     TimeOfHookToExecute  = 0;
     IrqTimeStampMs       = 0;
     PlanerTimerState     = TIMER_IDLE;
+    sStatisticRP.InitStat ( ); 
 }
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 }
@@ -229,14 +230,16 @@ void RadioPLaner<R>::IsrTimerRadioPlaner ( void ) {
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     IrqTimeStampMs = mcu.RtcGetTimeMs( );
-    GetIRQStatus    ( RadioTaskId );
-    DEBUG_MSGRP     ( "                                               " );
-    DEBUG_PRINTFRP  ( " Receive It Radio for HookID = %d\n",RadioTaskId );
-    CallBackHook    ( RadioTaskId );
-    FreeStask       ( sTask[RadioTaskId] );
-    CallAbortedTAsk ( );
-    Radio->Sleep ( false );
-    CallPlanerArbitrer ( ); 
+    GetIRQStatus             ( RadioTaskId );
+    DEBUG_MSGRP              ( "                                               " );
+    DEBUG_PRINTFRP           ( " Receive It Radio for HookID = %d\n",RadioTaskId );
+    CallBackHook             ( RadioTaskId );
+    FreeStask                ( sTask[RadioTaskId] );
+    CallAbortedTAsk          ( );
+    Radio->Sleep             ( false );
+    sStatisticRP.UpdateState ( IrqTimeStampMs, RadioTaskId ) ;
+    //sStatisticRP.PrintStat   ( );
+    CallPlanerArbitrer       ( ); 
 } 
 
 
@@ -372,9 +375,11 @@ void  RadioPLaner<R>::LaunchCurrentTask ( void ) {
     switch ( sTask [ Id ].TaskType ) {
         case TX_LORA :
             Radio->SendLora( Payload [ Id ], *PayloadSize [ Id ], sRadioParam [ Id ].Sf, sRadioParam [ Id ].Bw, sRadioParam [ Id ].Frequency, sRadioParam[ Id ].Power );
+            sStatisticRP.StartTxCounter ( ); 
             break;
         case RX_LORA :
             Radio->RxLora ( sRadioParam [ Id ].Bw, sRadioParam [ Id ].Sf, sRadioParam [ Id ].Frequency, sRadioParam [ Id ].TimeOutMs);
+            sStatisticRP.StartRxCounter ( ); 
             break;
         case TX_FSK :
         DEBUG_MSG("error\n");
@@ -382,7 +387,7 @@ void  RadioPLaner<R>::LaunchCurrentTask ( void ) {
         case CAD    :
         default :
         break;
-    } 
+    }
 }
 
 /************************************************************************************************/

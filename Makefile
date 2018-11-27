@@ -20,7 +20,7 @@ BOARD_L4          = 0
 RADIO_SX1276      = 1
 RADIO_SX1272      = 0
 RADIO_SX126x      = 0
-DEVICE_UNDER_TEST = 1
+DEVICE_UNDER_TEST = 0
 ####################SX126x_BOARD
 # building variablesSX126x_BOARD
 ######################################
@@ -43,6 +43,7 @@ BUILD_DIR = build
 CPP_SOURCES =  \
 UserCode/appli.cpp\
 UserCode/main.cpp \
+UserCode/mainTest1.cpp \
 UserCode/mainTest2.cpp \
 radio/sx1272/sx1272.cpp\
 radio/SX1276Lib/sx1276/sx1276.cpp\

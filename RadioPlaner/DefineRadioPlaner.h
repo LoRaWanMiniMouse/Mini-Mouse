@@ -20,7 +20,7 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 #include "Define.h"
 #define NB_HOOK 4
 #define RadioPlanerTimeOut 20000 // A task couldn't be stay inside the Radioplaner more than 20 second except the background tasks . 
-struct SRadioParam {
+typedef struct SRadioParam {
     uint32_t             Frequency;
     eBandWidth           Bw;
     uint8_t              Sf;
@@ -33,7 +33,7 @@ struct SRadioParam {
     uint32_t             TimeOutMs;
     int16_t *            Snr;
     int16_t *            Rssi;
-};
+}SRadioParam;
 
 
 typedef enum {
@@ -53,7 +53,7 @@ typedef enum {
     TASK_FINISHED,
 }PlanerState;
 
-struct STask {
+typedef struct STask {
     uint8_t           HookId ;
     uint32_t          StartTime ; // absolute Ms
     uint32_t          TaskDuration  ;  
@@ -61,7 +61,7 @@ struct STask {
     PlanerState       State;
     uint8_t           Priority; 
     uint8_t           TokenDebug;
-};
+}STask;
 
 typedef enum { 
     PLANER_RX_CANCELED, 
@@ -85,6 +85,54 @@ typedef enum {
     TIMER_BUSY 
 }ePlanerTimerState;
 
+
+typedef struct SStatisticRP {
+    DECLARE_ARRAY ( uint32_t , NB_HOOK, StatTxConsumptionMs );
+    DECLARE_ARRAY ( uint32_t , NB_HOOK, StatRxConsumptionMs );
+    uint32_t TotalTxConsumptionMs;
+    uint32_t TotalRxConsumptionMs;
+    uint32_t InternalCounterRx ;
+    uint32_t InternalCounterTx ;
+    void PrintStat ( void ) { 
+        for (int i = 0 ; i < NB_HOOK ; i++) {
+            DEBUG_PRINTFRP ( "Tx Comsumption Hook [%d] = %d \n ", i, StatTxConsumptionMs [ i ] );
+        }
+        for (int i = 0 ; i < NB_HOOK ; i++) {
+            DEBUG_PRINTFRP ( "Rx Comsumption Hook [%d] = %d \n ", i, StatRxConsumptionMs [ i ] );
+        }
+            DEBUG_PRINTFRP ( "Tx Total Comsumption     = %d \n ",TotalTxConsumptionMs );
+            DEBUG_PRINTFRP ( "Rx Total Comsumption     = %d \n ",TotalRxConsumptionMs );
+    }
+    void InitStat ( void ) {
+        for (int i = 0 ; i < NB_HOOK ; i++) {
+            StatTxConsumptionMs [ i ] = 0;
+            StatRxConsumptionMs [ i ] = 0;
+            TotalTxConsumptionMs = 0;
+            TotalRxConsumptionMs = 0;
+        }
+        InternalCounterRx = 0;
+        InternalCounterTx = 0;
+
+    } 
+    void StartTxCounter ( void ) {
+        InternalCounterTx = mcu.RtcGetTimeMs ( );
+    }
+    void StartRxCounter ( void ) {
+        InternalCounterRx = mcu.RtcGetTimeMs ( );
+    }
+    void UpdateState ( uint32_t TimeStamp, uint8_t HookIdIn ) {
+        if ( InternalCounterTx != 0 ) {
+            StatTxConsumptionMs [ HookIdIn ] += ( TimeStamp - InternalCounterTx ); // test wrapping ??
+            TotalTxConsumptionMs             += ( TimeStamp - InternalCounterTx );
+        } 
+        if ( InternalCounterRx != 0 ) {
+            StatRxConsumptionMs [ HookIdIn ] += ( TimeStamp - InternalCounterRx ); // test wrapping ??
+            TotalRxConsumptionMs             += ( TimeStamp - InternalCounterRx );
+        } 
+        InternalCounterTx = 0;
+        InternalCounterRx = 0;
+    }
+}SStatisticRP;
 
 #define NO_MORE_TASK      0
 #define SCHEDULED_TASK    1

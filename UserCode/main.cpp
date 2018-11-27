@@ -158,9 +158,9 @@ int main ( ) {
             while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
                 LpState = Lp.LoraWanProcess( &AvailableRxPacket );
                 mcu.GotoSleepMSecond ( 100 );
+                mcu.WatchDogRelease  ( );
             }
-
-            mcu.WatchDogRelease ( );
+            RP.GetStatistic ( );
             if ( LpState == LWPSTATE_ERROR )  {
                 InsertTrace ( __COUNTER__, FileId );
                 // user application have to save all the need

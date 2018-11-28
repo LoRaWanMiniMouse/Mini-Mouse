@@ -34,7 +34,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     int status = OKLORAWAN;
     uint32_t tCurrentMillisec;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond ( );
-    Radio->GetStatusPlaner ( tCurrentMillisec, PlanerStatus );
+    Radio->GetStatusPlaner ( MyHookId, tCurrentMillisec, PlanerStatus );
    
 
     switch ( PlanerStatus ) {
@@ -78,8 +78,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
             }
             break;
     
-        case PLANER_TX_CANCELED :
-        case PLANER_RX_CANCELED :
+   
         default :
             DEBUG_PRINTF ("receive It radio error %d\n",PlanerStatus);
             break;

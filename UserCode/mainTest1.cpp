@@ -47,10 +47,30 @@ void CallBackRxContinuous ( void * RadioPlanerIn) {
     DEBUG_MSG ( " call CallBackRxContinuous\n ");
     uint32_t tCurrentMillisec;
     ePlanerStatus  PlanerStatusRxc;
-    RpRxc->GetStatusPlaner ( tCurrentMillisec, PlanerStatusRxc );
+    RpRxc->GetStatusPlaner ( 1, tCurrentMillisec, PlanerStatusRxc );
+    switch ( PlanerStatusRxc ) {
+        case PLANER_RX_PACKET : 
+            DEBUG_MSG ( " Recive Packet for Hook Rxc Continous : { " );
+            for ( int i = 0 ; i < UserRxPayloadSize ; i ++ ) {
+                DEBUG_PRINTF (" %x ", UserRxPayload [ i ] );
+            }
+            DEBUG_MSG ( " } \n ");
+            break;
+        case PLANER_RX_TIMEOUT : 
+            DEBUG_MSG ( " Receive timeOut en thread rx continuous " ) ;
+            break;
+        case PLANER_TASK_ABORTED :
+            DEBUG_MSG ( " TASK ABORTED ");
+            DEBUG_PRINTF ( " Planer status for task 1 = %d\n",PlanerStatusRxc ) ;
+            break;
+        default :
+            break;
+    }
     staskRC.StartTime      = mcu.RtcGetTimeMs ( );
     RpRxc->EnqueueTask (staskRC, UserRxPayload, &UserRxPayloadSize, sRadioParamRXC ); //@tbd RadioPlaner  timeonair
 }
+
+
 
 
 int mainTest1( ) {
@@ -115,10 +135,10 @@ int mainTest1( ) {
 
 /*Launch Hook 1 in continuous reception */
         sRadioParamRXC.Frequency       = 864525000;
-        sRadioParamRXC.Sf              = 12;
+        sRadioParamRXC.Sf              = 7;
         sRadioParamRXC.Bw              = BW125;
         sRadioParamRXC.CrcMode         = CRC_NO;
-        sRadioParamRXC.IqMode          = IQ_INVERTED;
+        sRadioParamRXC.IqMode          = IQ_NORMAL;
         sRadioParamRXC.HeaderMode      = EXPLICIT_HEADER;
         sRadioParamRXC.PreambuleLength = 8;
         sRadioParamRXC.Modulation      = LORA;

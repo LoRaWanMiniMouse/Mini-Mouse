@@ -55,6 +55,15 @@ public:
     uint8_t Read( uint8_t addr ) ;
     void Write( uint8_t addr, uint8_t data );
     uint32_t Channel;
+    void SendGen( uint8_t *payload, uint8_t payloadSize,
+                        uint8_t    SF,
+                        eBandWidth BW,
+                        uint32_t   channel,
+                        int8_t     power,
+                        eIqMode    IqMode,
+                        eCrcMode    CrcMode
+                    );
+    void RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs, eIqMode IqMode );
 //private:
     typedef enum {
             IRQ_LR_RADIO_ALL                           = 0xFF,
@@ -89,6 +98,7 @@ public:
     * @param [IN] Power
     */
     void SetModulationParamsTx( uint8_t SF, eBandWidth BW, int8_t power );
+    void SetModulationParamsTxGeneric( uint8_t SF, eBandWidth BW, int8_t power, eIqMode IqMode, eCrcMode CrcMode);
     /*!
     * \brief Set the modulation parameters for Rx
     * @param [IN] Speading factor
@@ -96,7 +106,7 @@ public:
     * @param [IN] TimeOut : number of symbols
     */
     void SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTimeout );
-    
+    void SetModulationParamsRxGenric( uint8_t SF, eBandWidth BW, uint16_t symbTimeout , eIqMode IqMode );
     /*!
     * \brief Set the RF frequency
     * @param [IN] Frequency [Hz]

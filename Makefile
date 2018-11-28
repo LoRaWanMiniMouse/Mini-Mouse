@@ -44,6 +44,7 @@ CPP_SOURCES =  \
 UserCode/appli.cpp\
 UserCode/main.cpp \
 UserCode/mainTest1.cpp \
+UserCode/mainTest1MoteSide.cpp \
 UserCode/mainTest2.cpp \
 radio/sx1272/sx1272.cpp\
 radio/SX1276Lib/sx1276/sx1276.cpp\

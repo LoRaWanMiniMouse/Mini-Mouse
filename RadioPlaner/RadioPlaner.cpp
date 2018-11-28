@@ -18,6 +18,7 @@ License           : Revised BSD License, see LICENSE.TXT file include in the pro
 Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
 */
 #include "RadioPlaner.h"
+#include "DefineRadioPlaner.h"
 #include "sx1272.h"
 #include "sx1276.h"
 #include "SX126x.h"
@@ -47,21 +48,23 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
     mcu.AttachInterruptIn( &RadioPLaner< R >::CallbackIsrRadioPlaner,this); // attach it radio
     Radio = RadioUser;
     for ( int i = 0 ; i < NB_HOOK; i++ ) { 
-        sTask[ i ].HookId         = i;
-        sTask[ i ].TaskType       = NONE;
-        sTask[ i ].StartTime      = 0;
-        sTask[ i ].TaskDuration   = 0;
-        sTask[ i ].State          = TASK_FINISHED;
-        objHook[ i ]              = NULL;
+        sTask [ i ].HookId         = i;
+        sTask [ i ].TaskType       = NONE;
+        sTask [ i ].StartTime      = 0;
+        sTask [ i ].TaskDuration   = 0;
+        sTask [ i ].State          = TASK_FINISHED;
+        objHook [ i ]              = NULL;
+        IrqTimeStampMs [ i ]       = 0;
+        RadioPlanerStatus [ i ]    = PLANER_TASK_ABORTED;
     }
     FreeStask ( sNextTask );
     RadioTaskId          = 0;
     TimerTaskId          = 0;
     HookToExecute        = 0;
     TimeOfHookToExecute  = 0;
-    IrqTimeStampMs       = 0;
     PlanerTimerState     = TIMER_IDLE;
     sStatisticRP.InitStat ( ); 
+    SemaphoreRadio       = 0;  
 }
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 }
@@ -119,7 +122,9 @@ eHookStatus RadioPLaner<R>::EnqueueTask ( STask& staskIn, uint8_t *payload, uint
     PayloadSize [ HookId ] = payloadSize;
     sTask [ HookId ].Priority = (  sTask [ HookId ].State * NB_HOOK ) + HookId;
     ComputeRanking     ( );
-    CallPlanerArbitrer ( __FUNCTION__ );
+    if ( SemaphoreRadio == 0 ) {
+        CallPlanerArbitrer ( __FUNCTION__ );
+    }
     mcu.EnableIrq      ( );
     return ( HOOK_OK );
 }
@@ -139,7 +144,10 @@ eHookStatus RadioPLaner<R>::AbortTask ( STask& staskIn ) { //Open Question Calla
         sStatisticRP.UpdateState (  mcu.RtcGetTimeMs ( ), HookId ) ;  
     }
     FreeStask ( sTask [ HookId ] );
-    CallPlanerArbitrer ( __FUNCTION__ );
+    RadioPlanerStatus [ HookId ] = PLANER_TASK_ABORTED ;
+    if ( SemaphoreRadio == 0 ) {
+        CallPlanerArbitrer ( __FUNCTION__ );
+    }
     mcu.EnableIrq ( );
     return ( HOOK_OK ); 
 }
@@ -159,9 +167,9 @@ eHookStatus RadioPLaner<R>::AbortTask ( STask& staskIn ) { //Open Question Calla
 /***********************************************************************************************/
 
 template <class R> 
-void RadioPLaner<R>::GetStatusPlaner ( uint32_t & IrqTimestampMs, ePlanerStatus & PlanerStatus ) {
-    IrqTimestampMs = IrqTimeStampMs;
-    PlanerStatus   = RadioPlanerStatus;
+void RadioPLaner<R>::GetStatusPlaner ( uint8_t HookIdIn, uint32_t & IrqTimestampMs, ePlanerStatus & PlanerStatus ) {
+    IrqTimestampMs = IrqTimeStampMs    [ HookIdIn ];
+    PlanerStatus   = RadioPlanerStatus [ HookIdIn ];
 }
 
 
@@ -192,6 +200,7 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
         } else if ( delay < MARGIN_DELAY_NEG ) { // Have To Abort task (just set flag aborted is impossible because may be no more task in scheduler) 
             DEBUG_PRINTFRP ( "Purge Old Task delay = %d\n", delay );
             FreeStask      ( sTask [ sNextTask.HookId ] );
+            RadioPlanerStatus [ sNextTask.HookId ] = PLANER_TASK_ABORTED ;
             CallBackHook   ( sNextTask.HookId );
         } else { // Have To Launch Radio
             if ( sTask [ RadioTaskId ].State == TASK_RUNNING ) { // Radio is already Running Have to abort current Task
@@ -235,15 +244,17 @@ void RadioPLaner<R>::IsrTimerRadioPlaner ( void ) {
 /************************************************************************************/
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
-    IrqTimeStampMs = mcu.RtcGetTimeMs( );
+    SemaphoreRadio = 1;
+    IrqTimeStampMs [ RadioTaskId ] = mcu.RtcGetTimeMs( );
     GetIRQStatus             ( RadioTaskId );
-    DEBUG_PRINTFRP           ( " Receive It Radio for HookID = %d\n",RadioTaskId );
-    sStatisticRP.UpdateState ( IrqTimeStampMs, RadioTaskId ) ;
+    DEBUG_PRINTFRP           ( " Receive It Radio for HookID = %d\n", RadioTaskId );
+    sStatisticRP.UpdateState ( IrqTimeStampMs [ RadioTaskId ], RadioTaskId ) ;
     FreeStask                ( sTask [ RadioTaskId ] );  // be careful have to free task before callback because call back can enqueue task and so call arbitrer
     Radio->Sleep             ( false ); // be careful put radio in sleep before callback because callback can restart the radio immediatly
     CallBackHook             ( RadioTaskId );
-    CallPlanerArbitrer       (   __FUNCTION__ ); 
     CallAbortedTask          ( );
+    SemaphoreRadio = 0;
+    CallPlanerArbitrer       (   __FUNCTION__ ); 
 } 
 
 
@@ -317,16 +328,17 @@ void RadioPLaner<R>::GetIRQStatus ( uint8_t HookIdIn ) {
     Radio->ClearIrqFlagsLora( ); 
     switch ( IrqRadio ) {
         case SENT_PACKET_IRQ_FLAG    :
-            RadioPlanerStatus = PLANER_TX_DONE ;  
+            RadioPlanerStatus [ HookIdIn ] = PLANER_TX_DONE ;  
             break;
         case RECEIVE_PACKET_IRQ_FLAG : 
-            RadioPlanerStatus = PLANER_RX_PACKET;
+            RadioPlanerStatus [ HookIdIn ] = PLANER_RX_PACKET;
             ReadRadioFifo ( sTask [ HookIdIn ] );
             break; 
         case RXTIMEOUT_IRQ_FLAG      : 
-            RadioPlanerStatus = PLANER_RX_TIMEOUT;
+            RadioPlanerStatus [ HookIdIn ] = PLANER_RX_TIMEOUT;
             break;
         default:
+            RadioPlanerStatus [ HookIdIn ] = PLANER_TASK_ABORTED;
             break;
     }
 }
@@ -365,6 +377,7 @@ void  RadioPLaner<R>::CallAbortedTask ( void ) {
         if ( sTask [ i ].State == TASK_ABORTED ) {
             DEBUG_PRINTFRP("callback for aborted hook %d\n",i);
             FreeStask ( sTask [ i ] );  // be careful have to free task before callback because call back can enqueue task and so call arbitrer
+            RadioPlanerStatus [ i ] = PLANER_TASK_ABORTED ;
             CallBackHook ( i );
         }
     }
@@ -378,11 +391,16 @@ void  RadioPLaner<R>::LaunchCurrentTask ( void ) {
     //PrintTask  ( sTask [ Id ] ); 
     switch ( sTask [ Id ].TaskType ) {
         case TX_LORA :
-            Radio->SendLora( Payload [ Id ], *PayloadSize [ Id ], sRadioParam [ Id ].Sf, sRadioParam [ Id ].Bw, sRadioParam [ Id ].Frequency, sRadioParam[ Id ].Power );
-            sStatisticRP.StartTxCounter ( ); 
+            #ifdef SX1272_BOARD  
+                Radio->SendGen( Payload [ Id ], *PayloadSize [ Id ], sRadioParam [ Id ].Sf, sRadioParam [ Id ].Bw, sRadioParam [ Id ].Frequency, sRadioParam[ Id ].Power,  sRadioParam [ Id ].IqMode ,  sRadioParam [ Id ].CrcMode );            
+            #else
+               Radio->SendLora( Payload [ Id ], *PayloadSize [ Id ], sRadioParam [ Id ].Sf, sRadioParam [ Id ].Bw, sRadioParam [ Id ].Frequency, sRadioParam[ Id ].Power );
+            #endif
+             sStatisticRP.StartTxCounter ( ); 
             break;
         case RX_LORA :
-            Radio->RxLora ( sRadioParam [ Id ].Bw, sRadioParam [ Id ].Sf, sRadioParam [ Id ].Frequency, sRadioParam [ Id ].TimeOutMs);
+            Radio->RxGen ( sRadioParam [ Id ].Bw, sRadioParam [ Id ].Sf, sRadioParam [ Id ].Frequency, sRadioParam [ Id ].TimeOutMs, sRadioParam [ Id ].IqMode );
+            //Radio->RxLora ( sRadioParam [ Id ].Bw, sRadioParam [ Id ].Sf, sRadioParam [ Id ].Frequency, sRadioParam [ Id ].TimeOutMs);
             sStatisticRP.StartRxCounter ( ); 
             break;
         case TX_FSK :

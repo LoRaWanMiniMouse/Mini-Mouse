@@ -56,27 +56,30 @@ public:
     eHookStatus  GetMyHookId      ( void * objHookIn, uint8_t& HookIdIn );
     eHookStatus  EnqueueTask      ( STask& staskIn, uint8_t *payload, uint8_t* payloadSize, SRadioParam& sRadioParamIn );
     eHookStatus  AbortTask        ( STask& staskIn );
-    void         GetStatusPlaner  ( uint32_t& IrqTimestampMs, ePlanerStatus& PlanerStatus );
+    void         GetStatusPlaner  ( uint8_t HookIdIn, uint32_t& IrqTimestampMs, ePlanerStatus& PlanerStatus );
     SStatisticRP GetStatistic     ( void ) { sStatisticRP.PrintStat ( ) ;  return ( sStatisticRP ) ; };
  
 private :
 
   R*                Radio;     
   STask             sNextTask;
-  DECLARE_ARRAY ( SRadioParam, NB_HOOK, sRadioParam );
-  DECLARE_ARRAY ( STask      , NB_HOOK, sTask       );
-  DECLARE_ARRAY ( uint8_t*   , NB_HOOK, Payload     );
-  DECLARE_ARRAY ( uint8_t*   , NB_HOOK, PayloadSize );
-  DECLARE_ARRAY ( uint8_t    , NB_HOOK, Ranking     );
-  DECLARE_ARRAY ( void*      , NB_HOOK, objHook     );
+  DECLARE_ARRAY ( SRadioParam   , NB_HOOK, sRadioParam       );
+  DECLARE_ARRAY ( STask         , NB_HOOK, sTask             );
+  DECLARE_ARRAY ( uint8_t*      , NB_HOOK, Payload           );
+  DECLARE_ARRAY ( uint8_t*      , NB_HOOK, PayloadSize       );
+  DECLARE_ARRAY ( uint8_t       , NB_HOOK, Ranking           );
+  DECLARE_ARRAY ( void*         , NB_HOOK, objHook           );
+  DECLARE_ARRAY ( ePlanerStatus , NB_HOOK, RadioPlanerStatus );
+  DECLARE_ARRAY ( uint32_t      , NB_HOOK, IrqTimeStampMs    );
+
+
   SStatisticRP      sStatisticRP;
   uint8_t           HookToExecute;
   uint32_t          TimeOfHookToExecute;
-  ePlanerStatus     RadioPlanerStatus;
   ePlanerTimerState PlanerTimerState;
   uint8_t           RadioTaskId;  
   uint8_t           TimerTaskId;
-  uint32_t          IrqTimeStampMs;          
+  uint8_t           SemaphoreRadio;
   
 /************************************************************************************/
 /*                                 Planer Utilities                                 */

@@ -52,8 +52,16 @@ class SX1276 {
         void RxLora( eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
         void RxFsk(uint32_t channel, uint16_t timeout);
         void Sleep(  bool coldStart );
-
+        void SendGen( uint8_t *payload, uint8_t payloadSize,
+                        uint8_t    SF,
+                        eBandWidth BW,
+                        uint32_t   channel,
+                        int8_t     power,
+                        eIqMode    IqMode,
+                        eCrcMode    CrcMode
+                    ){};
         uint32_t Channel;
+        void RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs, eIqMode IqMode );
 
    // private:
         uint8_t rxBuffer[255];
@@ -183,7 +191,7 @@ class SX1276 {
         * @param [IN] TimeOut : number of symbols
         */
         void SetModulationParamsRxLora( uint8_t SF, eBandWidth BW, uint16_t symbTimeout );
-
+        void SetModulationParamsRxGeneric( uint8_t SF, eBandWidth BW, uint16_t symbTimeout , eIqMode IqMode );
         /*!
         * \brief Set the modulation parameters for Rx with FSK
         * @param [IN] symbTimeout : number of symbols before raising the timeout interrupt

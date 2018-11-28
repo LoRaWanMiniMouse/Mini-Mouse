@@ -64,14 +64,13 @@ typedef struct STask {
 }STask;
 
 typedef enum { 
-    PLANER_RX_CANCELED, 
-    PLANER_TX_CANCELED, 
     PLANER_RX_CRC_ERROR,
     PLANER_CAD_POSITIVE,
     PLANER_CAD_NEGATIVE,
     PLANER_TX_DONE,
     PLANER_RX_PACKET,
-    PLANER_RX_TIMEOUT 
+    PLANER_RX_TIMEOUT, 
+    PLANER_TASK_ABORTED
 } ePlanerStatus;
 
 typedef enum { 

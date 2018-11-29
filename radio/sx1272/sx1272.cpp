@@ -322,6 +322,7 @@ void SX1272::SetModulationParamsTxGeneric( uint8_t SF, eBandWidth BW, int8_t pow
         }
      /* Set Coding rate 4/5 , Explicite Header and BW */
         ValueTemp = (0x01<<3) + ( ( BW ) << 6 )  + ( ( CrcMode == CRC_YES )? 2 : 0 ) + LowDatarateOptimize; 
+        DEBUG_PRINTF ("Modem Config register 1 = %x ",ValueTemp);
         Write( REG_LR_MODEMCONFIG1, ValueTemp );
 
      /* Set Preamble = 8 */

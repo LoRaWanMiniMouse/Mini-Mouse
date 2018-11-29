@@ -77,16 +77,18 @@ IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
     irqFlags = Read(REG_LR_IRQFLAGS);
     // Parse it
     if ( ( irqFlags & IRQ_LR_RX_TX_TIMEOUT ) !=0 ) {
-        irqFlags = RXTIMEOUT_IRQ_FLAG;
+        return ( RXTIMEOUT_IRQ_FLAG );
     }
+    if ( ( irqFlags & IRQ_LR_CRC_ERROR ) !=0 ) {
+        return ( BAD_PACKET_IRQ_FLAG );
+    } 
+
     if ( ( irqFlags & IRQ_LR_RX_DONE ) !=0 ) {
-        irqFlags = RECEIVE_PACKET_IRQ_FLAG;
+        return ( RECEIVE_PACKET_IRQ_FLAG ) ;
     }
-
     if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
-        irqFlags = (IrqFlags_t) ( SENT_PACKET_IRQ_FLAG);
+        return ( SENT_PACKET_IRQ_FLAG);
     }
-
     return (IrqFlags_t) irqFlags;
 }
 
@@ -236,7 +238,7 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     //DEBUG_PRINTF ( "symbTimeout = %d\n",symbTimeout);
     SetModulationParamsRxLora( SF, BW, symbTimeout);
     /* Configure IRQ Rx Done or Rx timeout */
-    Write ( REG_LR_IRQFLAGSMASK, 0x3F ); 
+    Write ( REG_LR_IRQFLAGSMASK, 0x1F ); 
     Write ( REG_DIOMAPPING1,0);
     Write ( REG_DIOMAPPING2, 0x00 );
     /* Configure Fifo*/
@@ -273,7 +275,7 @@ void SX1276::RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOut
     //DEBUG_PRINTF ( "symbTimeout = %d\n",symbTimeout);
     SetModulationParamsRxGeneric ( SF, BW, symbTimeout, IqMode );
     /* Configure IRQ Rx Done or Rx timeout */
-    Write ( REG_LR_IRQFLAGSMASK, 0x3F ); 
+    Write ( REG_LR_IRQFLAGSMASK, 0x1F ); 
     Write ( REG_DIOMAPPING1,0);
     Write ( REG_DIOMAPPING2, 0x00 );
     /* Configure Fifo*/

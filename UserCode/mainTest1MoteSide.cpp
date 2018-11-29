@@ -34,12 +34,12 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "RadioPlaner.h"
 
 #define FileId 4
-#define SG_DELAY 1000
+#define SG_DELAY 100
 SRadioParam  sRadioParamTXC;
 STask staskRCMote ;
 uint8_t UserTxPayload [125];
 uint8_t UserTxPayloadSize;
-
+uint32_t CptAlc = 1;
 
 
 void CallBackTxFoTestMote ( void * RadioPlanerIn) {
@@ -55,11 +55,16 @@ void CallBackTxFoTestMote ( void * RadioPlanerIn) {
         RadioPLaner< SX1272 > * RpTx;
         RpTx = reinterpret_cast< RadioPLaner< SX1272 > * > (RadioPlanerIn);
     #endif
-    DEBUG_MSG ( "  Tx For Test Done  Frequency = 864.525 Mhz, Sf7 , BW125 , NO_CRC, IQ NORMAL, Preambule 8, Lora Payload 20 \n ");
+    DEBUG_MSG ( "  Tx For Test Done  Frequency = 864.525 Mhz, Sf7 , BW125 , CRC_YES, IQ NORMAL, Preambule 8, Lora Payload 20 \n ");
     uint32_t tCurrentMillisec;
     ePlanerStatus  PlanerStatusRxc;
     RpTx->GetStatusPlaner ( 0, tCurrentMillisec, PlanerStatusRxc );
     staskRCMote.StartTime      = mcu.RtcGetTimeMs ( ) + SG_DELAY;
+    CptAlc ++;
+    UserTxPayload[0] = CptAlc & 0xFF; 
+    UserTxPayload[1] = ( CptAlc & 0xFF00 ) >> 8;       
+    UserTxPayload[2] = ( CptAlc & 0xFF0000 ) >> 16;       
+    UserTxPayload[3] = ( CptAlc & 0xFF000000 ) >> 24;       
     RpTx->EnqueueTask (staskRCMote, UserTxPayload, &UserTxPayloadSize, sRadioParamTXC ); //@tbd RadioPlaner  timeonair
 }
 
@@ -87,10 +92,10 @@ int mainTest1Mote( ) {
         RP.InitHook ( 0 , &CallBackTxFoTestMote, reinterpret_cast <void * > (&RP) );
 
 /*Launch Hook 1 in continuous reception */
-        sRadioParamTXC.Frequency       = 864525000;
+        sRadioParamTXC.Frequency       = 860525000;
         sRadioParamTXC.Sf              = 7;
         sRadioParamTXC.Bw              = BW125;
-        sRadioParamTXC.CrcMode         = CRC_NO;
+        sRadioParamTXC.CrcMode         = CRC_YES;
         sRadioParamTXC.IqMode          = IQ_NORMAL;
         sRadioParamTXC.HeaderMode      = EXPLICIT_HEADER;
         sRadioParamTXC.PreambuleLength = 8;
@@ -98,7 +103,7 @@ int mainTest1Mote( ) {
         sRadioParamTXC.TimeOutMs       = 0;
         UserTxPayloadSize      = 20;
         for (int i = 0 ; i < UserTxPayloadSize ; i ++ ){
-            UserTxPayload [ i ] = i;    
+            UserTxPayload [ i ] = 0;    
         }
         staskRCMote.HookId         = 0;
         staskRCMote.TaskDuration   = 1;

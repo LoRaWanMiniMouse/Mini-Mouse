@@ -186,10 +186,11 @@ template <class R>
 void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
     //DEBUG_MSGRP    ( "                            " );
    // DEBUG_MSGRP    ( "                            " );
-    DEBUG_PRINTFRP ( " arbitrer has been  call arbitrer who call me %s\n ", WhoCallMe.c_str() );
+   
     uint32_t CurrentTime = mcu.RtcGetTimeMs ( ) + MARGIN_DELAY ;
     UpdateTimeTaskASAP ( CurrentTime );
     if ( SelectTheNextTask ( ) == SCHEDULED_TASK ) { // Next Task Exist
+    DEBUG_PRINTFRP ( " arbitrer has been  call arbitrer who call me %s and Nest Task = %d\n ", WhoCallMe.c_str(), sNextTask.HookId );
         int delay = sNextTask.StartTime - CurrentTime ;
         if ( delay > 0 ) { // Have To Launch A Timer
             if ( ! ( ( PlanerTimerState == TIMER_BUSY ) && ( sNextTask.HookId == TimerTaskId ) ) ) {
@@ -254,7 +255,7 @@ void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     CallBackHook             ( RadioTaskId );
     CallAbortedTask          ( );
     SemaphoreRadio = 0;
-    CallPlanerArbitrer       (   __FUNCTION__ ); 
+    CallPlanerArbitrer       (   __FUNCTION__ );
 } 
 
 
@@ -282,9 +283,11 @@ uint8_t  RadioPLaner<R>::SelectTheNextTask ( void ) {
     }
     for ( int i = k; i < NB_HOOK; i++ ) {
         index = Ranking [ i ] ;
+       
         if ( sTask [ index ].State < TASK_ABORTED ) {
             TempTime =  sTask[ index ].StartTime + sTask[ index ].TaskDuration ;
-            if ( ( TempTime - TimeOfHookToExecuteTmp ) < 0 ) {   //@relative to avoid issues in case of wrapping
+            int tmp = (int) ( TempTime - TimeOfHookToExecuteTmp );
+            if ( ( tmp ) < 0 ) {   //@relative to avoid issues in case of wrapping
                 TimeOfHookToExecuteTmp = sTask[ index ].StartTime ;
                 HookToExecuteTmp       = sTask[ index ].HookId ;
             }
@@ -337,6 +340,9 @@ void RadioPLaner<R>::GetIRQStatus ( uint8_t HookIdIn ) {
         case RXTIMEOUT_IRQ_FLAG      : 
             RadioPlanerStatus [ HookIdIn ] = PLANER_RX_TIMEOUT;
             break;
+        case BAD_PACKET_IRQ_FLAG :
+            RadioPlanerStatus [ HookIdIn ] = PLANER_RX_CRC_ERROR;
+            break;    
         default:
             RadioPlanerStatus [ HookIdIn ] = PLANER_TASK_ABORTED;
             break;

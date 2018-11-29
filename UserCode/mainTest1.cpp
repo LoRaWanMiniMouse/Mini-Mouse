@@ -50,14 +50,17 @@ void CallBackRxContinuous ( void * RadioPlanerIn) {
     RpRxc->GetStatusPlaner ( 1, tCurrentMillisec, PlanerStatusRxc );
     switch ( PlanerStatusRxc ) {
         case PLANER_RX_PACKET : 
-            DEBUG_MSG ( " Recive Packet for Hook Rxc Continous : { " );
+            DEBUG_PRINTF ( " Recive Packet for Hook Rxc Continous Rssi = %d: { ",*sRadioParamRXC.Rssi );
             for ( int i = 0 ; i < UserRxPayloadSize ; i ++ ) {
                 DEBUG_PRINTF (" %x ", UserRxPayload [ i ] );
             }
             DEBUG_MSG ( " } \n ");
             break;
         case PLANER_RX_TIMEOUT : 
-            DEBUG_MSG ( " Receive timeOut en thread rx continuous " ) ;
+            DEBUG_MSG ( " Receive timeOut on thread rx continuous " ) ;
+            break;
+        case PLANER_RX_CRC_ERROR :    
+            DEBUG_MSG ( " Receive A packet with CRC ERROR on thread rx continuous " ) ;
             break;
         case PLANER_TASK_ABORTED :
             DEBUG_MSG ( " TASK ABORTED ");
@@ -134,7 +137,7 @@ int mainTest1( ) {
         RP.InitHook ( 1 , &CallBackRxContinuous, reinterpret_cast <void * > (&RP) );
 
 /*Launch Hook 1 in continuous reception */
-        sRadioParamRXC.Frequency       = 864525000;
+        sRadioParamRXC.Frequency       = 860525000;
         sRadioParamRXC.Sf              = 7;
         sRadioParamRXC.Bw              = BW125;
         sRadioParamRXC.CrcMode         = CRC_NO;
@@ -147,7 +150,7 @@ int mainTest1( ) {
         sRadioParamRXC.Rssi            = &RxcRssi;
      
         staskRC.HookId         = 1;
-        staskRC.TaskDuration   = 1;
+        staskRC.TaskDuration   = 100;
         staskRC.State          = TASK_ASAP;
         staskRC.TaskType       = RX_LORA; 
         staskRC.StartTime      = mcu.RtcGetTimeMs ( );

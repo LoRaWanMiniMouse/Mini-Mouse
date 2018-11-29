@@ -22,7 +22,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 /********************************************************************************/
 /*                         Application     dependant                            */
 /********************************************************************************/
-#define DEBUG_TRACERP      1  
+#define DEBUG_TRACERP      0  
 #define DEBUG_TRACE        1      // Set to 1 to activate debug traces
 #define LOW_POWER_MODE     0     // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 #define DEBUG_TRACE_ENABLE 0  // Set to 1 to activate DebugTrace 
@@ -46,7 +46,7 @@ Maintainer        : Fabien Holin (SEMTECH)
     #define RADIO_ANT_SWITCH_TX_BOOST PC_1
     #define RADIO_TCX0_POWER          PA_12
     #define DEBUG                     PA_10
-    #define CRYSTAL_ERROR              50 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
+    #define CRYSTAL_ERROR              10 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
     #define BOARD_DELAY_RX_SETTING_MS  2  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
     #define PA_BOOST_CONNECTED         0 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
     #define USERFLASHADRESS 0x8080000U   // start flash adress to store lorawan context

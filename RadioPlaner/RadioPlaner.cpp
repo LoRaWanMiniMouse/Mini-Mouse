@@ -200,7 +200,7 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
                 SetAlarm ( delay );
             }
         } else if ( delay < MARGIN_DELAY_NEG ) { // Have To Abort task (just set flag aborted is impossible because may be no more task in scheduler) 
-             if ( ! ( ( sTask [ RadioTaskId ].State == TASK_RUNNING ) && ( sTask [ RadioTaskId ].HookId ==  sNextTask.HookId ) ) ) {
+            if ( ! ( ( sTask [ RadioTaskId ].State == TASK_RUNNING ) && ( sTask [ RadioTaskId ].HookId ==  sNextTask.HookId ) ) ) {
                 DEBUG_PRINTFRP ( "Purge Old Task delay = %d purge hookd %d\n", delay,  sNextTask.HookId  );
                 FreeStask      ( sTask [ sNextTask.HookId ] );
                 RadioPlanerStatus [ sNextTask.HookId ] = PLANER_TASK_ABORTED ;
@@ -208,27 +208,22 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
             }
         } else { // Have To Launch Radio
             if ( sTask [ RadioTaskId ].State == TASK_RUNNING ) { // Radio is already Running Have to abort current Task
-                 //   if ( sTask [ RadioTaskId ].HookId != sNextTask.HookId ) {
-                        sTask [ RadioTaskId ].State = TASK_ABORTED;
-                        DEBUG_PRINTFRP ("abort running task with hookid = %d in Arbitrer \n",RadioTaskId);
-                        Radio->Sleep ( false );
-                        sStatisticRP.UpdateState ( mcu.RtcGetTimeMs ( ) , RadioTaskId ) ;
-                        RadioTaskId = sNextTask.HookId;
-                        sTask [ RadioTaskId ].State = TASK_RUNNING;
-                        LaunchCurrentTask ( );
-                        SetAlarm ( MARGIN_DELAY ); 
-                   // } // else case already managed during enqueue Task 
-            } else { // radio is sleeping
-                    RadioTaskId = sNextTask.HookId;
-                    sTask [ RadioTaskId ].State = TASK_RUNNING;
-                    LaunchCurrentTask ( );
-                    SetAlarm ( MARGIN_DELAY ); 
+                sTask [ RadioTaskId ].State = TASK_ABORTED;
+                DEBUG_PRINTFRP ("abort running task with hookid = %d in Arbitrer \n",RadioTaskId);
+                Radio->Sleep ( false );
+                sStatisticRP.UpdateState ( mcu.RtcGetTimeMs ( ) , RadioTaskId ) ;
+            }
+            RadioTaskId = sNextTask.HookId;
+            sTask [ RadioTaskId ].State = TASK_RUNNING;
+            LaunchCurrentTask ( );
+            if (PlanerTimerState == TIMER_IDLE) {
+                SetAlarm ( MARGIN_DELAY ); 
             }
         }
     } else {
             DEBUG_MSGRP ( " No More Active Task inside the RadioPlaner \n" );
     }
-    DEBUG_PRINTFRP ( " End of arbitrer Timerstate = %d , RadioState = %d  if Radio is Running task is %d \n", PlanerTimerState,  sTask [ RadioTaskId ].State, sTask [ RadioTaskId ].HookId );
+// DEBUG_PRINTFRP ( " End of arbitrer Timerstate = %d , RadioState = %d  if Radio is Running task is %d \n", PlanerTimerState,  sTask [ RadioTaskId ].State, sTask [ RadioTaskId ].HookId );
 }
 
 /************************************************************************************/

@@ -68,9 +68,9 @@ IrqFlags_t SX1272::GetIrqFlagsLora( void ) {
 
 void SX1272::Reset( void ) {
     mcu.SetValueDigitalOutPin ( pinReset, 1);
-    mcu.waitUnderIt( 3 );
+    mcu.waitUnderIt( 100 );
     mcu.SetValueDigitalOutPin ( pinReset, 0);
-    mcu.waitUnderIt( 3 );
+    mcu.waitUnderIt( 5000 );
     SetOpMode( RF_OPMODE_SLEEP );
 }
 

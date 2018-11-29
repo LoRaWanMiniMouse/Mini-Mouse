@@ -935,11 +935,6 @@ volatile static uint32_t tempo;
         HAL_Delay(1000*delays);
     };
 
-    void  McuSTM32L072::waitUnderIt (uint32_t delay) {
-        for (uint32_t i = 0 ; i < delay * (HSE_VALUE / 1000) ; i++)
-        {
-            tempo++;
-        }
-    };
+    
 
  

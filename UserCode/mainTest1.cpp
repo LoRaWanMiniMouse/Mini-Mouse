@@ -38,6 +38,12 @@ int16_t RxcSnr ;
 int16_t RxcRssi ;
 SRadioParam  sRadioParamRXC;
 STask staskRC ;
+SRadioParam  sRadioParamTXP;
+STask staskTxPeriodic ;
+uint32_t PeriodicSchedule ; 
+uint8_t UserTxPeriodicPayload [125];
+uint8_t UserTxPeriodicPayloadSize;
+
 uint8_t UserRxPayload [125];
 uint8_t UserRxPayloadSize;
 
@@ -47,7 +53,7 @@ void CallBackRxContinuous ( void * RadioPlanerIn) {
     DEBUG_MSG ( " call CallBackRxContinuous\n ");
     uint32_t tCurrentMillisec;
     ePlanerStatus  PlanerStatusRxc;
-    RpRxc->GetStatusPlaner ( 1, tCurrentMillisec, PlanerStatusRxc );
+    RpRxc->GetStatusPlaner ( staskRC.HookId, tCurrentMillisec, PlanerStatusRxc );
     switch ( PlanerStatusRxc ) {
         case PLANER_RX_PACKET : 
             DEBUG_PRINTF ( " Recive Packet for Hook Rxc Continous Rssi = %d: { ",*sRadioParamRXC.Rssi );
@@ -73,6 +79,20 @@ void CallBackRxContinuous ( void * RadioPlanerIn) {
     RpRxc->EnqueueTask (staskRC, UserRxPayload, &UserRxPayloadSize, sRadioParamRXC ); //@tbd RadioPlaner  timeonair
 }
 
+void CallBackTxPeriodic ( void * RadioPlanerIn) {
+   
+    RadioPLaner< SX1276 > * RpTxPeriodic;
+    RpTxPeriodic = reinterpret_cast< RadioPLaner< SX1276 > * > (RadioPlanerIn);
+    DEBUG_MSG ( "  \n Tx For Test Done  Frequency = 861 Mhz, Sf9 , BW125 , CRC_YES, IQ NORMAL, Preambule 8, Lora Payload 20 \n ");
+    uint32_t tCurrentMillisect;
+    ePlanerStatus  PlanerStatusTxp;
+    RpTxPeriodic->GetStatusPlaner ( staskTxPeriodic.HookId, tCurrentMillisect, PlanerStatusTxp );
+    while (int (PeriodicSchedule - mcu.RtcGetTimeMs ( ) ) < 0 ){
+        PeriodicSchedule += 3000 ;
+    }
+    staskTxPeriodic.StartTime      = PeriodicSchedule;
+    RpTxPeriodic->EnqueueTask (staskTxPeriodic, UserTxPeriodicPayload, &UserTxPeriodicPayloadSize, sRadioParamTXP ); //@tbd RadioPlaner  timeonair
+}
 
 
 
@@ -134,7 +154,10 @@ int mainTest1( ) {
         */
         //DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
         RP.InitHook ( 0 , &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
-        RP.InitHook ( 1 , &CallBackRxContinuous, reinterpret_cast <void * > (&RP) );
+        RP.InitHook ( 2 , &CallBackRxContinuous, reinterpret_cast <void * > (&RP) );
+        RP.InitHook ( 1 , &CallBackTxPeriodic, reinterpret_cast <void * > (&RP) );
+        RadioUser.Reset();
+       
 
 /*Launch Hook 1 in continuous reception */
         sRadioParamRXC.Frequency       = 860525000;
@@ -145,16 +168,39 @@ int mainTest1( ) {
         sRadioParamRXC.HeaderMode      = EXPLICIT_HEADER;
         sRadioParamRXC.PreambuleLength = 8;
         sRadioParamRXC.Modulation      = LORA;
-        sRadioParamRXC.TimeOutMs       = 0;
+        sRadioParamRXC.TimeOutMs       = 10000;
         sRadioParamRXC.Snr             = &RxcSnr;
         sRadioParamRXC.Rssi            = &RxcRssi;
      
-        staskRC.HookId         = 1;
+        staskRC.HookId         = 2;
         staskRC.TaskDuration   = 100;
         staskRC.State          = TASK_ASAP;
         staskRC.TaskType       = RX_LORA; 
         staskRC.StartTime      = mcu.RtcGetTimeMs ( );
         RP.EnqueueTask (staskRC, UserRxPayload, &UserRxPayloadSize, sRadioParamRXC ); 
+
+/*Launch Hook 2 Tx at fix periodi period */
+
+        sRadioParamTXP.Frequency       = 867000000;
+        sRadioParamTXP.Sf              = 9;
+        sRadioParamTXP.Bw              = BW125;
+        sRadioParamTXP.CrcMode         = CRC_YES;
+        sRadioParamTXP.IqMode          = IQ_NORMAL;
+        sRadioParamTXP.HeaderMode      = EXPLICIT_HEADER;
+        sRadioParamTXP.PreambuleLength = 8;
+        sRadioParamTXP.Modulation      = LORA;
+        sRadioParamTXP.TimeOutMs       = 0;
+        UserTxPeriodicPayloadSize      = 20;
+        for (int i = 0 ; i < UserTxPeriodicPayloadSize ; i ++ ){
+            UserTxPeriodicPayload [ i ] = 0;    
+        }
+        staskTxPeriodic.HookId         = 1;
+        staskTxPeriodic.TaskDuration   = 300;
+        staskTxPeriodic.State          = TASK_SCHEDULE;
+        staskTxPeriodic.TaskType       = TX_LORA;
+        PeriodicSchedule                = mcu.RtcGetTimeMs ( ) + 1000;
+        staskTxPeriodic.StartTime      = PeriodicSchedule ;
+        RP.EnqueueTask (staskTxPeriodic, UserTxPeriodicPayload, &UserTxPeriodicPayloadSize, sRadioParamTXP ); 
 
 /*Launch Hook 0 minimouse class a */
         Lp.RestoreContext  ( );

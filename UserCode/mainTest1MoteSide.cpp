@@ -101,6 +101,7 @@ int mainTest1Mote( ) {
         sRadioParamTXC.PreambuleLength = 8;
         sRadioParamTXC.Modulation      = LORA;
         sRadioParamTXC.TimeOutMs       = 0;
+        sRadioParamTXC.Power           = 14;
         UserTxPayloadSize      = 20;
         for (int i = 0 ; i < UserTxPayloadSize ; i ++ ){
             UserTxPayload [ i ] = 0;    
@@ -110,6 +111,7 @@ int mainTest1Mote( ) {
         staskRCMote.State          = TASK_SCHEDULE;
         staskRCMote.TaskType       = TX_LORA; 
         staskRCMote.StartTime      = mcu.RtcGetTimeMs ( ) + SG_DELAY;
+        RadioUser.Reset ( );
         RP.EnqueueTask (staskRCMote, UserTxPayload, &UserTxPayloadSize, sRadioParamTXC ); 
 
 /*Launch Hook 0 minimouse class a */

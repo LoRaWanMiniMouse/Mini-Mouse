@@ -310,7 +310,12 @@ public :
 /******************************************************************************/   
     void mwait_ms    ( int delayms );
     void mwait       ( int delays ) ;
-    void waitUnderIt ( uint32_t delay ); 
+    volatile uint8_t counter;
+    void waitUnderIt ( uint32_t delayus ) {
+        for (uint32_t  i = 0 ; i < 3 * delayus ; i ++ ) {
+            counter ++;
+        }
+    }; 
 
 /******************************************************************************/
 /*                           Mcu Uart Api                                     */

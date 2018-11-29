@@ -191,7 +191,7 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
     UpdateTimeTaskASAP ( CurrentTime );
     if ( SelectTheNextTask ( ) == SCHEDULED_TASK ) { // Next Task Exist
     DEBUG_PRINTFRP ( " arbitrer has been  call arbitrer who call me %s and Nest Task = %d\n ", WhoCallMe.c_str(), sNextTask.HookId );
-        int delay = sNextTask.StartTime - CurrentTime ;
+        int delay = (int ) ( sNextTask.StartTime - CurrentTime ) ;
         if ( delay > 0 ) { // Have To Launch A Timer
             if ( ! ( ( PlanerTimerState == TIMER_BUSY ) && ( sNextTask.HookId == TimerTaskId ) ) ) {
                 TimerTaskId       = sNextTask.HookId; 

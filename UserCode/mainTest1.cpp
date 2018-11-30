@@ -154,8 +154,8 @@ int mainTest1( ) {
         */
         //DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
         RP.InitHook ( 0 , &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
-        RP.InitHook ( 2 , &CallBackRxContinuous, reinterpret_cast <void * > (&RP) );
-        RP.InitHook ( 1 , &CallBackTxPeriodic, reinterpret_cast <void * > (&RP) );
+        RP.InitHook ( 1 , &CallBackRxContinuous, reinterpret_cast <void * > (&RP) );
+        RP.InitHook ( 2 , &CallBackTxPeriodic, reinterpret_cast <void * > (&RP) );
         RadioUser.Reset();
        
 
@@ -172,8 +172,8 @@ int mainTest1( ) {
         sRadioParamRXC.Snr             = &RxcSnr;
         sRadioParamRXC.Rssi            = &RxcRssi;
      
-        staskRC.HookId         = 2;
-        staskRC.TaskDuration   = 100;
+        staskRC.HookId         = 1;
+        staskRC.TaskDuration   = 1000;
         staskRC.State          = TASK_ASAP;
         staskRC.TaskType       = RX_LORA; 
         staskRC.StartTime      = mcu.RtcGetTimeMs ( );
@@ -194,7 +194,7 @@ int mainTest1( ) {
         for (int i = 0 ; i < UserTxPeriodicPayloadSize ; i ++ ){
             UserTxPeriodicPayload [ i ] = 0;    
         }
-        staskTxPeriodic.HookId         = 1;
+        staskTxPeriodic.HookId         = 2;
         staskTxPeriodic.TaskDuration   = 300;
         staskTxPeriodic.State          = TASK_SCHEDULE;
         staskTxPeriodic.TaskType       = TX_LORA;

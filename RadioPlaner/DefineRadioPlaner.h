@@ -84,6 +84,10 @@ typedef enum {
     TIMER_BUSY 
 }ePlanerTimerState;
 
+typedef enum{
+    NO_MORE_TASK_SCHEDULE, 
+    HAVE_TO_SET_TIMER
+} eGetNextStateStatus ;
 
 typedef struct SStatisticRP {
     DECLARE_ARRAY ( uint32_t , NB_HOOK, StatTxConsumptionMs );
@@ -133,8 +137,10 @@ typedef struct SStatisticRP {
     }
 }SStatisticRP;
 
-#define NO_MORE_TASK      0
-#define SCHEDULED_TASK    1
-#define MARGIN_DELAY      3  // for 3 ms
-#define MARGIN_DELAY_NEG -500  // for 500 ms
+#define NO_MORE_TASK          0
+#define SOMETHING_TO_DO       1
+
+
+#define MARGIN_DELAY          3  // for 3 ms
+#define MARGIN_DELAY_NEG     -500  // for 500 ms
 #endif

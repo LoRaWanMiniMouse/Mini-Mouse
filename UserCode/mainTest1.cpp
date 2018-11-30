@@ -46,29 +46,58 @@ uint8_t UserTxPeriodicPayloadSize;
 
 uint8_t UserRxPayload [125];
 uint8_t UserRxPayloadSize;
+struct StatisticTest {
+    uint32_t RxcCpt ;
+    uint32_t TxcCpt ;
+    uint32_t RxcCrcErrorCpt ;
+    uint32_t RxcTimeOut ;
+    uint32_t RxcAbortedCpt;
+    uint32_t ClassARxCpt;
+    uint32_t TestStartTimeSec;
+    uint32_t TxClassACpt ;
+    void PrintStatisticTest ( void ) {
+        DEBUG_MSG    ("\n\n");
+        DEBUG_MSG    ("*************************************************************************************************************\n");
+        DEBUG_MSG    ("*********************************************Test Statistics ************************************************\n");
+        DEBUG_MSG    ("*************************************************************************************************************\n");
+        DEBUG_PRINTF ( "                                        Test Duration (Seconds)      = %d \n", mcu.RtcGetTimeSecond ( ) - TestStartTimeSec );
+        DEBUG_PRINTF ( "                                        StatisticTest.RxcCpt         = %d/%d \n", RxcCpt,TxcCpt );
+        DEBUG_PRINTF ( "                                        StatisticTest.ClassARxCpt    = %d/%d \n", ClassARxCpt,TxClassACpt );
+        DEBUG_PRINTF ( "                                        StatisticTest.RxcCrcErrorCpt = %d \n", RxcCrcErrorCpt);
+        DEBUG_PRINTF ( "                                        StatisticTest.RxcAbortedCpt  = %d \n", RxcAbortedCpt );
+        DEBUG_PRINTF ( "                                        StatisticTest.RxcTimeOut     = %d \n", RxcTimeOut  );
 
+        DEBUG_MSG    ("\n\n");
+    }
+} ;
+StatisticTest sStatisticTest ;
 void CallBackRxContinuous ( void * RadioPlanerIn) {
     RadioPLaner< SX1276 > * RpRxc;
     RpRxc = reinterpret_cast< RadioPLaner< SX1276 > * > (RadioPlanerIn);
-    DEBUG_MSG ( " call CallBackRxContinuous\n ");
+    //DEBUG_MSG ( " call CallBackRxContinuous\n ");
     uint32_t tCurrentMillisec;
     ePlanerStatus  PlanerStatusRxc;
     RpRxc->GetStatusPlaner ( staskRC.HookId, tCurrentMillisec, PlanerStatusRxc );
     switch ( PlanerStatusRxc ) {
         case PLANER_RX_PACKET : 
-            DEBUG_PRINTF ( " Recive Packet for Hook Rxc Continous Rssi = %d: { ",*sRadioParamRXC.Rssi );
-            for ( int i = 0 ; i < UserRxPayloadSize ; i ++ ) {
-                DEBUG_PRINTF (" %x ", UserRxPayload [ i ] );
-            }
-            DEBUG_MSG ( " } \n ");
+           // DEBUG_PRINTF ( " Recive Packet for Hook Rxc Continous Rssi = %d: { ",*sRadioParamRXC.Rssi );
+           // for ( int i = 0 ; i < UserRxPayloadSize ; i ++ ) {
+           //     DEBUG_PRINTF (" %x ", UserRxPayload [ i ] );
+           // }
+            //DEBUG_MSG ( " } \n ");
+            sStatisticTest.RxcCpt ++ ;
+            sStatisticTest.TxcCpt = UserRxPayload [ 0 ] + ( UserRxPayload [ 1 ] << 8 )  + ( UserRxPayload [ 2 ] << 16 )  + ( UserRxPayload [ 3 ] << 24 ) ; 
             break;
         case PLANER_RX_TIMEOUT : 
             DEBUG_MSG ( " Receive timeOut on thread rx continuous " ) ;
+            sStatisticTest.RxcTimeOut ++;
             break;
         case PLANER_RX_CRC_ERROR :    
             DEBUG_MSG ( " Receive A packet with CRC ERROR on thread rx continuous " ) ;
+            sStatisticTest.RxcCrcErrorCpt ++ ;
             break;
         case PLANER_TASK_ABORTED :
+            sStatisticTest.RxcAbortedCpt ++;
             DEBUG_MSG ( " TASK ABORTED ");
             DEBUG_PRINTF ( " Planer status for task 1 = %d\n",PlanerStatusRxc ) ;
             break;
@@ -83,7 +112,7 @@ void CallBackTxPeriodic ( void * RadioPlanerIn) {
    
     RadioPLaner< SX1276 > * RpTxPeriodic;
     RpTxPeriodic = reinterpret_cast< RadioPLaner< SX1276 > * > (RadioPlanerIn);
-    DEBUG_MSG ( "  \n Tx For Test Done  Frequency = 861 Mhz, Sf9 , BW125 , CRC_YES, IQ NORMAL, Preambule 8, Lora Payload 20 \n ");
+    DEBUG_MSG ( "  \n Tx For Test Done  Frequency = 867 Mhz, Sf9 , BW125 , CRC_YES, IQ NORMAL, Preambule 8, Lora Payload 20 \n ");
     uint32_t tCurrentMillisect;
     ePlanerStatus  PlanerStatusTxp;
     RpTxPeriodic->GetStatusPlaner ( staskTxPeriodic.HookId, tCurrentMillisect, PlanerStatusTxp );
@@ -113,6 +142,13 @@ int mainTest1( ) {
     int StatusCertification = 0;
     sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE };
     mcu.InitMcu ( );
+    sStatisticTest.TxcCpt         = 0;
+    sStatisticTest.RxcCpt         = 0;
+    sStatisticTest.RxcCrcErrorCpt = 0;
+    sStatisticTest.RxcAbortedCpt  = 0;
+    sStatisticTest.ClassARxCpt    = 0;
+    sStatisticTest.RxcTimeOut     = 0;
+    sStatisticTest.TxClassACpt    = 0;
     #ifdef SX126x_BOARD
     #define FW_VERSION     0x18
         SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
@@ -157,7 +193,8 @@ int mainTest1( ) {
         RP.InitHook ( 1 , &CallBackRxContinuous, reinterpret_cast <void * > (&RP) );
         RP.InitHook ( 2 , &CallBackTxPeriodic, reinterpret_cast <void * > (&RP) );
         RadioUser.Reset();
-       
+        sStatisticTest.TestStartTimeSec = mcu.RtcGetTimeSecond ();
+    
 
 /*Launch Hook 1 in continuous reception */
         sRadioParamRXC.Frequency       = 860525000;
@@ -171,9 +208,8 @@ int mainTest1( ) {
         sRadioParamRXC.TimeOutMs       = 10000;
         sRadioParamRXC.Snr             = &RxcSnr;
         sRadioParamRXC.Rssi            = &RxcRssi;
-     
         staskRC.HookId         = 1;
-        staskRC.TaskDuration   = 1000;
+        staskRC.TaskDuration   = 100;
         staskRC.State          = TASK_ASAP;
         staskRC.TaskType       = RX_LORA; 
         staskRC.StartTime      = mcu.RtcGetTimeMs ( );
@@ -206,12 +242,13 @@ int mainTest1( ) {
         Lp.RestoreContext  ( );
         Lp.SetDataRateStrategy ( STATIC_ADR_MODE );
         UserFport       = 3;
-        UserPayloadSize = 14;
-        for (int i = 0 ; i < UserPayloadSize ; i++ ) {
-            UserPayload [i]= i;
+        uint8_t UserPayloadSizeClassA = 14;
+        uint8_t UserPayloadClassA [ 30 ];
+        for (int i = 0 ; i < UserPayloadSizeClassA ; i++ ) {
+            UserPayloadClassA [i]= i;
         }
-        UserPayload [ 0 ]  = FW_VERSION ;
-        MsgType = UNCONF_DATA_UP;
+        UserPayloadClassA [ 0 ]  = FW_VERSION ;
+        uint8_t MsgTypeClassA = CONF_DATA_UP;
         Lp.NewJoin();
         while(1) {
             /*!
@@ -221,7 +258,9 @@ int mainTest1( ) {
             if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
                 LpState  = Lp.Join( );
             } else {
-                LpState  = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
+                LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA );
+                sStatisticTest.TxClassACpt++;
+
             }
 
     /*!
@@ -246,23 +285,15 @@ int mainTest1( ) {
             }
             if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
                 AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
+                sStatisticTest.ClassARxCpt ++;
                 InsertTrace ( __COUNTER__, FileId );
                 Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
                 DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
                 for ( i = 0 ; i < UserRxPayloadSize ; i++){
                     DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
                 }
-                DEBUG_MSG("]\n\n\n");
-                if ( ( UserRxFport == 224 ) || ( UserRxPayloadSize == 0 ) ) {
-                    DEBUG_MSG("Receive Certification Payload \n"); 
-                    StatusCertification = Certification (true , &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
-                } 
-            } else {
-                if ( StatusCertification > 0 ){
-                    Certification ( false ,  &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
-                }
             }
-
+            sStatisticTest.PrintStatisticTest();
         
     /*
     * \brief Send a �Packet every 120 seconds in case of join 

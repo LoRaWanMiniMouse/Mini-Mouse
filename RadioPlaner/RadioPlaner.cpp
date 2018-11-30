@@ -57,7 +57,7 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
         IrqTimeStampMs [ i ]       = 0;
         RadioPlanerStatus [ i ]    = PLANER_TASK_ABORTED;
     }
-    FreeStask ( sNextTask );
+    FreeStask ( sPriorityTask );
     RadioTaskId          = 0;
     TimerTaskId          = 0;
     HookToExecute        = 0;
@@ -65,6 +65,8 @@ template <class R> RadioPLaner <R>::RadioPLaner( R * RadioUser) {
     PlanerTimerState     = TIMER_IDLE;
     sStatisticRP.InitStat ( ); 
     SemaphoreRadio       = 0;  
+    TimerValue  = 0;
+ TimerHookId  = 0 ;
 }
 template <class R> RadioPLaner<R>::~RadioPLaner( ) {
 }
@@ -187,48 +189,66 @@ template <class R>
 void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
     //DEBUG_MSGRP    ( "                            " );
    // DEBUG_MSGRP    ( "                            " );
-   
-    uint32_t CurrentTime = mcu.RtcGetTimeMs ( ) + MARGIN_DELAY ;
+    eGetNextStateStatus  GetNextStateStatus = NO_MORE_TASK_SCHEDULE ; 
+     uint32_t CurrentTime = mcu.RtcGetTimeMs ( ) ;
     UpdateTimeTaskASAP ( CurrentTime );
-    if ( SelectTheNextTask ( ) == SCHEDULED_TASK ) { // Next Task Exist
-    DEBUG_PRINTFRP ( " arbitrer has been  call arbitrer who call me %s and Nest Task = %d\n ", WhoCallMe.c_str(), sNextTask.HookId );
-        int delay = (int ) ( sNextTask.StartTime - CurrentTime ) ;
-        if ( delay > 0 ) { // Have To Launch A Timer
-            if ( ! ( ( PlanerTimerState == TIMER_BUSY ) && ( sNextTask.HookId == TimerTaskId ) ) ) {
-                TimerTaskId       = sNextTask.HookId; 
-                PlanerTimerState  = TIMER_BUSY ;
-                SetAlarm ( delay );
-            }
-        } else if ( delay < MARGIN_DELAY_NEG ) { // Have To Abort task (just set flag aborted is impossible because may be no more task in scheduler) 
-            if ( ! ( ( sTask [ RadioTaskId ].State == TASK_RUNNING ) && ( sTask [ RadioTaskId ].HookId ==  sNextTask.HookId ) ) ) {
-                DEBUG_PRINTFRP ( "Purge Old Task delay = %d purge hookd %d\n", delay,  sNextTask.HookId  );
-                FreeStask      ( sTask [ sNextTask.HookId ] );
-                RadioPlanerStatus [ sNextTask.HookId ] = PLANER_TASK_ABORTED ;
-                CallBackHook   ( sNextTask.HookId );
-                if (PlanerTimerState == TIMER_IDLE) {
-                    LaunchCurrentTask ( );
+    if ( SelectPriorityTask (  CurrentTime ) == SOMETHING_TO_DO ) { // Next Task Exist
+        DEBUG_PRINTFRP ( " arbitrer has been  call arbitrer who call me %s and Nest Task = %d\n ", WhoCallMe.c_str(), sPriorityTask.HookId );
+        int delay = (int ) ( sPriorityTask.StartTime - CurrentTime ) ;
+        if ( delay >  MARGIN_DELAY ) { // Have To Launch A Timer so the next task is a schedule task 
+            //if ( ! ( ( PlanerTimerState == TIMER_BUSY ) && ( sPriorityTask.HookId == TimerTaskId ) ) ) {
+            //    TimerTaskId       = sPriorityTask.HookId; 
+            //    PlanerTimerState  = TIMER_BUSY ;
+            //    SetAlarm ( delay );
+            //}
+            //SetAlarm ( TimerValue ) ;
+        } else if ( delay < 0  ) { // Have To Abort task (just set flag aborted is impossible because may be no more task in scheduler) 
+            //for ( int i = 1 ; i < 2; i ++ ) {
+                if ( sPriorityTask.State != TASK_RUNNING ) {
+                    DEBUG_PRINTFRP ( " ERROR IN RADIO PLANER  delay = % d Hook Id = %d  \n", delay, sPriorityTask.HookId) ;
+                    sTask [  sPriorityTask.HookId ].State = TASK_ABORTED;
+                    if ( sTask [ RadioTaskId ].State != TASK_RUNNING ) {
+                        CallAbortedTask () ;
+                    }
                 }
-            }
+            //}
         } else { // Have To Launch Radio
-            if ( sTask [ RadioTaskId ].State == TASK_RUNNING ) { // Radio is already Running Have to abort current Task        
-                if ( sTask [ RadioTaskId ].HookId != sNextTask.HookId ) {
+            if ( sTask [ RadioTaskId ].State == TASK_RUNNING ) { // Radio is already Running       
+                if ( sTask [ RadioTaskId ].HookId != sPriorityTask.HookId ) { // Priority task not equal to radio task => abort radio task
                     sTask [ RadioTaskId ].State = TASK_ABORTED;
                     DEBUG_PRINTFRP ("abort running task with hookid = %d in Arbitrer \n",RadioTaskId);
                     Radio->Sleep ( false );
                     sStatisticRP.UpdateState ( mcu.RtcGetTimeMs ( ) , RadioTaskId ) ;
-                    RadioTaskId = sNextTask.HookId;
+                    RadioTaskId = sPriorityTask.HookId;
                     sTask [ RadioTaskId ].State = TASK_RUNNING;
-                    if (PlanerTimerState == TIMER_IDLE) {
-                        LaunchCurrentTask ( );
-                    }
-                } // else case already managed during enqueue Task 
-            } else { // radio is sleeping
-                RadioTaskId = sNextTask.HookId;
-                sTask [ RadioTaskId ].State = TASK_RUNNING;
-                if (PlanerTimerState == TIMER_IDLE) {
                     LaunchCurrentTask ( );
-                }
+                } // else case already managed during enqueue Task 
+            } else { // radio is sleeping start priority task on radio
+                RadioTaskId = sPriorityTask.HookId;
+                sTask [ RadioTaskId ].State = TASK_RUNNING;
+                LaunchCurrentTask ( );
+                
             }
+        }
+        int tmp = (int) (sTask [ TimerHookId ].StartTime - CurrentTime );
+        if (  ( tmp > 0 ) && ( tmp < MARGIN_DELAY )  && (GetNextStateStatus == HAVE_TO_SET_TIMER ) && ( TimerHookId !=RadioTaskId ) ){
+            DEBUG_PRINTFRP ( " Aborted Task with hook id %d : Not a priority task\n ",TimerHookId );
+            sTask [ TimerHookId ].State = TASK_ABORTED;
+            if ( sTask [ RadioTaskId ].State != TASK_RUNNING ) {
+                CallAbortedTask () ;
+            }
+        }
+        GetNextStateStatus = GetNextTask ( TimerValue, TimerHookId ) ;
+        if ( GetNextStateStatus ==  HAVE_TO_SET_TIMER ) {// at this step still schedule task not done
+            if ( TimerValue > MARGIN_DELAY ) { // if Timer is alway running i stop and restard the timer event if it is already the TimerHookid on the timer  
+                SetAlarm ( TimerValue - MARGIN_DELAY ) ;
+              //  DEBUG_PRINTFRP ("Set Timer Timer Value = %d on hood id = %d time = %d\n",TimerValue - MARGIN_DELAY,TimerHookId, CurrentTime ) ;
+            } else {
+
+                SetAlarm ( 1 ) ;
+            //    DEBUG_PRINTFRP ("Set Timer Timer Value = %d on hood id = %d\n",1,TimerHookId   ) ;
+            }
+            
         }
     } else {
             DEBUG_MSGRP ( " No More Active Task inside the RadioPlaner \n" );
@@ -246,6 +266,7 @@ void RadioPLaner<R>::IsrTimerRadioPlaner ( void ) {
     
     PlanerTimerState = TIMER_IDLE ;
     CallPlanerArbitrer (  __FUNCTION__ );
+   
 }              
 
 
@@ -274,15 +295,15 @@ void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
 /*                                                                                  */
 /************************************************************************************/
 template <class R> 
-uint8_t  RadioPLaner<R>::SelectTheNextTask ( void ) {
+uint8_t  RadioPLaner<R>::SelectPriorityTask ( uint32_t Now ) {
     uint8_t  HookToExecuteTmp = 0xFF;
     uint32_t TimeOfHookToExecuteTmp;
     uint32_t TempTime;
     uint8_t  index ;
-    int k ;
+    uint8_t k; 
     for ( k = 0; k < NB_HOOK; k++ ) {
         index = Ranking [ k ] ;
-        if ( sTask [ index ].State < TASK_ABORTED ) {  // Mean   TASK_SCHEDULE or TASK_ASAP or TASK_RUNNING,
+        if ( ( ( sTask [ index ].State < TASK_RUNNING ) && ( (int) (sTask [ index ].StartTime - Now >= 0) ) ) || ( sTask [ index ].State  == TASK_RUNNING ) ) {  // Mean   TASK_SCHEDULE or TASK_SOMETHING_TO_DO or TASK_RUNNING,
             HookToExecuteTmp        = sTask [ index ].HookId ;
             TimeOfHookToExecuteTmp  = sTask [ index ].StartTime ;
             break;
@@ -293,8 +314,7 @@ uint8_t  RadioPLaner<R>::SelectTheNextTask ( void ) {
     }
     for ( int i = k; i < NB_HOOK; i++ ) {
         index = Ranking [ i ] ;
-       
-        if ( sTask [ index ].State < TASK_ABORTED ) {
+        if ( ( ( sTask [ index ].State < TASK_RUNNING ) && ( (int) (sTask [ index ].StartTime - Now >= 0) ) )  || ( sTask [ index ].State  == TASK_RUNNING ) ) {  // Mean   TASK_SCHEDULE or TASK_SOMETHING_TO_DO or TASK_RUNNING,
             TempTime =  sTask[ index ].StartTime + sTask[ index ].TaskDuration ;
             int tmp = (int) ( TempTime - TimeOfHookToExecuteTmp );
             if ( ( tmp ) < 0 ) {   //@relative to avoid issues in case of wrapping
@@ -303,8 +323,36 @@ uint8_t  RadioPLaner<R>::SelectTheNextTask ( void ) {
             }
         }
     }
-    sNextTask = sTask [ HookToExecuteTmp ];
-    return ( SCHEDULED_TASK );
+    sPriorityTask = sTask [ HookToExecuteTmp ];
+    return ( SOMETHING_TO_DO );
+}
+
+template <class R> 
+eGetNextStateStatus  RadioPLaner<R>::GetNextTask ( uint32_t& duration, uint8_t& TaskIdOut ) {
+    uint8_t k;
+    uint8_t  index ;
+    uint32_t Now = mcu.RtcGetTimeMs ( );
+    uint32_t TempTime = Now ;
+    for ( k = 0 ; k < NB_HOOK ; k++ ) {
+        if ( ( sTask [ k ].State == TASK_SCHEDULE ) && ( ( (int) ( sTask [ k ].StartTime - TempTime ) >= 0 ) ) ) {
+            TempTime =  sTask [ k ].StartTime;  
+            index    = k ;
+            break ;
+        }
+    }
+    if ( k == NB_HOOK ) {
+        return ( NO_MORE_TASK_SCHEDULE );
+    } 
+    for ( uint8_t i = k; i < NB_HOOK; i++ ) {
+        if ( ( sTask [ i ].State == TASK_SCHEDULE ) &&  ( (int) ( sTask [ i ].StartTime - TempTime ) < 0 )  && ( (int) ( sTask [ k ].StartTime - Now ) >= 0 ) )   {
+            TempTime =  sTask [ i ].StartTime ; 
+            index    = i ;
+            break ;
+        }
+    }
+    TaskIdOut = index;
+    duration  = TempTime - Now ;
+    return ( HAVE_TO_SET_TIMER ) ;
 }
 
 template <class R> 
@@ -384,6 +432,10 @@ void  RadioPLaner<R>::UpdateTimeTaskASAP ( uint32_t CurrentTimeIn ) {
         if ( sTask [ i ].State == TASK_ASAP ) {
             sTask [ i ].StartTime = CurrentTimeIn ;
         }
+    }
+    if ( ( sTask [ RadioTaskId ].State == TASK_RUNNING ) && ( sTask [ RadioTaskId ].TaskType == RX_LORA ) ) {
+        sTask [ RadioTaskId ].TaskDuration = CurrentTimeIn + 10 - sTask [ RadioTaskId ].StartTime ;
+        DEBUG_PRINTFRP (" Extended duration of task ih = %d time = %d\n" ,RadioTaskId, CurrentTimeIn ) ;
     }
 }
 

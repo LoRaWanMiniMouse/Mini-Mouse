@@ -397,7 +397,7 @@ void McuSTM32L072::InitSpi ( ){
     hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
     hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
     hspi1.Init.NSS = SPI_NSS_SOFT;
-    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
     hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
     hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
     hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -906,6 +906,7 @@ void McuSTM32L072::StartTimerMsecond ( void (* _Func) (void *) , void * _obj, in
         uint32_t mult = LSE_VALUE / 16 ;
         DelayMs2tick = (delay * mult ) / 1000;
     }
+    HAL_LPTIM_TimeOut_Stop (&hlptim1 );
     HAL_LPTIM_TimeOut_Start_IT(&hlptim1, 65535, DelayMs2tick); // MCU specific
     Func =  _Func ;
     obj  = _obj;

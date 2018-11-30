@@ -62,7 +62,7 @@ public:
 private :
 
   R*                Radio;     
-  STask             sNextTask;
+  STask             sPriorityTask;
   DECLARE_ARRAY ( SRadioParam   , NB_HOOK, sRadioParam       );
   DECLARE_ARRAY ( STask         , NB_HOOK, sTask             );
   DECLARE_ARRAY ( uint8_t*      , NB_HOOK, Payload           );
@@ -80,28 +80,30 @@ private :
   uint8_t           RadioTaskId;  
   uint8_t           TimerTaskId;
   uint8_t           SemaphoreRadio;
-  
+  uint32_t          TimerValue;
+  uint8_t           TimerHookId ;
 /************************************************************************************/
 /*                                 Planer Utilities                                 */
 /*                                                                                  */
 /************************************************************************************/
-  void        UpdateTimeTaskASAP              ( uint32_t CurrentTimeIn );
-  void        CallPlanerArbitrer              ( std::string  WhoCallMe );
-  void        GetIRQStatus                    ( uint8_t HookIdIn );
-  void        ComputeRanking                  ( void );
-  void        LaunchCurrentTask               ( void );
-  uint8_t     SelectTheNextTask               ( void );
-  uint8_t     FindHighestPriority             ( uint8_t * vec, uint8_t length );
-  eHookStatus ReadRadioFifo                   ( STask TaskIn );
-  void        SetAlarm                        ( uint32_t alarmInMs ); 
-  void        IsrTimerRadioPlaner             ( void );
-  void        IsrRadioPlaner                  ( void ); // Isr routine implemented in IsrRoutine.cpp file
-  void        AbortTaskInRadio                ( void );
-  void        CallAbortedTask                 ( void );
-  void        (* AttachCallBackHook[NB_HOOK]) (void * ) ;
-  static void CallbackIsrTimerRadioPlaner     ( void * obj )   { ( reinterpret_cast<RadioPLaner<R>*>(obj) )->IsrTimerRadioPlaner(); };
-  static void CallbackIsrRadioPlaner          ( void * obj )   { ( reinterpret_cast<RadioPLaner< R >*>(obj))->IsrRadioPlaner();} ; 
-  void        CallBackHook                    (uint8_t HookId) { AttachCallBackHook[HookId] ( objHook[HookId] ); };  
+  void                UpdateTimeTaskASAP              ( uint32_t CurrentTimeIn ); 
+  void                CallPlanerArbitrer              ( std::string  WhoCallMe ); 
+  void                GetIRQStatus                    ( uint8_t HookIdIn ); 
+  void                ComputeRanking                  ( void ); 
+  void                LaunchCurrentTask               ( void ); 
+  uint8_t             SelectPriorityTask              (  uint32_t Now  ); 
+  eGetNextStateStatus GetNextTask                     ( uint32_t& duration, uint8_t& TaskIdOut ) ;
+  uint8_t             FindHighestPriority             ( uint8_t * vec, uint8_t length );
+  eHookStatus         ReadRadioFifo                   ( STask TaskIn );
+  void                SetAlarm                        ( uint32_t alarmInMs ); 
+  void                IsrTimerRadioPlaner             ( void );
+  void                IsrRadioPlaner                  ( void ); // Isr routine implemented in IsrRoutine.cpp file
+  void                AbortTaskInRadio                ( void );
+  void                CallAbortedTask                 ( void );
+  void                (* AttachCallBackHook[NB_HOOK]) (void * ) ;
+  static void         CallbackIsrTimerRadioPlaner     ( void * obj )   { ( reinterpret_cast<RadioPLaner<R>*>(obj) )->IsrTimerRadioPlaner(); };
+  static void         CallbackIsrRadioPlaner          ( void * obj )   { ( reinterpret_cast<RadioPLaner< R >*>(obj))->IsrRadioPlaner();} ; 
+  void                CallBackHook                    (uint8_t HookId) { AttachCallBackHook[HookId] ( objHook[HookId] ); };  
 /************************************************************************************/
 /*                                 DEBUG Utilities                                 */
 /*                                                                                  */

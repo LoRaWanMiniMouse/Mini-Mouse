@@ -73,15 +73,16 @@ private :
   DECLARE_ARRAY ( uint32_t      , NB_HOOK, IrqTimeStampMs    );
 
 
-  SStatisticRP      sStatisticRP;
-  uint8_t           HookToExecute;
-  uint32_t          TimeOfHookToExecute;
-  ePlanerTimerState PlanerTimerState;
-  uint8_t           RadioTaskId;  
-  uint8_t           TimerTaskId;
-  uint8_t           SemaphoreRadio;
-  uint32_t          TimerValue;
-  uint8_t           TimerHookId ;
+  SStatisticRP         sStatisticRP;
+  uint8_t              HookToExecute;
+  uint32_t             TimeOfHookToExecute;
+  ePlanerTimerState    PlanerTimerState;
+  uint8_t              RadioTaskId;  
+  uint8_t              TimerTaskId;
+  uint8_t              SemaphoreRadio;
+  uint32_t             TimerValue;
+  uint8_t              TimerHookId ;
+  eGetNextStateStatus  GetNextStateStatus ; 
 /************************************************************************************/
 /*                                 Planer Utilities                                 */
 /*                                                                                  */
@@ -92,7 +93,7 @@ private :
   void                ComputeRanking                  ( void ); 
   void                LaunchCurrentTask               ( void ); 
   uint8_t             SelectPriorityTask              (  uint32_t Now  ); 
-  eGetNextStateStatus GetNextTask                     ( uint32_t& duration, uint8_t& TaskIdOut ) ;
+  eGetNextStateStatus GetNextTask                     ( uint32_t& duration, uint8_t& TaskIdOut, uint32_t NowIn ) ;
   uint8_t             FindHighestPriority             ( uint8_t * vec, uint8_t length );
   eHookStatus         ReadRadioFifo                   ( STask TaskIn );
   void                SetAlarm                        ( uint32_t alarmInMs ); 

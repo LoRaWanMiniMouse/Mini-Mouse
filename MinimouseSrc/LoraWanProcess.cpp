@@ -59,7 +59,11 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
 
     if ( ( mcu.RtcGetTimeSecond( ) - GetFailSafeTimestamp () ) > 120 ) {
         StateLoraWanProcess = LWPSTATE_ERROR ;
+        mcu.DisableIrq ( );
         DEBUG_MSG ( "ERROR : FAILSAFE EVENT OCCUR \n");
+        while ( 1 ) {
+        
+        }
         // NVIC_SystemReset() move into the user main;
     }        
     switch ( StateLoraWanProcess ) {

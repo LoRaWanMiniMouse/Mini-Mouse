@@ -49,9 +49,11 @@ uint8_t UserRxPayloadSize;
 struct StatisticTest {
     uint32_t RxcCpt ;
     uint32_t TxcCpt ;
+    uint32_t TxpCpt;
     uint32_t RxcCrcErrorCpt ;
     uint32_t RxcTimeOut ;
     uint32_t RxcAbortedCpt;
+    uint32_t TxpAbortedCpt;
     uint32_t ClassARxCpt;
     uint32_t TestStartTimeSec;
     uint32_t TxClassACpt ;
@@ -65,6 +67,8 @@ struct StatisticTest {
         DEBUG_PRINTF ( "                                        StatisticTest.ClassARxCpt    = %d/%d \n", ClassARxCpt,TxClassACpt );
         DEBUG_PRINTF ( "                                        StatisticTest.RxcCrcErrorCpt = %d \n", RxcCrcErrorCpt);
         DEBUG_PRINTF ( "                                        StatisticTest.RxcAbortedCpt  = %d \n", RxcAbortedCpt );
+        DEBUG_PRINTF ( "                                        StatisticTest.TxpAbortedCpt  = %d \n", TxpAbortedCpt );
+        DEBUG_PRINTF ( "                                        StatisticTest.TxpCpt         = %d \n", TxcCpt );
         DEBUG_PRINTF ( "                                        StatisticTest.RxcTimeOut     = %d \n", RxcTimeOut  );
 
         DEBUG_MSG    ("\n\n");
@@ -98,7 +102,7 @@ void CallBackRxContinuous ( void * RadioPlanerIn) {
             break;
         case PLANER_TASK_ABORTED :
             sStatisticTest.RxcAbortedCpt ++;
-            DEBUG_MSG ( " TASK ABORTED ");
+            DEBUG_PRINTF ( " Task with  HOOK ID = %d  ABORTED \n",staskRC.HookId);
             DEBUG_PRINTF ( " Planer status for task 1 = %d\n",PlanerStatusRxc ) ;
             break;
         default :
@@ -112,10 +116,15 @@ void CallBackTxPeriodic ( void * RadioPlanerIn) {
    
     RadioPLaner< SX1276 > * RpTxPeriodic;
     RpTxPeriodic = reinterpret_cast< RadioPLaner< SX1276 > * > (RadioPlanerIn);
-    DEBUG_MSG ( "  \n Tx For Test Done  Frequency = 867 Mhz, Sf9 , BW125 , CRC_YES, IQ NORMAL, Preambule 8, Lora Payload 20 \n ");
     uint32_t tCurrentMillisect;
     ePlanerStatus  PlanerStatusTxp;
     RpTxPeriodic->GetStatusPlaner ( staskTxPeriodic.HookId, tCurrentMillisect, PlanerStatusTxp );
+    if ( PlanerStatusTxp == PLANER_TASK_ABORTED ) {
+        DEBUG_PRINTF ( "  \n Task with HOOK ID = %d  ABORTED \n",staskTxPeriodic.HookId);
+        sStatisticTest.TxpAbortedCpt ++;
+    } else {
+        sStatisticTest.TxpCpt ++;
+    }
     while (int (PeriodicSchedule - mcu.RtcGetTimeMs ( ) ) < 0 ){
         PeriodicSchedule += 3000 ;
     }
@@ -146,6 +155,8 @@ int mainTest1( ) {
     sStatisticTest.RxcCpt         = 0;
     sStatisticTest.RxcCrcErrorCpt = 0;
     sStatisticTest.RxcAbortedCpt  = 0;
+    sStatisticTest.TxpAbortedCpt  = 0;
+    sStatisticTest.TxpCpt         = 0;
     sStatisticTest.ClassARxCpt    = 0;
     sStatisticTest.RxcTimeOut     = 0;
     sStatisticTest.TxClassACpt    = 0;
@@ -301,11 +312,10 @@ int mainTest1( ) {
     */
             if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) && ( LpState != LWPSTATE_INVALID)){
                 InsertTrace ( __COUNTER__, FileId );
-                 
                 mcu.GotoSleepSecond ( 5 );
             } else {
                 InsertTrace ( __COUNTER__, FileId );
-                mcu.GotoSleepSecond ( AppTimeSleeping );
+                mcu.GotoSleepMSecond ( AppTimeSleeping * 1000 );
                 InsertTrace ( __COUNTER__, FileId );
             }
         }

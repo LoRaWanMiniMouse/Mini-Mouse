@@ -163,6 +163,7 @@ int main ( ) {
             RP.GetStatistic ( );
             if ( LpState == LWPSTATE_ERROR )  {
                 InsertTrace ( __COUNTER__, FileId );
+                while(1){}
                 // user application have to save all the need
                 NVIC_SystemReset();
             }
@@ -175,14 +176,6 @@ int main ( ) {
                     DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
                 }
                 DEBUG_MSG("]\n\n\n");
-                if ( ( UserRxFport == 224 ) || ( UserRxPayloadSize == 0 ) ) {
-                    DEBUG_MSG("Receive Certification Payload \n"); 
-                    StatusCertification = Certification (true , &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
-                } 
-            } else {
-                if ( StatusCertification > 0 ){
-                    Certification ( false ,  &UserFport , &UserPayloadSize, &UserRxPayloadSize, &MsgType, UserRxPayload, UserPayload, &Lp) ;
-                }
             }
 
         
@@ -192,10 +185,10 @@ int main ( ) {
     */
             if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) && ( LpState != LWPSTATE_INVALID)){
                 InsertTrace ( __COUNTER__, FileId ); 
-                mcu.GotoSleepSecond ( 5 );
+                mcu.GotoSleepMSecond ( 5000 );
             } else {
                 InsertTrace ( __COUNTER__, FileId );
-                mcu.GotoSleepSecond ( AppTimeSleeping );
+                mcu.GotoSleepMSecond ( AppTimeSleeping * 1000 );
                 InsertTrace ( __COUNTER__, FileId );
             }
         }

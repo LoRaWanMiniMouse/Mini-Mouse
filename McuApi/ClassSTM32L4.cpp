@@ -1355,6 +1355,10 @@ void McuSTM32L4::StartTimerMsecond ( void (* _Func) (void *) , void * _obj, int 
     obj  = _obj;
 };
 
+void McuSTM32L072::StopTimerMsecond ( void ) {
+
+    HAL_LPTIM_TimeOut_Stop_IT (&hlptim1 );
+}
 
 
 

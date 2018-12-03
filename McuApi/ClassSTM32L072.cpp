@@ -906,12 +906,15 @@ void McuSTM32L072::StartTimerMsecond ( void (* _Func) (void *) , void * _obj, in
         uint32_t mult = LSE_VALUE / 16 ;
         DelayMs2tick = (delay * mult ) / 1000;
     }
-    HAL_LPTIM_TimeOut_Stop (&hlptim1 );
     HAL_LPTIM_TimeOut_Start_IT(&hlptim1, 65535, DelayMs2tick); // MCU specific
     Func =  _Func ;
     obj  = _obj;
 };
 
+void McuSTM32L072::StopTimerMsecond ( void ) {
+
+    HAL_LPTIM_TimeOut_Stop_IT (&hlptim1 );
+}
 
 
 

@@ -272,6 +272,7 @@ public :
     * \remark starts the LoRaWAN dedicated timer and attaches the IRQ to the handling Interupt Service Routine in the LoRaWAN object.
     */
     void StartTimerMsecond       ( void (* _Func) (void *) , void * _obj, int delay) ;
+    void StopTimerMsecond        ( void );
     void LowPowerTimerDisableIrq ( void );     
     void LowPowerTimerEnableIrq  ( void );     
     /*!

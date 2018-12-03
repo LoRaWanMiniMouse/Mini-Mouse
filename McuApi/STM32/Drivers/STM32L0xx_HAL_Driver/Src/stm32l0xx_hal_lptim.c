@@ -1148,7 +1148,7 @@ HAL_StatusTypeDef HAL_LPTIM_TimeOut_Stop_IT(LPTIM_HandleTypeDef *hlptim)
   __HAL_LPTIM_WAKEUPTIMER_EXTI_DISABLE_RISING_EDGE();
 
   /* Disable EXTI Line interrupt on the LPTIM Wake-up Timer */
-  __HAL_LPTIM_WAKEUPTIMER_EXTI_DISABLE_IT();
+  // __HAL_LPTIM_WAKEUPTIMER_EXTI_DISABLE_IT();
 
   /* Disable the Peripheral */
   __HAL_LPTIM_DISABLE(hlptim);

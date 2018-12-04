@@ -141,6 +141,6 @@ typedef struct SStatisticRP {
 #define SOMETHING_TO_DO       1
 
 
-#define MARGIN_DELAY          30  // for 3 ms
+#define MARGIN_DELAY          80  // for 3 ms
 #define MARGIN_DELAY_NEG     -500  // for 500 ms
 #endif

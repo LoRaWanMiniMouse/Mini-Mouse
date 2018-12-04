@@ -198,9 +198,9 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
         } else if ( delay < 0  ) { // Have To Abort task (just set flag aborted is impossible because may be no more task in scheduler) 
             if ( sPriorityTask.State != TASK_RUNNING ) {
                 DEBUG_PRINTF ( " ERROR IN RADIO PLANER  delay = % d Hook Id = %d  \n", delay, sPriorityTask.HookId) ;
-                while(1) {
+              //  while(1) {
 
-                }
+                //}
                 sTask [  sPriorityTask.HookId ].State = TASK_ABORTED;
                 if ( sTask [ RadioTaskId ].State != TASK_RUNNING ) {
                     if (sTask [ RadioTaskId ].HookId == TimerHookId) { // Stop Timer
@@ -227,12 +227,11 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
             }
         }
 
-        int tmp = (int) (sTask [ TimerHookId ].StartTime - CurrentTime );
-        DEBUG_PRINTFRP ("temp = %d\n",tmp);
+        int tmp = (int) (sTask [ TimerHookId ].StartTime - CurrentTime ); // Have to keep Currentime else A priority task with delay > 0 could be aborted here 
         if (  ( tmp > 0 ) && ( tmp < MARGIN_DELAY )  && (GetNextStateStatus == HAVE_TO_SET_TIMER ) && ( TimerHookId !=RadioTaskId ) ){
             DEBUG_PRINTFRP ( " Aborted Task with hook id %d : Not a priority task\n ",TimerHookId );
             sTask [ TimerHookId ].State = TASK_ABORTED;
-             if ( sTask [ RadioTaskId ].State != TASK_RUNNING ) { 
+            if ( sTask [ RadioTaskId ].State != TASK_RUNNING ) { 
                 CallAbortedTask () ;
             }
         }
@@ -272,6 +271,7 @@ void RadioPLaner<R>::IsrTimerRadioPlaner ( void ) {
 /************************************************************************************/
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
+   
     SemaphoreRadio = 1;
     uint32_t Now = mcu.RtcGetTimeMs( );
     IrqTimeStampMs [ RadioTaskId ] = Now ;
@@ -284,6 +284,7 @@ void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     CallAbortedTask          ( );
     SemaphoreRadio = 0;
     CallPlanerArbitrer       (   __FUNCTION__ );
+  
 } 
 
 

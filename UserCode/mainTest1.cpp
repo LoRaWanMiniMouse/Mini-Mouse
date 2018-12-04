@@ -68,7 +68,7 @@ struct StatisticTest {
         DEBUG_PRINTF ( "                                        StatisticTest.RxcCrcErrorCpt = %d \n", RxcCrcErrorCpt);
         DEBUG_PRINTF ( "                                        StatisticTest.RxcAbortedCpt  = %d \n", RxcAbortedCpt );
         DEBUG_PRINTF ( "                                        StatisticTest.TxpAbortedCpt  = %d \n", TxpAbortedCpt );
-        DEBUG_PRINTF ( "                                        StatisticTest.TxpCpt         = %d \n", TxcCpt );
+        DEBUG_PRINTF ( "                                        StatisticTest.TxpCpt         = %d \n", TxpCpt );
         DEBUG_PRINTF ( "                                        StatisticTest.RxcTimeOut     = %d \n", RxcTimeOut  );
 
         DEBUG_MSG    ("\n\n");
@@ -93,17 +93,17 @@ void CallBackRxContinuous ( void * RadioPlanerIn) {
             sStatisticTest.TxcCpt = UserRxPayload [ 0 ] + ( UserRxPayload [ 1 ] << 8 )  + ( UserRxPayload [ 2 ] << 16 )  + ( UserRxPayload [ 3 ] << 24 ) ; 
             break;
         case PLANER_RX_TIMEOUT : 
-            DEBUG_MSG ( " Receive timeOut on thread rx continuous " ) ;
+            //DEBUG_MSG ( " Receive timeOut on thread rx continuous " ) ;
             sStatisticTest.RxcTimeOut ++;
             break;
         case PLANER_RX_CRC_ERROR :    
-            DEBUG_MSG ( " Receive A packet with CRC ERROR on thread rx continuous " ) ;
+         //  DEBUG_MSG ( " Receive A packet with CRC ERROR on thread rx continuous " ) ;
             sStatisticTest.RxcCrcErrorCpt ++ ;
             break;
         case PLANER_TASK_ABORTED :
             sStatisticTest.RxcAbortedCpt ++;
-            DEBUG_PRINTF ( " Task with  HOOK ID = %d  ABORTED \n",staskRC.HookId);
-            DEBUG_PRINTF ( " Planer status for task 1 = %d\n",PlanerStatusRxc ) ;
+          //  DEBUG_PRINTF ( " Task with  HOOK ID = %d  ABORTED \n",staskRC.HookId);
+           // DEBUG_PRINTF ( " Planer status for task 1 = %d\n",PlanerStatusRxc ) ;
             break;
         default :
             break;
@@ -120,12 +120,12 @@ void CallBackTxPeriodic ( void * RadioPlanerIn) {
     ePlanerStatus  PlanerStatusTxp;
     RpTxPeriodic->GetStatusPlaner ( staskTxPeriodic.HookId, tCurrentMillisect, PlanerStatusTxp );
     if ( PlanerStatusTxp == PLANER_TASK_ABORTED ) {
-        DEBUG_PRINTF ( "  \n Task with HOOK ID = %d  ABORTED \n",staskTxPeriodic.HookId);
+      //  DEBUG_PRINTF ( "  \n Task with HOOK ID = %d  ABORTED \n",staskTxPeriodic.HookId);
         sStatisticTest.TxpAbortedCpt ++;
     } else {
         sStatisticTest.TxpCpt ++;
     }
-    while (int (PeriodicSchedule - mcu.RtcGetTimeMs ( ) ) < 0 ){
+    while (int (PeriodicSchedule - mcu.RtcGetTimeMs ( ) ) < 1000 ){
         PeriodicSchedule += 3000 ;
     }
     staskTxPeriodic.StartTime      = PeriodicSchedule;

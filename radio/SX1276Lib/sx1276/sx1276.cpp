@@ -72,9 +72,11 @@ void SX1276::FetchPayloadFsk( uint8_t *payloadSize, uint8_t payload[255], int16_
 
 IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
     uint8_t irqFlags = 0x00;
-
+    //SetStandby( );
     // Read IRQ status
     irqFlags = Read(REG_LR_IRQFLAGS);
+    irqFlags = Read(REG_LR_IRQFLAGS);
+    DEBUG_PRINTFRP (" irq flag inside the radio is = 0x%x\n",irqFlags);
     // Parse it
     if ( ( irqFlags & IRQ_LR_RX_TX_TIMEOUT ) !=0 ) {
         return ( RXTIMEOUT_IRQ_FLAG );
@@ -89,6 +91,7 @@ IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
     if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
         return ( SENT_PACKET_IRQ_FLAG);
     }
+   
     return (IrqFlags_t) irqFlags;
 }
 
@@ -117,14 +120,15 @@ IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
         if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
         irqFlags |= BAD_PACKET_IRQ_FLAG;
     }*/
-      return (IrqFlags_t) flags;
+    
+    return (IrqFlags_t) flags;
 }
 
 void SX1276::Reset( void ) {
     mcu.SetValueDigitalOutPin ( pinReset, 0);
-    mcu.waitUnderIt( 3 );
+    mcu.waitUnderIt( 1000 );
     mcu.SetValueDigitalOutPin ( pinReset, 1);
-    mcu.waitUnderIt( 3 );
+    mcu.waitUnderIt( 10000 );
     this->ResetFakeIrq();
     lastPacketRssi = 0;
     SetOpMode( RF_OPMODE_SLEEP );
@@ -137,7 +141,7 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
                        int8_t     power
                     ) {
     Channel = channel;
-    Reset( );
+    //Reset( );
     #ifdef RADIO_ANT_SWITCH_TX_RF0
         mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,1);
     #endif
@@ -155,7 +159,7 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
     SetPayload( payload, payloadSize);
 
     /* Configure IRQ Tx Done */
-    Write ( REG_LR_IRQFLAGSMASK, 0xF7 );
+    Write ( REG_LR_IRQFLAGSMASK, 0x00 );
     Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
     Write ( REG_DIOMAPPING2, 0x00 );
     /* Send */

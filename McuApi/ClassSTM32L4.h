@@ -318,7 +318,7 @@ public :
     * \remark starts the LoRaWAN dedicated timer and attaches the IRQ to the handling Interupt Service Routine in the LoRaWAN object.
     */
     void StartTimerMsecond       ( void (* _Func) (void *) , void * _obj, int delay) ;
-    void StopTimerMsecond        ( void ) {};
+    void StopTimerMsecond        ( void ) ;
     void LowPowerTimerDisableIrq ( void );     
     void LowPowerTimerEnableIrq  ( void );     
     /*!
@@ -361,7 +361,12 @@ public :
     void mwait (int delays) {
         HAL_Delay(1000*delays);
     };
-    void  waitUnderIt (uint32_t delay){}; 
+    volatile uint8_t counter2;
+    void  waitUnderIt (uint32_t delayus){
+        for (uint32_t  i = 0 ; i < 10 * delayus ; i ++ ) {
+            counter2 ++;
+        }
+    }; 
     
 /******************************************************************************/
 /*                           Mcu Uart Api                                     */
@@ -386,6 +391,7 @@ public :
         DevEui[1] =(uint8_t)((uid>>16)&0xFF);
         DevEui[0] =(uint8_t)((uid>>24)&0xFF);
     }
+
 private :
     /*!
     *  Low power timer
@@ -398,6 +404,7 @@ private :
     void * objext;
     void (* _UserFuncext) ( void );
     int userIt;
+
 };
 
 #endif

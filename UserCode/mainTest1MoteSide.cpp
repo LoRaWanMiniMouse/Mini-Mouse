@@ -59,6 +59,13 @@ void CallBackTxFoTestMote ( void * RadioPlanerIn) {
     uint32_t tCurrentMillisec;
     ePlanerStatus  PlanerStatusRxc;
     RpTx->GetStatusPlaner ( 0, tCurrentMillisec, PlanerStatusRxc );
+    if ( PlanerStatusRxc == 0 ) {
+        DEBUG_MSG (" DEBUG ERROR STATUS \n ");
+        while (1 )
+        {
+
+        }
+    }
     staskRCMote.StartTime      = mcu.RtcGetTimeMs ( ) + SG_DELAY;
     CptAlc ++;
     UserTxPayload[0] = CptAlc & 0xFF; 

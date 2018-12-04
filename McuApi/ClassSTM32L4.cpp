@@ -46,10 +46,11 @@ void SystemClock_Config(void) {
 
     /**Initializes the CPU, AHB and APB busses clocks 
     */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = 16;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 1;
@@ -78,8 +79,8 @@ void SystemClock_Config(void) {
                               |RCC_PERIPHCLK_LPTIM1|RCC_PERIPHCLK_I2C1;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
-  PeriphClkInit.Lptim1ClockSelection = RCC_LPTIM1CLKSOURCE_LSI;
-  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  PeriphClkInit.Lptim1ClockSelection = RCC_LPTIM1CLKSOURCE_LSE;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK){
   
   }
@@ -1007,8 +1008,12 @@ void McuSTM32L4::RtcInit (void)
 
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-  hrtc.Init.AsynchPrediv = 127;
-  hrtc.Init.SynchPrediv = 255;
+   hrtc.Init.AsynchPrediv = 31;
+  if (LOW_SPEED_CLK == LSI ) {
+      hrtc.Init.SynchPrediv = ( LSI_VALUE / 128 ) -1;
+  } else {
+      hrtc.Init.SynchPrediv = 1023;
+  }
   hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
   hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
   hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
@@ -1050,7 +1055,7 @@ uint32_t McuSTM32L4::RtcGetTimeMs( void )
     timeinfo.tm_sec  = timeStruct.Seconds;
     // Convert to timestamp   
     time_t t = mktime(&timeinfo);
-    return ( ( t * 1000 ) + ( 999 - ( ( timeStruct.SubSeconds *999) / 255 ) ) );  // get time en ms
+    return ( ( t * 1000 ) + ( 999 - ( ( timeStruct.SubSeconds *999) /  hrtc.Init.SynchPrediv  ) ) );  // get time en ms
 }
 
 uint32_t McuSTM32L4::RtcGetTimeSecond( void )
@@ -1349,13 +1354,27 @@ void McuSTM32L4::LowPowerTimerLoRaInit ( ) {
  */
 void McuSTM32L4::StartTimerMsecond ( void (* _Func) (void *) , void * _obj, int delay){
 
-    int DelayMs2tick = delay * 2 + ( ( 6 * delay ) >> 7);
+   // int DelayMs2tick = delay * 2 + ( ( 6 * delay ) >> 7);
+    //HAL_LPTIM_TimeOut_Start_IT(&hlptim1, 65535, DelayMs2tick); // MCU specific
+    //Func =  _Func ;
+    
+    //obj  = _obj;
+
+    uint32_t DelayMs2tick;
+    if (LOW_SPEED_CLK == LSI ) {
+        uint32_t mult = LSI_VALUE / 16 ;
+        DelayMs2tick = (delay * mult)/1000; // LSI VALUE / LPTIM_PRESCALER_DIV16  
+    } else {   
+        uint32_t mult = LSE_VALUE / 16 ;
+        DelayMs2tick = (delay * mult ) / 1000;
+    }
+
     HAL_LPTIM_TimeOut_Start_IT(&hlptim1, 65535, DelayMs2tick); // MCU specific
     Func =  _Func ;
     obj  = _obj;
 };
 
-void McuSTM32L072::StopTimerMsecond ( void ) {
+void McuSTM32L4::StopTimerMsecond ( void ) {
 
     HAL_LPTIM_TimeOut_Stop_IT (&hlptim1 );
 }

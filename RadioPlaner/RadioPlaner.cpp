@@ -214,7 +214,7 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
                 if ( sTask [ RadioTaskId ].HookId != sPriorityTask.HookId ) { // Priority task not equal to radio task => abort radio task
                     sTask [ RadioTaskId ].State = TASK_ABORTED;
                     DEBUG_PRINTFRP ("abort running task with hookid = %d in Arbitrer \n",RadioTaskId);
-                    Radio->Sleep ( false );
+                    //Radio->Sleep ( false );
                     sStatisticRP.UpdateState ( mcu.RtcGetTimeMs ( ) , RadioTaskId ) ;
                     RadioTaskId = sPriorityTask.HookId;
                     sTask [ RadioTaskId ].State = TASK_RUNNING;
@@ -275,8 +275,8 @@ void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
     SemaphoreRadio = 1;
     uint32_t Now = mcu.RtcGetTimeMs( );
     IrqTimeStampMs [ RadioTaskId ] = Now ;
-    GetIRQStatus             ( RadioTaskId );
     DEBUG_PRINTFRP           ( " Receive It Radio for HookID = %d\n", RadioTaskId );
+    GetIRQStatus             ( RadioTaskId );
     sStatisticRP.UpdateState ( IrqTimeStampMs [ RadioTaskId ], RadioTaskId ) ;
     FreeStask                ( sTask [ RadioTaskId ] );  // be careful have to free task before callback because call back can enqueue task and so call arbitrer
     Radio->Sleep             ( false ); // be careful put radio in sleep before callback because callback can restart the radio immediatly
@@ -383,6 +383,7 @@ uint8_t  RadioPLaner<R>::FindHighestPriority ( uint8_t * vec,  uint8_t length ) 
 template <class R> 
 void RadioPLaner<R>::GetIRQStatus ( uint8_t HookIdIn ) {  
     IrqFlags_t IrqRadio  = ( Radio->GetIrqFlagsLora ( ) );
+     DEBUG_PRINTFRP ( " Get Irq Status 0x%x\n", IrqRadio );
     Radio->ClearIrqFlagsLora( ); 
     switch ( IrqRadio ) {
         case SENT_PACKET_IRQ_FLAG    :
@@ -399,6 +400,7 @@ void RadioPLaner<R>::GetIRQStatus ( uint8_t HookIdIn ) {
             RadioPlanerStatus [ HookIdIn ] = PLANER_RX_CRC_ERROR;
             break;    
         default:
+            DEBUG_PRINTFRP ( " Error in Get Irq Status 0x%x\n", IrqRadio );
             RadioPlanerStatus [ HookIdIn ] = PLANER_TASK_ABORTED;
             break;
     }
@@ -451,7 +453,6 @@ void  RadioPLaner<R>::CallAbortedTask ( void ) {
 
 template <class R> 
 void  RadioPLaner<R>::LaunchCurrentTask ( void ) {
-    Radio->ClearIrqFlagsLora( ); 
     uint8_t Id = RadioTaskId;
     DEBUG_PRINTFRP ( " Launch Task ID %d and start Radio state = %d \n",Id, sTask[Id].State  );
     //PrintTask  ( sTask [ Id ] ); 

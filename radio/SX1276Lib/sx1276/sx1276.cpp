@@ -76,7 +76,7 @@ IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
     // Read IRQ status
     irqFlags = Read(REG_LR_IRQFLAGS);
     irqFlags = Read(REG_LR_IRQFLAGS);
-    DEBUG_PRINTFRP (" irq flag inside the radio is = 0x%x\n",irqFlags);
+   
     // Parse it
     if ( ( irqFlags & IRQ_LR_RX_TX_TIMEOUT ) !=0 ) {
         return ( RXTIMEOUT_IRQ_FLAG );
@@ -164,7 +164,7 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
     Write ( REG_DIOMAPPING2, 0x00 );
     /* Send */
     SetOpMode( RF_OPMODE_TRANSMITTER );
-         mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
+    mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
 }
 
 void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
@@ -195,7 +195,7 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
         WriteFifo( &payloadSize, 1);
         WriteFifo( payload, payloadSize);
         SetOpMode( RF_OPMODE_TRANSMITTER );
-             mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
+        mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
         return;
     }
     else {
@@ -334,7 +334,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
            CptTimeOut++;
         //if(this->HasTimeouted()) {
             if ( CptTimeOut > 5000) {
-            DEBUG_MSG ("rx timeou \n");
+            DEBUG_MSG ("rx timeout \n");
             this->Sleep(false);
             this->SetAndGenerateFakeIRQ(RXTIMEOUT_IRQ_FLAG); 
             return;

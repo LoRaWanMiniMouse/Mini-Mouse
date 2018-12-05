@@ -111,9 +111,7 @@ eHookStatus  RadioPLaner<R>::GetMyHookId  ( void * objHookIn, uint8_t& HookIdIn 
 template <class R> 
 eHookStatus RadioPLaner<R>::EnqueueTask ( STask& staskIn, uint8_t *payload, uint8_t *payloadSize, SRadioParam& sRadioParamIn ) {
     mcu.DisableIrq ( );
-    
- DEBUG_PRINTF("get it Enqueur %d  %d %d %d\n", NVIC_GetPendingIRQ( EXTI4_15_IRQn), NVIC_GetPendingIRQ( EXTI2_3_IRQn), NVIC_GetPendingIRQ( EXTI0_1_IRQn), NVIC_GetPendingIRQ( LPTIM1_IRQn));
-                   
+                      
     uint8_t HookId = staskIn.HookId;
     if ( HookId > NB_HOOK ) {
         mcu.EnableIrq ( ); 
@@ -135,8 +133,7 @@ eHookStatus RadioPLaner<R>::EnqueueTask ( STask& staskIn, uint8_t *payload, uint
     if ( SemaphoreRadio == 0 ) {
         CallPlanerArbitrer ( __FUNCTION__ );
     }
-    DEBUG_PRINTF("get it Enqueur %d  %d %d %d\n", NVIC_GetPendingIRQ( EXTI4_15_IRQn), NVIC_GetPendingIRQ( EXTI2_3_IRQn), NVIC_GetPendingIRQ( EXTI0_1_IRQn), NVIC_GetPendingIRQ( LPTIM1_IRQn));
-
+   
     mcu.EnableIrq      ( );
     return ( HOOK_OK );
 }
@@ -206,13 +203,8 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
         } else if ( delay < 0  ) { // Have To Abort task (just set flag aborted is impossible because may be no more task in scheduler) 
             if ( sPriorityTask.State != TASK_RUNNING ) {
                 DEBUG_PRINTF ( " ERROR IN RADIO PLANER  delay = % d Hook Id = %d  \n", delay, sPriorityTask.HookId) ;
+                NVIC_SystemReset ();
                 sTask [  sPriorityTask.HookId ].State = TASK_ABORTED;
-                if ( sTask [ RadioTaskId ].State != TASK_RUNNING ) { 
-                    if (sTask [ RadioTaskId ].HookId == TimerHookId) { // Stop Timer
-                        mcu.StopTimerMsecond ( );
-                    }
-                    CallAbortedTask () ;
-                }
             }
         } else { // Have To Launch Radio
             if ( sTask [ RadioTaskId ].State == TASK_RUNNING ) { // Radio is already Running       
@@ -221,9 +213,11 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
                     DEBUG_PRINTFRP ("abort running task with hookid = %d in Arbitrer \n",RadioTaskId);
                     Radio->ClearIrqFlagsLora( );
                     Radio->Sleep ( false );
-                    DEBUG_PRINTF("get it %d  %d %d \n", NVIC_GetPendingIRQ( EXTI4_15_IRQn), NVIC_GetPendingIRQ( EXTI2_3_IRQn), NVIC_GetPendingIRQ( EXTI0_1_IRQn));
+                    DEBUG_PRINTFRP("get it %d  %d %d \n", NVIC_GetPendingIRQ( EXTI4_15_IRQn), NVIC_GetPendingIRQ( EXTI2_3_IRQn), NVIC_GetPendingIRQ( EXTI0_1_IRQn));
                     if ( NVIC_GetPendingIRQ( EXTI0_1_IRQn) == 1 ) {
-                        DEBUG_MSG ("Set Semaphore Timer \n");
+                         SemaphoreTimer = 1;
+                    }
+                    if ( NVIC_GetPendingIRQ( EXTI4_15_IRQn) == 1 ) {
                         SemaphoreTimer = 1;
                     }
                     sStatisticRP.UpdateState ( mcu.RtcGetTimeMs ( ) , RadioTaskId ) ;
@@ -242,9 +236,9 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
         if (  ( tmp > 0 ) && ( tmp < MARGIN_DELAY )  && (GetNextStateStatus == HAVE_TO_SET_TIMER ) && ( TimerHookId !=RadioTaskId ) ){
             DEBUG_PRINTFRP ( " Aborted Task with hook id %d : Not a priority task\n ",TimerHookId );
             sTask [ TimerHookId ].State = TASK_ABORTED;
-            if ( sTask [ RadioTaskId ].State != TASK_RUNNING ) { 
-                CallAbortedTask () ;
-            }
+        }
+        if ( sTask [ RadioTaskId ].State != TASK_RUNNING ) { 
+            CallAbortedTask () ;
         }
         GetNextStateStatus = GetNextTask ( TimerValue, TimerHookId,  mcu.RtcGetTimeMs ( ) ) ;
         if ( GetNextStateStatus ==  HAVE_TO_SET_TIMER ) {// at this step still schedule task not done
@@ -253,7 +247,7 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
                 DEBUG_PRINTFRP ("Set Timer Timer Value = %d on hood id = %d time = %d\n",TimerValue - MARGIN_DELAY ,TimerHookId, CurrentTime ) ;
             } else {
 
-                SetAlarm ( MARGIN_DELAY ) ;
+                SetAlarm ( 1 ) ;
                 DEBUG_PRINTFRP ("Set Timer Timer Value = %d on hood id = %d\n",1,TimerHookId   ) ;
             }
             

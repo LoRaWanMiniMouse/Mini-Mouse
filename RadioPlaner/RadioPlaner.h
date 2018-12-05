@@ -80,6 +80,7 @@ private :
   uint8_t              RadioTaskId;  
   uint8_t              TimerTaskId;
   uint8_t              SemaphoreRadio;
+  uint8_t              SemaphoreTimer;
   uint32_t             TimerValue;
   uint8_t              TimerHookId ;
   eGetNextStateStatus  GetNextStateStatus ; 

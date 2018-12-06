@@ -142,13 +142,10 @@ int mainTest1( ) {
     uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x56 };    
     uint32_t LoRaDevAddrInit          = 0x26011920;
     int i;
-    uint8_t UserPayloadSize ;
-    uint8_t UserPayload   [255];
     uint8_t UserFport ;
-    uint8_t UserRxFport ;
-    uint8_t MsgType ;
+    uint8_t UserRxFport ; 
     uint8_t AppTimeSleeping = 10;
-    int StatusCertification = 0;
+   
     sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE };
     mcu.InitMcu ( );
     sStatisticTest.TxcCpt         = 0;

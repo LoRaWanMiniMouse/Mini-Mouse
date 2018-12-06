@@ -87,11 +87,12 @@ Maintainer        : Fabien Holin (SEMTECH)
         #define LORA_SPI_SCLK       D13
         #define LORA_CS             D10
         #define LORA_RESET          A0
-        #define DEBUG               PA_10
-        #define TX_RX_IT            D2     // Interrupt TX/RX Done
-        #define CRYSTAL_ERROR              60 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
-        #define BOARD_DELAY_RX_SETTING_MS  20  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
-        #define PA_BOOST_CONNECTED         0 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
+        #define DEBUG               PB_5   //D4
+        #define DEBUGRX             PB_4 //D5
+        #define TX_RX_IT            D2     //ValueTemp =  ( SF << 4 ) + (); Interrupt TX/RX Done
+        #define CRYSTAL_ERROR              1 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
+        #define BOARD_DELAY_RX_SETTING_MS  5  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
+        #define PA_BOOST_CONNECTED         1 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
         #define RX_TIMEOUT_IT       D3     // Interrupt RX TIME OUT 
         #define USERFLASHADRESS 0x807E000U   // start flash adress to store lorawan context
         #define USERFLASHADRESS2 USERFLASHADRESS - 2000 

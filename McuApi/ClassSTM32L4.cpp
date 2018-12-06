@@ -490,6 +490,10 @@ void McuSTM32L4::InitGpio ( ) {
     HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
     InitGpioOut ( LORA_CS );
     InitGpioOut ( LORA_RESET );
+    InitGpioOut ( DEBUGRX);
+    SetValueDigitalOutPin ( DEBUGRX , 0 );
+    InitGpioOut ( DEBUG);
+    SetValueDigitalOutPin ( DEBUG , 0 );
 }
 void McuSTM32L4::InitGpioOut( PinName Pin ){
     int port = ( Pin & 0xF0 ) >> 4 ;

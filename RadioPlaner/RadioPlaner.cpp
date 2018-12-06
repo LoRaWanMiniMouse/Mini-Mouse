@@ -224,7 +224,12 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
                     mcu.SetValueDigitalOutPin ( DEBUG ,0 ) ;
                     mcu.SetValueDigitalOutPin ( DEBUGRX ,0 ) ;
                    // DEBUG_PRINTFRP("get it %d  %d %d \n", NVIC_GetPendingIRQ( EXTI4_15_IRQn), NVIC_GetPendingIRQ( EXTI2_3_IRQn), NVIC_GetPendingIRQ( EXTI0_1_IRQn));
-                    SemaphoreAbortRadio =  ( ( NVIC_GetPendingIRQ( EXTI0_1_IRQn) == 1 ) || ( NVIC_GetPendingIRQ( EXTI4_15_IRQn) == 1 ) ) ? 1 : 0 ;
+                    #ifdef BOARD_L4
+                        SemaphoreAbortRadio =  ( ( NVIC_GetPendingIRQ( EXTI4_IRQn) == 1 )  || ( NVIC_GetPendingIRQ( EXTI3_IRQn) == 1 ) || ( NVIC_GetPendingIRQ( EXTI15_10_IRQn) == 1 ) ) ? 1 : 0 ;
+                    #endif
+                    #ifdef MURATA_BOARD
+                        SemaphoreAbortRadio =  ( ( NVIC_GetPendingIRQ( EXTI0_1_IRQn) == 1 ) || ( NVIC_GetPendingIRQ( EXTI4_15_IRQn) == 1 ) ) ? 1 : 0 ;
+                    #endif
                     sStatisticRP.UpdateState ( mcu.RtcGetTimeMs ( ) , RadioTaskId ) ;
                     RadioTaskId = sPriorityTask.HookId;
                     sTask [ RadioTaskId ].State = TASK_RUNNING;

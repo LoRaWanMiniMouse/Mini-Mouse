@@ -85,7 +85,7 @@ void SX1272::SendLora( uint8_t *payload, uint8_t payloadSize,
                         int8_t     power
                     ) {
     Channel = channel;
-    Reset( );
+    //Reset( );
    // CalibrateImage( );
     SetOpMode( RF_OPMODE_SLEEP );
 /* Set Lora Mode and max payload to 0x40 */
@@ -101,6 +101,7 @@ void SX1272::SendLora( uint8_t *payload, uint8_t payloadSize,
     Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
     Write ( REG_DIOMAPPING2, 0x00 );
 /* Send */
+  mcu.SetValueDigitalOutPin ( DEBUG ,1 ) ;
     SetOpMode( RF_OPMODE_TRANSMITTER );
 }
 
@@ -113,7 +114,7 @@ void SX1272::SendGen( uint8_t *payload, uint8_t payloadSize,
                         eCrcMode   CrcMode
                     ) {
     Channel = channel;
-    Reset( );
+   // Reset( );
    // CalibrateImage( );
     SetOpMode( RF_OPMODE_SLEEP );
 /* Set Lora Mode and max payload to 0x40 */
@@ -129,6 +130,7 @@ void SX1272::SendGen( uint8_t *payload, uint8_t payloadSize,
     Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
     Write ( REG_DIOMAPPING2, 0x00 );
 /* Send */
+  mcu.SetValueDigitalOutPin ( DEBUG ,1 ) ;
     SetOpMode( RF_OPMODE_TRANSMITTER );
 }
 
@@ -152,6 +154,7 @@ void SX1272::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     Write( REG_LR_FIFORXBASEADDR, 0 );
     Write( REG_LR_FIFOADDRPTR, 0 );
 /* Receive */
+  mcu.SetValueDigitalOutPin ( DEBUGRX ,1 ) ;
     if ( TimeOutMs == 0 ) {
         SetOpMode( RFLR_OPMODE_RECEIVER );
     } else {
@@ -178,6 +181,7 @@ void SX1272::RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOut
     Write( REG_LR_FIFORXBASEADDR, 0 );
     Write( REG_LR_FIFOADDRPTR, 0 );
 /* Receive */
+  mcu.SetValueDigitalOutPin ( DEBUGRX ,1 ) ;
     if ( TimeOutMs == 0 ) {
         SetOpMode( RFLR_OPMODE_RECEIVER );
     } else {
@@ -326,7 +330,6 @@ void SX1272::SetModulationParamsTxGeneric( uint8_t SF, eBandWidth BW, int8_t pow
         }
      /* Set Coding rate 4/5 , Explicite Header and BW */
         ValueTemp = (0x01<<3) + ( ( BW ) << 6 )  + ( ( CrcMode == CRC_YES )? 2 : 0 ) + LowDatarateOptimize; 
-        DEBUG_PRINTF ("Modem Config register 1 = %x ",ValueTemp);
         Write( REG_LR_MODEMCONFIG1, ValueTemp );
 
      /* Set Preamble = 8 */
@@ -387,7 +390,8 @@ void SX1272::SetModulationParamsRxGenric( uint8_t SF, eBandWidth BW, uint16_t sy
     uint8_t LowDatarateOptimize;
     uint8_t ValueTemp;
     /* Set SF */
-    ValueTemp =  ( SF << 4 ) ;
+    
+    ValueTemp = ( SF << 4 ) + 4 + ( ( symbTimeout >> 8 ) & 0x3 ) ;
     Write( REG_LR_MODEMCONFIG2, ValueTemp ) ;
 
     /* Enable/disable Low datarate optimized */

@@ -163,8 +163,9 @@ void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
     Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
     Write ( REG_DIOMAPPING2, 0x00 );
     /* Send */
+      mcu.SetValueDigitalOutPin ( DEBUG ,1 ) ;
     SetOpMode( RF_OPMODE_TRANSMITTER );
-    mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
+   
 }
 
 void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
@@ -195,7 +196,7 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
         WriteFifo( &payloadSize, 1);
         WriteFifo( payload, payloadSize);
         SetOpMode( RF_OPMODE_TRANSMITTER );
-        mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
+
         return;
     }
     else {
@@ -254,7 +255,7 @@ void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOu
     } else {
         SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
     }
-    mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
+    
 }
 void SX1276::RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs, eIqMode IqMode ) {
     Channel = channel;
@@ -286,12 +287,13 @@ void SX1276::RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOut
     Write( REG_LR_FIFORXBASEADDR, 0 );
     Write( REG_LR_FIFOADDRPTR, 0 );
     /* Receive */
+      mcu.SetValueDigitalOutPin ( DEBUGRX ,1 ) ;
     if ( TimeOutMs == 0 ) {
         SetOpMode( RFLR_OPMODE_RECEIVER );
     } else {
         SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
     }
-    mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
+    
 }
 
 void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
@@ -328,7 +330,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
     SetModulationParamsRxFsk( symbTimeout );
     SetFifoThreshold(LORAWAN_MIN_PACKET_SIZEt - 1);
     SetOpMode( RF_OPMODE_RECEIVER );
-  mcu.SetValueDigitalOutPin ( DEBUG , 1 ); 
+
     while(!IsFskFifoLevelReached()) {
            mcu.waitUnderIt(32000);
            CptTimeOut++;

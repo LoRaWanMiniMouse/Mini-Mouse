@@ -207,6 +207,8 @@ void McuSTM32L072::InitGpio ( ) {
     InitGpioOut ( RADIO_TCX0_POWER          );
     InitGpioOut (DEBUG);
     SetValueDigitalOutPin ( DEBUG , 0 );
+    InitGpioOut (DEBUGRX);
+    SetValueDigitalOutPin ( DEBUGRX , 0 );
     SetValueDigitalOutPin ( RADIO_TCX0_POWER , 1 );
     SetValueDigitalOutPin ( RADIO_ANT_SWITCH_TX_RF0, 1 ) ;
     SetValueDigitalOutPin ( RADIO_ANT_SWITCH_TX_BOOST, 0 ) ;
@@ -397,7 +399,7 @@ void McuSTM32L072::InitSpi ( ){
     hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
     hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
     hspi1.Init.NSS = SPI_NSS_SOFT;
-    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
     hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
     hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
     hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;

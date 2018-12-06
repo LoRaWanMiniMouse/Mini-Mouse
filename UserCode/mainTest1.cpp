@@ -84,11 +84,11 @@ void CallBackRxContinuous ( void * RadioPlanerIn) {
     RpRxc->GetStatusPlaner ( staskRC.HookId, tCurrentMillisec, PlanerStatusRxc );
     switch ( PlanerStatusRxc ) {
         case PLANER_RX_PACKET : 
-           // DEBUG_PRINTF ( " Recive Packet for Hook Rxc Continous Rssi = %d: { ",*sRadioParamRXC.Rssi );
-           // for ( int i = 0 ; i < UserRxPayloadSize ; i ++ ) {
-           //     DEBUG_PRINTF (" %x ", UserRxPayload [ i ] );
-           // }
-            //DEBUG_MSG ( " } \n ");
+            DEBUG_PRINTF ( " Recive Packet for Hook Rxc Continous Rssi = %d: { ",*sRadioParamRXC.Rssi );
+            for ( int i = 0 ; i < UserRxPayloadSize ; i ++ ) {
+                DEBUG_PRINTF (" %x ", UserRxPayload [ i ] );
+            }
+            DEBUG_MSG ( " } \n ");
             sStatisticTest.RxcCpt ++ ;
             sStatisticTest.TxcCpt = UserRxPayload [ 0 ] + ( UserRxPayload [ 1 ] << 8 )  + ( UserRxPayload [ 2 ] << 16 )  + ( UserRxPayload [ 3 ] << 24 ) ; 
             break;

@@ -168,6 +168,13 @@ void EXTI4_15_IRQHandler(void)
   /* USER CODE END EXTI4_15_IRQn 1 */
 }
 
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+  if ( ( GPIO_Pin == GPIO_PIN_0 ) || ( GPIO_Pin == GPIO_PIN_1 )  || ( GPIO_Pin == GPIO_PIN_4 ) ) {
+ //     mcu.ExtISR();
+  }
+}
+
 /**
 * @brief This function handles LPTIM1 global interrupt / LPTIM1 wake-up interrupt through EXTI line 29.
 */

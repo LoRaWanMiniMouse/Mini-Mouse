@@ -266,7 +266,9 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
     else {
             DEBUG_MSGRP ( " No More Active Task inside the RadioPlaner \n" );
     }
-     mcu.MMPrintBuffer ( ) ;
+    if ( TimerValue > 200 ) {
+        mcu.MMPrintBuffer ( ) ;
+    }
 }
 
 /************************************************************************************/

@@ -1169,7 +1169,7 @@ void McuSTM32L4::MMprint( const char *fmt, ...){
 #endif
 
 
-void McuSTM32L072::MMStoreBuffer( const char *fmt, ...){
+void McuSTM32L4::MMStoreBuffer( const char *fmt, ...){
 #if DEBUG_TRACERP == 1
   va_list argp;
   va_start(argp, fmt);
@@ -1182,12 +1182,12 @@ void McuSTM32L072::MMStoreBuffer( const char *fmt, ...){
 #endif 
 };
 
-void McuSTM32L072::MMClearDebugBufferRadioPlaner ( void ) {
+void McuSTM32L4::MMClearDebugBufferRadioPlaner ( void ) {
 #if DEBUG_TRACERP == 1
     BufferDebugRadioPlaner = "";
 #endif 
 };
-void McuSTM32L072::MMPrintBuffer ( void ) {
+void McuSTM32L4::MMPrintBuffer ( void ) {
 #if DEBUG_TRACERP == 1
     HAL_UART_Transmit(&huart2, (uint8_t*)BufferDebugRadioPlaner.c_str(), strlen(BufferDebugRadioPlaner.c_str()), 0xffffff); // send message via UART
     MMClearDebugBufferRadioPlaner();

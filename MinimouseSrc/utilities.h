@@ -131,9 +131,11 @@ void Crc64(uint8_t *dataIn, int size, uint32_t * crcLow, uint32_t * crcHigh );
 extern uint32_t ExtDebugTrace[TRACE_SIZE+4] __attribute__((section(".NoInit")));  // Have to declare a section in the scatter/link file
 
 #endif
+
 void StoreTraceInFlash( uint32_t TraceFlashAdress );
 void ReadTraceInFlash ( uint32_t TraceFlashAdress );
 extern void InsertTrace (uint8_t id, uint8_t FileId);
 void ReadTrace (uint32_t * DebugTrace);
+
 
 #endif // __UTILITIES_H__

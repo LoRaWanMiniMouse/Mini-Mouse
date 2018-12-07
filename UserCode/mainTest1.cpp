@@ -46,6 +46,9 @@ uint8_t UserTxPeriodicPayloadSize;
 
 uint8_t UserRxPayload [125];
 uint8_t UserRxPayloadSize;
+
+
+
 struct StatisticTest {
     uint32_t RxcCpt ;
     uint32_t TxcCpt ;
@@ -247,6 +250,8 @@ int mainTest1( ) {
         RP.EnqueueTask (staskTxPeriodic, UserTxPeriodicPayload, &UserTxPeriodicPayloadSize, sRadioParamTXP ); 
 
 /*Launch Hook 0 minimouse class a */
+       
+        mcu.MMClearDebugBufferRadioPlaner ( );
         Lp.RestoreContext  ( );
         Lp.SetDataRateStrategy ( STATIC_ADR_MODE );
         UserFport       = 3;
@@ -285,6 +290,7 @@ int mainTest1( ) {
                 mcu.GotoSleepMSecond ( 100 );
                 mcu.WatchDogRelease  ( );
             }
+            mcu.MMPrintBuffer ( ) ;
             RP.GetStatistic ( );
             if ( LpState == LWPSTATE_ERROR )  {
                 InsertTrace ( __COUNTER__, FileId );

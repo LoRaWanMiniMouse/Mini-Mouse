@@ -367,7 +367,9 @@ public :
             counter2 ++;
         }
     }; 
-    
+    void MMStoreBuffer ( const char *fmt, ...);
+    void MMClearDebugBufferRadioPlaner ( void );
+    void MMPrintBuffer ( void ) ;
 /******************************************************************************/
 /*                           Mcu Uart Api                                     */
 /******************************************************************************/

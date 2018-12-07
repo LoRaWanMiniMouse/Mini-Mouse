@@ -323,6 +323,9 @@ public :
 /******************************************************************************/
     void UartInit ( void ) ;
     void MMprint( const char *fmt, ...);
+    void MMStoreBuffer ( const char *fmt, ...);
+    void MMClearDebugBufferRadioPlaner ( void );
+    void MMPrintBuffer ( void ) ;
 /*****************************************************************************/
 /*                                    Get Unique Id                          */
 /*****************************************************************************/

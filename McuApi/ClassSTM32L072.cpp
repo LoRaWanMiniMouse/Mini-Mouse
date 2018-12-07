@@ -21,6 +21,8 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "time.h"
 #include "UserDefine.h"
 #include "Define.h"
+#include "stdint.h"
+
 
 #if DEBUG_TRACE == 1
     #include <stdarg.h>
@@ -703,6 +705,36 @@ void McuSTM32L072::MMprint( const char *fmt, ...){
 #endif
 };
 
+
+#if DEBUG_TRACERP == 1
+    static std::string BufferDebugRadioPlaner ("") ;
+#endif
+
+
+void McuSTM32L072::MMStoreBuffer( const char *fmt, ...){
+#if DEBUG_TRACERP == 1
+  va_list argp;
+  va_start(argp, fmt);
+  char string[200];
+  if(0 < vsprintf(string,fmt,argp)) {
+    BufferDebugRadioPlaner = BufferDebugRadioPlaner + string;
+  }
+
+  va_end(argp);
+#endif 
+};
+
+void McuSTM32L072::MMClearDebugBufferRadioPlaner ( void ) {
+#if DEBUG_TRACERP == 1
+    BufferDebugRadioPlaner = "";
+#endif 
+};
+void McuSTM32L072::MMPrintBuffer ( void ) {
+#if DEBUG_TRACERP == 1
+    HAL_UART_Transmit(&huart2, (uint8_t*)BufferDebugRadioPlaner.c_str(), strlen(BufferDebugRadioPlaner.c_str()), 0xffffff); // send message via UART
+    MMClearDebugBufferRadioPlaner();
+#endif 
+};
 void sleepAndWakeUp (void) {
   /* 
   GPIO_InitTypeDef GPIO_InitStruct;

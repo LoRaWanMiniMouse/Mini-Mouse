@@ -20,13 +20,14 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "stdint.h"
 #include "UserDefine.h"
 
+
 /********************************************************************************/
 /*             The section behind haven't to be modified by user                */
 /********************************************************************************/
 
 #if DEBUG_TRACERP == 1
-    #define DEBUG_MSGRP(str)               mcu.MMprint("                                                                  ") ; mcu.MMprint(str)
-    #define DEBUG_PRINTFRP(fmt, args...)   mcu.MMprint("                                                                  ") ; mcu.MMprint(fmt, args)
+    #define DEBUG_MSGRP(str)                mcu.MMStoreBuffer("                              ");mcu.MMStoreBuffer(str)
+    #define DEBUG_PRINTFRP(fmt, args...)    mcu.MMStoreBuffer("                              ");mcu.MMStoreBuffer(fmt, args)
 #else
     #define DEBUG_MSGRP(str)            
     #define DEBUG_PRINTFRP(fmt, args...)

@@ -124,6 +124,8 @@ int main ( ) {
         * \brief Restore the LoraWan Context
         */
         //DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
+       
+       
         RP.InitHook ( 0 , &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
         Lp.RestoreContext  ( );
         Lp.SetDataRateStrategy ( STATIC_ADR_MODE );
@@ -135,6 +137,12 @@ int main ( ) {
         UserPayload [ 0 ]  = FW_VERSION ;
         MsgType = UNCONF_DATA_UP;
         Lp.NewJoin();
+        //mcu.MMClearBuffer();
+        //DEBUG_PRINTFRP ( "toto = %d \n",80);
+        //DEBUG_MSGRP (" tagada \n");
+        
+        DEBUG_PRINTF ("%s\n", BufferDebugRadioPlaner.c_str() );
+
         while(1) {
             /*!
             * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes) + FW version. 

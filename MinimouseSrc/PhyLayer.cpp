@@ -120,7 +120,7 @@ template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlan
     STask stask ;
     stask.HookId         = MyHookId;
     stask.StartTime      = TimetoRadioPlaner;
-    stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
+    stask.TaskDuration   = RxWindowMs;
     stask.State    = TASK_SCHEDULE;
     stask.TaskType = (RxModulation == LORA ) ? RX_LORA : RX_FSK;
     Radio->EnqueueTask (stask, RxPhyPayload, &RxPhyPayloadSize, sRadioParam ); //@tbd RadioPlaner  timeonair

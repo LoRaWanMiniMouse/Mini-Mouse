@@ -258,7 +258,7 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
         GetNextStateStatus = GetNextTask ( TimerValue, TimerHookId,  mcu.RtcGetTimeMs ( ) ) ;
         if ( GetNextStateStatus ==  HAVE_TO_SET_TIMER ) {// at this step still schedule task not done
             ( TimerValue > MARGIN_DELAY ) ?  SetAlarm ( TimerValue - MARGIN_DELAY ) :  SetAlarm ( 1 ) ;
-            DEBUG_PRINTFRP ("Set Timer Timer Value = %d on hood id = %d time = %d\n",TimerValue - MARGIN_DELAY ,TimerHookId, CurrentTime ) ;
+            DEBUG_PRINTFRP ("Set Timer Timer Value = %d on hood id = %d time = %d\n", (TimerValue > MARGIN_DELAY)?( TimerValue - MARGIN_DELAY ):1 ,TimerHookId, CurrentTime ) ;
         }
     } 
 

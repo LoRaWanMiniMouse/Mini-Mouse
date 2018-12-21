@@ -56,7 +56,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-   RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+  RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
   RCC_OscInitStruct.HSICalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
@@ -82,9 +82,15 @@ void SystemClock_Config(void)
   }
 
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_LPTIM1;
-  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.LptimClockSelection = RCC_LPTIM1CLKSOURCE_LSE;
   PeriphClkInit.RTCClockSelection    = RCC_RTCCLKSOURCE_LSE;
+  if ( UART_NUM == USART1 ) { 
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_LPTIM1;
+    PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
+  } else {
+       PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_LPTIM1;
+       PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  }
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
    
@@ -214,7 +220,7 @@ void McuSTM32L072::InitGpio ( ) {
     SetValueDigitalOutPin ( RADIO_TCX0_POWER , 1 );
     SetValueDigitalOutPin ( RADIO_ANT_SWITCH_TX_RF0, 1 ) ;
     SetValueDigitalOutPin ( RADIO_ANT_SWITCH_TX_BOOST, 0 ) ;
-    SetValueDigitalOutPin ( RADIO_ANT_SWITCH_RX, 0 ) ;
+    SetValueDigitalOutPin ( RADIO_ANT_SWITCH_RX, 0 ) ;   
 }
 void McuSTM32L072::InitGpioOut( PinName Pin ){
      /*Configure GPIO pin Output Level */
@@ -243,6 +249,34 @@ void McuSTM32L072::InitGpioOut( PinName Pin ){
             break;
     }
 }
+void McuSTM32L072::InitGpioIn( PinName Pin ){
+     /*Configure GPIO pin Output Level */
+
+    int port = ( Pin & 0xF0 ) >> 4 ;
+      /*Configure GPIO pin : PB6   */
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Pin   = (1 << ( Pin & 0x0F ) );
+    GPIO_InitStruct.Mode  = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    switch (port) {
+        case 0 : 
+            HAL_GPIO_WritePin(GPIOA, (1 << ( Pin & 0x0F ) ), GPIO_PIN_RESET);
+            HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+            break;
+        case 1 : 
+            HAL_GPIO_WritePin(GPIOB, (1 << ( Pin & 0x0F ) ), GPIO_PIN_RESET);
+            HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+            break;
+        case 2 : 
+            HAL_GPIO_WritePin(GPIOC, (1 << ( Pin & 0x0F ) ), GPIO_PIN_RESET);
+            HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+            break;
+        default:
+            break;
+    }
+}
+
 
 void McuSTM32L072::SetValueDigitalOutPin ( PinName Pin, int Value ){
     int port = ( Pin & 0xF0 ) >> 4 ;
@@ -638,27 +672,37 @@ uint32_t McuSTM32L072::RtcGetTimeSecond( void )
 /********************************************************************/
 /*                   Utilities for Uart                              */
 /********            //mcu.mwait_ms ( 100 );************************************************************/
+
 UART_HandleTypeDef huart2;
 void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
-    if(huart->Instance==USART2){
-      __HAL_RCC_USART2_CLK_ENABLE();
-      GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
+    if(huart->Instance==UART_NUM) {
+        if ( UART_NUM == USART1) {
+           __HAL_RCC_USART1_CLK_ENABLE();
+            GPIO_InitStruct.Alternate = GPIO_AF4_USART1;
+        } else {
+            __HAL_RCC_USART2_CLK_ENABLE();
+            GPIO_InitStruct.Alternate = GPIO_AF4_USART2;
+        }
+      GPIO_InitStruct.Pin = (1 << ( UART_TX & 0x0F ) )| (1 << ( UART_RX & 0x0F ) );
       GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
       GPIO_InitStruct.Pull = GPIO_NOPULL;
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-      GPIO_InitStruct.Alternate = GPIO_AF4_USART2;
       HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  }
+    }
 }
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 {
     if(huart->Instance==USART2) {
       __HAL_RCC_USART2_CLK_DISABLE();
-      HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2|GPIO_PIN_3);
-  }
+    }
+    if(huart->Instance==USART1) {
+      __HAL_RCC_USART1_CLK_DISABLE();
+    }
+      HAL_GPIO_DeInit(GPIOA, (1 << ( UART_TX & 0x0F ) )| (1 << ( UART_RX & 0x0F ) ) );
+  
 }
 
 /********************************************************************/
@@ -681,7 +725,8 @@ void vprint(const char *fmt, va_list argp) {
 #endif
 
 void McuSTM32L072::UartInit ( void ) {
-  huart2.Instance = USART2;
+
+  huart2.Instance = UART_NUM;
   huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
@@ -736,42 +781,52 @@ void McuSTM32L072::MMPrintBuffer ( void ) {
 #endif 
 };
 void sleepAndWakeUp (void) {
-  /* 
-  GPIO_InitTypeDef GPIO_InitStruct;
-  GPIO_InitStruct.Pin = GPIO_PIN_All;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-  HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
-  __HAL_RCC_GPIOA_CLK_DISABLE();
-  __HAL_RCC_GPIOB_CLK_DISABLE();
-  __HAL_RCC_GPIOC_CLK_DISABLE();
-  __HAL_RCC_GPIOD_CLK_DISABLE();
-  __HAL_RCC_GPIOE_CLK_DISABLE();
-  __HAL_RCC_GPIOF_CLK_DISABLE();
-  __HAL_RCC_GPIOG_CLK_DISABLE();GPIO_PIN_ALL
-  __HAL_RCC_GPIOH_CLK_DISABLE();*/
-  HAL_SPI_DeInit (&hspi1);
-  HAL_UART_DeInit (&huart2);
-  HAL_PWR_EnterSTOPMode ( PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI );
-  HAL_Init();
-  SystemClock_Config();
-  //MX_GPIO_Init();
-  mcu.UartInit();
-  mcu.InitSpi();
+    HAL_SPI_DeInit (&hspi1);
+    HAL_UART_DeInit (&huart2);
+    mcu.SetValueDigitalOutPin ( DEBUG , 1 );
+    HAL_PWR_EnterSTOPMode ( PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI );
+}
+void McuSTM32L072::WakeUpAfterDeepSleep (void) {
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_PeriphCLKInitTypeDef PeriphClkInit;
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = 16;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLLMUL_6;
+  RCC_OscInitStruct.PLL.PLLDIV = RCC_PLLDIV_3;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK){}
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK){}
+  if ( UART_NUM == USART1 ) { 
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+    PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
+  } else {
+       PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2;
+       PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  }
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK){}
+  CLEAR_BIT(SCB->SCR, SCB_SCR_SLEEPDEEP_Msk);
+  UartInit();
+  InitSpi();
+ 
+
 }
 
-
 void sleepAndWakeUpCool (void) {
-  
+  mcu.SetValueDigitalOutPin ( DEBUG , 1 );
   HAL_PWR_EnterSTOPMode ( PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI );
+  mcu.SetValueDigitalOutPin ( DEBUG , 0 );
   SystemClock_Config();
+  //DEBUG_MSG ("wu\n") ;
 
 }
 /******************************************************************************/
@@ -804,7 +859,7 @@ void McuSTM32L072::GotoSleepSecond (int duration ) {
 void McuSTM32L072::GotoSleepMSecond (int duration ) {
 #if LOW_POWER_MODE == 1
     WakeUpAlarmMSecond ( duration );
-    sleepAndWakeUpCool();
+    sleepAndWakeUp();
     WatchDogRelease ( );
 # else
     mwait_ms ( duration ) ;

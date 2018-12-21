@@ -22,17 +22,22 @@ Maintainer        : Fabien Holin (SEMTECH)
 /********************************************************************************/
 /*                         Application     dependant                            */
 /********************************************************************************/
-#define DEBUG_TRACERP      1
-#define DEBUG_TRACE        1      // Set to 1 to activate debug traces
-#define LOW_POWER_MODE     0     // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
+#define DEBUG_TRACERP      0
+#define DEBUG_TRACE        0      // Set to 1 to activate debug traces
+#define LOW_POWER_MODE     1     // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 #define DEBUG_TRACE_ENABLE 0  // Set to 1 to activate DebugTrace 
 
 #define LOW_SPEED_CLK  LSE    //
+#define RX_INDICATOR_PIN PB_8
+#define TX_INDICATOR_PIN PB_8
 
 #ifdef MURATA_BOARD
-    #define UART_NUM                  USART2
-    #define UART_TX                   PA_2
-    #define UART_RX                   PA_3
+    #define UART_NUM                  USART1
+    #define UART_TX                   PA_9
+    #define UART_RX                   PA_10
+    //#define UART_NUM              USART2
+    //#define UART_TX                   PA_2
+    //#define UART_RX                   PA_3
     #define LORA_SPIx                 SPI1   // select your spi number
     #define LORA_SPI_MOSI             PA_7
     #define LORA_SPI_MISO             PA_6
@@ -46,14 +51,17 @@ Maintainer        : Fabien Holin (SEMTECH)
     #define RADIO_ANT_SWITCH_TX_BOOST PC_1
     #define RADIO_TCX0_POWER          PA_12
     #define DEBUG                     PB_5   //D4
-    #define DEBUGRX                   PA_10 //D2
-   
-    #define CRYSTAL_ERROR              1 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
+    #define DEBUGRX                   PB_5 //D2
+    #define USER_BUTTON               PC_13
+    #define DEBUG_SLEEP               PB_10
+    #define CRYSTAL_ERROR              0 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
     #define BOARD_DELAY_RX_SETTING_MS  5  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
     #define PA_BOOST_CONNECTED         0 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
     #define USERFLASHADRESS 0x8080000U   // start flash adress to store lorawan context
     #define USERFLASHADRESS2 0x8080000U + 2000 
 
+
+ 
 /*SX1276 BOARD specific */
 #else 
     #ifdef SX126x_BOARD

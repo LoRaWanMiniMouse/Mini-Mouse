@@ -230,7 +230,8 @@ public :
     * \param [IN]   int delay 
     * \param [OUT]  void       
     */
-    void     GotoSleepMSecond   ( int delay );
+    void     GotoSleepMSecond     ( int delay );
+    void     WakeUpAfterDeepSleep ( void );
     
 /******************************************************************************/
 /*                             Mcu WatchDog Api                               */
@@ -287,8 +288,8 @@ public :
     void InitGpio              ( void );
     void DisableIrqExtGpio     ( void );
     void EnableIrqExtGpio      ( void );
-    void InitGpioIn            ( PinName Pin );
     void InitGpioOut           ( PinName Pin );
+    void InitGpioIn            ( PinName Pin );
     void SetValueDigitalOutPin ( PinName Pin, int Value );
     int  GetValueDigitalInPin  ( PinName Pin );
     void AttachInterruptIn     (  void (* _Funcext) (void *) , void * _objext) ;

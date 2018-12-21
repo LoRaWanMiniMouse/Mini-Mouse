@@ -20,7 +20,7 @@ BOARD_L4          = 0
 RADIO_SX1276      = 1
 RADIO_SX1272      = 0
 RADIO_SX126x      = 0
-DEVICE_UNDER_TEST = 1
+DEVICE_UNDER_TEST = 0
 ####################SX126x_BOARD
 # building variablesSX126x_BOARD
 ######################################
@@ -43,7 +43,7 @@ BUILD_DIR = build
 CPP_SOURCES =  \
 UserCode/appli.cpp\
 UserCode/main.cpp \
-UserCode/mainTest4.cpp \
+UserCode/MainPtpRxTx.cpp \
 UserCode/mainTest1MoteSide.cpp \
 UserCode/mainTest2.cpp \
 radio/sx1272/sx1272.cpp\
@@ -60,6 +60,8 @@ MiniMouse/Regions.cpp\
 MiniMouse/RegionUS.cpp\
 MiniMouse/TimerIsrRoutine.cpp\
 MiniMouse/utilities.cpp\
+PointToPoint/PointToPointReceiver.cpp\
+PointToPoint/PointToPointTransmitter.cpp\
 RadioPlaner/RadioPlaner.cpp
 
 ifeq ($(BOARD_MURATA), 0)
@@ -229,6 +231,7 @@ C_INCLUDES =  \
 -Iradio/SX1276Lib/registers\
 -Iradio/SX1276Lib/sx1276\
 -Iradio/SX126X\
+-IPointToPoint\
 -IRadioPlaner
 else
 C_INCLUDES =  \
@@ -244,6 +247,7 @@ C_INCLUDES =  \
 -Iradio/SX1276Lib/registers\
 -Iradio/SX1276Lib/sx1276\
 -Iradio/SX126X\
+-IPointToPoint\
 -IRadioPlaner
 endif
 # compile gcc flags

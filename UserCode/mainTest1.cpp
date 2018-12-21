@@ -48,36 +48,6 @@ uint8_t UserRxPayload [125];
 uint8_t UserRxPayloadSize;
 
 
-
-struct StatisticTest {
-    uint32_t RxcCpt ;
-    uint32_t TxcCpt ;
-    uint32_t TxpCpt;
-    uint32_t RxcCrcErrorCpt ;
-    uint32_t RxcTimeOut ;
-    uint32_t RxcAbortedCpt;
-    uint32_t TxpAbortedCpt;
-    uint32_t ClassARxCpt;
-    uint32_t TestStartTimeSec;
-    uint32_t TxClassACpt ;
-    void PrintStatisticTest ( void ) {
-        DEBUG_MSG    ("\n\n");
-        DEBUG_MSG    ("*************************************************************************************************************\n");
-        DEBUG_MSG    ("*********************************************Test Statistics ************************************************\n");
-        DEBUG_MSG    ("*************************************************************************************************************\n");
-        DEBUG_PRINTF ( "                                        Test Duration (Seconds)      = %d \n", mcu.RtcGetTimeSecond ( ) - TestStartTimeSec );
-        DEBUG_PRINTF ( "                                        StatisticTest.RxcCpt         = %d/%d \n", RxcCpt,TxcCpt );
-        DEBUG_PRINTF ( "                                        StatisticTest.ClassARxCpt    = %d/%d \n", ClassARxCpt,TxClassACpt );
-        DEBUG_PRINTF ( "                                        StatisticTest.RxcCrcErrorCpt = %d \n", RxcCrcErrorCpt);
-        DEBUG_PRINTF ( "                                        StatisticTest.RxcAbortedCpt  = %d \n", RxcAbortedCpt );
-        DEBUG_PRINTF ( "                                        StatisticTest.TxpAbortedCpt  = %d \n", TxpAbortedCpt );
-        DEBUG_PRINTF ( "                                        StatisticTest.TxpCpt         = %d \n", TxpCpt );
-        DEBUG_PRINTF ( "                                        StatisticTest.RxcTimeOut     = %d \n", RxcTimeOut  );
-
-        DEBUG_MSG    ("\n\n");
-    }
-} ;
-StatisticTest sStatisticTest ;
 void CallBackRxContinuous ( void * RadioPlanerIn) {
     RadioPLaner< SX1276 > * RpRxc;
     RpRxc = reinterpret_cast< RadioPLaner< SX1276 > * > (RadioPlanerIn);
@@ -231,6 +201,7 @@ int mainTest1( ) {
         sRadioParamTXP.Frequency       = 867000000;
         sRadioParamTXP.Sf              = 9;
         sRadioParamTXP.Bw              = BW125;
+        sRadioParamTXP.Power           = 14;
         sRadioParamTXP.CrcMode         = CRC_YES;
         sRadioParamTXP.IqMode          = IQ_NORMAL;
         sRadioParamTXP.HeaderMode      = EXPLICIT_HEADER;
@@ -273,7 +244,6 @@ int mainTest1( ) {
             } else {
                 LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA );
                 sStatisticTest.TxClassACpt++;
-
             }
 
     /*!

@@ -68,6 +68,7 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     TxPayloadSize               = (uint8_t)TxPayloadSizeMac;
     sRadioParam.Frequency       = TxFrequencyMac;
     sRadioParam.Power           = TxPowerMac;
+    DEBUG_PRINTF ("Power MiniMouse = %d\n",TxPowerMac);
     sRadioParam.Sf              = TxSfMac;
     sRadioParam.Bw              = TxBwMac;
     sRadioParam.Modulation      = TxModulation;
@@ -76,11 +77,13 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     sRadioParam.HeaderMode      = EXPLICIT_HEADER;
     sRadioParam.PreambuleLength = 8;
     sRadioParam.TimeOutMs       = 0;
+    sRadioParam.SyncWord        = 0x34;
+    sRadioParam.CodingRate      = CR_4_5;
     STask stask ;
     stask.HookId         = MyHookId;
-    stask.StartTime      = mcu.RtcGetTimeMs();
+    stask.StartTime      = mcu.RtcGetTimeMs()+200;
     stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
-    stask.State    = TASK_ASAP;
+    stask.State    = TASK_SCHEDULE;
     stask.TaskType = ( TxModulation == LORA ) ? TX_LORA : TX_FSK;
     if (stask.TaskType ==TX_LORA){
         DEBUG_MSG("TX_LORA");
@@ -116,6 +119,8 @@ template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlan
     sRadioParam.TimeOutMs       = RxWindowMs;
     sRadioParam.Snr             = &RxPhyPayloadSnr;
     sRadioParam.Rssi            = &RxPhyPayloadRssi;
+    sRadioParam.SyncWord        = 0x34;
+    sRadioParam.CodingRate      = CR_4_5;
     
     STask stask ;
     stask.HookId         = MyHookId;

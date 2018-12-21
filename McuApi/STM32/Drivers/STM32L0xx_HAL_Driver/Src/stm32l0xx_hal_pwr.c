@@ -550,7 +550,7 @@ void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry)
 
  /* Set LPSDSR bit according to PWR_Regulator value */
   SET_BIT(tmpreg, Regulator);
-
+  SET_BIT( tmpreg, PWR_CR_ULP);
   /* Store the new value */
   PWR->CR = tmpreg;
 

@@ -26,16 +26,18 @@ Maintainer        : Fabien Holin (SEMTECH)
 /********************************************************************************/
 
 #if DEBUG_TRACERP == 1
-    #define DEBUG_MSGRP(str)                mcu.MMStoreBuffer("                              ");mcu.MMStoreBuffer(str)
-    #define DEBUG_PRINTFRP(fmt, args...)    mcu.MMStoreBuffer("                              ");mcu.MMStoreBuffer(fmt, args)
+    //#define DEBUG_MSGRP(str)                mcu.MMStoreBuffer("                              ");mcu.MMStoreBuffer(str)
+    //#define DEBUG_PRINTFRP(fmt, args...)    mcu.MMStoreBuffer("                              ");mcu.MMStoreBuffer(fmt, args)
+    #define DEBUG_MSGRP(str)                mcu.MMprint("                              ");mcu.MMprint(str)
+    #define DEBUG_PRINTFRP(fmt, args...)    mcu.MMprint("                              ");mcu.MMprint(fmt, args)
 #else
     #define DEBUG_MSGRP(str)            
     #define DEBUG_PRINTFRP(fmt, args...)
 #endif
 
-
-#if DEBUG_TRACE == 1
 #include "ApiMcu.h"
+#if DEBUG_TRACE == 1
+
 
 #define DEBUG_MSG(str)               mcu.MMprint(str)
 
@@ -193,13 +195,16 @@ enum {
 /*                   Lora Phy Irg Flags Parameters                           */
 /*****************************************************************************/
 
-typedef enum{
+typedef enum {
     RADIO_IRQ_NONE          = 0x00,
+    CRC_ERROR_IRQ_FLAG      = 0x02,
+    CAD_DONE_IRQ_FLAG       = 0x04,
+    CAD_SUCCESS_IRQ_FLAG    = 0x05,
     SENT_PACKET_IRQ_FLAG    = 0x20,
     RECEIVE_PACKET_IRQ_FLAG = 0x40,
-    BAD_PACKET_IRQ_FLAG     = 0x60,
+    ERROR_IN_IRQ_FLAG     = 0x60,
     RXTIMEOUT_IRQ_FLAG      = 0x80, 
-}IrqFlags_t;
+} IrqFlags_t;
 
 
 /********************************************************************************/
@@ -226,6 +231,13 @@ typedef enum {
     BW250,
     BW500
 }eBandWidth;    
+
+typedef enum{
+    CR_4_5,
+    CR_4_6,
+    CR_4_7,
+    CR_4_8,
+}RadioCodingRate_t;
 
 enum {
     CHANNEL_DISABLED,

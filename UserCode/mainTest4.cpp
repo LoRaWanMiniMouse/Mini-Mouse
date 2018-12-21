@@ -1,5 +1,5 @@
 /*!
- * \file      MainTest1.c
+ * \file      MainTest4.c
  *
  * \brief     Description : Set 2 hooks : txperiodic 3 seconds + Continuous RX hook
  *
@@ -166,8 +166,8 @@ int mainTest4( ) {
         RadioPLaner < SX1272 > RP( &RadioUser );
     #endif
           
-        RP.InitHook ( 1 , &CallBackRxContinuous, reinterpret_cast <void * > (&RP) );
-        RP.InitHook ( 2 , &CallBackTxPeriodic, reinterpret_cast <void * > (&RP) );
+        RP.InitHook ( 2 , &CallBackRxContinuous, reinterpret_cast <void * > (&RP) );
+        RP.InitHook ( 1 , &CallBackTxPeriodic, reinterpret_cast <void * > (&RP) );
         RadioUser.Reset();
         sStatisticTest.TestStartTimeSec = mcu.RtcGetTimeSecond ();
     
@@ -184,7 +184,7 @@ int mainTest4( ) {
         sRadioParamRXC.TimeOutMs       = 10000;
         sRadioParamRXC.Snr             = &RxcSnr;
         sRadioParamRXC.Rssi            = &RxcRssi;
-        staskRC.HookId         = 1;
+        staskRC.HookId         = 2;
         staskRC.TaskDuration   = 3;
         staskRC.State          = TASK_ASAP;
         staskRC.TaskType       = RX_LORA; 
@@ -206,7 +206,7 @@ int mainTest4( ) {
         for (int i = 0 ; i < UserTxPeriodicPayloadSize ; i ++ ){
             UserTxPeriodicPayload [ i ] = 0;    
         }
-        staskTxPeriodic.HookId         = 2;
+        staskTxPeriodic.HookId         = 1;
         staskTxPeriodic.TaskDuration   = 300;
         staskTxPeriodic.State          = TASK_SCHEDULE;
         staskTxPeriodic.TaskType       = TX_LORA;

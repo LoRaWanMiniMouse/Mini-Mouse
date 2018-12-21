@@ -85,7 +85,7 @@ template < class R >void LoraRegionsUS<R>::RegionGetCFList ( void ) {
 
 /********************************************************************/
 /*                  Region Set Channel MAsk                         */
-/* Chapter 7.1.5 LoRaWan 1.0.1 specification                        */
+/* Chapter 7.1.5 LoRaWan 1.0.3 specification                        */
 /********************************************************************/
 
 template < class R >eStatusChannel LoraRegionsUS<R>::RegionBuildChannelMask ( uint8_t ChMaskCntl, uint16_t ChMask ) {

@@ -42,14 +42,12 @@ class SX1276 {
         ~SX1276(){};
         void ClearIrqFlagsLora( void );
         void ClearIrqFlagsFsk( void );
-        IrqFlags_t GetIrqFlagsLora( void );
+        IrqFlags_t GetIrqFlagsLora( eCrcMode crc_mode );
         IrqFlags_t GetIrqFlagsFsk( void );
         void FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
         void FetchPayloadFsk( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
         void Reset( void );
-        void SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power);
         void SendFsk( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power);
-        void RxLora( eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
         void RxFsk(uint32_t channel, uint16_t timeout);
         void Sleep(  bool coldStart );
         void SendGen( uint8_t *payload, uint8_t payloadSize,
@@ -61,9 +59,18 @@ class SX1276 {
                         eCrcMode    CrcMode
                     ){};
         uint32_t Channel;
-        void RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs, eIqMode IqMode );
-
-   // private:
+        void StartCad(uint32_t channel, uint8_t SF, eBandWidth BW) ;
+        void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, eHeaderMode headerMode,
+                        uint8_t    SF, eBandWidth BW, uint32_t   channel,
+                        int8_t     power, uint16_t preamble_length, eIqMode iq_mode,
+                        RadioCodingRate_t coding_rate, eCrcMode crc_enable,
+                        uint8_t syncWord ) ;
+        void RxLoRaGeneric( eBandWidth BW, uint8_t SF, uint32_t channel,
+                        uint16_t TimeOutMs, eHeaderMode headerMode, uint8_t payload_size,
+                        uint16_t preamble_length, eIqMode iq_mode, RadioCodingRate_t coding_rate,
+                        eCrcMode crc_enable, uint8_t syncWord );
+ 
+    private:
         uint8_t rxBuffer[255];
         uint8_t rxPayloadSize;
         bool isFakeIrq;
@@ -299,6 +306,10 @@ class SX1276 {
         PinName pinCS;
         PinName pinReset;
         int8_t lastPacketRssi;
+        uint8_t GetCrValue(const RadioCodingRate_t cr);
+        uint8_t GetBwValue(const eBandWidth bw);
+        uint8_t GetSfValue(const uint8_t SF);
+        uint8_t GetCrcValue(const eCrcMode crc);
 };
 #endif
 

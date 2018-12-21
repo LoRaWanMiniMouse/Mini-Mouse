@@ -64,7 +64,7 @@ int main ( ) {
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
     */
 #ifdef DEVICE_UNDER_TEST
-    mainTest4 ( );
+    mainPtPRxTx ( );
 #else
     uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
     uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
@@ -127,6 +127,9 @@ int main ( ) {
        
        
         RP.InitHook ( 0 , &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
+        RadioUser.Reset();
+        mcu.GotoSleepMSecond ( 300 );
+
         Lp.RestoreContext  ( );
         Lp.SetDataRateStrategy ( STATIC_ADR_MODE );
         UserFport       = 3;
@@ -165,7 +168,7 @@ int main ( ) {
             DEBUG_MSG (" new packet \n");
             while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
                 LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-                mcu.GotoSleepMSecond ( 100 );
+                mcu.GotoSleepMSecond ( 400 );
                 mcu.WatchDogRelease  ( );
             }
             RP.GetStatistic ( );

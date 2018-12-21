@@ -1164,13 +1164,13 @@ void McuSTM32L4::MMprint( const char *fmt, ...){
 };
 
 
-#if DEBUG_TRACERP == 1
+//#if DEBUG_TRACERP == 1
     static std::string BufferDebugRadioPlaner ("") ;
-#endif
+//#endif
 
 
 void McuSTM32L4::MMStoreBuffer( const char *fmt, ...){
-#if DEBUG_TRACERP == 1
+//#if DEBUG_TRACERP == 1
   va_list argp;
   va_start(argp, fmt);
   char string[200];
@@ -1179,19 +1179,19 @@ void McuSTM32L4::MMStoreBuffer( const char *fmt, ...){
   }
 
   va_end(argp);
-#endif 
+//#endif 
 };
 
 void McuSTM32L4::MMClearDebugBufferRadioPlaner ( void ) {
-#if DEBUG_TRACERP == 1
+//#if DEBUG_TRACERP == 1
     BufferDebugRadioPlaner = "";
-#endif 
+//#endif 
 };
 void McuSTM32L4::MMPrintBuffer ( void ) {
-#if DEBUG_TRACERP == 1
-    HAL_UART_Transmit(&huart2, (uint8_t*)BufferDebugRadioPlaner.c_str(), strlen(BufferDebugRadioPlaner.c_str()), 0xffffff); // send message via UART
+//#if DEBUG_TRACERP == 1
+    HAL_UART_Transmit(&huart, (uint8_t*)BufferDebugRadioPlaner.c_str(), strlen(BufferDebugRadioPlaner.c_str()), 0xffffff); // send message via UART
     MMClearDebugBufferRadioPlaner();
-#endif 
+//#endif 
 };
 
 void sleepAndWakeUp (void) {
@@ -1365,7 +1365,7 @@ void McuSTM32L4::LowPowerTimerEnableIrq ( ) {
 void McuSTM32L4::LowPowerTimerLoRaInit ( ) {
     hlptim1.Instance = LPTIM1;
     hlptim1.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
-    hlptim1.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV16;
+    hlptim1.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV4;
     hlptim1.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
     hlptim1.Init.OutputPolarity = LPTIM_OUTPUTPOLARITY_HIGH;
     hlptim1.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
@@ -1400,7 +1400,7 @@ void McuSTM32L4::StartTimerMsecond ( void (* _Func) (void *) , void * _obj, int 
         uint32_t mult = LSI_VALUE / 16 ;
         DelayMs2tick = (delay * mult)/1000; // LSI VALUE / LPTIM_PRESCALER_DIV16  
     } else {   
-        uint32_t mult = LSE_VALUE / 16 ;
+        uint32_t mult = LSE_VALUE / 4 ;
         DelayMs2tick = (delay * mult ) / 1000;
     }
 

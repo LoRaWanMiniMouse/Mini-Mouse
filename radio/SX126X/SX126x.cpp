@@ -88,7 +88,7 @@ void SX126x::FetchPayloadFsk(
     this->FetchPayloadLora( payloadSize, payload, snr, signalRssi );
 }
 
-IrqFlags_t SX126x::GetIrqFlagsLora( void ) {
+IrqFlags_t SX126x::GetIrqFlagsLora( eCrcMode crc_mode ) {
     uint8_t irqStatus[2];
     IrqFlags_t irqFlags = RADIO_IRQ_NONE;
     
@@ -108,15 +108,15 @@ IrqFlags_t SX126x::GetIrqFlagsLora( void ) {
     
     if ( ( ( irqStatus[1] & IRQ_HEADER_ERROR ) != 0 ) ||
         ( ( irqStatus[1] & IRQ_CRC_ERROR ) != 0 ) ) {
-        irqFlags = (IrqFlags_t) (irqFlags | BAD_PACKET_IRQ_FLAG);
+        irqFlags = (IrqFlags_t) (irqFlags | ERROR_IN_IRQ_FLAG);
     }
     
     return irqFlags;
 }
 
-IrqFlags_t SX126x::GetIrqFlagsFsk( void ) {
+IrqFlags_t SX126x::GetIrqFlagsFsk(  eCrcMode crc_mode ) {
     //! \warning: FSK is under still test and not officialy supported on this driver
-    return this->GetIrqFlagsLora();
+    return this->GetIrqFlagsLora ( crc_mode );
 }
 
 void SX126x::Reset( void ) {

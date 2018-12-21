@@ -70,26 +70,34 @@ void SX1276::FetchPayloadFsk( uint8_t *payloadSize, uint8_t payload[255], int16_
     *signalRssi = this->lastPacketRssi;
 }
 
-IrqFlags_t SX1276::GetIrqFlagsLora( void ) {
-    uint8_t irqFlags = 0x00;
-    //SetStandby( );
-    // Read IRQ status
-    irqFlags = Read(REG_LR_IRQFLAGS);
-    irqFlags = Read(REG_LR_IRQFLAGS);
-   
+
+
+
+IrqFlags_t SX1276::GetIrqFlagsLora( eCrcMode crc_mode ) {
+    uint8_t irqFlags              = 0x00;
+    uint8_t headerCrcOnPayload   = 0x00;
+    irqFlags                     = Read(REG_LR_IRQFLAGS);
+    headerCrcOnPayload           = Read(REG_LR_HOPCHANNEL) & 0x40;
     // Parse it
     if ( ( irqFlags & IRQ_LR_RX_TX_TIMEOUT ) !=0 ) {
         return ( RXTIMEOUT_IRQ_FLAG );
     }
+    if ( ( irqFlags & IRQ_LR_CAD_DONE ) != 0) {
+        IrqFlags_t tmp = ( (irqFlags & IRQ_LR_CAD_DETECTED_MASK) != 0) ? CAD_SUCCESS_IRQ_FLAG : CAD_DONE_IRQ_FLAG ;   
+        return ( tmp ) ;
+    }
     if ( ( irqFlags & IRQ_LR_CRC_ERROR ) !=0 ) {
-        return ( BAD_PACKET_IRQ_FLAG );
+        return ( CRC_ERROR_IRQ_FLAG );
     } 
 
     if ( ( irqFlags & IRQ_LR_RX_DONE ) !=0 ) {
-        return ( RECEIVE_PACKET_IRQ_FLAG ) ;
+        IrqFlags_t tmp = ( (crc_mode == CRC_YES) && ( headerCrcOnPayload == 0 ) ) ? CRC_ERROR_IRQ_FLAG : RECEIVE_PACKET_IRQ_FLAG ;
+        return ( tmp ) ;
     }
     if ( ( irqFlags & IRQ_LR_TX_DONE ) !=0 ) {
         return ( SENT_PACKET_IRQ_FLAG);
+    } else {
+        return ERROR_IN_IRQ_FLAG ;
     }
    
     return (IrqFlags_t) irqFlags;
@@ -118,7 +126,7 @@ IrqFlags_t SX1276::GetIrqFlagsFsk( void ) {
     }
     /* This flag cannot be set in FSK based on IRQ registers parsing
         if ( ( irqFlags & IRQ_LR_CRC_ERROR ) != 0 ) {
-        irqFlags |= BAD_PACKET_IRQ_FLAG;
+        irqFlags |= ERROR_IN_IRQ_FLAG;
     }*/
     
     return (IrqFlags_t) flags;
@@ -132,41 +140,178 @@ void SX1276::Reset( void ) {
     this->ResetFakeIrq();
     lastPacketRssi = 0;
     SetOpMode( RF_OPMODE_SLEEP );
+    mcu.waitUnderIt( 5000 );
+    Write(REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_SLEEP); // todo
 }
 
-void SX1276::SendLora( uint8_t *payload, uint8_t payloadSize,
-                       uint8_t    SF,
-                       eBandWidth BW,
-                       uint32_t   channel,
-                       int8_t     power
-                    ) {
-    Channel = channel;
-    //Reset( );
+void SX1276::TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, eHeaderMode headerMode,
+                            uint8_t    SF, eBandWidth BW, uint32_t   channel,
+                            int8_t     power, uint16_t preamble_length, eIqMode iq_mode,
+                            RadioCodingRate_t coding_rate, eCrcMode crc_enable,
+                            uint8_t syncWord )
+{
+    const uint8_t sf_value  = GetSfValue(SF);
+    const uint8_t bw_value  = GetBwValue(BW);
+    const uint8_t cr_value  = GetCrValue(coding_rate);
+    const uint8_t crc_value = GetCrcValue(crc_enable);
+    const bool iq_inverted  = (iq_mode == IQ_INVERTED) ? true : false;
+    const uint8_t implicit_header_value = ( headerMode == IMPLICIT_HEADER ) ? RFLR_MODEMCONFIG1_IMPLICITHEADER_ON : RFLR_MODEMCONFIG1_IMPLICITHEADER_OFF;
+    uint8_t LowDatarateOptimize;
+    power = ( power > 20 ) ? 20 : power;
+    if( ( ( BW == 0 ) && ( ( SF == 11 ) || ( SF == 12 ) ) ) || ( ( BW == 1 ) && ( SF == 12 ) ) ) {
+        LowDatarateOptimize = 0x08;
+    } else {
+        LowDatarateOptimize = 0x00;
+    }
+    mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 1 );
     #ifdef RADIO_ANT_SWITCH_TX_RF0
         mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,1);
     #endif
     #ifdef RADIO_ANT_SWITCH_RX
         mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_RX,0);
     #endif
-    CalibrateImage( );
-    /* Set Lora Mode and max payload to 0x40 */
+    Write(REG_OPMODE, RFLR_OPMODE_SLEEP);
     SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
-    /* Configure Lora Tx */
-    SetStandby( );
+    while ( Read(REG_OPMODE) != (RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_SLEEP) ) {
+        SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
+    }
+    Write(REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_STANDBY);
+    while ( Read(REG_OPMODE) != (RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_STANDBY)) {
+        Write(REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_STANDBY);
+    }  
     SetRfFrequency( channel );
     SetPowerParamsTx( power );
-    SetModulationParamsTxLora( SF, BW );
+    Write( REG_LR_MODEMCONFIG1, bw_value + cr_value + implicit_header_value );
+    Write( REG_LR_MODEMCONFIG2, sf_value + crc_value ) ;
+    Write( REG_LR_MODEMCONFIG3, LowDatarateOptimize + 4 ); // + 4 for internal AGC loop
+    Write( REG_LR_PREAMBLEMSB , (uint8_t)((preamble_length >> 8) & 0x00FF) );
+    Write( REG_LR_PREAMBLELSB , (uint8_t)(preamble_length & 0x00FF));
+     /* Set Normal IQ */
+    if(iq_inverted){
+        Write( REG_LR_INVERTIQ, RFLR_INVERTIQ_TX_ON + RFLR_INVERTIQ_RX_OFF) ;
+        Write( REG_LR_INVERTIQ2, RFLR_INVERTIQ2_ON );
+    }
+    else{
+        Write( REG_LR_INVERTIQ, 0x27) ;
+        Write( REG_LR_INVERTIQ2, 0x1D );
+    }
+    
+     /* Set Public sync word */
+    Write( REG_LR_SYNCWORD, syncWord);
+    Write( REG_LR_DETECTOPTIMIZE, ( Read( REG_LR_DETECTOPTIMIZE ) & RFLR_DETECTIONOPTIMIZE_MASK ) | RFLR_DETECTIONOPTIMIZE_SF7_TO_SF12 );
+    Write( REG_LR_DETECTIONTHRESHOLD, RFLR_DETECTIONTHRESH_SF7_TO_SF12 );
     SetPayload( payload, payloadSize);
-
-    /* Configure IRQ Tx Done */
-    Write ( REG_LR_IRQFLAGSMASK, 0x00 );
+/* Configure IRQ */
+    Write ( REG_LR_IRQFLAGSMASK, 0xF7 ); 
     Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
     Write ( REG_DIOMAPPING2, 0x00 );
-    /* Send */
-      mcu.SetValueDigitalOutPin ( DEBUG ,1 ) ;
+/* Send */
+    //mcu.SetValueDigitalOutPin ( DEBUG ,1 ) ;
     SetOpMode( RF_OPMODE_TRANSMITTER );
-   
 }
+
+
+void SX1276::RxLoRaGeneric( eBandWidth BW, uint8_t SF, uint32_t channel,
+                            uint16_t TimeOutMs, eHeaderMode headerMode, uint8_t payload_size,
+                            uint16_t preamble_length, eIqMode iq_mode, RadioCodingRate_t coding_rate,
+                            eCrcMode crc_enable, uint8_t syncWord )
+{
+    const uint8_t sf_value  = GetSfValue(SF);
+    const uint8_t bw_value  = GetBwValue(BW);
+    const uint8_t cr_value  = GetCrValue(coding_rate);
+    const uint8_t crc_value = GetCrcValue(crc_enable);
+    const bool iq_inverted  = (iq_mode == IQ_INVERTED) ? true : false;
+    const uint8_t implicit_header_value = ( headerMode == IMPLICIT_HEADER ) ? RFLR_MODEMCONFIG1_IMPLICITHEADER_ON : RFLR_MODEMCONFIG1_IMPLICITHEADER_OFF;
+    uint8_t LowDatarateOptimize;
+    if( ( ( BW == 0 ) && ( ( SF == 11 ) || ( SF == 12 ) ) ) || ( ( BW == 1 ) && ( SF == 12 ) ) ) {
+        LowDatarateOptimize = 0x08;
+    } else {
+        LowDatarateOptimize = 0x00;
+    }
+    uint16_t symbTimeout = ( ( TimeOutMs & 0xFFFF ) * ( ( BW + 1 ) * 125 ) ) >> SF ;
+    if ( symbTimeout > 0x3FF ) {
+        symbTimeout = 0x3FF ;
+    }
+
+    mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 1 );
+    #ifdef RADIO_ANT_SWITCH_TX_RF0
+        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,0);
+    #endif
+    #ifdef RADIO_ANT_SWITCH_RX
+        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_RX,1);
+    #endif
+    Write(REG_OPMODE, RFLR_OPMODE_SLEEP);
+    SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
+    while ( Read(REG_OPMODE) != (RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_SLEEP) ) {
+        SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
+    }
+    Write(REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_STANDBY);
+    while ( Read(REG_OPMODE) != (RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_STANDBY)) {
+        Write(REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_STANDBY);
+    }  
+    SetRfFrequency( channel );
+    Write( REG_LR_MODEMCONFIG1, bw_value + cr_value + implicit_header_value );
+    Write( REG_LR_MODEMCONFIG2, sf_value +  (uint8_t(symbTimeout>>8) ) ) ;
+    Write(REG_LR_SYMBTIMEOUTLSB, ( uint8_t )( symbTimeout & 0x00FF ));
+    Write( REG_LR_MODEMCONFIG3, LowDatarateOptimize + 4 ); // + 4 for internal AGC loop
+    Write( REG_LR_PREAMBLEMSB , (uint8_t)((preamble_length >> 8) & 0x00FF) );
+    Write( REG_LR_PREAMBLELSB , (uint8_t)(preamble_length & 0x00FF));
+     /* Set Normal IQ */
+    if(headerMode == IMPLICIT_HEADER){
+        Write(REG_LR_PAYLOADLENGTH, payload_size);
+    }
+    if(iq_inverted){
+        Write( REG_LR_INVERTIQ, 0x67) ;
+        Write( REG_LR_INVERTIQ2, RFLR_INVERTIQ2_ON );
+    }
+    else{
+        Write( REG_LR_INVERTIQ, 0x27) ;
+        Write( REG_LR_INVERTIQ2, 0x1D );
+    }
+    
+     /* Set Public sync word */
+    Write( REG_LR_SYNCWORD, syncWord);
+    Write( REG_LR_DETECTOPTIMIZE, ( Read( REG_LR_DETECTOPTIMIZE ) & RFLR_DETECTIONOPTIMIZE_MASK ) | RFLR_DETECTIONOPTIMIZE_SF7_TO_SF12 );
+    Write( REG_LR_DETECTIONTHRESHOLD, RFLR_DETECTIONTHRESH_SF7_TO_SF12 );
+    if( ( BW == 2 ) && ( Channel > RF_MID_BAND_THRESH ) ) {
+        // ERRATA 2.1 - Sensitivity Optimization with a 500 kHz Bandwidth
+        Write( REG_LR_TEST36, 0x02 );
+        Write( REG_LR_TEST3A, 0x64 );
+        // ERRATA 2.3 - Receiver Spurious Reception of a LoRa Signal
+        Write( REG_LR_DETECTOPTIMIZE, Read( REG_LR_DETECTOPTIMIZE ) | 0x80 );
+    }
+    else if( BW == 2 ) {
+        // ERRATA 2.1 - Sensitivity Optimization with a 500 kHz Bandwidth
+        Write( REG_LR_TEST36, 0x02 );
+        Write( REG_LR_TEST3A, 0x7F );
+        // ERRATA 2.3 - Receiver Spurious Reception of a LoRa Signal
+        Write( REG_LR_DETECTOPTIMIZE, Read( REG_LR_DETECTOPTIMIZE ) | 0x80 );
+    }
+    else {
+        // ERRATA 2.1 - Sensitivity Optimization
+        Write( REG_LR_TEST36, 0x03 );
+        // ERRATA 2.3 - Receiver Spurious Reception of a LoRa Signal
+        Write( REG_LR_DETECTOPTIMIZE, Read( REG_LR_DETECTOPTIMIZE ) & 0x7F );
+        Write( REG_LR_TEST30, 0x00 );
+        Write( REG_LR_TEST2F, 0x40 );
+    }
+
+    /* Set Public sync word */
+     Write( REG_LR_SYNCWORD, syncWord);
+     /* Configure IRQ Rx Done or Rx timeout */
+     Write(REG_LR_IRQFLAGSMASK, 0x1F);
+     Write(REG_DIOMAPPING1, 0);
+     Write(REG_DIOMAPPING2, 0x00);
+     /* Configure Fifo*/
+     Write(REG_LR_FIFORXBASEADDR, 0);
+     Write(REG_LR_FIFOADDRPTR, 0);
+     /* Receive */
+    mcu.SetValueDigitalOutPin ( DEBUGRX ,1 ) ;
+    SetOpMode(RFLR_OPMODE_RECEIVER_SINGLE);
+}
+
+
+
 
 void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
                       uint32_t   channel,
@@ -184,7 +329,6 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
         mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_RX,0);
     #endif
     CalibrateImage( );
-    
     /* Configure FSK Tx */
     this->Sleep( false );
     SetOpModeFsk( RF_OPMODE_MODULATIONTYPE_FSK, RFLR_OPMODE_FREQMODE_ACCESS_LF, RF_OPMODE_SLEEP );
@@ -219,81 +363,66 @@ void SX1276::SendFsk( uint8_t *payload, uint8_t payloadSize,
     }
 }
 
-// @TODO: SetRxBoosted ?
-void SX1276::RxLora(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs ) {
-    Channel = channel;
-    /* Configure Lora Rx */
-    //Reset( ); 
+void SX1276::StartCad(uint32_t channel, uint8_t SF, eBandWidth BW)
+{
+    const uint8_t sf_value  = GetSfValue(SF);
+    const uint8_t bw_value  = GetBwValue(BW);
+    uint8_t LowDatarateOptimize;
+     
+    //mcu.waitUnderIt (1000);
+    const uint8_t implicit_header_value = RFLR_MODEMCONFIG1_IMPLICITHEADER_ON ;
+   
+      /* Enable/disable Low datarate optimized */
+    if (((BW == 0) && ((SF == 11) || (SF == 12))) || ((BW == 1) && (SF == 12))) {
+        LowDatarateOptimize = 0x01;
+    } else {
+        LowDatarateOptimize = 0x00;
+    }
+    mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 1 );
     #ifdef RADIO_ANT_SWITCH_TX_RF0
         mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,0);
     #endif
     #ifdef RADIO_ANT_SWITCH_RX
         mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_RX,1);
-    #endif 
-    CalibrateImage( );
-    SetOpMode( RF_OPMODE_SLEEP );
-    /* Set Lora Mode and max payload to 0x40 */
-    Write( REG_OPMODE, ( Read( REG_OPMODE ) & RFLR_OPMODE_LONGRANGEMODE_MASK ) | RFLR_OPMODE_LONGRANGEMODE_ON );
-    SetStandby( );
-    SetRfFrequency( channel );
-    uint16_t symbTimeout = ( ( TimeOutMs & 0xFFFF ) * ( ( BW + 1 ) * 125 ) ) >> SF ;
-    if ( symbTimeout > 0x3FF ) {
-        symbTimeout = 0x3FF ;
-    }
-    //DEBUG_PRINTF ( "symbTimeout = %d\n",symbTimeout);
-    SetModulationParamsRxLora( SF, BW, symbTimeout);
-    /* Configure IRQ Rx Done or Rx timeout */
-    Write ( REG_LR_IRQFLAGSMASK, 0x1F ); 
-    Write ( REG_DIOMAPPING1,0);
-    Write ( REG_DIOMAPPING2, 0x00 );
-    /* Configure Fifo*/
-    Write( REG_LR_FIFORXBASEADDR, 0 );
-    Write( REG_LR_FIFOADDRPTR, 0 );
-    /* Receive */
-    if ( TimeOutMs == 0 ) {
-        SetOpMode( RFLR_OPMODE_RECEIVER );
-    } else {
-        SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
-    }
-    
-}
-void SX1276::RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs, eIqMode IqMode ) {
-    Channel = channel;
-    /* Configure Lora Rx */
-    //Reset( ); 
-    #ifdef RADIO_ANT_SWITCH_TX_RF0
-        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,0);
     #endif
-    #ifdef RADIO_ANT_SWITCH_RX
-        mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_RX,1);
-    #endif 
-    CalibrateImage( );
-    SetOpMode( RF_OPMODE_SLEEP );
-    /* Set Lora Mode and max payload to 0x40 */
-    Write( REG_OPMODE, ( Read( REG_OPMODE ) & RFLR_OPMODE_LONGRANGEMODE_MASK ) | RFLR_OPMODE_LONGRANGEMODE_ON );
-    SetStandby( );
-    SetRfFrequency( channel );
-    uint16_t symbTimeout = ( ( TimeOutMs & 0xFFFF ) * ( ( BW + 1 ) * 125 ) ) >> SF ;
-    if ( symbTimeout > 0x3FF ) {
-        symbTimeout = 0x3FF ;
+    Write(REG_OPMODE, RFLR_OPMODE_SLEEP);
+    SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
+    while ( Read(REG_OPMODE) != (RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_SLEEP) ) {
+        SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
     }
-    //DEBUG_PRINTF ( "symbTimeout = %d\n",symbTimeout);
-    SetModulationParamsRxGeneric ( SF, BW, symbTimeout, IqMode );
-    /* Configure IRQ Rx Done or Rx timeout */
-    Write ( REG_LR_IRQFLAGSMASK, 0x1F ); 
-    Write ( REG_DIOMAPPING1,0);
-    Write ( REG_DIOMAPPING2, 0x00 );
-    /* Configure Fifo*/
-    Write( REG_LR_FIFORXBASEADDR, 0 );
-    Write( REG_LR_FIFOADDRPTR, 0 );
-    /* Receive */
-      mcu.SetValueDigitalOutPin ( DEBUGRX ,1 ) ;
-    if ( TimeOutMs == 0 ) {
-        SetOpMode( RFLR_OPMODE_RECEIVER );
-    } else {
-        SetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
-    }
-    
+    Write(REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_STANDBY);
+    while ( Read(REG_OPMODE) != (RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_STANDBY)) {
+        Write(REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_STANDBY);
+    }  
+    SetRfFrequency(channel);
+  
+
+    Write( REG_LR_MODEMCONFIG1, bw_value + implicit_header_value);
+    Write( REG_LR_MODEMCONFIG2, sf_value  ) ;
+    Write( REG_LR_MODEMCONFIG3, LowDatarateOptimize + 4 ); // + 4 for internal AGC loop
+    Write(REG_LR_PREAMBLEMSB, 0);
+    Write(REG_LR_PREAMBLELSB, 32); // 8
+
+  /* Set inverted IQ */
+  Write(REG_LR_INVERTIQ, 0x27);                // 0x67
+  Write(REG_LR_INVERTIQ2, RFLR_INVERTIQ2_OFF); // RFLR_INVERTIQ2_ON
+  /* sensitivity optimization */
+
+  // Write(REG_LR_DETECTIONTHRESHOLD, RFLR_DETECTIONTHRESH_SF7_TO_SF12);
+
+  Write(0x34, 25);
+  Write(0x35, 10);
+
+
+  /* Configure IRQ CAD Done and CAD Detected */
+  Write(REG_LR_IRQFLAGSMASK, 0xFA);
+  Write(REG_LR_IRQFLAGS, 0xFF);
+  Write(REG_DIOMAPPING1, 0x80);
+  Write(REG_DIOMAPPING2, 0x00);
+  /* CAD */
+  //DEBUG_MSG ("start cad\n");
+  mcu.SetValueDigitalOutPin ( DEBUGRX ,1 ) ;
+  SetOpMode(RFLR_OPMODE_CAD);
 }
 
 void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
@@ -372,6 +501,7 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
 
 void SX1276::Sleep(  bool coldStart ) {
     SetOpMode( RF_OPMODE_SLEEP );
+    mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 0 );
 }
 
 /************************************************************************************************
@@ -483,7 +613,7 @@ void SX1276::SetPowerParamsTx( int8_t power ) {
         power = ( power > 14 ) ? 14 : power;
         power = ( power < -1 ) ? -1 : power;
         Write( REG_PADAC, 0x84 );
-        Write( REG_PACONFIG, ( 0x70 +  power - 1 ));
+        Write( REG_PACONFIG, ( 0x70 +  power + 1 ));
     }
 }
 
@@ -793,4 +923,83 @@ int8_t SX1276::GetCurrentRssi(void){
     uint8_t regVal = 0x00;
     Read(REG_RSSIVALUE, &regVal, 1);
     return -(regVal >> 1);
+}
+
+uint8_t SX1276::GetCrValue(const RadioCodingRate_t cr){
+    uint8_t cr_value = 0x00;
+    switch(cr){
+        case CR_4_5:{
+            cr_value = RFLR_MODEMCONFIG1_CODINGRATE_4_5;
+            break;
+        }
+        case CR_4_6:{
+            cr_value = RFLR_MODEMCONFIG1_CODINGRATE_4_6;
+            break;
+        }
+        case CR_4_7:{
+            cr_value = RFLR_MODEMCONFIG1_CODINGRATE_4_7;
+            break;
+        }
+        case CR_4_8:{
+            cr_value = RFLR_MODEMCONFIG1_CODINGRATE_4_8;
+            break;
+        }
+        default:
+            cr_value = 0x00;
+    }
+    return cr_value;
+}
+
+uint8_t SX1276::GetBwValue(const eBandWidth bw){
+    uint8_t bw_value = 0x00;
+    switch(bw){
+        case BW125:{
+            bw_value = RFLR_MODEMCONFIG1_BW_125_KHZ;
+            break;
+        }
+        case BW250:{
+            bw_value = RFLR_MODEMCONFIG1_BW_250_KHZ;
+            break;
+        }
+        case BW500:{
+            bw_value = RFLR_MODEMCONFIG1_BW_500_KHZ;
+            break;
+        }
+        default:
+            bw_value = 0x00;
+    }
+    return bw_value;
+}
+
+#define CASE_SF_TO_VAL(x, val) case x:{                             \
+                                   val =  RFLR_MODEMCONFIG2_SF_##x; \
+                                   break;                           \
+                               }
+uint8_t SX1276::GetSfValue( const uint8_t SF ) {
+    uint8_t sf_value = 0x00;
+    switch(SF){
+        CASE_SF_TO_VAL(6,  sf_value)
+        CASE_SF_TO_VAL(7,  sf_value)
+        CASE_SF_TO_VAL(8,  sf_value)
+        CASE_SF_TO_VAL(9,  sf_value)
+        CASE_SF_TO_VAL(10, sf_value)
+        CASE_SF_TO_VAL(11, sf_value)
+        CASE_SF_TO_VAL(12, sf_value)
+    }
+    return sf_value;
+}
+
+uint8_t SX1276::GetCrcValue(const eCrcMode crc) {
+    uint8_t crc_value = 0x00;
+    switch( crc ) {
+        case CRC_YES:{
+            crc_value = RFLR_MODEMCONFIG2_RXPAYLOADCRC_ON;
+            break;
+        }
+        case CRC_NO:{
+            crc_value = RFLR_MODEMCONFIG2_RXPAYLOADCRC_OFF;
+            break;
+        }
+    }
+    return crc_value;
 }

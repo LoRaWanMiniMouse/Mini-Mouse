@@ -29,11 +29,14 @@ typedef struct SRadioParam {
     eIqMode              IqMode;
     eHeaderMode          HeaderMode;
     uint8_t              PreambuleLength;
+    uint8_t              SyncWord;
+    RadioCodingRate_t    CodingRate;
     eModulationType      Modulation;
     uint32_t             TimeOutMs;
     int16_t *            Snr;
     int16_t *            Rssi;
 }SRadioParam;
+
 
 
 typedef enum {

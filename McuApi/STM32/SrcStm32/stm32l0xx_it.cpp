@@ -36,6 +36,7 @@
 #include "stm32l0xx_it.h"
 #include "ApiMcu.h"
 #include "Define.h"
+#include "UserDefine.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -43,6 +44,100 @@
 /* External variables --------------------------------------------------------*/
 extern LPTIM_HandleTypeDef hlptim1;
 extern RTC_HandleTypeDef hrtc;
+
+void MInitGpio ( ) {
+      /* GPIO Ports Clock Enable */
+
+
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Pin = GPIO_PIN_All;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    //HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    //HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    //HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    //HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+    //HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+    mcu.InitGpioOut ( LORA_CS );
+    mcu.InitGpioOut ( LORA_RESET );
+    mcu.InitGpioOut ( RADIO_ANT_SWITCH_RX );
+    mcu.InitGpioOut ( RADIO_ANT_SWITCH_TX_RF0 );
+    mcu.InitGpioOut ( RADIO_ANT_SWITCH_TX_BOOST );
+    mcu.InitGpioOut ( RADIO_TCX0_POWER          );
+    mcu.InitGpioOut (DEBUG);
+    mcu.SetValueDigitalOutPin ( DEBUG , 0 );
+    mcu.InitGpioOut (DEBUGRX);
+    mcu.SetValueDigitalOutPin ( DEBUGRX , 0 );
+    mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 1 );
+    mcu.SetValueDigitalOutPin ( RADIO_ANT_SWITCH_TX_RF0, 1 ) ;
+    mcu.SetValueDigitalOutPin ( RADIO_ANT_SWITCH_TX_BOOST, 0 ) ;
+    mcu.SetValueDigitalOutPin ( RADIO_ANT_SWITCH_RX, 0 ) ;   
+}
+
+void mSystemClock_Config(void)
+{
+
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_PeriphCLKInitTypeDef PeriphClkInit;
+
+    /**Configure the main internal regulator output voltage 
+    */
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+  RCC_OscInitStruct.HSICalibrationValue = 16;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLLMUL_6;
+  RCC_OscInitStruct.PLL.PLLDIV = RCC_PLLDIV_3;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    
+  }
+
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  {
+    
+  }
+
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_LPTIM1;
+  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInit.LptimClockSelection = RCC_LPTIM1CLKSOURCE_LSE;
+  PeriphClkInit.RTCClockSelection    = RCC_RTCCLKSOURCE_LSE;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+   
+  }
+
+    /**Configure the Systick interrupt time 
+    */
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+    /**Configure the Systick 
+    */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+ // MInitGpio ();
+}
+
+
 
 /******************************************************************************/
 /*            Cortex-M0+ Processor Interruption and Exception Handlers         */ 
@@ -106,7 +201,7 @@ void PendSV_Handler(void)
 }
 
 /**
-* @brief This function handles System tick timer.
+* @brief This function handles System tick timer.PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
 */
 void SysTick_Handler(void)
 {
@@ -130,13 +225,9 @@ void SysTick_Handler(void)
 
 void RTC_IRQHandler(void)
 {
-  /* USER CODE BEGIN RTC_WKUP_IRQn 0 */
-
-  /* USER CODE END RTC_WKUP_IRQn 0 */
+  mcu .WakeUpAfterDeepSleep ();
   HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_WKUP_IRQn 1 */
 
-  /* USER CODE END RTC_WKUP_IRQn 1 */
 }
 
 /**
@@ -144,9 +235,7 @@ void RTC_IRQHandler(void)
 */
 void EXTI0_1_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI0_1_IRQn 0 */
-
-  /* USER CODE END EXTI0_1_IRQn 0 */
+  mcu.WakeUpAfterDeepSleep ();
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
   /* USER CODE BEGIN EXTI0_1_IRQn 1 */
@@ -159,9 +248,7 @@ void EXTI0_1_IRQHandler(void)
 */
 void EXTI4_15_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI4_15_IRQn 0 */
-
-  /* USER CODE END EXTI4_15_IRQn 0 */
+  mcu.WakeUpAfterDeepSleep ();
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
   /* USER CODE BEGIN EXTI4_15_IRQn 1 */
   mcu.ExtISR();
@@ -180,15 +267,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 */
 void LPTIM1_IRQHandler(void)
 {
-  /* USER CODE BEGIN LPTIM1_IRQn 0 */
-
-  /* USER CODE END LPTIM1_IRQn 0 */
+  mcu.WakeUpAfterDeepSleep ();
   HAL_LPTIM_IRQHandler(&hlptim1);
   HAL_LPTIM_TimeOut_Stop(&hlptim1);
-  
-  /* USER CODE BEGIN LPTIM1_IRQn 1 */
-   mcu.timerISR();
-  /* USER CODE END LPTIM1_IRQn 1 */
+  mcu.timerISR();
 }
 
 /* USER CODE BEGIN 1 */

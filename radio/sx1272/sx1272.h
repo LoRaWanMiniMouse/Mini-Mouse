@@ -20,6 +20,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #include <stdint.h>
 #include "Define.h"
 #include "ApiMcu.h"
+
 /*!
  * SX1276 definitions
  */
@@ -42,7 +43,7 @@ public:
     ~SX1272(){};
     void ClearIrqFlagsLora( void );
     void ClearIrqFlagsFsk( void ){};
-    IrqFlags_t GetIrqFlagsLora( void );
+    IrqFlags_t GetIrqFlagsLora(eCrcMode crc_mode);
     IrqFlags_t GetIrqFlagsFsk( void ){ return (IrqFlags_t)(0);};
     void FetchPayloadLora( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi);
     void FetchPayloadFsk( uint8_t *payloadSize, uint8_t payload[255], int16_t *snr, int16_t *signalRssi){};
@@ -50,6 +51,25 @@ public:
     void SendLora( uint8_t *payload, uint8_t payloadSize, uint8_t SF, eBandWidth BW, uint32_t channel, int8_t power);
     void SendFsk( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power){};
     void RxLora( eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs );
+
+
+    void RxLoraWakeUp(eBandWidth BW, uint8_t SF, uint32_t channel);
+    void RxLoraData(eBandWidth BW, uint8_t SF, uint32_t channel);
+    void StartCad(uint32_t channel, uint8_t SF, eBandWidth BW);
+
+
+
+    void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, eHeaderMode headerMode,
+                        uint8_t    SF, eBandWidth BW, uint32_t   channel,
+                        int8_t     power, uint16_t preamble_length, eIqMode iq_mode,
+                        RadioCodingRate_t coding_rate, eCrcMode crc_enable,
+                        uint8_t syncWord );
+    void RxLoRaGeneric( eBandWidth BW, uint8_t SF, uint32_t channel,
+                        uint16_t TimeOutMs, eHeaderMode headerMode, uint8_t payload_size,
+                        uint16_t preamble_length, eIqMode iq_mode, RadioCodingRate_t coding_rate,
+                        eCrcMode crc_enable, uint8_t syncWord );
+
+    
     void RxFsk(uint32_t channel, uint16_t timeout){};
     void Sleep(  bool coldStart );
     uint8_t Read( uint8_t addr ) ;
@@ -107,6 +127,13 @@ public:
     */
     void SetModulationParamsRx( uint8_t SF, eBandWidth BW, uint16_t symbTimeout );
     void SetModulationParamsRxGenric( uint8_t SF, eBandWidth BW, uint16_t symbTimeout , eIqMode IqMode );
+    /*!
+    * \brief Set the modulation parameters for CAD operation
+    * @param [IN] SF Spreading factor
+    * @param [IN] BW Bandwith
+    */
+    void SetModulationParamsCad(uint8_t SF, eBandWidth BW);
+
     /*!
     * \brief Set the RF frequency
     * @param [IN] Frequency [Hz]
@@ -171,6 +198,11 @@ public:
     * @param [in] size         Size of the data
     */
     void Write( uint8_t addr, uint8_t *buffer, uint8_t size );
+
+        static uint8_t GetCrValue(const RadioCodingRate_t cr);
+        static uint8_t GetBwValue(const eBandWidth bw);
+        static uint8_t GetSfValue(const uint8_t SF);
+        static uint8_t GetCrcValue(const eCrcMode crc);
 
     /*!
     * \brief  Write 1 bytes  to the radio registers

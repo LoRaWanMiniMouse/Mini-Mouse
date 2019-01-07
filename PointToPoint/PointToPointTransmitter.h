@@ -13,7 +13,7 @@ public:
   explicit PointToPointTransmitter(RadioPLaner<SX1276> *radio_planner, const uint8_t hook_id);
   ~PointToPointTransmitter();
 
-  void Start(uint8_t *data_payload, const uint8_t data_payload_length);
+  uint32_t Start(uint8_t *data_payload, const uint8_t data_payload_length);
   void Abort();
   void GetStatistics(StatisticCounters_t *counters);
   static void Callback(void *);

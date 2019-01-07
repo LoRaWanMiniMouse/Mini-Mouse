@@ -57,6 +57,7 @@ public:
     uint32_t               SymbolDuration;
     uint32_t               LastItTimeFailsafe;
     eValidDevAddr          CurrentDevaddrType;
+    uint32_t               SendTargetTime; // Not equal to Zero in case of send At Time  
     /**********for class c************/
     eIsReceiveOnRXC        IsReceiveOnRXC;
 

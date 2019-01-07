@@ -246,7 +246,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
 /*            LoraWan  Join  Method               */
 /**************************************************/
 template <template <class R> class T, class RADIOTYPE> 
-eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::Join ( void ) {
+eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::Join ( uint32_t TargetTime ) {
     packet.Phy.LastItTimeFailsafe =  mcu.RtcGetTimeSecond ( );
     if ( StateLoraWanProcess != LWPSTATE_IDLE ) {
         DEBUG_MSG( " ERROR : LP STATE NOT EQUAL TO IDLE \n" );
@@ -264,6 +264,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::Join ( void ) {
     packet.MacRx2DataRate = packet.RX2DR_INIT;
     packet.MacRx1Delay = packet.JOIN_ACCEPT_DELAY1;
     StateLoraWanProcess = LWPSTATE_SEND;
+    packet.Phy.SendTargetTime = TargetTime; // Use only for send at time
     return( StateLoraWanProcess );
 };
 
@@ -289,10 +290,10 @@ void LoraWanObject <T,RADIOTYPE> ::NewJoin ( void ) {
 /*         LoraWan  SendPayload  Method           */
 /**************************************************/
 template <template <class R> class T, class RADIOTYPE> 
-eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType ) {
+eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::SendPayload ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType,uint32_t TargetTime ) {
     packet.Phy.LastItTimeFailsafe =  mcu.RtcGetTimeSecond ( );
     eStatusLoRaWan status;
-    packet.RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region )
+    //packet.RegionGiveNextDataRate ( ); // both choose  the next tx data rate but also compute the Sf and Bw (region )
     status = packet.RegionMaxPayloadSize ( sizeIn );
     if ( status == ERRORLORAWAN ) {
         DEBUG_MSG( " ERROR : PAYLOAD SIZE TOO HIGH \n" );
@@ -317,8 +318,10 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::SendPayload ( uint8_t fPor
         packet.MacNbTransCpt = packet.MacNbTrans;
     }
     StateLoraWanProcess = LWPSTATE_SEND;
+    packet.Phy.SendTargetTime = TargetTime; // Use only for send at time
     return( StateLoraWanProcess );
 };
+
 
 /**************************************************/
 /*        LoraWan  Receive  Method                */

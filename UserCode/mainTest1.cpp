@@ -240,9 +240,9 @@ int mainTest1( ) {
             */
             
             if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-                LpState  = Lp.Join( );
+                LpState  = Lp.Join( 0 );
             } else {
-                LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA );
+                LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA, 0 );
                 sStatisticTest.TxClassACpt++;
             }
 

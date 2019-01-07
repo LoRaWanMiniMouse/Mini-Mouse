@@ -403,6 +403,7 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateMac
 
             break;
     }
+    RegionGiveNextDataRate ( );
 }
 
 

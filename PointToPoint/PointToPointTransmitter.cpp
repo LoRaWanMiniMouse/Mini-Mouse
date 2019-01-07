@@ -6,7 +6,7 @@
 #include "PointToPointTransmitter.h"
 
 PointToPointTransmitter::PointToPointTransmitter(RadioPLaner<SX1276> *radio_planner, const uint8_t hook_id) : radio_planner(radio_planner), state(STATE_INIT), hook_id(hook_id), WakeUpSequenceDelay(0),
-                                                                                                              WakeUpSequenceLength(WAKE_UP_SEQUENCE_LENGTH_MAX), last_ack_success_received_ms(0),
+                                                                                                              WakeUpSequenceLength(WAKE_UP_SEQUENCE_LENGTH_MAX),
                                                                                                               ChannelIndex(0), count_wus_tx_attempt(0), count_wuf_tx_attempt(0), count_data_tx_attempt(0),
                                                                                                               count_ack_rx_attempt(0), count_ack_rx_success(0), ack_length(2)
 {
@@ -75,17 +75,19 @@ PointToPointTransmitter::PointToPointTransmitter(RadioPLaner<SX1276> *radio_plan
     data_send_task.TaskType = TX_LORA;
 
     NextSendSlot = mcu.RtcGetTimeMs();
+    last_ack_success_received_ms = NextSendSlot - 1000000 ;// init very far in the past 
 }
 
 PointToPointTransmitter::~PointToPointTransmitter() {}
 
-void PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t data_payload_length)
+uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t data_payload_length)
 {
     if (this->state != STATE_INIT)
     {
         // DEBUG_PRINTF("Refuse to start: already running (in state 0x%x)\n", this->state);
-        return;
+        return (0);
     }
+    DEBUG_PRINTF ("start and wk up length = %d\n",WakeUpSequenceLength );
     this->data_payload = data_payload;
     this->data_payload_length = data_payload_length;
 
@@ -122,6 +124,7 @@ void PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t data_pa
     this->state = STATE_SEND_WAKEUP_SEQUENCE_FRAGMENT;
     count_wus_tx_attempt++;
     count_wuf_tx_attempt++;
+    return (NextSendSlot -40 + ( ( WakeUpSequenceLength +1)* WAKE_UP_FRAGMENT_DURATION_MS ) );
 }
 
 void PointToPointTransmitter::ExecuteStateMachine()
@@ -243,8 +246,8 @@ void PointToPointTransmitter::Callback(void *self)
     }
     case PLANER_TASK_ABORTED:
     {
-        DEBUG_MSG("PtP aborted, stop all\n");
-        me->Abort();
+        //DEBUG_MSG("PtP aborted, stop all\n");
+        //me->Abort();
         break;
     }
     case PLANER_TX_DONE:
@@ -271,7 +274,7 @@ void PointToPointTransmitter::GetNextSendSlotTimeAndChannel(const uint32_t actua
     const uint8_t delta_t_ms = 10;
     uint32_t t_cad_next = t_cad_rx;
     uint8_t channel_index_temp = (*channel_index);
-    while (actual_time + (next_wake_up_sequence_window / 2) + delta_t_ms > t_cad_next)
+    while ( (int) ( (actual_time + (next_wake_up_sequence_window / 2) + delta_t_ms - t_cad_next ) ) > 0) 
     {
         channel_index_temp = !channel_index_temp;
         t_cad_next += CAD_BEAT_MS;
@@ -295,7 +298,7 @@ void PointToPointTransmitter::ComputeNextWakeUpLength(uint8_t *nextWakeUpLength,
     const uint8_t multiplicator_ppm = 7; // 4;
     uint8_t number_of_fragments = 1;
     uint16_t uncertainty_window = 24 + (number_of_fragments * WAKE_UP_FRAGMENT_DURATION_MS);
-    while (((actual_time - last_ack_success_time) >> multiplicator_ppm) > uncertainty_window)
+    while ((int)(((actual_time - last_ack_success_time) >> multiplicator_ppm) - uncertainty_window ) > 0 )
     {
         number_of_fragments++;
         uncertainty_window += WAKE_UP_FRAGMENT_DURATION_MS;

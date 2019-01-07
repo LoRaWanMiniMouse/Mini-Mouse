@@ -250,7 +250,7 @@ PointToPointReceiver::GetNextCadStartMs(const uint32_t lastCadMs)
   uint32_t actual_ms = mcu.RtcGetTimeMs() + delay_ms;
   uint32_t next_cad_start_ms =
     ((uint32_t)(lastCadMs / CAD_BEAT_MS)) * CAD_BEAT_MS; // Warning: overflow
-  while (next_cad_start_ms <= actual_ms) {
+  while ( (int )( next_cad_start_ms - actual_ms ) <= 0) {
     next_cad_start_ms += CAD_BEAT_MS;
   }
   return next_cad_start_ms;
@@ -266,7 +266,7 @@ PointToPointReceiver::GetNextFreqency(const uint32_t nextCadMs)
 void
 PointToPointReceiver::ConfigureAndEnqueueNextCad()
 {
-    cad_task_param.Bw = BW125;
+  cad_task_param.Bw = BW125;
   cad_task_param.Sf = 7;
   cad_task_param.CodingRate = CR_4_5;
   cad_task_param.CrcMode = CRC_YES;

@@ -588,7 +588,7 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
 /********************************************************************/
 void McuSTM32L072::RtcInit (void)
 {
-  RTC_TimeTypeDef sTime;
+   RTC_TimeTypeDef sTime;
   RTC_DateTypeDef sDate;
 
   hrtc.Instance = RTC;
@@ -606,25 +606,30 @@ void McuSTM32L072::RtcInit (void)
   
   if (HAL_RTC_Init(&hrtc) != HAL_OK) {
   }
-  
-  sTime.Minutes = 0x0;
-  sTime.Seconds = 0x0;
+  time_t t = 0x418924;
+   t = 0x18924;
+  //t= 0;
+  struct tm * timeinfo;
+  timeinfo = localtime (&t);
+  sTime.Minutes = timeinfo->tm_min;
+  sTime.Seconds = timeinfo->tm_sec;
+  sTime.Hours   = timeinfo->tm_hour;
   sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   sTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK) {
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK) {
 
   }
   
-  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-  sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 0x1;
-  sDate.Year = 0x0;
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK) {
+  sDate.WeekDay = timeinfo->tm_wday;
+  sDate.Month   = timeinfo->tm_mon ;
+  sDate.Date    = timeinfo->tm_mday;
+  sDate.Year    = timeinfo->tm_year;
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK) {
   }
  
   //if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK) {
   //}
-  
+
 }
 
 uint32_t McuSTM32L072::RtcGetTimeMs( void )

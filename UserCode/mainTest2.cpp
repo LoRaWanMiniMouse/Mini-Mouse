@@ -143,18 +143,18 @@ int mainTest2( ) {
      
     if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
        // InsertTrace ( __COUNTER__, FileId );
-        LpState  = Lp.Join( );
+        LpState  = Lp.Join( 0 );
         if ( ( Lp2.IsJoined ( ) == NOT_JOINED ) && ( Lp2.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-               Lp2State = Lp2.Join( );
+               Lp2State = Lp2.Join( 0);
         }
     } else {
         if ( (cpt %2) == 0){
-            LpState  = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
+            LpState  = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType , 0);
         }
         if ( ( Lp2.IsJoined ( ) == NOT_JOINED ) && ( Lp2.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-              Lp2State = Lp2.Join( );
+              Lp2State = Lp2.Join( 0);
         } else {
-              Lp2State = Lp2.SendPayload( UserFport, UserPayload, UserPayloadSize+4, MsgType );
+              Lp2State = Lp2.SendPayload( UserFport, UserPayload, UserPayloadSize+4, MsgType, 0 );
         }
 
     }

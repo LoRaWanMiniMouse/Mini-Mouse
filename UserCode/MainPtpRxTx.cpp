@@ -129,21 +129,14 @@ int mainPtPRxTx( void )
   //mcu.InitGpioIn(USER_BUTTON);
 
   RP.InitHook ( LP_HOOK_ID , &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
-  RP.InitHook(POINT_TO_POINT_RX_HOOK_ID, &(PointToPointReceiver::Callback),
-              reinterpret_cast<void*>(&ptpRx));
-  RP.InitHook(POINT_TO_POINT_TX_HOOK_ID, &(PointToPointTransmitter::Callback),
-              reinterpret_cast<void*>(&ptpTx));
+  RP.InitHook ( POINT_TO_POINT_RX_HOOK_ID, &(PointToPointReceiver::Callback ),reinterpret_cast<void*>(&ptpRx));
+  RP.InitHook ( POINT_TO_POINT_TX_HOOK_ID, &(PointToPointTransmitter::Callback ),reinterpret_cast<void*>(&ptpTx));
   DEBUG_MSG("Init END \n");
   
   
   uint8_t AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
   eLoraWan_Process_States LpState = LWPSTATE_IDLE;  
-    
-    RadioUser.Reset();
-
-    //RadioUser.Sleep(true);
-
- 
+  RadioUser.Reset();
   mcu.GotoSleepMSecond ( 300 );
   uint32_t count_start = 0;
   const uint32_t wait_before_next_start_min = 1000;  // 1000
@@ -165,22 +158,50 @@ int mainPtPRxTx( void )
       UserPayloadClassA [i]= i;
   }
   UserPayloadClassA [ 0 ]  = FW_VERSION ;
-  uint8_t MsgTypeClassA = CONF_DATA_UP;
+  uint8_t MsgTypeClassA = UNCONF_DATA_UP;
   Lp.NewJoin();
   
   uint32_t next_start = mcu.RtcGetTimeMs();
   uint32_t CptDemo = 0;
   mcu.MMClearDebugBufferRadioPlaner ( );
-  ptpRx.Start(payload_received, &payload_received_size);
+  //ptpRx.Start(payload_received, &payload_received_size);
+  next_start = mcu.RtcGetTimeMs();
+  start_tx   = true;
+  while (1) {
+      if (start_tx){
+          start_tx = false;
+          count_start++;
+          
+          uint32_t NextSendSlot = ptpTx.Start(payload_send, payload_send_size);
+          if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
+              LpState  = Lp.Join( NextSendSlot );
+          } else {
+              LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA,NextSendSlot );
+          }
+      }
+      if((int32_t)(next_start - mcu.RtcGetTimeMs() ) <= 0){
+          start_tx = true;
+          next_start = mcu.RtcGetTimeMs() + 10000;
+          ptpTx.GetStatistics(&ptp_stats);
+          PrintPtpStatistics(&ptp_stats, count_start);
+      }
+       while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
+        LpState = Lp.LoraWanProcess( &AvailableRxPacket );
+        mcu.GotoSleepMSecond ( 200 );
+        mcu.WatchDogRelease  ( );
+    }
+    mcu.GotoSleepMSecond ( 200 );
+   
+  }
 
   while (true) {
     if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-       LpState  = Lp.Join( );
+       LpState  = Lp.Join( 0);
     } else {
       if ( CptDemo == 0 ) {
-        LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA );
+        LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA, 0 );
       };
-      (CptDemo == 10000) ? CptDemo = 0 : CptDemo++ ;
+      (CptDemo == 100) ? CptDemo = 0 : CptDemo++ ;
       sStatisticTest.TxClassACpt++;
     }
 /*

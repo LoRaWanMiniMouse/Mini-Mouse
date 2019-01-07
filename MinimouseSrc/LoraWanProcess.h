@@ -63,8 +63,8 @@ public:
      * \param                                            => return Error in case of payload too long
      * \param                                            => return Error In case of the Lorawan stack previous state is not equal to iddle
      */  
-    eLoraWan_Process_States    SendPayload             ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType );
-    
+    eLoraWan_Process_States    SendPayload             ( uint8_t fPort, const uint8_t* dataIn, const uint8_t sizeIn, uint8_t PacketType, uint32_t TargetTime );
+
     
      /*!
      * \brief  Receive Applicative Downlink 
@@ -85,7 +85,7 @@ public:
      *                                                 => return LWPSATE_SEND if all is ok
      *                                                 => return Error In case of the Lorawan stack previous state is not equal to iddle
      */  
-    eLoraWan_Process_States    Join                    ( void );
+    eLoraWan_Process_States    Join                    ( uint32_t TargetTime );
     
     
      /*!

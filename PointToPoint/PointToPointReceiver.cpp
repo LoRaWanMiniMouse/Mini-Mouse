@@ -13,6 +13,7 @@ PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
   , fragment_length(WAKE_UP_FRAGMENT_LENGTH)
   , ack_length(ACK_LENGTH)
 {
+
   this->FrequencyList[0] = 868600000;
   this->FrequencyList[1] = 868200000;
   this->channel = this->FrequencyList[0];
@@ -127,7 +128,7 @@ PointToPointReceiver::ExecuteStateMachine()
         this->radio_planner->EnqueueTask(
           this->rx_wakeup_fragment_task, (uint8_t*)&this->fragment.buffer,
           &this->fragment_length, this->rx_wakeup_fragment_task_param);
-          DEBUG_MSGRP("CAD SUCESS\n");
+          DEBUG_MSG("CAD SUCESS\n");
       } else {
         this->ConfigureAndEnqueueNextCad();
       }
@@ -137,16 +138,17 @@ PointToPointReceiver::ExecuteStateMachine()
     case STATE_WAIT_RX_WUF_COMPLETION: {
       if (this->rx_success) {
         this->rx_success = false;
-        this->wake_up_id = this->fragment.index;
+        DecodeWakeUpSequence ();
+        
         data_rx_ms = rx_done_timestamp +
                      (int)((wake_up_id - 1) * WAKE_UP_FRAGMENT_DURATION_MS) + 3;
         this->rx_data_task.StartTime = data_rx_ms;
-        this->rx_data_task_param.Frequency = this->channel;
+        
         this->radio_planner->EnqueueTask(this->rx_data_task, this->rx_buffer,
                                          &this->rx_buffer_length,
                                          this->rx_data_task_param);
         this->state = STATE_WAIT_RX_DATA_COMPLETION;
-        // DEBUG_PRINTF("Rx frag. #%i\n", wake_up_id);
+        DEBUG_PRINTF("Rx frag. #%i\n", wake_up_id);  
       } else {
         this->ConfigureAndEnqueueNextCad();
         DEBUG_MSGRP("Rx Wuf failed\n");
@@ -305,3 +307,34 @@ PointToPointReceiver::GetDelayIndicatorMs(
   }
   return WakeUpSequenceDelay;
 }
+
+void PointToPointReceiver::DecodeWakeUpSequence ( void ) {
+    // compute mic + insert check @tbd
+   /* DEBUG_MSG ("\n");
+    for (int i = 0 ; i < 11 ; i ++ ) {
+      DEBUG_PRINTF ( " %.2x", fragment.buffer[i]);
+    }
+    DEBUG_MSG ("\n");*/
+    
+    wake_up_id                   = fragment.buffer[5];
+    rx_data_task_param.Sf        = 12 - (fragment.buffer[8] & 0xF);
+    rx_data_task_param.TimeOutMs = 40 * ( 1 << (rx_data_task_param.Sf - 7));
+    switch ( fragment.buffer[8] >> 4 ) {
+      case 0 :
+          rx_data_task_param.Frequency = 868100000;
+          break;
+      case 1 :
+          rx_data_task_param.Frequency = 868300000;
+          break;
+      case 2 :
+          rx_data_task_param.Frequency = 868500000;
+          break;
+      default :
+          rx_data_task_param.Frequency = 868100000;
+           break;
+    }
+DEBUG_PRINTF ( "sf = %d , freq = %d\,n",rx_data_task_param.Sf,rx_data_task_param.Frequency );
+                    
+     
+
+};

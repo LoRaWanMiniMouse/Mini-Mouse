@@ -206,7 +206,7 @@ void SX1276::TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, eHeaderMode h
     Write ( REG_DIOMAPPING1, RFLR_DIOMAPPING1_DIO0_01 );
     Write ( REG_DIOMAPPING2, 0x00 );
 /* Send */
-    //mcu.SetValueDigitalOutPin ( DEBUG ,1 ) ;
+    mcu.SetValueDigitalOutPin ( DEBUG ,1 ) ;
     SetOpMode( RF_OPMODE_TRANSMITTER );
 }
 

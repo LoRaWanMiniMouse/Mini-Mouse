@@ -122,7 +122,6 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::EncryptTx
 /************************************************************************************************************************************/
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioAndSend( void ) {
     InsertTrace ( __COUNTER__, FileId );
-    RegionGiveNextChannel ( );  
     //Phy.DevAddrIsr    = DevAddr ;  //@note copy of the mac devaddr in order to filter it in the radio isr routine.
     Phy.Send(MacTxModulationCurrent, MacTxFrequencyCurrent, MacTxPower, MacTxSfCurrent, MacTxBwCurrent, MacPayloadSize);
     AdrAckCnt ++ ; // increment adr counter each uplink frame;

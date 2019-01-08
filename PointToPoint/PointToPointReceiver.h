@@ -21,11 +21,12 @@ public:
 
 protected:
   void ExecuteStateMachine();
+  void DecodeWakeUpSequence ( void) ;
   uint32_t GetNextCadStartMs(const uint32_t lastCadMs);
   uint32_t GetNextFreqency(const uint32_t nextCadMs);
   void ConfigureAndEnqueueNextCad();
   static int32_t GetDelayIndicatorMs(
-    const uint32_t lastCadMs, const uint32_t expectedEndLastWakeUpFragment);
+  const uint32_t lastCadMs, const uint32_t expectedEndLastWakeUpFragment);
 
 private:
   RadioPLaner<SX1276>* radio_planner;
@@ -76,6 +77,7 @@ private:
 
   uint8_t wake_up_id;
   int32_t delay_indicator;
+  void* Lp;
 };
 
 #endif // __POINT_TO_POINT_RECEIVER_H__

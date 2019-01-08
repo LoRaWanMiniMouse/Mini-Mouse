@@ -30,14 +30,17 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define LOW_SPEED_CLK  LSE    //
 #define RX_INDICATOR_PIN PB_8
 #define TX_INDICATOR_PIN PB_8
-
+//#define BLOC 1
 #ifdef MURATA_BOARD
-    #define UART_NUM                  USART1
-    #define UART_TX                   PA_9
-    #define UART_RX                   PA_10
-    //#define UART_NUM              USART2
-    //#define UART_TX                   PA_2
-    //#define UART_RX                   PA_3
+    #ifdef BLOC
+        #define UART_NUM                  USART1
+        #define UART_TX                   PA_9
+        #define UART_RX                   PA_10
+    #else 
+        #define UART_NUM                  USART2
+        #define UART_TX                   PA_2
+        #define UART_RX                   PA_3
+    #endif
     #define LORA_SPIx                 SPI1   // select your spi number
     #define LORA_SPI_MOSI             PA_7
     #define LORA_SPI_MISO             PA_6
@@ -50,8 +53,13 @@ Maintainer        : Fabien Holin (SEMTECH)
     #define RADIO_ANT_SWITCH_TX_RF0   PC_2
     #define RADIO_ANT_SWITCH_TX_BOOST PC_1
     #define RADIO_TCX0_POWER          PA_12
-    #define DEBUG                     PB_5   //D4
-    #define DEBUGRX                   PB_5 //D2
+    #ifdef BLOC
+       #define DEBUG                     PB_5   //D4
+       #define DEBUGRX                   PB_5 //D2
+    #else
+       #define DEBUG                     PB_5
+       #define DEBUGRX                   PA_10
+    #endif
     #define USER_BUTTON               PC_13
     #define DEBUG_SLEEP               PB_10
     #define CRYSTAL_ERROR              0 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
@@ -110,5 +118,5 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 #define FLASH_UPDATE_PERIOD 32      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted
 #define USER_NUMBER_OF_RETRANSMISSION   1// Only used in case of user defined darate distribution strategy
-#define USER_DR_DISTRIBUTION_PARAMETERS 0x00000001  // Only used in case of user defined darate distribution strategy refered to doc that explain this value
+#define USER_DR_DISTRIBUTION_PARAMETERS 0x01111100  // Only used in case of user defined darate distribution strategy refered to doc that explain this value
 #endif

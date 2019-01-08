@@ -3,6 +3,10 @@
 
 #define WAKE_UP_SEQUENCE_LENGTH_MAX 18
 
+
+ 
+
+
 #include "PointToPointBase.h"
 #include "RadioPlaner.h"
 #include "sx1276.h"
@@ -14,6 +18,7 @@ public:
   ~PointToPointTransmitter();
 
   uint32_t Start(uint8_t *data_payload, const uint8_t data_payload_length);
+  void SetChannelDr ( uint32_t Channel, uint8_t DataRate ) ; 
   void Abort();
   void GetStatistics(StatisticCounters_t *counters);
   static void Callback(void *);
@@ -75,6 +80,14 @@ private:
   uint32_t count_data_tx_attempt;
   uint32_t count_ack_rx_attempt;
   uint32_t count_ack_rx_success;
+
+  /* Buffer parameters of the Wake up sequences*/
+  uint8_t   Ftype;
+  uint32_t  DevAddr;
+  uint8_t   CntDnw;
+  uint16_t  Fcount;
+  uint8_t   Channel_Dr;
+  uint16_t  Mic[WAKE_UP_FRAGMENT_LENGTH];
 };
 
 #endif // __POINT_TO_POINT_TRANSMITTER_H__

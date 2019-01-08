@@ -209,6 +209,16 @@ public:
      */ 
     uint8_t                    GetNextDataRate         ( void );
     
+        /*! 
+     * \brief   Return the returns the next Tx Frequency
+     * \remark  NOT YET IMPLEMENTED
+     * \param [IN]  none
+     * \param [OUT] return the next transmission power 
+     */ 
+    
+    
+    uint32_t                   GetNextFrequency       ( void ); 
+    
     
     /*! 
      * \brief   returns the current state of the MAC layer.

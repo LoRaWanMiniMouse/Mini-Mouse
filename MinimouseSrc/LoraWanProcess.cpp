@@ -424,9 +424,13 @@ void LoraWanObject <T,RADIOTYPE> :: DeActivateClassC ( void ){
 /**************************************************/
 template <template <class R> class T, class RADIOTYPE> 
 uint8_t LoraWanObject <T,RADIOTYPE> ::GetNextDataRate ( void ) { // note return datareate in case of adr
-    return(0);//@NOTE NOT YET IMPLEMENTED
+    return( packet.MacTxDataRate ) ;
 }
 
+template <template <class R> class T, class RADIOTYPE> 
+uint32_t LoraWanObject <T,RADIOTYPE> ::GetNextFrequency ( void ) { // note return datareate in case of adr
+    return( packet.MacTxFrequencyCurrent ) ;
+}
 
 template <template <class R> class T, class RADIOTYPE> 
  void  LoraWanObject <T,RADIOTYPE> :: FactoryReset ( void ) {

@@ -80,7 +80,7 @@ int mainPtPRxTx( void )
   uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
   uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
   uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x56 };    
-  uint32_t LoRaDevAddrInit          = 0x26011920;
+  uint32_t LoRaDevAddrInit          = 0x26011FA0;
   int i;
   uint8_t UserFport ;
   uint8_t UserRxFport ; 
@@ -91,7 +91,7 @@ int mainPtPRxTx( void )
   uint8_t payload_send[MAX_PAYLOAD_RECEIVED] = { 0x00 };
   uint8_t payload_send_size = 15;
   // uint32_t wait_time_ms = 0;
-   sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE };
+   sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE };
   mcu.InitMcu();
 
     #ifdef SX126x_BOARD
@@ -149,8 +149,9 @@ int mainPtPRxTx( void )
 
 
   mcu.MMClearDebugBufferRadioPlaner ( );
-  Lp.RestoreContext  ( );
-  Lp.SetDataRateStrategy ( STATIC_ADR_MODE );
+  
+  //Lp.RestoreContext  ( );
+  Lp.SetDataRateStrategy ( USER_DR_DISTRIBUTION );
   UserFport       = 3;
   uint8_t UserPayloadSizeClassA = 14;
   uint8_t UserPayloadClassA [ 30 ];
@@ -167,21 +168,30 @@ int mainPtPRxTx( void )
   //ptpRx.Start(payload_received, &payload_received_size);
   next_start = mcu.RtcGetTimeMs();
   start_tx   = true;
+  
+    #ifdef BLOC
+     ptpRx.Start(payload_received, &payload_received_size);
+       while(1){
+           mcu.GotoSleepMSecond ( 2000 );
+       }
+    #else 
+      
+    #endif
   while (1) {
       if (start_tx){
           start_tx = false;
           count_start++;
-          
+          ptpTx.SetChannelDr (  Lp.GetNextFrequency ( ), Lp.GetNextDataRate  ( ) );
           uint32_t NextSendSlot = ptpTx.Start(payload_send, payload_send_size);
           if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-              LpState  = Lp.Join( NextSendSlot );
+              //LpState  = Lp.Join( NextSendSlot );
           } else {
-              LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA,NextSendSlot );
+             LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA,NextSendSlot );
           }
       }
       if((int32_t)(next_start - mcu.RtcGetTimeMs() ) <= 0){
           start_tx = true;
-          next_start = mcu.RtcGetTimeMs() + 10000;
+          next_start = mcu.RtcGetTimeMs() + 3000;
           ptpTx.GetStatistics(&ptp_stats);
           PrintPtpStatistics(&ptp_stats, count_start);
       }

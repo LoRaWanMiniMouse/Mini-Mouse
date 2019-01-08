@@ -195,12 +195,12 @@ public:
 /**************************************************************/
 /*      Protected Methods and variables                       */
 /**************************************************************/
+    uint32_t         MacTxFrequencyCurrent;
 protected :
     uint8_t          MacTxSfCurrent;
     eModulationType  MacTxModulationCurrent;
     eModulationType  MacRx2ModulationTypeCurrent;
     eBandWidth       MacTxBwCurrent;
-    uint32_t         MacTxFrequencyCurrent;
     uint32_t         MacRx1FrequencyCurrent;
     uint8_t          MacRx1SfCurrent;
     eBandWidth       MacRx1BwCurrent;

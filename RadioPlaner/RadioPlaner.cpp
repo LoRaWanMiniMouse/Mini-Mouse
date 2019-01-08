@@ -221,7 +221,7 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
                     DEBUG_PRINTFRP ( "abort running task with hookid = %d in Arbitrer \n",RadioTaskId );
                     Radio->ClearIrqFlagsLora( );
                     Radio->Sleep ( false );
-                  //  mcu.SetValueDigitalOutPin ( DEBUG ,0 ) ;
+                    //mcu.SetValueDigitalOutPin ( DEBUG ,0 ) ;
                     mcu.SetValueDigitalOutPin ( DEBUGRX ,0 ) ;
                    // DEBUG_PRINTFRP("get it %d  %d %d \n", NVIC_GetPendingIRQ( EXTI4_15_IRQn), NVIC_GetPendingIRQ( EXTI2_3_IRQn), NVIC_GetPendingIRQ( EXTI0_1_IRQn));
                     #ifdef BOARD_L4
@@ -278,7 +278,7 @@ void  RadioPLaner<R>::CallPlanerArbitrer ( std::string   WhoCallMe ) {
 
 template <class R>     
 void RadioPLaner<R>::IsrTimerRadioPlaner ( void ) {
-     mcu.SetValueDigitalOutPin ( DEBUG , 0 );
+     
     PlanerTimerState = TIMER_IDLE ;
     CallPlanerArbitrer (  __FUNCTION__ );
     

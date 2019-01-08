@@ -323,6 +323,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
 }
 
 template < class R >void LoraRegionsEU<R>::RegionGiveNextDataRate( void ) {
+    RegionGiveNextChannel ( );  
     InsertTrace ( __COUNTER__, FileId );
     if ( this->AdrModeSelect == STATIC_ADR_MODE ) {
         this->MacTxDataRate = this->MacTxDataRateAdr;

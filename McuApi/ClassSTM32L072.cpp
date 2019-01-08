@@ -788,7 +788,7 @@ void McuSTM32L072::MMPrintBuffer ( void ) {
 void sleepAndWakeUp (void) {
     HAL_SPI_DeInit (&hspi1);
     HAL_UART_DeInit (&huart2);
-    mcu.SetValueDigitalOutPin ( DEBUG , 1 );
+    
     HAL_PWR_EnterSTOPMode ( PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI );
 }
 void McuSTM32L072::WakeUpAfterDeepSleep (void) {
@@ -827,9 +827,9 @@ void McuSTM32L072::WakeUpAfterDeepSleep (void) {
 }
 
 void sleepAndWakeUpCool (void) {
-  mcu.SetValueDigitalOutPin ( DEBUG , 1 );
+ 
   HAL_PWR_EnterSTOPMode ( PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI );
-  mcu.SetValueDigitalOutPin ( DEBUG , 0 );
+ 
   SystemClock_Config();
   //DEBUG_MSG ("wu\n") ;
 

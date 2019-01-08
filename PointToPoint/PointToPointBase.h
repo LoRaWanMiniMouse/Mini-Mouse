@@ -37,4 +37,9 @@ typedef union
   uint8_t buffer[WAKE_UP_FRAGMENT_LENGTH];
 } WakeUpFragments_t;
 
+typedef enum { 
+    ERROR_PTP = -1,
+    OK_PTP    = 0,
+}eStatusPtP;
+
 #endif // __POINT_TO_POINT_BASE_H__

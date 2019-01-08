@@ -138,17 +138,22 @@ PointToPointReceiver::ExecuteStateMachine()
     case STATE_WAIT_RX_WUF_COMPLETION: {
       if (this->rx_success) {
         this->rx_success = false;
-        DecodeWakeUpSequence ();
+        eStatusPtP status = DecodeWakeUpSequence ();
+        if (status == ERROR_PTP) {
+            this->ConfigureAndEnqueueNextCad();
+            DEBUG_MSGRP("Receive a bad WU sequence\n");
+        } else {
         
-        data_rx_ms = rx_done_timestamp +
-                     (int)((wake_up_id - 1) * WAKE_UP_FRAGMENT_DURATION_MS) + 3;
-        this->rx_data_task.StartTime = data_rx_ms;
-        
-        this->radio_planner->EnqueueTask(this->rx_data_task, this->rx_buffer,
-                                         &this->rx_buffer_length,
-                                         this->rx_data_task_param);
-        this->state = STATE_WAIT_RX_DATA_COMPLETION;
-        DEBUG_PRINTF("Rx frag. #%i\n", wake_up_id);  
+            data_rx_ms = rx_done_timestamp +
+                         (int)((wake_up_id - 1) * WAKE_UP_FRAGMENT_DURATION_MS) + 3;
+            this->rx_data_task.StartTime = data_rx_ms;
+            
+            this->radio_planner->EnqueueTask(this->rx_data_task, this->rx_buffer,
+                                             &this->rx_buffer_length,
+                                             this->rx_data_task_param);
+            this->state = STATE_WAIT_RX_DATA_COMPLETION;
+            DEBUG_PRINTF("Rx frag. #%i\n", wake_up_id);
+        }  
       } else {
         this->ConfigureAndEnqueueNextCad();
         DEBUG_MSGRP("Rx Wuf failed\n");
@@ -308,16 +313,29 @@ PointToPointReceiver::GetDelayIndicatorMs(
   return WakeUpSequenceDelay;
 }
 
-void PointToPointReceiver::DecodeWakeUpSequence ( void ) {
+eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void ) {
     // compute mic + insert check @tbd
-   /* DEBUG_MSG ("\n");
+    DEBUG_MSG ("\n");
     for (int i = 0 ; i < 11 ; i ++ ) {
       DEBUG_PRINTF ( " %.2x", fragment.buffer[i]);
     }
-    DEBUG_MSG ("\n");*/
-    
+    DEBUG_MSG ("\n");
+    eStatusPtP status = OK_PTP ;
+    uint32_t ReceiveDevAddr = (fragment.buffer [1] << 24) + ( fragment.buffer [2] << 16 )+ ( fragment.buffer [3] << 8 )+  fragment.buffer [4] ;
+    if (ReceiveDevAddr != 0x11223344) {
+      DEBUG_PRINTF ( " Recaeive a bad WU dev_addr %x", ReceiveDevAddr);
+      return (ERROR_PTP);
+    }
     wake_up_id                   = fragment.buffer[5];
+    if ( wake_up_id > WAKE_UP_FRAGMENT_LENGTH) {
+         DEBUG_PRINTF ( " Recaeive a bad Wake up id  %d", wake_up_id);
+         return (ERROR_PTP);
+    }
     rx_data_task_param.Sf        = 12 - (fragment.buffer[8] & 0xF);
+    if ( ( rx_data_task_param.Sf < 7) ||  ( rx_data_task_param.Sf > 12 ) ) {
+         DEBUG_PRINTF ( " Recaeive a bad SF  %d", rx_data_task_param.Sf);
+         return (ERROR_PTP);
+    }
     rx_data_task_param.TimeOutMs = 40 * ( 1 << (rx_data_task_param.Sf - 7));
     switch ( fragment.buffer[8] >> 4 ) {
       case 0 :
@@ -330,11 +348,12 @@ void PointToPointReceiver::DecodeWakeUpSequence ( void ) {
           rx_data_task_param.Frequency = 868500000;
           break;
       default :
-          rx_data_task_param.Frequency = 868100000;
+           DEBUG_PRINTF ( " Recaeive a bad Frequency  %d", fragment.buffer[8]);
+           return (ERROR_PTP);
            break;
     }
 DEBUG_PRINTF ( "sf = %d , freq = %d\,n",rx_data_task_param.Sf,rx_data_task_param.Frequency );
-                    
+return (status);                    
      
 
 };

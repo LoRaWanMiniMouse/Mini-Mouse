@@ -322,7 +322,7 @@ void PointToPointTransmitter::PrepareNextWakeUpFragment(WakeUpFragments_t *fragm
    fragment->buffer[1]  = ( DevAddr >> 24 ) & 0xFF;
    fragment->buffer[2]  = ( DevAddr >> 16 ) & 0xFF;
    fragment->buffer[3]  = ( DevAddr >> 8 ) & 0xFF;
-   fragment->buffer[4]  = DevAddr && 0xFF;
+   fragment->buffer[4]  =   DevAddr & 0xFF;
    fragment->buffer[5]  = fragment_index ;
    fragment->buffer[6]  = ( Fcount >> 8 ) & 0xFF ; 
    fragment->buffer[7]  = Fcount & 0xFF ;

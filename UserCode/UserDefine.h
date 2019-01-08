@@ -30,7 +30,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define LOW_SPEED_CLK  LSE    //
 #define RX_INDICATOR_PIN PB_8
 #define TX_INDICATOR_PIN PB_8
-//#define BLOC 1
+#define BLOC 1
 #ifdef MURATA_BOARD
     #ifdef BLOC
         #define UART_NUM                  USART1

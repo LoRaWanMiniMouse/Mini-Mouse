@@ -21,7 +21,7 @@ public:
 
 protected:
   void ExecuteStateMachine();
-  void DecodeWakeUpSequence ( void) ;
+  eStatusPtP DecodeWakeUpSequence ( void) ;
   uint32_t GetNextCadStartMs(const uint32_t lastCadMs);
   uint32_t GetNextFreqency(const uint32_t nextCadMs);
   void ConfigureAndEnqueueNextCad();

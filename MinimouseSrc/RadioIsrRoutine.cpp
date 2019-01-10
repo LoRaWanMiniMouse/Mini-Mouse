@@ -80,7 +80,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
     
    
         default :
-            DEBUG_PRINTF ("receive It radio error %d\n",PlanerStatus);
+            DEBUG_PRINTF ("receive It RADIO error %d\n",PlanerStatus);
             break;
     }
     switch ( StateRadioProcess ) { 
@@ -99,9 +99,15 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
         
         
        case RADIOSTATE_RX1FINISHED :
-            InsertTrace ( __COUNTER__, FileId ); 
+            InsertTrace ( __COUNTER__, FileId );
+            if ( Rx3Activated == RX3_ACTIVATED ) {
+                StateRadioProcess = RADIOSTATE_RX2FINISHED;
+            } else { 
+                StateRadioProcess = RADIOSTATE_IDLE;
+            }
+            break;
+        case RADIOSTATE_RX2FINISHED : 
             StateRadioProcess = RADIOSTATE_IDLE;
-            
             break;
         case RADIOSTATE_RXC :
             StateRadioProcess = RADIOSTATE_IDLE;
@@ -109,7 +115,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
         
         default :
             InsertTrace ( __COUNTER__, FileId ); 
-            DEBUG_MSG ("receive It radio error\n");
+            DEBUG_PRINTF ("Unknown state in Radio Process %d \n",StateRadioProcess);
             break;
     }
     

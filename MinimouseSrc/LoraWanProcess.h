@@ -231,6 +231,9 @@ public:
     uint8_t  GetNbOfReset (void);
     void                       ActivateClassC          ( void );
     void                       DeActivateClassC        ( void );
+    void                       ActivateRX3             ( void )  { packet.Phy.Rx3Activated = RX3_ACTIVATED; };
+    void                       DeActivateRX3           ( void )  { packet.Phy.Rx3Activated = RX3_NOT_ACTIVATED; };
+    eDeviceTypeRx3             IsActivatedRX3           ( void )  { return (packet.Phy.Rx3Activated) ; };
     
     T<RADIOTYPE>               packet;    
 private :

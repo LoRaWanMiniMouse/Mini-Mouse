@@ -68,6 +68,21 @@ PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
   rx_data_task_param.Snr = 0;
   rx_data_task_param.Rssi = 0;
 
+
+  Tx4Rx3Param.Bw = BW125;
+  Tx4Rx3Param.Sf = 7;
+  Tx4Rx3Param.CodingRate = CR_4_5;
+  Tx4Rx3Param.CrcMode = CRC_YES;
+  Tx4Rx3Param.HeaderMode = EXPLICIT_HEADER;
+  Tx4Rx3Param.IqMode = IQ_NORMAL;
+  Tx4Rx3Param.Modulation = LORA;
+  Tx4Rx3Param.Power = 14;
+  Tx4Rx3Param.PreambuleLength = 8;
+  Tx4Rx3Param.SyncWord = 0x34;
+  Tx4Rx3Param.TimeOutMs = 40;
+  Tx4Rx3Param.Snr = 0;
+  Tx4Rx3Param.Rssi = 0;
+
   rx_data_task.HookId = this->hook_id;
   rx_data_task.TaskDuration = 40;
   rx_data_task.State = TASK_SCHEDULE;
@@ -91,6 +106,7 @@ PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
   tx_ack_relay_task.TaskDuration = 58;
   tx_ack_relay_task.State = TASK_SCHEDULE;
   tx_ack_relay_task.TaskType = TX_LORA;
+  RxBufferAppLength = 0;
 }
 
 PointToPointReceiver::~PointToPointReceiver() {}
@@ -149,8 +165,8 @@ PointToPointReceiver::ExecuteStateMachine()
             this->rx_data_task.StartTime = data_rx_ms;
             
             this->radio_planner->EnqueueTask(this->rx_data_task, this->rx_buffer,
-                                             &this->rx_buffer_length,
-                                             this->rx_data_task_param);
+                                            &this->rx_buffer_length,
+                                            this->rx_data_task_param);
             this->state = STATE_WAIT_RX_DATA_COMPLETION;
             DEBUG_PRINTF("Rx frag. #%i\n", wake_up_id);
         }  
@@ -163,15 +179,19 @@ PointToPointReceiver::ExecuteStateMachine()
 
     case STATE_WAIT_RX_DATA_COMPLETION: {
       if (this->rx_success) {
-        this->rx_success = false;
+        RxBufferAppLength = this->rx_buffer_length ;
+        memcpy( RxBufferApp, this->rx_buffer, RxBufferAppLength);
+        RxBufferAppTime   = mcu.RtcGetTimeMs ();
+        
+        this->rx_success  = false;
         this->delay_indicator =
           this->GetDelayIndicatorMs(last_cad_ms, data_rx_ms);
         this->ack.delay = delay_indicator;
         this->tx_ack_relay_task.StartTime = mcu.RtcGetTimeMs() + 1;
         this->tx_ack_relay_task_param.Frequency = this->channel;
         this->radio_planner->EnqueueTask(this->tx_ack_relay_task,
-                                         this->ack.buffer, &this->ack_length,
-                                         this->tx_ack_relay_task_param);
+                                        this->ack.buffer, &this->ack_length,
+                                        this->tx_ack_relay_task_param);
         this->state = STATE_WAIT_TX_ACK_COMPLETION;
       } else {
         DEBUG_PRINTFRP("Wakeup id: %i\n", this->wake_up_id);
@@ -206,7 +226,7 @@ PointToPointReceiver::Callback(void* self)
   ePlanerStatus planner_status;
 
   me->radio_planner->GetStatusPlaner(me->hook_id, irq_timestamp_ms,
-                                     planner_status);
+                                    planner_status);
 
   switch (planner_status) {
     case PLANER_CAD_POSITIVE: {
@@ -328,13 +348,13 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void ) {
     }
     wake_up_id                   = fragment.buffer[5];
     if ( wake_up_id > WAKE_UP_FRAGMENT_LENGTH) {
-         DEBUG_PRINTF ( " Recaeive a bad Wake up id  %d", wake_up_id);
-         return (ERROR_PTP);
+        DEBUG_PRINTF ( " Recaeive a bad Wake up id  %d", wake_up_id);
+        return (ERROR_PTP);
     }
     rx_data_task_param.Sf        = 12 - (fragment.buffer[8] & 0xF);
     if ( ( rx_data_task_param.Sf < 7) ||  ( rx_data_task_param.Sf > 12 ) ) {
-         DEBUG_PRINTF ( " Recaeive a bad SF  %d", rx_data_task_param.Sf);
-         return (ERROR_PTP);
+        DEBUG_PRINTF ( " Recaeive a bad SF  %d", rx_data_task_param.Sf);
+        return (ERROR_PTP);
     }
     rx_data_task_param.TimeOutMs = 40 * ( 1 << (rx_data_task_param.Sf - 7));
     switch ( fragment.buffer[8] >> 4 ) {
@@ -348,12 +368,21 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void ) {
           rx_data_task_param.Frequency = 868500000;
           break;
       default :
-           DEBUG_PRINTF ( " Recaeive a bad Frequency  %d", fragment.buffer[8]);
-           return (ERROR_PTP);
-           break;
+          DEBUG_PRINTF ( " Recaeive a bad Frequency  %d", fragment.buffer[8]);
+          return (ERROR_PTP);
+          break;
     }
 DEBUG_PRINTF ( "sf = %d , freq = %d\,n",rx_data_task_param.Sf,rx_data_task_param.Frequency );
-return (status);                    
-     
+Tx4Rx3Param.Frequency = rx_data_task_param.Frequency ;
+return (status);                         
+};
 
+
+void PointToPointReceiver::GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime ) {
+    *PayloadLength = RxBufferAppLength;
+    *RxTime        = RxBufferAppTime + ( MAC_RX3_DELAY * 1000 );
+    if ( RxBufferAppLength > 0 ) {
+        memcpy( RxPayload , RxBufferApp, RxBufferAppLength);
+    }
+    RxBufferAppLength = 0; // clear Rx buffer; 
 };

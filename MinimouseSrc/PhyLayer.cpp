@@ -38,6 +38,7 @@ template <class R> RadioContainer <R>::RadioContainer( RadioPLaner<R> * RadioUse
     TxSf = 7;
     Radio = RadioUser;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond( );
+    Rx3Activated        = RX3_NOT_ACTIVATED;
 }; 
 template <class R> RadioContainer<R>::~RadioContainer( ) {
 };
@@ -127,7 +128,6 @@ template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlan
     sRadioParam.Rssi            = &RxPhyPayloadRssi;
     sRadioParam.SyncWord        = 0x34;
     sRadioParam.CodingRate      = CR_4_5;
-    
     STask stask ;
     stask.HookId         = MyHookId;
     stask.StartTime      = TimetoRadioPlaner;

@@ -129,7 +129,6 @@ int main ( ) {
         RP.InitHook ( 0 , &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
         RadioUser.Reset();
         mcu.GotoSleepMSecond ( 300 );
-
         Lp.RestoreContext  ( );
         Lp.SetDataRateStrategy ( STATIC_ADR_MODE );
         UserFport       = 3;
@@ -139,22 +138,16 @@ int main ( ) {
         }
         UserPayload [ 0 ]  = FW_VERSION ;
         MsgType = UNCONF_DATA_UP;
-        Lp.NewJoin();
-        //mcu.MMClearBuffer();
-        //DEBUG_PRINTFRP ( "toto = %d \n",80);
-        //DEBUG_MSGRP (" tagada \n");
-        
-        DEBUG_PRINTF ("%s\n", BufferDebugRadioPlaner.c_str() );
-
+        Lp.NewJoin();   
         while(1) {
             /*!
             * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes) + FW version. 
             */
             
             if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-                LpState  = Lp.Join( );
+                LpState  = Lp.Join( mcu.RtcGetTimeMs () + 200 );
             } else {
-                LpState  = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType );
+                LpState  = Lp.SendPayload( UserFport, UserPayload, UserPayloadSize, MsgType , mcu.RtcGetTimeMs () + 200);
             }
 
     /*!

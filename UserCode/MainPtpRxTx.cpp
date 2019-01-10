@@ -23,9 +23,11 @@
 #include "RadioPlaner.h"
 
 #define MAX_PAYLOAD_RECEIVED 255
-#define LP_HOOK_ID 0
-#define POINT_TO_POINT_TX_HOOK_ID 1
-#define POINT_TO_POINT_RX_HOOK_ID 2
+#define TX_ON_RX3_ID              0
+#define LP_HOOK_ID                1
+#define POINT_TO_POINT_TX_HOOK_ID 2
+#define POINT_TO_POINT_RX_HOOK_ID 3
+
 #define FW_VERSION 18
 
 
@@ -73,210 +75,263 @@ void PrintPtpStatistics(const StatisticCounters_t* stats,
                         const uint16_t counter);
 
 
-int mainPtPRxTx( void )
-{
-  uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
-  uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
-  uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
-  uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
-  uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x56 };    
-  uint32_t LoRaDevAddrInit          = 0x26011FA0;
-  int i;
-  uint8_t UserFport ;
-  uint8_t UserRxFport ; 
-  uint8_t AppTimeSleeping = 10;
-  uint8_t payload_received[MAX_PAYLOAD_RECEIVED] = { 0x00 };
-  uint8_t payload_received_size = 0;
+void CallBackTxOnRx3 ( void * RadioPlanerIn) {
 
-  uint8_t payload_send[MAX_PAYLOAD_RECEIVED] = { 0x00 };
-  uint8_t payload_send_size = 15;
-  // uint32_t wait_time_ms = 0;
-   sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE };
-  mcu.InitMcu();
+}
 
-    #ifdef SX126x_BOARD
+
+int mainPtPRxTx( void ) {
+uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
+uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
+uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
+uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x57 };    
+#if BLOC
+uint32_t LoRaDevAddrInit            = 0x26011632;
+#else
+uint32_t LoRaDevAddrInit          = 0x26011FA0;
+#endif
+int i;
+uint8_t UserFport ;
+uint8_t UserRxFport ; 
+uint8_t AppTimeSleeping = 10;
+uint8_t payload_received[MAX_PAYLOAD_RECEIVED] = { 0x00 };
+uint8_t payload_received_size = 0;
+uint8_t payload_send[MAX_PAYLOAD_RECEIVED] = { 0x00 };
+uint8_t payload_send_size = 15;
+// uint32_t wait_time_ms = 0;
+sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE };
+mcu.InitMcu();
+#ifdef SX126x_BOARD
     #define FW_VERSION     0x18
-        SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
-        RadioPLaner < SX126x > RP( &RadioUser );
-    #endif
-    #ifdef SX1276_BOARD
+    SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
+    RadioPLaner < SX126x > RP( &RadioUser );
+#endif
+#ifdef SX1276_BOARD
     #define FW_VERSION     0x17
-        SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
-        RadioPLaner < SX1276 > RP( &RadioUser );
-    #endif
-    #ifdef SX1272_BOARD
+    SX1276  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
+    RadioPLaner < SX1276 > RP( &RadioUser );
+#endif
+#ifdef SX1272_BOARD
     #define FW_VERSION     0x13
         SX1272  RadioUser( LORA_CS, LORA_RESET, TX_RX_IT, RX_TIMEOUT_IT);
         RadioPLaner < SX1272 > RP( &RadioUser );
-    #endif
+#endif
 
-
-  #ifdef SX126x_BOARD
+#ifdef SX126x_BOARD
     LoraWanObject<LoraRegionsEU,SX126x> Lp ( LoraWanKeys,&RP,USERFLASHADRESS); 
-  #endif
-  #ifdef SX1276_BOARD
+#endif
+#ifdef SX1276_BOARD
     LoraWanObject<LoraRegionsEU,SX1276> Lp ( LoraWanKeys,&RP,USERFLASHADRESS); 
-  #endif
-  #ifdef SX1272_BOARD
+#endif
+#ifdef SX1272_BOARD
     LoraWanObject<LoraRegionsEU,SX1272> Lp ( LoraWanKeys,&RP,USERFLASHADRESS); 
-  #endif
-  
-  mcu.mwait_ms(2);
+#endif
 
-  PointToPointReceiver    ptpRx(&RP, POINT_TO_POINT_RX_HOOK_ID);
-  PointToPointTransmitter ptpTx(&RP, POINT_TO_POINT_TX_HOOK_ID);
-  // mcu.Init_Irq(PA_1);
-  //mcu.InitGpioIn(USER_BUTTON);
+mcu.mwait_ms(2);
+PointToPointReceiver    ptpRx(&RP, POINT_TO_POINT_RX_HOOK_ID);
+PointToPointTransmitter ptpTx(&RP, POINT_TO_POINT_TX_HOOK_ID);
+// mcu.Init_Irq(PA_1);
+//mcu.InitGpioIn(USER_BUTTON);
 
-  RP.InitHook ( LP_HOOK_ID , &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
-  RP.InitHook ( POINT_TO_POINT_RX_HOOK_ID, &(PointToPointReceiver::Callback ),reinterpret_cast<void*>(&ptpRx));
-  RP.InitHook ( POINT_TO_POINT_TX_HOOK_ID, &(PointToPointTransmitter::Callback ),reinterpret_cast<void*>(&ptpTx));
-  DEBUG_MSG("Init END \n");
-  
-  
-  uint8_t AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
-  eLoraWan_Process_States LpState = LWPSTATE_IDLE;  
-  RadioUser.Reset();
-  mcu.GotoSleepMSecond ( 300 );
-  uint32_t count_start = 0;
-  const uint32_t wait_before_next_start_min = 1000;  // 1000
-  const uint32_t wait_before_next_start_max = 17000; // 10000
-  uint16_t wait_before_next_start = wait_before_next_start_min;
-  StatisticCounters_t ptp_stats;
-  bool tx_loop_running = false;
-  bool start_tx = false;
+RP.InitHook ( LP_HOOK_ID , &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
+RP.InitHook ( POINT_TO_POINT_RX_HOOK_ID, &(PointToPointReceiver::Callback ),reinterpret_cast<void*>(&ptpRx));
+RP.InitHook ( POINT_TO_POINT_TX_HOOK_ID, &(PointToPointTransmitter::Callback ),reinterpret_cast<void*>(&ptpTx));
+RP.InitHook ( TX_ON_RX3_ID, &CallBackTxOnRx3, reinterpret_cast <void * > (&RP) );
+STask       Tx4Rx3Task;
+Tx4Rx3Task.HookId       = TX_ON_RX3_ID;
+Tx4Rx3Task.TaskDuration = 200; // tbupdated with Timeonair
+Tx4Rx3Task.State        = TASK_SCHEDULE;
+Tx4Rx3Task.TaskType     = TX_LORA;
+
+DEBUG_MSG("Init  Done\n");
 
 
+uint8_t AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
+eLoraWan_Process_States LpState = LWPSTATE_IDLE;  
+RadioUser.Reset();
+mcu.GotoSleepMSecond ( 300 );
+uint32_t count_start = 0;
+const uint32_t wait_before_next_start_min = 1000;  // 1000
+const uint32_t wait_before_next_start_max = 17000; // 10000
+uint16_t wait_before_next_start = wait_before_next_start_min;
+StatisticCounters_t ptp_stats;
+bool tx_loop_running = false;
+bool start_tx = false;
 
-  mcu.MMClearDebugBufferRadioPlaner ( );
-  
-  //Lp.RestoreContext  ( );
-  Lp.SetDataRateStrategy ( USER_DR_DISTRIBUTION );
-  UserFport       = 3;
-  uint8_t UserPayloadSizeClassA = 14;
-  uint8_t UserPayloadClassA [ 30 ];
-  for (int i = 0 ; i < UserPayloadSizeClassA ; i++ ) {
-      UserPayloadClassA [i]= i;
-  }
-  UserPayloadClassA [ 0 ]  = FW_VERSION ;
-  uint8_t MsgTypeClassA = UNCONF_DATA_UP;
-  Lp.NewJoin();
-  
-  uint32_t next_start = mcu.RtcGetTimeMs();
-  uint32_t CptDemo = 0;
-  mcu.MMClearDebugBufferRadioPlaner ( );
-  //ptpRx.Start(payload_received, &payload_received_size);
-  next_start = mcu.RtcGetTimeMs();
-  start_tx   = true;
-  
-    #ifdef BLOC
-     ptpRx.Start(payload_received, &payload_received_size);
-       while(1){
-           mcu.GotoSleepMSecond ( 2000 );
-       }
-    #else 
-      
-    #endif
-  while (1) {
-      if (start_tx){
-          start_tx = false;
-          count_start++;
-          ptpTx.SetChannelDr (  Lp.GetNextFrequency ( ), Lp.GetNextDataRate  ( ) );
-          uint32_t NextSendSlot = ptpTx.Start(payload_send, payload_send_size);
-          if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-              //LpState  = Lp.Join( NextSendSlot );
-          } else {
-             LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA,NextSendSlot );
-          }
-      }
-      if((int32_t)(next_start - mcu.RtcGetTimeMs() ) <= 0){
-          start_tx = true;
-          next_start = mcu.RtcGetTimeMs() + 3000;
-          ptpTx.GetStatistics(&ptp_stats);
-          PrintPtpStatistics(&ptp_stats, count_start);
-      }
-       while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
-        LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-        mcu.GotoSleepMSecond ( 200 );
-        mcu.WatchDogRelease  ( );
-    }
-    mcu.GotoSleepMSecond ( 200 );
-   
-  }
+mcu.MMClearDebugBufferRadioPlaner ( );
 
-  while (true) {
-    if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-       LpState  = Lp.Join( 0);
-    } else {
-      if ( CptDemo == 0 ) {
-        LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA, 0 );
-      };
-      (CptDemo == 100) ? CptDemo = 0 : CptDemo++ ;
-      sStatisticTest.TxClassACpt++;
-    }
-/*
-    if (mcu.GetValueDigitalInPin(USER_BUTTON) == 0) {
-      tx_loop_running = !tx_loop_running;
-      next_start = mcu.RtcGetTimeMs();
-      mcu.mwait_ms(200);
-    }
-    if (tx_loop_running) {
-      if (start_tx){
-        start_tx = false;
-        count_start++;
-       // ptpTx.Start(payload_send, payload_send_size);
-      }
-      if((int32_t)(next_start - mcu.RtcGetTimeMs() ) <= 0){
-        start_tx = true;
-        next_start = mcu.RtcGetTimeMs() + randr(2000, 10000);
-        ptpTx.GetStatistics(&ptp_stats);
-        PrintPtpStatistics(&ptp_stats, count_start);
-      }
-    }
-*/  
-    while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
-        LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-        mcu.GotoSleepMSecond ( 400 );
-        mcu.WatchDogRelease  ( );
-    }
-    //mcu.MMPrintBuffer ( ) ;
-    //RP.GetStatistic ( );
-    if ( LpState == LWPSTATE_ERROR )  {
-        InsertTrace ( __COUNTER__, FileId );
-        // user application have to save all the need
-        NVIC_SystemReset();
-    }
-    if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
-        AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
-        sStatisticTest.ClassARxCpt ++;
-        InsertTrace ( __COUNTER__, FileId );
-        Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
-        if ( UserRxPayloadSize > 0) {
-            DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
-            for ( i = 0 ; i < UserRxPayloadSize ; i++){
-                DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
-            }
-        } else {
-            DEBUG_MSG ("Receive Ack \n");
-        }
-       
-    }
-
-    mcu.GotoSleepSecond ( 30 );
-    mcu.MMPrintBuffer();
+//Lp.RestoreContext  ( );
+#if BLOC
+    Lp.SetDataRateStrategy ( MOBILE_LOWPER_DR_DISTRIBUTION );
     
-    sStatisticTest.PrintStatisticTest(); 
+#else 
+    Lp.SetDataRateStrategy ( USER_DR_DISTRIBUTION );
+    Lp.ActivateRX3 (); 
+#endif
+UserFport       = 3;
+uint8_t UserPayloadSizeClassA = 14;
+uint8_t UserPayloadClassA [ 250 ];
+
+for (int i = 0 ; i < UserPayloadSizeClassA ; i++ ) {
+    UserPayloadClassA [i]= i;
+}
+UserPayloadClassA [ 0 ]  = FW_VERSION ;
+uint8_t MsgTypeClassA = UNCONF_DATA_UP;
+Lp.NewJoin();
+
+uint32_t next_start = mcu.RtcGetTimeMs();
+uint32_t CptDemo = 0;
+uint32_t RxAppTime = 0;
+mcu.MMClearDebugBufferRadioPlaner ( );
+//ptpRx.Start(payload_received, &payload_received_size);
+next_start = mcu.RtcGetTimeMs();
+start_tx   = true;
+#ifdef BLOC
+    ptpRx.Start(payload_received, &payload_received_size);
+    while(1){
+        ptpRx.GetRxPayload ( UserPayloadClassA, &UserPayloadSizeClassA, &RxAppTime );
+        if ( UserPayloadSizeClassA > 0 ) {
+            LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
+            Tx4Rx3Task.StartTime      = RxAppTime ;
+        }
+        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
+            LpState = Lp.LoraWanProcess( &AvailableRxPacket );
+            mcu.GotoSleepMSecond ( 200 );
+            mcu.WatchDogRelease  ( );
+        }
+        if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
+            AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
+            sStatisticTest.ClassARxCpt ++;
+            InsertTrace ( __COUNTER__, FileId );
+            Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
+            if ( UserRxPayloadSize > 0) {
+                DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+                for ( i = 0 ; i < UserRxPayloadSize ; i++){
+                    DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+                }
+                RP.EnqueueTask (Tx4Rx3Task, UserRxPayload, &UserRxPayloadSize, ptpRx.Tx4Rx3Param ); //@tbd RadioPlaner  timeonair 
+            } else {
+                DEBUG_MSG ("Receive Ack \n");
+            }
+        }   
+        mcu.GotoSleepMSecond ( 2000 );
+    }
+#else 
+#endif 
+    while (1) {
+        if ( start_tx ) {
+            start_tx = false;
+            count_start++;
+            ptpTx.SetChannelDr (  Lp.GetNextFrequency ( ), Lp.GetNextDataRate  ( ) );
+            uint32_t NextSendSlot = ptpTx.Start(payload_send, payload_send_size);
+            if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
+                //LpState  = Lp.Join( NextSendSlot );
+            } else {
+                LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA,NextSendSlot );
+            }
+        }
+        if((int32_t)(next_start - mcu.RtcGetTimeMs() ) <= 0){
+            start_tx = true;
+            next_start = mcu.RtcGetTimeMs() + 10000;
+            ptpTx.GetStatistics(&ptp_stats);
+            //PrintPtpStatistics(&ptp_stats, count_start);
+        }
+        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
+            LpState = Lp.LoraWanProcess( &AvailableRxPacket );
+            mcu.GotoSleepMSecond ( 200 );
+            mcu.WatchDogRelease  ( );
+        }
+         if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
+            AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
+            sStatisticTest.ClassARxCpt ++;
+            InsertTrace ( __COUNTER__, FileId );
+            Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
+            if ( UserRxPayloadSize > 0) {
+                DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+                for ( i = 0 ; i < UserRxPayloadSize ; i++){
+                    DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+                }
+            } else {
+                DEBUG_MSG ("Receive Ack \n");
+            }
+        }   
+    mcu.GotoSleepMSecond ( 200 );
+    }
+}
+/*
+ while (true) {
+  if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
+     LpState  = Lp.Join( 0);
+  } else {
+    if ( CptDemo == 0 ) {
+      LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA, 0 );
+    };
+    (CptDemo == 100) ? CptDemo = 0 : CptDemo++ ;
+    sStatisticTest.TxClassACpt++;
   }
+
+  if (mcu.GetValueDigitalInPin(USER_BUTTON) == 0) {
+    tx_loop_running = !tx_loop_running;
+    next_start = mcu.RtcGetTimeMs();
+    mcu.mwait_ms(200);
+  }
+  if (tx_loop_running) {
+    if (start_tx){
+      start_tx = false;
+      count_start++;
+     // ptpTx.Start(payload_send, payload_send_size);
+    }
+    if((int32_t)(next_start - mcu.RtcGetTimeMs() ) <= 0){
+      start_tx = true;
+      next_start = mcu.RtcGetTimeMs() + randr(2000, 10000);
+      ptpTx.GetStatistics(&ptp_stats);
+      PrintPtpStatistics(&ptp_stats, count_start);
+    }
+  }
+*  
+  while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
+      LpState = Lp.LoraWanProcess( &AvailableRxPacket );
+      mcu.GotoSleepMSecond ( 400 );
+      mcu.WatchDogRelease  ( );
+  }
+  //mcu.MMPrintBuffer ( ) ;
+  //RP.GetStatistic ( );
+  if ( LpState == LWPSTATE_ERROR )  {
+      InsertTrace ( __COUNTER__, FileId );
+      // user application have to save all the need
+      NVIC_SystemReset();
+  }
+  if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
+      AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
+      sStatisticTest.ClassARxCpt ++;
+      InsertTrace ( __COUNTER__, FileId );
+      Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
+      if ( UserRxPayloadSize > 0) {
+          DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+          for ( i = 0 ; i < UserRxPayloadSize ; i++){
+              DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+          }
+      } else {
+          DEBUG_MSG ("Receive Ack \n");
+      }
+     
+  }
+
+   mcu.GotoSleepSecond ( 30 );
+  mcu.MMPrintBuffer();
+  
+  sStatisticTest.PrintStatisticTest(); 
+}
 }
 
-void
-PrintPtpStatistics(const StatisticCounters_t* stats, const uint16_t counter)
-{
-  DEBUG_PRINTF("......... %3i .........\n", counter);
-  DEBUG_PRINTF("Wake up fragment tx attempts: %5i\n", stats->wuf_tx_attempt);
-  DEBUG_PRINTF("Wake up sequence tx attempts: %5i\n", stats->wus_tx_attempt);
-  DEBUG_PRINTF("Data tx attempts:             %5i\n", stats->data_tx_attempt);
-  DEBUG_PRINTF("Acknowledge rx attempts:      %5i\n", stats->ack_rx_attempt);
-  DEBUG_PRINTF("Acknowledge rx successes:     %5i\n", stats->ack_rx_success);
-  DEBUG_MSG("==============================\n");
+PintPtpStatistics(const StatisticCounters_t* stats, const uint16_t counter)
+{DEBUG_PRINTF("......... %3i .........\n", counter);
+DEBUG_PRINTF("Wake up fragment tx attempts: %5i\n", stats->wuf_tx_attempt);
+DEBUG_PRINTF("Wake up sequence tx attempts: %5i\n", stats->wus_tx_attempt);
+DEBUG_PRINTF("Data tx attempts:             %5i\n", stats->data_tx_attempt);
+DEBUG_PRINTF("Acknowledge rx attempts:      %5i\n", stats->ack_rx_attempt);
+DEBUG_PRINTF("Acknowledge rx successes:     %5i\n", stats->ack_rx_success);
+DEBUG_MSG("==============================\n");
 }
+*/

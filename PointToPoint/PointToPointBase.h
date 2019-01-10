@@ -9,6 +9,7 @@
 #define CAD_BEAT_PER_CHANNEL_MS (2 * CAD_BEAT_MS)
 #define NBR_FREQUENCIES 2
 
+
 typedef struct
 {
   uint32_t wus_tx_attempt;

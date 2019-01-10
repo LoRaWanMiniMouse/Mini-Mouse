@@ -87,6 +87,7 @@ typedef enum LoraWan_Process_States {
     LWPSTATE_SEND ,
     LWPSTATE_RX1 ,
     LWPSTATE_RX2 ,
+    LWPSTATE_RX3 ,
     LWPSTATE_PROCESSDOWNLINK ,
     LWPSTATE_UPDATEMAC,
     LWPSTATE_TXwait,
@@ -111,6 +112,7 @@ enum{
     RADIOSTATE_TXON,
     RADIOSTATE_TXFINISHED,
     RADIOSTATE_RX1FINISHED,
+    RADIOSTATE_RX2FINISHED,
     RADIOSTATE_RXC,
 };
 typedef enum {
@@ -118,6 +120,11 @@ typedef enum {
     CLASS_C_NOT_ACTIVATED,
 }eDeviceTypeClassC;
 
+typedef enum {
+    RX3_ACTIVATED,
+    RX3_NOT_ACTIVATED,
+}
+eDeviceTypeRx3;
 /********************************************************************************/
 /*                   LoraWan Mac Layer Parameters                               */
 /********************************************************************************/
@@ -277,7 +284,8 @@ typedef enum {
 } eRxPacketType;
 typedef enum {
     RX1,
-    RX2
+    RX2,
+    RX3, // for Relay
 }eRxWinType;
 /*************************/
 /*    SHARE WITH USER    */

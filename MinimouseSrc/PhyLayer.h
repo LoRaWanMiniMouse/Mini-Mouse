@@ -60,7 +60,7 @@ public:
     uint32_t               SendTargetTime; // Not equal to Zero in case of send At Time  
     /**********for class c************/
     eIsReceiveOnRXC        IsReceiveOnRXC;
-
+    eDeviceTypeRx3         Rx3Activated;
 private :
     uint8_t              MyHookId;
     SRadioParam          sRadioParam; 
@@ -73,6 +73,7 @@ private :
     uint8_t              TxPower;
     uint8_t              TxSf;
     eBandWidth           TxBw;
+
 
     
     int                  DumpRxPayloadAndMetadata ( void );

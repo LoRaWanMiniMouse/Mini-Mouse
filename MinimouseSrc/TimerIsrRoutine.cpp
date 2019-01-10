@@ -29,7 +29,7 @@ template class LoraWanContainer <16,SX1272>;
 template class LoraWanContainer <72,SX1272>;
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::IsrTimerRx1( void ) {
 
-   /*  StateTimer = TIMERSTATE_SLEEP;
+   /*  StateTimer = TIMERSTATE_SLEEP; // remove because of RadioPlaner
     InsertTrace ( __COUNTER__, FileId );
     RegionSetRxConfig ( RX1 );
     ConfigureRadioForRx1 ( ); */

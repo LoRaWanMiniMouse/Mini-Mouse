@@ -17,8 +17,9 @@ public:
   void Start(uint8_t* data_payload, uint8_t* data_payload_length);
   void Abort();
   void GetStatistics(StatisticCounters_t* counters);
+  void GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime );
   static void Callback(void*);
-
+  SRadioParam Tx4Rx3Param;
 protected:
   void ExecuteStateMachine();
   eStatusPtP DecodeWakeUpSequence ( void) ;
@@ -49,8 +50,11 @@ private:
   volatile bool rx_success;
   volatile bool tx_success;
 
-  uint8_t rx_buffer[MAX_RX_BUFFER_LENGTH];
-  uint8_t rx_buffer_length;
+  uint8_t  rx_buffer[MAX_RX_BUFFER_LENGTH];
+  uint8_t  rx_buffer_length;
+  uint8_t  RxBufferApp[MAX_RX_BUFFER_LENGTH];
+  uint8_t  RxBufferAppLength;
+  uint32_t RxBufferAppTime;
   uint32_t FrequencyList[NBR_FREQUENCIES];
 
   uint32_t last_cad_ms;
@@ -67,7 +71,7 @@ private:
   STask tx_ack_relay_task;
   SRadioParam rx_data_task_param;
   STask rx_data_task;
-
+ 
   uint8_t* data_received;
   uint8_t* data_received_length;
   WakeUpFragments_t fragment;

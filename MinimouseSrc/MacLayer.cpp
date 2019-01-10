@@ -41,42 +41,40 @@ template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContain
     memcpy( appKey, LoRaWanKeys.LoRaMacAppKey, 16 );
     memcpy( devEui, LoRaWanKeys.DevEui, 8 );
     memcpy( appEui, LoRaWanKeys.AppEui, 8 );
-    otaDevice              = LoRaWanKeys.OtaDevice;
-    FcntUp                 = 0;
-    FcntDwn                = 0xFFFFFFFF;
-    SetDevAddr             ( LoRaWanKeys.LoRaDevAddr );
-    //Phy.DevAddrIsr         = DevAddr ; 
-    AdrAckCnt              = 0;
-    AdrAckReq              = 0;
-    MacNbTrans             = 1;
-    IsFrameToSend          = NOFRAME_TOSEND;
-    RtcNextTimeJoinSecond  = 0;
-    RetryJoinCpt           = 0;
-    FoptsTxLength          = 0;
-    FoptsTxLengthCurrent   = 0;
-    FoptsTxLengthSticky    = 0;
-    FirstDwn               = true;
-    Phy.JoinedStatus       = ( otaDevice == APB_DEVICE ) ? JOINED : NOT_JOINED;
-    UserFlashAdress        = FlashAdress;
-    MacNwkPayloadSize      = 0;
-    ClassCG0Enable         = CLASS_CG0_ENABLE; 
-    ClassCG1Enable         = CLASS_CG1_DISABLE; 
-    Phy.ClassCG0EnableIsr  = ClassCG0Enable;
-    Phy.ClassCG1EnableIsr  = ClassCG1Enable;
-    DevAddrClassCG0        = 0x11223344;
-    Phy.DevAddrClassCG0Isr = DevAddrClassCG0 ;
-    DevAddrClassCG1        = 0x0 ;
-    Phy.DevAddrClassCG1Isr = DevAddrClassCG0 ;
+    otaDevice                   = LoRaWanKeys.OtaDevice;
+    FcntUp                      = 0;
+    FcntDwn                     = 0xFFFFFFFF;
+    SetDevAddr                  ( LoRaWanKeys.LoRaDevAddr );
+    AdrAckCnt                   = 0;
+    AdrAckReq                   = 0;
+    MacNbTrans                  = 1;
+    IsFrameToSend               = NOFRAME_TOSEND;
+    RtcNextTimeJoinSecond       = 0;
+    RetryJoinCpt                = 0;
+    FoptsTxLength               = 0;
+    FoptsTxLengthCurrent        = 0;
+    FoptsTxLengthSticky         = 0;
+    FirstDwn                    = true;
+    Phy.JoinedStatus            = ( otaDevice == APB_DEVICE ) ? JOINED : NOT_JOINED;
+    UserFlashAdress             = FlashAdress;
+    MacNwkPayloadSize           = 0;
+    ClassCG0Enable              = CLASS_CG0_ENABLE; 
+    ClassCG1Enable              = CLASS_CG1_DISABLE; 
+    Phy.ClassCG0EnableIsr       = ClassCG0Enable;
+    Phy.ClassCG1EnableIsr       = ClassCG1Enable;
+    DevAddrClassCG0             = 0x11223344;
+    Phy.DevAddrClassCG0Isr      = DevAddrClassCG0 ;
+    DevAddrClassCG1             = 0x0 ;
+    Phy.DevAddrClassCG1Isr      = DevAddrClassCG0 ;
+    FcntDwnClassCG0             = 0xFFFFFFFF;  
+    FcntDwnClassCG1             = 0xFFFFFFFF;  
+    MacTxModulationCurrent      = LORA;
+    MacRx2ModulationTypeCurrent = LORA;
+    MacRx3Delay                 = MAC_RX3_DELAY;
     memcpy( appSKeyClassCG0, LoRaWanKeys.LoRaMacAppSKey, 16 );
     memcpy( nwkSKeyClassCG0, LoRaWanKeys.LoRaMacNwkSKey, 16 );
     memset( nwkSKeyClassCG1, 0 , 16 );
-    // memset( nwkSKeyClassCG0, 0 , 16 );
-    //memset( appSKeyClassCG0, 0 , 16 );
     memset( appSKeyClassCG1, 0 , 16 );
-    FcntDwnClassCG0         = 0xFFFFFFFF;  
-    FcntDwnClassCG1         = 0xFFFFFFFF;  
-    MacTxModulationCurrent  = LORA;
-    MacRx2ModulationTypeCurrent = LORA;
 }; 
 
 template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::~LoraWanContainer( ) {
@@ -133,6 +131,8 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
 
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx1 (  uint32_t TimetoRadioPlaner  ) {
+    MacRx3Frequency = MacRx1FrequencyCurrent;
+
     Phy.SetRxConfig(TimetoRadioPlaner ,MacTxModulationCurrent,MacRx1FrequencyCurrent, MacRx1SfCurrent, MacRx1BwCurrent, MacRxWindowMs);
 };
 /************************************************************************************************************************************/
@@ -145,6 +145,16 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
     InsertTrace ( __COUNTER__, FileId );
     Phy.SetRxConfig(TimetoRadioPlaner, MacRx2ModulationTypeCurrent, MacRx2Frequency, MacRx2SfCurrent, MacRx2BwCurrent, MacRxWindowMs );
 };
+
+template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRx3 ( uint32_t TimetoRadioPlaner ) {
+    InsertTrace ( __COUNTER__, FileId );
+    MacRx3SfCurrent = 7;
+    MacRx3BwCurrent = BW125;
+    MacRx3ModulationTypeCurrent = LORA;
+    Phy.SetRxConfig(TimetoRadioPlaner, MacRx3ModulationTypeCurrent, MacRx3Frequency, MacRx3SfCurrent, MacRx3BwCurrent, MacRxWindowMs );
+};
+
+
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::ConfigureRadioForRxClassC ( void ) {
     Phy.SetRxConfig(0,LORA, MacRx2Frequency, MacRx2SfCurrent-5, MacRx2BwCurrent, 10000 ); //@tbd RadioPlaner "0 ""
@@ -169,10 +179,10 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
            // SetAlarm( tAlarmMillisec - RxOffsetMs , type );
             RegionSetRxConfig ( RX1 );
             Phy.LastTimeRxWindowsMs =  ( ( MacRx1Delay * 1000 )+ Phy.TimestampRtcIsr ) - RxOffsetMs + MacRxWindowMs ; // timestamp of the end of rx1 windows
-            DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
             ConfigureRadioForRx1 ( mcu.RtcGetTimeMs () + tAlarmMillisec - RxOffsetMs );
+            DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
         }
-    } else {
+    } else if ( type == RX2) {
         RegionSetRxConfig ( RX2 );
         
         if (MacRx2ModulationTypeCurrent == LORA) {
@@ -189,10 +199,14 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::Configure
             //SetAlarm( tAlarmMillisec - RxOffsetMs, type );
             RegionSetRxConfig ( RX2 );
             Phy.LastTimeRxWindowsMs = ( MacRx1Delay * 1000 ) + 1000 + Phy.TimestampRtcIsr - RxOffsetMs + MacRxWindowMs ; // timestamp of the end of rx2 windows
-            DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
             ConfigureRadioForRx2 ( mcu.RtcGetTimeMs () + tAlarmMillisec - RxOffsetMs );
-        
+            DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
         }
+    } else { //Rx3 
+        tAlarmMillisec = ( MacRx3Delay * 1000 )  + Phy.TimestampRtcIsr - tCurrentMillisec  ;// @note Rx2 Dalay is alway RX1DELAY + 1 second
+        ComputeRxWindowParameters ( MacRx3SfCurrent, MacRx3BwCurrent, CRYSTAL_ERROR, MacRx3Delay * 1000 , BOARD_DELAY_RX_SETTING_MS );
+        ConfigureRadioForRx3 ( mcu.RtcGetTimeMs () + tAlarmMillisec - RxOffsetMs );
+        DEBUG_PRINTF( "  Timer will expire in %d ms\n", ( tAlarmMillisec - RxOffsetMs ) );
     }
    
 }

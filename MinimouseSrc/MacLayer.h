@@ -38,6 +38,7 @@ public:
     void ConfigureRadioAndSend               ( void );
     void ConfigureRadioForRx1                ( uint32_t TimetoRadioPlaner );
     void ConfigureRadioForRx2                ( uint32_t TimetoRadioPlaner );
+    void ConfigureRadioForRx3                ( uint32_t TimetoRadioPlaner );
     void ConfigureRadioForRxClassC           ( void );
     void ConfigureTimerForRx                 ( eRxWinType type );
     void UpdateMacLayer                      ( void );
@@ -208,7 +209,11 @@ protected :
     eBandWidth       MacRx2BwCurrent;
     int              FindEnabledChannel ( uint8_t Index );
     void             PrintMacContext ( void ) ;
-
+    eModulationType  MacRx3ModulationTypeCurrent ;
+    uint32_t         MacRx3Frequency; 
+    uint8_t          MacRx3SfCurrent;
+    eBandWidth       MacRx3BwCurrent;
+    uint8_t          MacRx3Delay    ;
 private :
     static const uint16_t MAX_FCNT_GAP       = 16384 ;
     void SetMacHeader              ( void );

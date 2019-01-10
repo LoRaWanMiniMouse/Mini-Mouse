@@ -131,11 +131,11 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
     /************************************************************************************/
         case LWPSTATE_RX2:
                             
-            if ( GetRadioState( ) == RADIOSTATE_IDLE ) {
+            if ( ( GetRadioState( ) == RADIOSTATE_IDLE ) || ( GetRadioState( ) == RADIOSTATE_RX2FINISHED ) )  {
                  if ( GetPlanerStatus ( ) == PLANER_RX_PACKET) {
                     InsertTrace ( __COUNTER__, FileId );
                     DEBUG_MSG( "\n" );
-                     DEBUG_MSG   ( "  ********************************************\n " );
+                    DEBUG_MSG    ( "  ********************************************\n " );
                     DEBUG_PRINTF ( " *  Receive a downlink RX2 for Hook Id = %d  *\n ", MyHookId);
                     DEBUG_MSG    ( " *********************************************\n " );
                     StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK; 
@@ -145,7 +145,35 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
                      DEBUG_MSG    ( "  *************************************\n " );
                     DEBUG_PRINTF  ( " * RX2 Timeout for Hook Id = %d       *\n ", MyHookId);
                     DEBUG_MSG     ( " **************************************\n " );
-                    StateLoraWanProcess = LWPSTATE_UPDATEMAC;
+                    if ( IsActivatedRX3 () ==  RX3_ACTIVATED ) {
+                        packet.ConfigureTimerForRx ( RX3 );
+                        StateLoraWanProcess = LWPSTATE_RX3;
+                    } else {
+                       StateLoraWanProcess = LWPSTATE_UPDATEMAC; 
+                    }
+                }
+            }
+            break;
+    /************************************************************************************/
+    /*                                   STATE RX3                                      */
+    /************************************************************************************/
+        case LWPSTATE_RX3:
+                            
+            if ( GetRadioState( ) == RADIOSTATE_IDLE ) {
+                 if ( GetPlanerStatus ( ) == PLANER_RX_PACKET) {
+                    InsertTrace ( __COUNTER__, FileId );
+                    DEBUG_MSG( "\n" );
+                    DEBUG_MSG    ( "  ********************************************\n " );
+                    DEBUG_PRINTF ( " *  Receive a downlink RX3 for Hook Id = %d  *\n ", MyHookId);
+                    DEBUG_MSG    ( " *********************************************\n " );
+                    StateLoraWanProcess = LWPSTATE_PROCESSDOWNLINK; 
+                } else {
+                    InsertTrace ( __COUNTER__, FileId );
+                    DEBUG_MSG( "\n" );
+                     DEBUG_MSG    ( "  *************************************\n " );
+                    DEBUG_PRINTF  ( " * RX3 Timeout for Hook Id = %d       *\n ", MyHookId);
+                    DEBUG_MSG     ( " **************************************\n " );
+                    StateLoraWanProcess = LWPSTATE_UPDATEMAC; 
                 }
             }
             break;

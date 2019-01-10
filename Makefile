@@ -20,7 +20,7 @@ BOARD_L4          = 0
 RADIO_SX1276      = 1
 RADIO_SX1272      = 0
 RADIO_SX126x      = 0
-DEVICE_UNDER_TEST = 1
+DEVICE_UNDER_TEST = 0
 ####################SX126x_BOARD
 # building variablesSX126x_BOARD
 ######################################

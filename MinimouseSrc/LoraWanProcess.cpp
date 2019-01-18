@@ -36,6 +36,11 @@ LoraWanObject<T,RADIOTYPE>::LoraWanObject( sLoRaWanKeys LoRaWanKeys,RadioPLaner<
 template <template <class R> class T, class RADIOTYPE> 
 LoraWanObject <T,RADIOTYPE> ::~LoraWanObject() {
 };
+template <template <class R> class T, class RADIOTYPE> 
+void LoraWanObject <T,RADIOTYPE> ::Init() {
+    packet.RegionGiveNextDataRate ();
+};
+
 /************************************************************************************************/
 /*                      Public  Methods                                                         */
 /************************************************************************************************/
@@ -218,7 +223,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::LoraWanProcess( uint8_t* A
             *AvailableRxPacket = packet.AvailableRxPacketForUser;
             if ( ( packet.IsFrameToSend == NWKFRAME_TOSEND ) || ( packet.IsFrameToSend == USRFRAME_TORETRANSMIT) ) {// @note ack send during the next tx|| ( packet.IsFrameToSend == USERACK_TOSEND ) ) {
                 packet.IsFrameToSend = NOFRAME_TOSEND;
-                RtcTargetTimer = mcu.RtcGetTimeSecond( ) + randr( 2, 6 ); 
+                RtcTargetTimer = mcu.RtcGetTimeSecond( ) + randr( 1, 2 ); 
                 StateLoraWanProcess = LWPSTATE_TXwait;
             } else {
                 //RadioReset ( ) ; @tbd Radioplaner 
@@ -287,7 +292,7 @@ eLoraWan_Process_States LoraWanObject <T,RADIOTYPE> ::Join ( uint32_t TargetTime
     packet.Phy.JoinedStatus = NOT_JOINED;
     packet.MacNbTransCpt = packet.MacNbTrans = 1;
     packet.RegionSetDataRateDistribution( JOIN_DR_DISTRIBUTION ); 
-    packet.RegionGiveNextDataRate ( );
+    //packet.RegionGiveNextDataRate ( );
     packet.BuildJoinLoraFrame( );
     packet.MacRx2DataRate = packet.RX2DR_INIT;
     packet.MacRx1Delay = packet.JOIN_ACCEPT_DELAY1;

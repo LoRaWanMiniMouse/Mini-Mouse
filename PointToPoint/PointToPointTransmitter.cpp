@@ -77,27 +77,45 @@ PointToPointTransmitter::PointToPointTransmitter(RadioPLaner<SX1276> *radio_plan
     NextSendSlot = mcu.RtcGetTimeMs();
     last_ack_success_received_ms = NextSendSlot - 1000000 ;// init very far in the past 
     Ftype      = 0;
-    DevAddr    = 0x11223344;
+    //DevAddr    = 0x26011B67;
+    DevAddr   = 0x26011D16;
     CntDnw     = WAKE_UP_FRAGMENT_LENGTH;
     Fcount     = 0;
     Channel_Dr = 0;
     for (int i = 0 ; i < WAKE_UP_FRAGMENT_LENGTH ; i++ ) {
-        Mic [ i ] = 0;
+        Mic [ i ] = 0x1234;
     }
 }
 
 PointToPointTransmitter::~PointToPointTransmitter() {}
 void PointToPointTransmitter::SetChannelDr ( uint32_t Channel, uint8_t DataRate ) { 
+    DEBUG_PRINTF ( "channel = %d dr = %d\n",Channel,DataRate);
     switch  (Channel ) {
         case 868100000 :
             Channel_Dr =  DataRate  & 0xf ; 
             break;
         case 868300000 :
-            Channel_Dr =(1<<4 ) +  ((DataRate)  & 0xf) ; 
+            Channel_Dr = ( 1<<4 ) +  ((DataRate)  & 0xf) ; 
             break; 
         case 868500000 :
-            Channel_Dr =(2<<4 ) +  ( (DataRate)  & 0xf) ; 
+            Channel_Dr = ( 2<<4 ) +  ( (DataRate)  & 0xf) ; 
             break ;
+        case 867100000 :
+            Channel_Dr = ( 3<<4 ) +  ( (DataRate)  & 0xf) ; 
+            break;
+        case 867300000 :
+            Channel_Dr = ( 4<<4 ) +  ((DataRate)  & 0xf) ; 
+            break; 
+        case 867500000 :
+            Channel_Dr = ( 5<<4 ) +  ( (DataRate)  & 0xf) ; 
+            break ;
+        case 867700000 :
+            Channel_Dr = ( 6<<4 ) +  ((DataRate)  & 0xf) ; 
+            break; 
+        case 867900000 :
+            Channel_Dr = ( 7<<4 ) +  ( (DataRate)  & 0xf) ; 
+            break ;
+            
         default        :
             Channel_Dr =DataRate  & 0xf ; 
             break;
@@ -110,7 +128,7 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
         // DEBUG_PRINTF("Refuse to start: already running (in state 0x%x)\n", this->state);
         return (0);
     }
-    DEBUG_PRINTF ("start and wk up length = %d\n",WakeUpSequenceLength );
+    DEBUG_PRINTFRP ("start and wk up length = %d\n",WakeUpSequenceLength );
     this->data_payload = data_payload;
     this->data_payload_length = data_payload_length;
 
@@ -133,7 +151,7 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
 
     eHookStatus hookStatus = this->radio_planner->EnqueueTask(wakeup_fragment_task, (uint8_t *)&fragment, &this->fragment_length, wakeup_fragment_task_param);
 
-    DEBUG_PRINTF(
+    DEBUG_PRINTFRP(
         "Go!\n"
         "  --> WakeUp #Fragments: %i\n"
         "  --> NextSendSlot: %i\n"
@@ -152,7 +170,7 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
 
 void PointToPointTransmitter::ExecuteStateMachine()
 {
-    DEBUG_PRINTF ( "state =  %d\n",this->state);
+    DEBUG_PRINTFRP ( "state =  %d\n",this->state);
     switch (this->state)
     {
     case STATE_INIT:
@@ -174,7 +192,7 @@ void PointToPointTransmitter::ExecuteStateMachine()
         }
         else
         {
-             DEBUG_MSG("Send data \n");
+             DEBUG_MSGRP("Send data \n");
             data_send_task.StartTime = mcu.RtcGetTimeMs() + 16;
             eHookStatus hookStatus = this->radio_planner->EnqueueTask(data_send_task, this->data_payload, &this->data_payload_length, data_send_task_param);
             count_data_tx_attempt++;
@@ -205,7 +223,7 @@ void PointToPointTransmitter::ExecuteStateMachine()
             this->rxSuccess = false;
             count_ack_rx_success++;
             WakeUpSequenceDelay = this->rx_buffer[0] + (this->rx_buffer[1] << 8);
-            DEBUG_PRINTF("Delay: %i\n", WakeUpSequenceDelay);
+            DEBUG_PRINTFRP("Delay: %i\n", WakeUpSequenceDelay);
         }
         else
         {
@@ -327,8 +345,8 @@ void PointToPointTransmitter::PrepareNextWakeUpFragment(WakeUpFragments_t *fragm
    fragment->buffer[6]  = ( Fcount >> 8 ) & 0xFF ; 
    fragment->buffer[7]  = Fcount & 0xFF ;
    fragment->buffer[8]  = Channel_Dr ;
-   fragment->buffer[9]  = Mic[fragment_index] >> 8 ;
-   fragment->buffer[10] = Mic[fragment_index] & 0xFF ;
+   fragment->buffer[9]  = 0x12;//Mic[fragment_index] >> 8 ;
+   fragment->buffer[10] = 0x34;//Mic[fragment_index] & 0xFF ;
 }
 
 void PointToPointTransmitter::ComputeNextWakeUpLength(uint8_t *nextWakeUpLength, const uint32_t actual_time, const uint32_t last_ack_success_time)

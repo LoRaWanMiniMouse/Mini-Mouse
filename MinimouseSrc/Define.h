@@ -197,7 +197,7 @@ enum {
 #define MIN_LORAWAN_PAYLOAD_SIZE 12
 #define PORTNWK 0
 
-#define MAX_CONFUP_MSG 4
+#define MAX_CONFUP_MSG 1
 /*****************************************************************************/
 /*                   Lora Phy Irg Flags Parameters                           */
 /*****************************************************************************/

@@ -30,6 +30,7 @@
 
 #define FW_VERSION 18
 
+Relay relay;
 
 #define FileId 4
 int16_t RxcSnr ;
@@ -89,7 +90,9 @@ uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 
 #if BLOC
 uint32_t LoRaDevAddrInit            = 0x26011632;
 #else
-uint32_t LoRaDevAddrInit          = 0x26011FA0;
+uint32_t LoRaDevAddrInit          = 0x26011D16;
+//uint32_t LoRaDevAddrInit          = 0x26011B67;
+
 #endif
 int i;
 uint8_t UserFport ;
@@ -100,7 +103,13 @@ uint8_t payload_received_size = 0;
 uint8_t payload_send[MAX_PAYLOAD_RECEIVED] = { 0x00 };
 uint8_t payload_send_size = 15;
 // uint32_t wait_time_ms = 0;
-sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE };
+#ifdef BLOC
+    sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE };
+#else
+    uint8_t DevEuiInit2[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x56 };    
+    sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit2, LoRaDevAddrInit,APB_DEVICE };
+#endif
+
 mcu.InitMcu();
 #ifdef SX126x_BOARD
     #define FW_VERSION     0x18
@@ -163,7 +172,7 @@ mcu.MMClearDebugBufferRadioPlaner ( );
 
 //Lp.RestoreContext  ( );
 #if BLOC
-    Lp.SetDataRateStrategy ( MOBILE_LOWPER_DR_DISTRIBUTION );
+    Lp.SetDataRateStrategy ( USER_DR_DISTRIBUTION );
     
 #else 
     Lp.SetDataRateStrategy ( USER_DR_DISTRIBUTION );
@@ -178,22 +187,48 @@ for (int i = 0 ; i < UserPayloadSizeClassA ; i++ ) {
 }
 UserPayloadClassA [ 0 ]  = FW_VERSION ;
 uint8_t MsgTypeClassA = UNCONF_DATA_UP;
-Lp.NewJoin();
+//Lp.NewJoin();
 
 uint32_t next_start = mcu.RtcGetTimeMs();
 uint32_t CptDemo = 0;
 uint32_t RxAppTime = 0;
+
+relay.AddDevaddrInWhiteList(0x26011D16);
 mcu.MMClearDebugBufferRadioPlaner ( );
 //ptpRx.Start(payload_received, &payload_received_size);
 next_start = mcu.RtcGetTimeMs();
 start_tx   = true;
+bool T3ACtivated = false;
+int cpt = 200;
 #ifdef BLOC
+    Lp.RestoreContext  ( );
+
+    while ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
+        LpState  = Lp.Join( next_start + 200 );
+        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
+            LpState = Lp.LoraWanProcess( &AvailableRxPacket );
+            mcu.GotoSleepMSecond ( 200 );
+            mcu.WatchDogRelease  ( );
+        }
+         mcu.GotoSleepMSecond ( 3000 );
+    } 
     ptpRx.Start(payload_received, &payload_received_size);
     while(1){
         ptpRx.GetRxPayload ( UserPayloadClassA, &UserPayloadSizeClassA, &RxAppTime );
         if ( UserPayloadSizeClassA > 0 ) {
-            LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
-            Tx4Rx3Task.StartTime      = RxAppTime ;
+            uint32_t ReceiveDevaddr = relay.RelayExtractDevaddr(UserPayloadClassA);
+            
+            if ( relay.IsWhiteListedDevaddr(ReceiveDevaddr) == YES ) { 
+                DEBUG_PRINTF ( "devaddr = %x\n", ReceiveDevaddr);
+                LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
+                Tx4Rx3Task.StartTime      = RxAppTime ;
+                T3ACtivated = true;
+            }
+        }
+        if ( (cpt > 100 ) && (T3ACtivated == false) ){
+            cpt = 0 ;
+            relay.builStatus( UserPayloadClassA, &UserPayloadSizeClassA );
+            LpState  = Lp.SendPayload( UserFport+1, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
         }
         while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
             LpState = Lp.LoraWanProcess( &AvailableRxPacket );
@@ -204,21 +239,49 @@ start_tx   = true;
             AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
             sStatisticTest.ClassARxCpt ++;
             InsertTrace ( __COUNTER__, FileId );
+             DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+                    for ( i = 0 ; i < UserRxPayloadSize ; i++){
+                        DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+                    }
             Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
             if ( UserRxPayloadSize > 0) {
-                DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
-                for ( i = 0 ; i < UserRxPayloadSize ; i++){
-                    DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+                if ( ( UserRxPayloadSize == 4 ) && (UserRxFport == 1)  ) {
+                    relay.AddDevaddrInWhiteList ( UserRxPayload [3] + (UserRxPayload [2] << 8) + (UserRxPayload [1] << 16) + (UserRxPayload [0] << 24) );
+                    cpt = 0 ;
+                    relay.builStatus( UserPayloadClassA, &UserPayloadSizeClassA );
+                    LpState  = Lp.SendPayload( UserFport+1, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
+   
                 }
-                RP.EnqueueTask (Tx4Rx3Task, UserRxPayload, &UserRxPayloadSize, ptpRx.Tx4Rx3Param ); //@tbd RadioPlaner  timeonair 
+                if ( ( UserRxPayloadSize == 4 ) && (UserRxFport == 2) ) {
+                    uint32_t Removedevaddr =  UserRxPayload [3] + (UserRxPayload [2] << 8) + (UserRxPayload [1] << 16) + (UserRxPayload [0] << 24);
+                    relay.RemoveDevaddrInWhiteList ( Removedevaddr );
+                    cpt = 0 ;
+                    relay.builStatus( UserPayloadClassA, &UserPayloadSizeClassA );
+                    LpState  = Lp.SendPayload( UserFport+1, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
+                    DEBUG_PRINTF ("remove devadrr =%x from relay\n", Removedevaddr);
+                }
+                
+                if ( ( T3ACtivated == true) && ( UserRxPayloadSize > 9 ) )  {
+                    DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+                    for ( i = 0 ; i < UserRxPayloadSize ; i++){
+                        DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+                    }
+                    DEBUG_MSG ( "]\n");
+                    RP.EnqueueTask (Tx4Rx3Task, UserRxPayload, &UserRxPayloadSize, ptpRx.Tx4Rx3Param ); //@tbd RadioPlaner  timeonair 
+                }
             } else {
                 DEBUG_MSG ("Receive Ack \n");
             }
-        }   
+        }
+        T3ACtivated = false;
+        cpt++;
         mcu.GotoSleepMSecond ( 2000 );
     }
 #else 
-#endif 
+#endif;
+    Lp.Init ();
+    //uint32_t FrequencyPlan[3] = {863100000,863300000,863500000};
+    //Lp.SetDefaultChannel (FrequencyPlan , 3);
     while (1) {
         if ( start_tx ) {
             start_tx = false;
@@ -226,9 +289,25 @@ start_tx   = true;
             ptpTx.SetChannelDr (  Lp.GetNextFrequency ( ), Lp.GetNextDataRate  ( ) );
             uint32_t NextSendSlot = ptpTx.Start(payload_send, payload_send_size);
             if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-                //LpState  = Lp.Join( NextSendSlot );
+                LpState  = Lp.Join( NextSendSlot );
             } else {
-                LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA,NextSendSlot );
+                if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
+                    AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
+                    sStatisticTest.ClassARxCpt ++;
+                    InsertTrace ( __COUNTER__, FileId );
+                    Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
+                    if ( UserRxPayloadSize > 0) {
+                        DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+                        for ( i = 0 ; i < UserRxPayloadSize ; i++){
+                            DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+                        }
+                    } else {
+                        DEBUG_MSG ("Receive Ack \n");
+                    }
+                    LpState  = Lp.SendPayload( UserFport, UserRxPayload, UserRxPayloadSize, UNCONF_DATA_UP,NextSendSlot );
+                } else {   
+                    LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, UNCONF_DATA_UP,NextSendSlot );
+                }
             }
         }
         if((int32_t)(next_start - mcu.RtcGetTimeMs() ) <= 0){
@@ -242,23 +321,11 @@ start_tx   = true;
             mcu.GotoSleepMSecond ( 200 );
             mcu.WatchDogRelease  ( );
         }
-         if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
-            AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
-            sStatisticTest.ClassARxCpt ++;
-            InsertTrace ( __COUNTER__, FileId );
-            Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
-            if ( UserRxPayloadSize > 0) {
-                DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
-                for ( i = 0 ; i < UserRxPayloadSize ; i++){
-                    DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
-                }
-            } else {
-                DEBUG_MSG ("Receive Ack \n");
-            }
-        }   
+         
     mcu.GotoSleepMSecond ( 200 );
     }
 }
+
 /*
  while (true) {
   if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       

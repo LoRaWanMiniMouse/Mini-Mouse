@@ -71,7 +71,8 @@ private:
   STask tx_ack_relay_task;
   SRadioParam rx_data_task_param;
   STask rx_data_task;
- 
+  int16_t RssiRxDataTask;
+  int16_t SnrRxDataTask;
   uint8_t* data_received;
   uint8_t* data_received_length;
   WakeUpFragments_t fragment;

@@ -1,10 +1,10 @@
 #include "PointToPointReceiver.h"
-
+#include "appli.h"
 #define CAD_DURATION_MS 1
 #define ACK_LENGTH 2
 
 PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
-                                           const uint8_t hook_id)
+                                          const uint8_t hook_id)
   : radio_planner(radio_planner)
   , hook_id(hook_id)
   , state(STATE_INIT)
@@ -65,16 +65,17 @@ PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
   rx_data_task_param.PreambuleLength = 8;
   rx_data_task_param.SyncWord = 0x34;
   rx_data_task_param.TimeOutMs = 40;
-  rx_data_task_param.Snr = 0;
-  rx_data_task_param.Rssi = 0;
+  rx_data_task_param.Snr = &SnrRxDataTask;
+  rx_data_task_param.Rssi = &RssiRxDataTask;
+
 
 
   Tx4Rx3Param.Bw = BW125;
   Tx4Rx3Param.Sf = 7;
   Tx4Rx3Param.CodingRate = CR_4_5;
-  Tx4Rx3Param.CrcMode = CRC_YES;
+  Tx4Rx3Param.CrcMode = CRC_NO;
   Tx4Rx3Param.HeaderMode = EXPLICIT_HEADER;
-  Tx4Rx3Param.IqMode = IQ_NORMAL;
+  Tx4Rx3Param.IqMode = IQ_INVERTED;
   Tx4Rx3Param.Modulation = LORA;
   Tx4Rx3Param.Power = 14;
   Tx4Rx3Param.PreambuleLength = 8;
@@ -87,7 +88,7 @@ PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
   rx_data_task.TaskDuration = 40;
   rx_data_task.State = TASK_SCHEDULE;
   rx_data_task.TaskType = RX_LORA;
-
+ 
   tx_ack_relay_task_param.Bw = BW125;
   tx_ack_relay_task_param.Sf = 7;
   tx_ack_relay_task_param.CodingRate = CR_4_5;
@@ -180,9 +181,16 @@ PointToPointReceiver::ExecuteStateMachine()
     case STATE_WAIT_RX_DATA_COMPLETION: {
       if (this->rx_success) {
         RxBufferAppLength = this->rx_buffer_length ;
-        memcpy( RxBufferApp, this->rx_buffer, RxBufferAppLength);
-        RxBufferAppTime   = mcu.RtcGetTimeMs ();
-        
+        int16_t Rssi = *(this->rx_data_task_param.Rssi);
+        if ( Rssi > (-20) ) {
+           Rssi = -20;
+        }
+        uint8_t RssiByte = (uint8_t) ( -20 - Rssi ) ;
+        RxBufferApp[0] = RssiByte;
+        // RxBufferApp[1] is already updated when received the wake up sequence
+        memcpy( &RxBufferApp[2], this->rx_buffer, RxBufferAppLength);
+        RxBufferAppLength = RxBufferAppLength + 2;
+        RxBufferAppTime   = mcu.RtcGetTimeMs ();        
         this->rx_success  = false;
         this->delay_indicator =
           this->GetDelayIndicatorMs(last_cad_ms, data_rx_ms);
@@ -273,10 +281,9 @@ PointToPointReceiver::Callback(void* self)
 uint32_t
 PointToPointReceiver::GetNextCadStartMs(const uint32_t lastCadMs)
 {
-  uint32_t delay_ms = 5;
+  uint32_t delay_ms = 10;
   uint32_t actual_ms = mcu.RtcGetTimeMs() + delay_ms;
-  uint32_t next_cad_start_ms =
-    ((uint32_t)(lastCadMs / CAD_BEAT_MS)) * CAD_BEAT_MS; // Warning: overflow
+  uint32_t next_cad_start_ms = ((uint32_t)(lastCadMs / CAD_BEAT_MS)) * CAD_BEAT_MS; // Warning: overflow
   while ( (int )( next_cad_start_ms - actual_ms ) <= 0) {
     next_cad_start_ms += CAD_BEAT_MS;
   }
@@ -286,7 +293,7 @@ PointToPointReceiver::GetNextCadStartMs(const uint32_t lastCadMs)
 uint32_t
 PointToPointReceiver::GetNextFreqency(const uint32_t nextCadMs)
 {
-  uint8_t frequency_index = ((nextCadMs) / 250) % 2;
+  uint8_t frequency_index = ((nextCadMs) / CAD_BEAT_MS) % 2;
   return this->FrequencyList[frequency_index];
 }
 
@@ -341,19 +348,26 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void ) {
     }
     DEBUG_MSG ("\n");
     eStatusPtP status = OK_PTP ;
+    uint16_t CheckMic = (fragment.buffer [9] << 8) + ( fragment.buffer [10] );
+    if ( CheckMic != 0x1234 ) {
+        DEBUG_PRINTF ( " Receive a bad Mic %x", CheckMic);
+        return (ERROR_PTP);
+    }
     uint32_t ReceiveDevAddr = (fragment.buffer [1] << 24) + ( fragment.buffer [2] << 16 )+ ( fragment.buffer [3] << 8 )+  fragment.buffer [4] ;
-    if (ReceiveDevAddr != 0x11223344) {
-      DEBUG_PRINTF ( " Recaeive a bad WU dev_addr %x", ReceiveDevAddr);
+    if (relay.IsWhiteListedDevaddr(ReceiveDevAddr) == NO ) {
+      relay.AddDevaddrInBlackList ( ReceiveDevAddr ) ;
+      DEBUG_PRINTF ( " Receive a bad WU dev_addr %x", ReceiveDevAddr);
       return (ERROR_PTP);
     }
     wake_up_id                   = fragment.buffer[5];
-    if ( wake_up_id > WAKE_UP_FRAGMENT_LENGTH) {
-        DEBUG_PRINTF ( " Recaeive a bad Wake up id  %d", wake_up_id);
+    if ( wake_up_id > WAKE_UP_SEQUENCE_LENGTH_MAX) {
+        DEBUG_PRINTF ( " Receive a bad Wake up id  %d", wake_up_id);
         return (ERROR_PTP);
     }
     rx_data_task_param.Sf        = 12 - (fragment.buffer[8] & 0xF);
+    RxBufferApp[1] = fragment.buffer[8];
     if ( ( rx_data_task_param.Sf < 7) ||  ( rx_data_task_param.Sf > 12 ) ) {
-        DEBUG_PRINTF ( " Recaeive a bad SF  %d", rx_data_task_param.Sf);
+        DEBUG_PRINTF ( " Receive a bad SF  %d", rx_data_task_param.Sf);
         return (ERROR_PTP);
     }
     rx_data_task_param.TimeOutMs = 40 * ( 1 << (rx_data_task_param.Sf - 7));
@@ -366,6 +380,21 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void ) {
           break;
       case 2 :
           rx_data_task_param.Frequency = 868500000;
+          break;
+      case 3 :
+          rx_data_task_param.Frequency = 867100000;
+          break;
+      case 4 :
+          rx_data_task_param.Frequency = 867300000;
+          break;
+      case 5 :
+          rx_data_task_param.Frequency = 867500000;
+          break;
+      case 6 :
+          rx_data_task_param.Frequency = 867700000;
+          break;
+      case 7 :
+          rx_data_task_param.Frequency = 867900000;
           break;
       default :
           DEBUG_PRINTF ( " Recaeive a bad Frequency  %d", fragment.buffer[8]);

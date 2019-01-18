@@ -608,7 +608,7 @@ void McuSTM32L072::RtcInit (void)
   }
   time_t t = 0x418924;
    t = 0x18924;
-  //t= 0;
+  
   struct tm * timeinfo;
   timeinfo = localtime (&t);
   sTime.Minutes = timeinfo->tm_min;
@@ -801,8 +801,8 @@ void McuSTM32L072::WakeUpAfterDeepSleep (void) {
   RCC_OscInitStruct.HSICalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLLMUL_6;
-  RCC_OscInitStruct.PLL.PLLDIV = RCC_PLLDIV_3;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLLMUL_6;//RCC_PLLMUL_3;
+  RCC_OscInitStruct.PLL.PLLDIV = RCC_PLLDIV_3;//RCC_PLLDIV_4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK){}
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;

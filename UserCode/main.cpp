@@ -82,7 +82,7 @@ int main ( ) {
     uint8_t MsgType ;
     uint8_t AppTimeSleeping = 10;
     int StatusCertification = 0;
-    sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE };
+    sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE };
     mcu.InitMcu ( );
     #ifdef SX126x_BOARD
     #define FW_VERSION     0x18
@@ -130,7 +130,7 @@ int main ( ) {
         RadioUser.Reset();
         mcu.GotoSleepMSecond ( 300 );
         Lp.RestoreContext  ( );
-        Lp.SetDataRateStrategy ( STATIC_ADR_MODE );
+        Lp.SetDataRateStrategy ( USER_DR_DISTRIBUTION );
         UserFport       = 3;
         UserPayloadSize = 14;
         for (int i = 0 ; i < UserPayloadSize ; i++ ) {
@@ -192,7 +192,7 @@ int main ( ) {
                 mcu.GotoSleepMSecond ( 5000 );
             } else {
                 InsertTrace ( __COUNTER__, FileId );
-                mcu.GotoSleepMSecond ( AppTimeSleeping * 1000 );
+                mcu.GotoSleepMSecond ( 5000 );
                 InsertTrace ( __COUNTER__, FileId );
             }
         }

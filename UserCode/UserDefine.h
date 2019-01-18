@@ -23,14 +23,20 @@ Maintainer        : Fabien Holin (SEMTECH)
 /*                         Application     dependant                            */
 /********************************************************************************/
 #define DEBUG_TRACERP      0
-#define DEBUG_TRACE        1      // Set to 1 to activate debug traces
+#define BLOC 1
+
+#ifdef BLOC
+    #define DEBUG_TRACE        0     // Set to 1 to activate debug traces
+#else
+    #define DEBUG_TRACE        0
+#endif
 #define LOW_POWER_MODE     1     // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 #define DEBUG_TRACE_ENABLE 0  // Set to 1 to activate DebugTrace 
 
-#define LOW_SPEED_CLK  LSE    //
+#define LOW_SPEED_CLK    LSE    //
 #define RX_INDICATOR_PIN PB_8
 #define TX_INDICATOR_PIN PB_8
-//#define BLOC 1
+
 #ifdef MURATA_BOARD
     #ifdef BLOC
         #define UART_NUM                  USART1
@@ -54,15 +60,15 @@ Maintainer        : Fabien Holin (SEMTECH)
     #define RADIO_ANT_SWITCH_TX_BOOST PC_1
     #define RADIO_TCX0_POWER          PA_12
     #ifdef BLOC
-       #define DEBUG                     PB_5   //D4
-       #define DEBUGRX                   PB_5 //D2
+        #define DEBUG                     PB_5   //D4
+        #define DEBUGRX                   PB_5 //D2
     #else
-       #define DEBUG                     PB_5
-       #define DEBUGRX                   PA_10
+        #define DEBUG                     PB_5
+        #define DEBUGRX                   PA_10
     #endif
     #define USER_BUTTON               PC_13
     #define DEBUG_SLEEP               PB_10
-    #define CRYSTAL_ERROR              1 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
+    #define CRYSTAL_ERROR             10 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
     #define BOARD_DELAY_RX_SETTING_MS  5  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
     #define PA_BOOST_CONNECTED         0 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
     #define USERFLASHADRESS 0x8080000U   // start flash adress to store lorawan context
@@ -115,8 +121,14 @@ Maintainer        : Fabien Holin (SEMTECH)
     #endif
     #endif 
 
-#define MAC_RX3_DELAY   7           // second 
+#define MAC_RX3_DELAY   8           // second 
 #define FLASH_UPDATE_PERIOD 32      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted
+#if BLOC
 #define USER_NUMBER_OF_RETRANSMISSION   1// Only used in case of user defined darate distribution strategy
-#define USER_DR_DISTRIBUTION_PARAMETERS 0x01111100  // Only used in case of user defined darate distribution strategy refered to doc that explain this value
+#define USER_DR_DISTRIBUTION_PARAMETERS 0x0001000  
+#else
+#define USER_NUMBER_OF_RETRANSMISSION   1
+#define USER_DR_DISTRIBUTION_PARAMETERS 0x0010000  // Only used in case of user defined darate distribution strategy refered to doc that explain this value
+#endif 
+
 #endif

@@ -82,13 +82,11 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     sRadioParam.CodingRate      = CR_4_5;
     STask stask ;
     stask.HookId         = MyHookId;
-    DEBUG_PRINTF (" send at %d\n",SendTargetTime );
     if ( (int) (SendTargetTime - mcu.RtcGetTimeMs() ) > 0 ) {
         stask.StartTime      = SendTargetTime;
     } else { 
         stask.StartTime      = mcu.RtcGetTimeMs()+200;
     }
-    DEBUG_PRINTF (" send at %d\n",stask.StartTime);
     stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
     stask.State    = TASK_SCHEDULE;
     stask.TaskType = ( TxModulation == LORA ) ? TX_LORA : TX_FSK;

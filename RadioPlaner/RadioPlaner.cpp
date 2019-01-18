@@ -291,9 +291,7 @@ void RadioPLaner<R>::IsrTimerRadioPlaner ( void ) {
 /************************************************************************************/
 template <class R> 
 void  RadioPLaner<R>::IsrRadioPlaner ( void ) {
-     mcu.SetValueDigitalOutPin ( DEBUG , 0 );
-    
-   // mcu.SetValueDigitalOutPin ( DEBUG ,0 ) ;
+    mcu.SetValueDigitalOutPin ( DEBUG , 0 );
     mcu.SetValueDigitalOutPin ( DEBUGRX ,0 ) ;
     if ( SemaphoreAbortRadio == 1 ) {
         SemaphoreAbortRadio = 0;
@@ -454,9 +452,9 @@ eHookStatus  RadioPLaner<R>::ReadRadioFifo ( STask TaskIn ) {
     eHookStatus status = HOOK_OK;
     uint8_t Id = TaskIn.HookId;
     if (TaskIn.TaskType == RX_LORA ) {
-        Radio->FetchPayloadLora ( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
+        Radio->FetchPayloadLora ( PayloadSize [ Id ],  Payload [ Id ], (sRadioParam[Id].Snr), (sRadioParam[Id].Rssi) );
     } else if ( TaskIn.TaskType  == RX_FSK ) {
-        Radio->FetchPayloadFsk ( PayloadSize [ Id ],  Payload [ Id ], sRadioParam[Id].Snr, sRadioParam[Id].Rssi);
+        Radio->FetchPayloadFsk ( PayloadSize [ Id ],  Payload [ Id ], (sRadioParam[Id].Snr),(sRadioParam[Id].Rssi) );
     } else {
         status = HOOK_ID_ERROR;
     }

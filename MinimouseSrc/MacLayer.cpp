@@ -1032,6 +1032,7 @@ template <int NBCHANNEL, class R> void  LoraWanContainer<NBCHANNEL, R>::ComputeR
         MacRxWindowSymb = (uint16_t) (MAX( ( 2 * minRxSymbols - 8 ) + (2 * RxErrorMs * bwTemp >> SF) + 1 , minRxSymbols ));
         RxOffsetMs = ( int32_t )((ceil( ( 4.0 * tSymbol ) - ( ( MacRxWindowSymb * tSymbol ) / 2.0 ) - BoardDelayRxMs ))*(-1));
         MacRxWindowMs = MacRxWindowSymb * tSymbol ;
+      //  DEBUG_PRINTF ( "Rx win = %d delay = %d nb symbol %d\n",MacRxWindowMs,RxOffsetMs,MacRxWindowSymb);
     } else { //FSK
         RxOffsetMs = 40;//BoardDelayRxMs + 25 + ( ( BoardDelayRxMs * ClockAccuracy ) / 1000 );
     }

@@ -49,7 +49,7 @@ public:
      * \param None
      */    
     ~LoraWanObject();
-
+    void Init     (void);
 
      /*!
      * \brief Sends an uplink 
@@ -233,8 +233,14 @@ public:
     void                       DeActivateClassC        ( void );
     void                       ActivateRX3             ( void )  { packet.Phy.Rx3Activated = RX3_ACTIVATED; };
     void                       DeActivateRX3           ( void )  { packet.Phy.Rx3Activated = RX3_NOT_ACTIVATED; };
-    eDeviceTypeRx3             IsActivatedRX3           ( void )  { return (packet.Phy.Rx3Activated) ; };
-    
+    eDeviceTypeRx3             IsActivatedRX3          ( void )  { return (packet.Phy.Rx3Activated) ; };
+    void                       SetDefaultChannel       (uint32_t *Freq, uint8_t NbChannel ) { 
+        for (int i = 0; i<NbChannel ; i++) {
+            packet.MacTxFrequency[i]    = Freq [i];
+            packet.MacRx1Frequency[i]    = Freq [i];
+        }
+        packet.RegionGiveNextDataRate ();
+    }
     T<RADIOTYPE>               packet;    
 private :
 

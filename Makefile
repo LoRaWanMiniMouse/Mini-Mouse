@@ -15,12 +15,12 @@
 ######################################
 TARGET = MiniMouse
 
-BOARD_MURATA      = 1
-BOARD_L4          = 0
-RADIO_SX1276      = 1
-RADIO_SX1272      = 0
+BOARD_MURATA      = 0
+BOARD_L4          = 1
+RADIO_SX1276      = 0
+RADIO_SX1272      = 1
 RADIO_SX126x      = 0
-DEVICE_UNDER_TEST = 1
+DEVICE_UNDER_TEST = 0
 ####################SX126x_BOARD
 # building variablesSX126x_BOARD
 ######################################
@@ -43,7 +43,6 @@ BUILD_DIR = build
 CPP_SOURCES =  \
 UserCode/appli.cpp\
 UserCode/main.cpp \
-UserCode/MainPtpRxTx.cpp \
 UserCode/mainTest1MoteSide.cpp \
 UserCode/mainTest2.cpp \
 radio/sx1272/sx1272.cpp\
@@ -63,7 +62,10 @@ MiniMouse/utilities.cpp\
 PointToPoint/PointToPointReceiver.cpp\
 PointToPoint/PointToPointTransmitter.cpp\
 RadioPlaner/RadioPlaner.cpp
-
+ifeq ($(RADIO_SX1276), 1)
+    CPP_SOURCES +=  \
+    UserCode/MainPtpRxTx.cpp 
+endif
 ifeq ($(BOARD_MURATA), 0)
     CPP_SOURCES +=  \
     McuApi/STM32/SrcStm32/stm32l4xx_it.cpp \

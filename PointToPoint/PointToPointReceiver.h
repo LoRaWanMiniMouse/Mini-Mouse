@@ -22,7 +22,7 @@ public:
   SRadioParam Tx4Rx3Param;
 protected:
   void ExecuteStateMachine();
-  eStatusPtP DecodeWakeUpSequence ( void) ;
+  eStatusPtP DecodeWakeUpSequence ( void ) ;
   uint32_t GetNextCadStartMs(const uint32_t lastCadMs);
   uint32_t GetNextFreqency(const uint32_t nextCadMs);
   void ConfigureAndEnqueueNextCad();
@@ -73,6 +73,8 @@ private:
   STask rx_data_task;
   int16_t RssiRxDataTask;
   int16_t SnrRxDataTask;
+  int16_t RssiRxFragmentTask;
+  int16_t SnrRxFragmentTask;
   uint8_t* data_received;
   uint8_t* data_received_length;
   WakeUpFragments_t fragment;
@@ -83,6 +85,8 @@ private:
   uint8_t wake_up_id;
   int32_t delay_indicator;
   void* Lp;
+  uint8_t  PtPKey[16];
+  uint32_t AddKey ;
 };
 
 #endif // __POINT_TO_POINT_RECEIVER_H__

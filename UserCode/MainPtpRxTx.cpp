@@ -187,13 +187,13 @@ for (int i = 0 ; i < UserPayloadSizeClassA ; i++ ) {
 }
 UserPayloadClassA [ 0 ]  = FW_VERSION ;
 uint8_t MsgTypeClassA = UNCONF_DATA_UP;
-//Lp.NewJoin();
+Lp.NewJoin();
 
 uint32_t next_start = mcu.RtcGetTimeMs();
 uint32_t CptDemo = 0;
 uint32_t RxAppTime = 0;
 
-relay.AddDevaddrInWhiteList(0x26011D16);
+//relay.AddDevaddrInWhiteList(0x26011D16);
 mcu.MMClearDebugBufferRadioPlaner ( );
 //ptpRx.Start(payload_received, &payload_received_size);
 next_start = mcu.RtcGetTimeMs();
@@ -221,8 +221,7 @@ int cpt = 200;
             if ( relay.IsWhiteListedDevaddr(ReceiveDevaddr) == YES ) { 
                 DEBUG_PRINTF ( "devaddr = %x\n", ReceiveDevaddr);
                 LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
-                Tx4Rx3Task.StartTime      = RxAppTime ;
-                T3ACtivated = true;
+                relay.SetTxTimeForRx3 ( RxAppTime , ReceiveDevaddr );
             }
         }
         if ( (cpt > 100 ) && (T3ACtivated == false) ){
@@ -239,7 +238,7 @@ int cpt = 200;
             AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
             sStatisticTest.ClassARxCpt ++;
             InsertTrace ( __COUNTER__, FileId );
-             DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+            DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
                     for ( i = 0 ; i < UserRxPayloadSize ; i++){
                         DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
                     }
@@ -250,7 +249,7 @@ int cpt = 200;
                     cpt = 0 ;
                     relay.builStatus( UserPayloadClassA, &UserPayloadSizeClassA );
                     LpState  = Lp.SendPayload( UserFport+1, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
-   
+
                 }
                 if ( ( UserRxPayloadSize == 4 ) && (UserRxFport == 2) ) {
                     uint32_t Removedevaddr =  UserRxPayload [3] + (UserRxPayload [2] << 8) + (UserRxPayload [1] << 16) + (UserRxPayload [0] << 24);
@@ -260,20 +259,24 @@ int cpt = 200;
                     LpState  = Lp.SendPayload( UserFport+1, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
                     DEBUG_PRINTF ("remove devadrr =%x from relay\n", Removedevaddr);
                 }
-                
-                if ( ( T3ACtivated == true) && ( UserRxPayloadSize > 9 ) )  {
-                    DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
-                    for ( i = 0 ; i < UserRxPayloadSize ; i++){
-                        DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+                if ( UserRxPayloadSize > 9 )   {
+                    uint32_t ReceiveDevaddr = relay.ExtractDevaddrDownLink(UserRxPayload);
+                    DEBUG_PRINTF ( "ReceiveDevaddr = 0x%x\n", ReceiveDevaddr);
+                    uint32_t TargetTime ;
+                    if ( ( relay.IsRx3Activated ( ReceiveDevaddr ) == YES ) && ( relay.GetTxTimeForRx3 ( &TargetTime, ReceiveDevaddr ) == OK ) ) {
+                        DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+                        for ( i = 0 ; i < UserRxPayloadSize ; i++){
+                            DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+                        }
+                        DEBUG_MSG ( "]\n");
+                        Tx4Rx3Task.StartTime = TargetTime;
+                        RP.EnqueueTask (Tx4Rx3Task, UserRxPayload, &UserRxPayloadSize, ptpRx.Tx4Rx3Param ); //@tbd RadioPlaner  timeonair 
                     }
-                    DEBUG_MSG ( "]\n");
-                    RP.EnqueueTask (Tx4Rx3Task, UserRxPayload, &UserRxPayloadSize, ptpRx.Tx4Rx3Param ); //@tbd RadioPlaner  timeonair 
                 }
             } else {
                 DEBUG_MSG ("Receive Ack \n");
             }
         }
-        T3ACtivated = false;
         cpt++;
         mcu.GotoSleepMSecond ( 2000 );
     }

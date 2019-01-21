@@ -31,17 +31,25 @@ typedef enum BoolOkKo {
     KO,
 } BoolOkKo;
 
+typedef enum Rx3Activation {
+    RX3_ENABLE,
+    RX3_DISABLE,
+} Rx3Activation;
+
 class Relay  { 
 public:
     Relay( ){
         for (int i = 0 ; i <NB_NODE_IN_RELAY; i ++ ) {
             WhiteList[i].Devaddr= 0xFFFFFFFF;    
-            BlackList[i]= 0xFFFFFFFF;    
+            BlackList[i].Devaddr= 0xFFFFFFFF;    
         }   
     };
     ~Relay ( ) {}; 
     uint32_t RelayExtractDevaddr ( uint8_t *data) {
         return ( data[3] + ( data[4] << 8) + ( data[5] << 16) +  ( data[6] << 24) );
+    };
+    uint32_t ExtractDevaddrDownLink ( uint8_t *data) {
+        return ( data[1] + ( data[2] << 8) + ( data[3] << 16) +  ( data[4] << 24) );
     };
     BoolYesNo IsWhiteListedDevaddr (uint32_t devaddr) {
         BoolYesNo status = NO;
@@ -56,8 +64,8 @@ public:
 
     BoolOkKo RemoveDevaddrInBlackList (uint32_t devaddr){
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
-            if ( BlackList[i] == devaddr) {
-                BlackList[i] = 0xFFFFFFFF;
+            if ( BlackList[i].Devaddr == devaddr) {
+                BlackList[i].Devaddr = 0xFFFFFFFF;
                 return (OK);
             }
         }
@@ -65,13 +73,13 @@ public:
     };
     BoolOkKo AddDevaddrInBlackList (uint32_t devaddr){
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
-            if ( BlackList[i] == devaddr) {
+            if ( BlackList[i].Devaddr == devaddr) {
                 return (KO);
             }
         }
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
-            if ( BlackList[i] == 0xFFFFFFFF) {
-                BlackList[i] = devaddr;
+            if ( BlackList[i].Devaddr == 0xFFFFFFFF) {
+                BlackList[i].Devaddr = devaddr;
                 return (OK);
             }
         }
@@ -103,7 +111,19 @@ public:
         }
         return (KO);
     };
-
+    BoolOkKo SetRssiStatus (uint32_t DevaddrIn , uint8_t Rssi ){
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( WhiteList[i].Devaddr == DevaddrIn) {
+                WhiteList[i].Rssi = Rssi;
+                return (OK);
+            }
+            if ( BlackList[i].Devaddr == DevaddrIn) {
+                BlackList[i].Rssi = Rssi;
+                return (OK);
+            }
+        }
+        return (KO);
+    }
     void builStatus( uint8_t * Payload, uint8_t *Size ) {
         int index = 1;
         uint8_t NbElementWhiteList = 0;
@@ -113,32 +133,69 @@ public:
                 Payload[index+1] = ( WhiteList[i].Devaddr >> 16 ) & 0xFF;
                 Payload[index+2] = ( WhiteList[i].Devaddr >> 8 ) & 0xFF;
                 Payload[index+3] = ( WhiteList[i].Devaddr >> 0 ) & 0xFF;
-                Payload[index+4] =  14;
+                Payload[index+4] =  WhiteList[i].Rssi;
                 index = index + 5;
                 NbElementWhiteList++;
             }
         }
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
-            if ( BlackList[i] != 0xFFFFFFFF) {
-                Payload[index]   = ( BlackList[i] >> 24 ) & 0xFF;
-                Payload[index+1] = ( BlackList[i] >> 16 ) & 0xFF;
-                Payload[index+2] = ( BlackList[i] >> 8 ) & 0xFF;
-                Payload[index+3] = ( BlackList[i] >> 0 ) & 0xFF;
-                Payload[index+4] =  14;
+            if ( BlackList[i].Devaddr != 0xFFFFFFFF) {
+                Payload[index]   = ( BlackList[i].Devaddr >> 24 ) & 0xFF;
+                Payload[index+1] = ( BlackList[i].Devaddr >> 16 ) & 0xFF;
+                Payload[index+2] = ( BlackList[i].Devaddr >> 8 ) & 0xFF;
+                Payload[index+3] = ( BlackList[i].Devaddr >> 0 ) & 0xFF;
+                Payload[index+4] =  BlackList[i].Rssi;
                 index = index + 5;
             }
         }
         *Size = index;
         Payload[0] = NbElementWhiteList;
     };
+    BoolOkKo SetTxTimeForRx3 (  uint32_t  TxTimeForRx3In , uint32_t  DevaddrIn ) {
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( WhiteList[i].Devaddr == DevaddrIn) {
+                WhiteList[i].TxTimeForRx3 = TxTimeForRx3In;
+                WhiteList[i].Rx3Activated = RX3_ENABLE;
+                return (OK);
+            }
+        }
+        return (KO);
+    }
+    BoolOkKo GetTxTimeForRx3 (  uint32_t * TxTimeForRx3Out , uint32_t  DevaddrIn ) {
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( WhiteList[i].Devaddr == DevaddrIn) {
+                *TxTimeForRx3Out = WhiteList[i].TxTimeForRx3 ;
+                return (OK);
+            }
+        }
+        return (KO);
+    }
+    BoolYesNo IsRx3Activated (uint32_t devaddrIn) {
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( ( WhiteList[i].Devaddr == devaddrIn) && ( WhiteList[i].Rx3Activated == RX3_ENABLE ) ) {
+                return (YES);
+            }
+        }
+        return (NO);
+    }
+    BoolOkKo ClearRx3Activation ( Rx3Activation   Rx3ActivatedIn , uint32_t  DevaddrIn ) {
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( WhiteList[i].Devaddr == DevaddrIn) {
+                WhiteList[i].Rx3Activated = Rx3ActivatedIn ;
+                return (OK);
+            }
+        }
+        return (KO);
+    }
 private :
 typedef struct SDevice{
-    uint32_t  Devaddr;
-    uint32_t  TxTimeForRx3;
-    uint8_t   Rx3Activated;
+    uint32_t        Devaddr;
+    uint32_t        TxTimeForRx3;
+    Rx3Activation   Rx3Activated;
+    uint8_t         Rssi;
 }SDevice;
 DECLARE_ARRAY ( SDevice, NB_NODE_IN_RELAY, WhiteList );
-DECLARE_ARRAY ( uint32_t, NB_NODE_IN_RELAY, BlackList );
+DECLARE_ARRAY ( SDevice, NB_NODE_IN_RELAY, BlackList );
 };
 
 extern Relay relay;

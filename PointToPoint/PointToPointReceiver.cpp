@@ -1,7 +1,10 @@
 #include "PointToPointReceiver.h"
 #include "appli.h"
+#include "LoRaMacCrypto.h"
 #define CAD_DURATION_MS 1
 #define ACK_LENGTH 2
+
+
 
 PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
                                           const uint8_t hook_id)
@@ -14,6 +17,8 @@ PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
   , ack_length(ACK_LENGTH)
 {
 
+  memset(PtPKey, 1, 16) ;
+  AddKey = 0x12345678; 
   this->FrequencyList[0] = 868600000;
   this->FrequencyList[1] = 868200000;
   this->channel = this->FrequencyList[0];
@@ -46,8 +51,8 @@ PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
   rx_wakeup_fragment_task_param.PreambuleLength = 32;
   rx_wakeup_fragment_task_param.SyncWord = 0x34;
   rx_wakeup_fragment_task_param.TimeOutMs = 40;
-  rx_wakeup_fragment_task_param.Snr = 0;
-  rx_wakeup_fragment_task_param.Rssi = 0;
+  rx_wakeup_fragment_task_param.Snr = &SnrRxFragmentTask;;
+  rx_wakeup_fragment_task_param.Rssi = &RssiRxFragmentTask;
 
   rx_wakeup_fragment_task.HookId = this->hook_id;
   rx_wakeup_fragment_task.TaskDuration = WAKE_UP_FRAGMENT_DURATION_MS;
@@ -155,6 +160,7 @@ PointToPointReceiver::ExecuteStateMachine()
     case STATE_WAIT_RX_WUF_COMPLETION: {
       if (this->rx_success) {
         this->rx_success = false;
+        
         eStatusPtP status = DecodeWakeUpSequence ();
         if (status == ERROR_PTP) {
             this->ConfigureAndEnqueueNextCad();
@@ -164,7 +170,10 @@ PointToPointReceiver::ExecuteStateMachine()
             data_rx_ms = rx_done_timestamp +
                          (int)((wake_up_id - 1) * WAKE_UP_FRAGMENT_DURATION_MS) + 3;
             this->rx_data_task.StartTime = data_rx_ms;
-            
+            int16_t Rssi = *(this->rx_wakeup_fragment_task_param.Rssi);
+        if ( Rssi > (-20) ) {
+          Rssi = -20;
+        }
             this->radio_planner->EnqueueTask(this->rx_data_task, this->rx_buffer,
                                             &this->rx_buffer_length,
                                             this->rx_data_task_param);
@@ -340,7 +349,7 @@ PointToPointReceiver::GetDelayIndicatorMs(
   return WakeUpSequenceDelay;
 }
 
-eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void ) {
+eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void) {
     // compute mic + insert check @tbd
     DEBUG_MSG ("\n");
     for (int i = 0 ; i < 11 ; i ++ ) {
@@ -349,11 +358,17 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void ) {
     DEBUG_MSG ("\n");
     eStatusPtP status = OK_PTP ;
     uint16_t CheckMic = (fragment.buffer [9] << 8) + ( fragment.buffer [10] );
-    if ( CheckMic != 0x1234 ) {
-        DEBUG_PRINTF ( " Receive a bad Mic %x", CheckMic);
+    uint32_t mic;
+    LoRaMacComputeMic( (fragment.buffer), 9, PtPKey , AddKey , 0 , 0,&mic );
+    uint32_t mic2= mic;
+    if ( CheckMic != (mic & 0xFFFF) ) {    
+        DEBUG_PRINTF ( " Receive a bad Mic %x calculted mix %x \n", CheckMic, mic2);
         return (ERROR_PTP);
     }
+
+
     uint32_t ReceiveDevAddr = (fragment.buffer [1] << 24) + ( fragment.buffer [2] << 16 )+ ( fragment.buffer [3] << 8 )+  fragment.buffer [4] ;
+    relay.SetRssiStatus (ReceiveDevAddr, (RssiRxFragmentTask > (-20) ) ? (-20) : ( -20 - RssiRxFragmentTask ));
     if (relay.IsWhiteListedDevaddr(ReceiveDevAddr) == NO ) {
       relay.AddDevaddrInBlackList ( ReceiveDevAddr ) ;
       DEBUG_PRINTF ( " Receive a bad WU dev_addr %x", ReceiveDevAddr);
@@ -397,7 +412,7 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void ) {
           rx_data_task_param.Frequency = 867900000;
           break;
       default :
-          DEBUG_PRINTF ( " Recaeive a bad Frequency  %d", fragment.buffer[8]);
+          DEBUG_PRINTF ( " Receive a bad Frequency  %d", fragment.buffer[8]);
           return (ERROR_PTP);
           break;
     }

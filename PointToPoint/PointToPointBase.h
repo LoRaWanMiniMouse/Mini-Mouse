@@ -10,6 +10,9 @@
 #define NBR_FREQUENCIES 2
 #define WAKE_UP_SEQUENCE_LENGTH_MAX 40  //((CAD_BEAT_MS * 4 )  / WAKE_UP_FRAGMENT_DURATION_MS)
 
+
+
+
 typedef struct
 {
   uint32_t wus_tx_attempt;

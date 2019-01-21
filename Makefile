@@ -15,12 +15,12 @@
 ######################################
 TARGET = MiniMouse
 
-BOARD_MURATA      = 0
-BOARD_L4          = 1
-RADIO_SX1276      = 0
-RADIO_SX1272      = 1
+BOARD_MURATA      = 1
+BOARD_L4          = 0
+RADIO_SX1276      = 1
+RADIO_SX1272      = 0
 RADIO_SX126x      = 0
-DEVICE_UNDER_TEST = 0
+DEVICE_UNDER_TEST = 1
 ####################SX126x_BOARD
 # building variablesSX126x_BOARD
 ######################################

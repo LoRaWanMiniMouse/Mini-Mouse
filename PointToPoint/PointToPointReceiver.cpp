@@ -359,10 +359,9 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void) {
     eStatusPtP status = OK_PTP ;
     uint16_t CheckMic = (fragment.buffer [9] << 8) + ( fragment.buffer [10] );
     uint32_t mic;
-    LoRaMacComputeMic( (fragment.buffer), 9, PtPKey , AddKey , 0 , 0,&mic );
-    uint32_t mic2= mic;
+    LoRaMacComputeMic( &(fragment.buffer[0]), 9, PtPKey , AddKey , 0 , 0, &mic );
     if ( CheckMic != (mic & 0xFFFF) ) {    
-        DEBUG_PRINTF ( " Receive a bad Mic %x calculted mix %x \n", CheckMic, mic2);
+        DEBUG_PRINTF ( " Receive a bad Mic %x calculted mix %x \n", CheckMic, mic);
         return (ERROR_PTP);
     }
 
@@ -416,7 +415,7 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void) {
           return (ERROR_PTP);
           break;
     }
-DEBUG_PRINTF ( "sf = %d , freq = %d\,n",rx_data_task_param.Sf,rx_data_task_param.Frequency );
+DEBUG_PRINTF ( "sf = %d , freq = %d\n",rx_data_task_param.Sf,rx_data_task_param.Frequency );
 Tx4Rx3Param.Frequency = rx_data_task_param.Frequency ;
 return (status);                         
 };

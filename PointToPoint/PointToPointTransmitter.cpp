@@ -135,9 +135,9 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
     DEBUG_PRINTFRP ("start and wk up length = %d\n",WakeUpSequenceLength );
     this->data_payload = data_payload;
     this->data_payload_length = data_payload_length;
-
+    Fcount++;
     PointToPointTransmitter::GetNextSendSlotTimeAndChannel(
-        mcu.RtcGetTimeMs(),
+        mcu.RtcGetTimeMs() + 1000,
         WakeUpSequenceDelay,
         last_ack_success_received_ms,
         &WakeUpSequenceLength,
@@ -153,7 +153,7 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
     for (int j = 0 ; j < 9 ; j++) {
         DEBUG_PRINTF ( "%x  ", tmpbuffer [j]);
     }
-     DEBUG_MSG ("]\n");
+    DEBUG_MSG ("]\n");
     for (int i = fragment_index ; i >= 0 ; i --) {
         uint32_t mic;
         memcpy (tmpbuffer, (this->fragment).buffer , 9 );
@@ -164,7 +164,7 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
         for (int j = 0 ; j < 9 ; j++) {
             DEBUG_PRINTF ( "%x  ", tmpbuffer [j]);
         }
-     DEBUG_PRINTF (" %x %x ]\n",mic, Mic[i]);
+    DEBUG_PRINTF (" %x %x  %x]\n",mic, Mic[i], PtPKey[3]);
     }
 
 
@@ -190,7 +190,6 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
 
     this->state = STATE_SEND_WAKEUP_SEQUENCE_FRAGMENT;
     count_wus_tx_attempt++;
-    Fcount++;
     return (NextSendSlot + ( ( WakeUpSequenceLength )* WAKE_UP_FRAGMENT_DURATION_MS ) + 3  );
 }
 
@@ -362,6 +361,7 @@ void PointToPointTransmitter::PrepareNextWakeUpFragment(WakeUpFragments_t *fragm
     }
     fragment->index = fragment_index;
     */
+
     fragment->buffer[0]  = Ftype;
     fragment->buffer[1]  = ( DevAddr >> 24 ) & 0xFF;
     fragment->buffer[2]  = ( DevAddr >> 16 ) & 0xFF;
@@ -373,7 +373,7 @@ void PointToPointTransmitter::PrepareNextWakeUpFragment(WakeUpFragments_t *fragm
     fragment->buffer[8]  = Channel_Dr ;
     fragment->buffer[9]  = Mic[fragment_index] >> 8 ;
     fragment->buffer[10] = Mic[fragment_index] & 0xFF ;
-   
+ 
 }
 
 void PointToPointTransmitter::ComputeNextWakeUpLength(uint8_t *nextWakeUpLength, const uint32_t actual_time, const uint32_t last_ack_success_time)

@@ -812,8 +812,8 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::DicChanne
 /********************************************************************************************************************************/
 
 template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateJoinProcedure ( void ) { //@note tbd add valid test 
-    uint32_t c1 = mcu.RtcGetTimeMs();
-    DEBUG_PRINTF ("GET Time %d\n",c1 );
+   // uint32_t c1 = mcu.RtcGetTimeMs();
+  //  DEBUG_PRINTF ("GET Time %d\n",c1 );
     InsertTrace ( __COUNTER__, FileId );
     uint8_t AppNonce[6];
     int i;
@@ -843,8 +843,8 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::UpdateJoi
     DEBUG_PRINTF(" MacRx2DataRate= %d\n",MacRx2DataRate);
     DEBUG_PRINTF(" MacRx1Delay= %d\n",MacRx1Delay);
     DEBUG_MSG(" Save In Flash After Join suceed \n");
-     uint32_t c2 = mcu.RtcGetTimeMs();
-    DEBUG_PRINTF ("GET Time %d Join duration =%d\n",c2,c2-c1 );
+    // uint32_t c2 = mcu.RtcGetTimeMs();
+   // DEBUG_PRINTF ("GET Time %d Join duration =%d\n",c2,c2-c1 );
 }
 
 /********************************************************/
@@ -954,7 +954,7 @@ template <int NBCHANNEL, class R> int LoraWanContainer<NBCHANNEL, R>::AcceptFcnt
         *FcntLoraWan = ( ( FcntDwnMsb + 1 ) << 16 ) + FcntDwnTmp ;
     } else {
         status = ERRORLORAWAN ;
-        DEBUG_PRINTF (" ERROR FcntDwn is not acceptable fcntDwnReceive = %d fcntLoraStack = %d\n",(*FcntLoraWan),FcntDwnTmp);
+        DEBUG_PRINTF (" ERROR FcntDwn is not acceptable fcntDwnReceive = %d fcntLoraStack = %d\n",FcntDwnTmp,(*FcntLoraWan));
     }
     return ( status ) ;
 }

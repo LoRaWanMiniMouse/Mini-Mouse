@@ -26,11 +26,11 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define BLOC 1
 
 #ifdef BLOC
-    #define DEBUG_TRACE        0     // Set to 1 to activate debug traces
+    #define DEBUG_TRACE        1     // Set to 1 to activate debug traces
 #else
     #define DEBUG_TRACE        0
 #endif
-#define LOW_POWER_MODE     0     // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
+#define LOW_POWER_MODE     1     // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 #define DEBUG_TRACE_ENABLE 0  // Set to 1 to activate DebugTrace 
 
 #define LOW_SPEED_CLK    LSE    //
@@ -122,7 +122,7 @@ Maintainer        : Fabien Holin (SEMTECH)
     #endif
     #endif 
 
-#define MAC_RX3_DELAY   8           // second 
+#define MAC_RX3_DELAY   20           // second 
 #define FLASH_UPDATE_PERIOD 32      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted
 #if BLOC
 #define USER_NUMBER_OF_RETRANSMISSION   1// Only used in case of user defined darate distribution strategy

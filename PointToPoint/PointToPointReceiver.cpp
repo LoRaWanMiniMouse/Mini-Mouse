@@ -352,30 +352,39 @@ PointToPointReceiver::GetDelayIndicatorMs(
 eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void) {
     // compute mic + insert check @tbd
     DEBUG_MSG ("\n");
-    uint32_t mic;
-    uint8_t TempBuf[20];
-    memset(TempBuf,0,20);
-    for (int i = 0 ; i < 9 ; i ++){
-            TempBuf[i] = fragment.buffer[i];
-    }
-    LoRaMacComputeMic(TempBuf, 9, PtPKey , AddKey , 0 , 0,&mic );
     eStatusPtP status = OK_PTP ;
-    uint16_t CheckMic = (fragment.buffer [9] << 8) + ( fragment.buffer [10] );
+    uint32_t mic;
+    if (fragment.buffer[0] == WUS_WITH_DEVEUI){
+        DevEuiWakeUpSequence[0] =fragment.buffer[1]  ;
+        DevEuiWakeUpSequence[1] =fragment.buffer[2]  ;
+        DevEuiWakeUpSequence[2] =fragment.buffer[3]  ;
+        DevEuiWakeUpSequence[3] =fragment.buffer[4]  ;
+        DevEuiWakeUpSequence[4] =fragment.buffer[6]  ;
+        DevEuiWakeUpSequence[5] =fragment.buffer[7]  ;
+        DevEuiWakeUpSequence[6] = fragment.buffer[9] ;
+        DevEuiWakeUpSequence[7] =fragment.buffer[10] ;
+        DevLength = 8;
+        relay.AddDevEuiInJoinBlackList (DevEuiWakeUpSequence);
+    } else {
+        LoRaMacComputeMic( &(fragment.buffer[0]), 9, PtPKey , AddKey , 0 , 0,&mic );
+        uint16_t CheckMic = (fragment.buffer [9] << 8) + ( fragment.buffer [10] );
+        if ( CheckMic != (uint16_t)(mic & 0x0000FFFF) ) {    
+            DEBUG_PRINTF ( " Receive a bad Mic %x calculted mix %x \n", CheckMic,  (uint16_t)(mic & 0x0000FFFF));
+            return (ERROR_PTP);
+        }
+        uint32_t ReceiveDevAddr = (fragment.buffer [1] << 24) + ( fragment.buffer [2] << 16 )+ ( fragment.buffer [3] << 8 )+  fragment.buffer [4] ;
+        relay.SetRssiStatus (ReceiveDevAddr, (RssiRxFragmentTask > (-20) ) ? (-20) : ( -20 - RssiRxFragmentTask ));
+        if (relay.IsWhiteListedDevaddr(ReceiveDevAddr) == NO ) {
+            relay.AddDevaddrInBlackList ( ReceiveDevAddr ) ;
+            DEBUG_PRINTF ( " Receive a bad WU dev_addr %x\n", ReceiveDevAddr);
+            return (ERROR_PTP);
+        } else {
+          memcpy ( DevAddrWakeUpSequence , &fragment.buffer[1], 4) ;
+          DevLength = 4;
+        }
 
-    if ( CheckMic != (uint16_t)(mic & 0x0000FFFF) ) {    
-        DEBUG_PRINTF ( " Receive a bad Mic %x calculted mix %x \n", CheckMic,  (uint16_t)(mic & 0x0000FFFF));
-        return (ERROR_PTP);
     }
-
-
-    uint32_t ReceiveDevAddr = (fragment.buffer [1] << 24) + ( fragment.buffer [2] << 16 )+ ( fragment.buffer [3] << 8 )+  fragment.buffer [4] ;
-    relay.SetRssiStatus (ReceiveDevAddr, (RssiRxFragmentTask > (-20) ) ? (-20) : ( -20 - RssiRxFragmentTask ));
-    if (relay.IsWhiteListedDevaddr(ReceiveDevAddr) == NO ) {
-      relay.AddDevaddrInBlackList ( ReceiveDevAddr ) ;
-      DEBUG_PRINTF ( " Receive a bad WU dev_addr %x\n", ReceiveDevAddr);
-      return (ERROR_PTP);
-    }
-    wake_up_id                   = fragment.buffer[5];
+    wake_up_id = fragment.buffer[5];
     if ( wake_up_id > WAKE_UP_SEQUENCE_LENGTH_MAX) {
         DEBUG_PRINTF ( " Receive a bad Wake up id  %d\n", wake_up_id);
         return (ERROR_PTP);
@@ -423,11 +432,13 @@ return (status);
 };
 
 
-void PointToPointReceiver::GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime ) {
+void PointToPointReceiver::GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime, uint8_t * DevaddrOut, uint8_t * DevLengthOut  ) {
     *PayloadLength = RxBufferAppLength;
     *RxTime        = RxBufferAppTime + ( MAC_RX3_DELAY * 1000 );
     if ( RxBufferAppLength > 0 ) {
         memcpy( RxPayload , RxBufferApp, RxBufferAppLength);
     }
     RxBufferAppLength = 0; // clear Rx buffer; 
+    ( DevLength == 4 ) ? memcpy ( DevaddrOut , DevAddrWakeUpSequence , 4)  : memcpy ( DevaddrOut , DevEuiWakeUpSequence , 8) ;
+    * DevLengthOut  = DevLength ;
 };

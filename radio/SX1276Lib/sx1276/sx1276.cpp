@@ -219,7 +219,7 @@ void SX1276::RxLoRaGeneric( eBandWidth BW, uint8_t SF, uint32_t channel,
     const uint8_t sf_value  = GetSfValue(SF);
     const uint8_t bw_value  = GetBwValue(BW);
     const uint8_t cr_value  = GetCrValue(coding_rate);
-    const uint8_t crc_value = GetCrcValue(crc_enable);
+    //const uint8_t crc_value = GetCrcValue(crc_enable);
     const bool iq_inverted  = (iq_mode == IQ_INVERTED) ? true : false;
     const uint8_t implicit_header_value = ( headerMode == IMPLICIT_HEADER ) ? RFLR_MODEMCONFIG1_IMPLICITHEADER_ON : RFLR_MODEMCONFIG1_IMPLICITHEADER_OFF;
     uint8_t LowDatarateOptimize;

@@ -46,4 +46,8 @@ typedef enum {
     OK_PTP    = 0,
 }eStatusPtP;
 
+enum {
+    WUS_WITH_DEVADDR,
+    WUS_WITH_DEVEUI,
+};
 #endif // __POINT_TO_POINT_BASE_H__

@@ -17,7 +17,7 @@ public:
   void Start(uint8_t* data_payload, uint8_t* data_payload_length);
   void Abort();
   void GetStatistics(StatisticCounters_t* counters);
-  void GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime );
+  void GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime, uint8_t * DevaddrOut, uint8_t * DevLengthOut );
   static void Callback(void*);
   SRadioParam Tx4Rx3Param;
 protected:
@@ -81,7 +81,9 @@ private:
   uint8_t fragment_length;
   Acknowledges_t ack;
   uint8_t ack_length;
-
+  uint8_t DevAddrWakeUpSequence[4] ;
+  uint8_t DevEuiWakeUpSequence [8] ;
+  uint8_t DevLength;
   uint8_t wake_up_id;
   int32_t delay_indicator;
   void* Lp;

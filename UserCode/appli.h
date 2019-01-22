@@ -41,7 +41,9 @@ public:
     Relay( ){
         for (int i = 0 ; i <NB_NODE_IN_RELAY; i ++ ) {
             WhiteList[i].Devaddr= 0xFFFFFFFF;    
-            BlackList[i].Devaddr= 0xFFFFFFFF;    
+            BlackList[i].Devaddr= 0xFFFFFFFF;
+            memset (JoinWhiteList[i].DevEui,0xFF,8);
+            memset (JoinBlackList[i].DevEui,0xFF,8);    
         }   
     };
     ~Relay ( ) {}; 
@@ -71,6 +73,15 @@ public:
         }
         return (KO);
     };
+    BoolOkKo RemoveDevEuiInJoinBlackList (uint8_t devEuiIn[8]){
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( memcmp ( JoinBlackList[i].DevEui ,devEuiIn , 8 ) == 0 ) {
+                memset(JoinBlackList[i].DevEui,0xFF,8);
+                return (OK);
+            }
+        }
+        return (KO);
+    };
     BoolOkKo AddDevaddrInBlackList (uint32_t devaddr){
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( BlackList[i].Devaddr == devaddr) {
@@ -80,6 +91,22 @@ public:
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( BlackList[i].Devaddr == 0xFFFFFFFF) {
                 BlackList[i].Devaddr = devaddr;
+                return (OK);
+            }
+        }
+        return (KO);
+    };
+    BoolOkKo AddDevEuiInJoinBlackList (uint8_t devEuiIn[8] ){
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( memcmp ( JoinBlackList[i].DevEui ,devEuiIn , 8 ) == 0 ) {
+                return (KO);
+            }
+        }
+        uint8_t VectTemp[8];
+        memset ( VectTemp, 0xFF, 8);
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( memcmp (JoinBlackList[i].DevEui , VectTemp, 8 ) == 0 ) {
+                memcpy ( JoinBlackList[i].DevEui, devEuiIn , 8 ) ;
                 return (OK);
             }
         }
@@ -96,6 +123,16 @@ public:
         }
         return (KO);
     };
+    BoolOkKo RemoveDevEuiInJoinWhiteList (uint8_t devEuiIn[8] ){
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( memcmp ( JoinWhiteList[i].DevEui ,devEuiIn , 8 ) == 0 ) {
+                memset(JoinWhiteList[i].DevEui,0xFF,8);
+                AddDevEuiInJoinBlackList (devEuiIn);
+                return (OK);
+            }
+        }
+        return (KO);
+    };
     BoolOkKo AddDevaddrInWhiteList (uint32_t devaddr){
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( WhiteList[i].Devaddr == devaddr) {
@@ -106,6 +143,23 @@ public:
             if ( WhiteList[i].Devaddr == 0xFFFFFFFF) {
                 WhiteList[i].Devaddr = devaddr;
                 RemoveDevaddrInBlackList (devaddr);
+                return (OK);
+            }
+        }
+        return (KO);
+    };
+    BoolOkKo AddDevEuiInJoinWhiteList (uint8_t devEuiIn[8]){
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( memcmp (devEuiIn , JoinWhiteList[i].DevEui, 8 ) == 0 ) {
+                return (KO);
+            }
+        }
+        uint8_t VectTemp[8];
+        memset ( VectTemp, 0xFF, 8);
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( memcmp (JoinWhiteList[i].DevEui , VectTemp, 8 ) == 0 ) {
+                memcpy ( JoinWhiteList[i].DevEui, devEuiIn , 8 ) ;
+                AddDevEuiInJoinBlackList (devEuiIn);
                 return (OK);
             }
         }
@@ -151,6 +205,29 @@ public:
         *Size = index;
         Payload[0] = NbElementWhiteList;
     };
+     void buildJoinStatus( uint8_t * Payload, uint8_t *Size ) {
+        int index = 1;
+        uint8_t NbElementJoinWhiteList = 0;
+        uint8_t VectTemp[8];
+        memset ( VectTemp, 0xFF, 8);
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( memcmp ( JoinWhiteList[i].DevEui , VectTemp, 8 ) != 0 ) {
+                memcpy ( &Payload[index], JoinWhiteList[i].DevEui, 8 );    
+                Payload[index+8] = 13;
+                index = index + 9;
+                NbElementJoinWhiteList++;
+            }
+        }
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( memcmp ( JoinBlackList[i].DevEui , VectTemp, 8 ) != 0 ) {
+                memcpy ( &Payload[index], JoinBlackList[i].DevEui, 8 );    
+                Payload[index+8] = 14;
+                index = index + 9;
+            }
+        }
+        *Size = index;
+        Payload[0] = NbElementJoinWhiteList + 0x80;
+    };
     BoolOkKo SetTxTimeForRx3 (  uint32_t  TxTimeForRx3In , uint32_t  DevaddrIn ) {
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( WhiteList[i].Devaddr == DevaddrIn) {
@@ -194,8 +271,17 @@ typedef struct SDevice{
     Rx3Activation   Rx3Activated;
     uint8_t         Rssi;
 }SDevice;
+
+typedef struct SDeviceNotJoin{
+    uint8_t         DevEui[8];
+    uint32_t        TxTimeForRx3;
+    Rx3Activation   Rx3Activated;
+    uint8_t         Rssi;
+}SDeviceNotJoin;
 DECLARE_ARRAY ( SDevice, NB_NODE_IN_RELAY, WhiteList );
 DECLARE_ARRAY ( SDevice, NB_NODE_IN_RELAY, BlackList );
+DECLARE_ARRAY ( SDeviceNotJoin, NB_NODE_IN_RELAY, JoinBlackList  );
+DECLARE_ARRAY ( SDeviceNotJoin, NB_NODE_IN_RELAY, JoinWhiteList  );
 };
 
 extern Relay relay;

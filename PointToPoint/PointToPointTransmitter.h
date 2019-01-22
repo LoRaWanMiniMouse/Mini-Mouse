@@ -19,6 +19,8 @@ public:
 
   uint32_t Start(uint8_t *data_payload, const uint8_t data_payload_length);
   void SetChannelDr ( uint32_t Channel, uint8_t DataRate ) ; 
+  void SetDevAddr ( uint8_t* addr, uint8_t Length);
+  void SetDevAddr ( uint32_t addr);
   void Abort();
   void GetStatistics(StatisticCounters_t *counters);
   static void Callback(void *);
@@ -90,6 +92,7 @@ private:
   uint32_t  MicPtp[WAKE_UP_SEQUENCE_LENGTH_MAX+5];
   uint8_t  PtPKey[16];
   uint32_t AddKey ;
+  uint8_t  DevEUI [8];
 };
 
 #endif // __POINT_TO_POINT_TRANSMITTER_H__

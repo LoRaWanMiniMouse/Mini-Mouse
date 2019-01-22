@@ -83,11 +83,12 @@ PointToPointTransmitter::PointToPointTransmitter(RadioPLaner<SX1276> *radio_plan
     NextSendSlot = mcu.RtcGetTimeMs();
     last_ack_success_received_ms = NextSendSlot - 1000000 ;// init very far in the past 
     Ftype      = 0;
-    //DevAddr    = 0x26011B67;
-    DevAddr   = 0x26011D16;
+    DevAddr    = 0xFFFFFFFF;
+   // DevAddr   = 0x26011D16;
     CntDnw     = WAKE_UP_FRAGMENT_LENGTH;
     Fcount     = 0;
     Channel_Dr = 0;
+    memset ( DevEUI, 0xFF , 8);
    
 }
 
@@ -341,22 +342,38 @@ void PointToPointTransmitter::GetNextSendSlotTimeAndChannel(const uint32_t actua
 
 void PointToPointTransmitter::PrepareNextWakeUpFragment(WakeUpFragments_t *fragment, const uint8_t fragment_index)
 {
-    fragment->buffer[0]  = Ftype;
-    fragment->buffer[1]  = ( DevAddr >> 24 ) & 0xFF;
-    fragment->buffer[2]  = ( DevAddr >> 16 ) & 0xFF;
-    fragment->buffer[3]  = ( DevAddr >> 8 ) & 0xFF;
-    fragment->buffer[4]  =   DevAddr & 0xFF;
-    fragment->buffer[5]  = fragment_index ;
-    fragment->buffer[6]  = ( Fcount >> 8 ) & 0xFF ; 
-    fragment->buffer[7]  = Fcount & 0xFF ;
-    fragment->buffer[8]  = Channel_Dr ;
-    fragment->buffer[9]  = (MicPtp[fragment_index] >> 8) & 0xFF ;
-    fragment->buffer[10] = MicPtp[fragment_index] & 0xFF ;
+    if ( DevAddr != 0xFFFFFFFF) {
+        Ftype = WUS_WITH_DEVADDR; 
+        fragment->buffer[0]  = Ftype;
+        fragment->buffer[1]  = ( DevAddr >> 24 ) & 0xFF;
+        fragment->buffer[2]  = ( DevAddr >> 16 ) & 0xFF;
+        fragment->buffer[3]  = ( DevAddr >> 8 ) & 0xFF;
+        fragment->buffer[4]  =   DevAddr & 0xFF;
+        fragment->buffer[5]  = fragment_index ;
+        fragment->buffer[6]  = ( Fcount >> 8 ) & 0xFF ; 
+        fragment->buffer[7]  = Fcount & 0xFF ;
+        fragment->buffer[8]  = Channel_Dr ;
+        fragment->buffer[9]  = (MicPtp[fragment_index] >> 8) & 0xFF ;
+        fragment->buffer[10] = MicPtp[fragment_index] & 0xFF ;
+    } else {
+        Ftype = WUS_WITH_DEVEUI; 
+        fragment->buffer[0]  = Ftype;
+        fragment->buffer[1]  = DevEUI[0];
+        fragment->buffer[2]  = DevEUI[1];
+        fragment->buffer[3]  = DevEUI[2];
+        fragment->buffer[4]  = DevEUI[3];
+        fragment->buffer[5]  = fragment_index ;
+        fragment->buffer[6]  = DevEUI[4];
+        fragment->buffer[7]  = DevEUI[5];
+        fragment->buffer[8]  = Channel_Dr ;
+        fragment->buffer[9]  = DevEUI[6];
+        fragment->buffer[10] = DevEUI[7];
+    }
 }
 
 void PointToPointTransmitter::ComputeNextWakeUpLength(uint8_t *nextWakeUpLength, const uint32_t actual_time, const uint32_t last_ack_success_time)
 {
-    const uint8_t multiplicator_ppm = 7; // 4;
+    const uint8_t multiplicator_ppm =  9;
     uint8_t number_of_fragments = 1;
     uint16_t uncertainty_window = 24 + (number_of_fragments * WAKE_UP_FRAGMENT_DURATION_MS);
     while ((int)(((actual_time - last_ack_success_time) >> multiplicator_ppm) - uncertainty_window ) > 0 )
@@ -369,4 +386,14 @@ void PointToPointTransmitter::ComputeNextWakeUpLength(uint8_t *nextWakeUpLength,
         }
     }
     *nextWakeUpLength = number_of_fragments;
+}
+ void PointToPointTransmitter::SetDevAddr ( uint8_t* addr, uint8_t Length) {
+    if (Length == 8) {
+        for (int i = 0 ; i < Length ; i++) {
+            DevEUI[i] =  addr [i];
+        }
+    }
+}
+ void PointToPointTransmitter::SetDevAddr ( uint32_t addr){
+    DevAddr = addr;
 }

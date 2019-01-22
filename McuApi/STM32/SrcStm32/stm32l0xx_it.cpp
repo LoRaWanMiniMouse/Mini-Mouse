@@ -44,20 +44,13 @@
 /* External variables --------------------------------------------------------*/
 extern LPTIM_HandleTypeDef hlptim1;
 extern RTC_HandleTypeDef hrtc;
-
+/*
 void MInitGpio ( ) {
-      /* GPIO Ports Clock Enable */
-
-
     GPIO_InitTypeDef GPIO_InitStruct;
     GPIO_InitStruct.Pin = GPIO_PIN_All;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    //HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    //HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    //HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-    //HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-    //HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+
     mcu.InitGpioOut ( LORA_CS );
     mcu.InitGpioOut ( LORA_RESET );
     mcu.InitGpioOut ( RADIO_ANT_SWITCH_RX );
@@ -73,7 +66,7 @@ void MInitGpio ( ) {
     mcu.SetValueDigitalOutPin ( RADIO_ANT_SWITCH_TX_BOOST, 0 ) ;
     mcu.SetValueDigitalOutPin ( RADIO_ANT_SWITCH_RX, 0 ) ;   
 }
-
+*/
 void mSystemClock_Config(void)
 {
 

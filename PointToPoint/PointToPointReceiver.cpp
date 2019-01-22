@@ -352,16 +352,18 @@ PointToPointReceiver::GetDelayIndicatorMs(
 eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void) {
     // compute mic + insert check @tbd
     DEBUG_MSG ("\n");
-    for (int i = 0 ; i < 11 ; i ++ ) {
-      DEBUG_PRINTF ( " %.2x", fragment.buffer[i]);
+    uint32_t mic;
+    uint8_t TempBuf[20];
+    memset(TempBuf,0,20);
+    for (int i = 0 ; i < 9 ; i ++){
+            TempBuf[i] = fragment.buffer[i];
     }
-    DEBUG_MSG ("\n");
+    LoRaMacComputeMic(TempBuf, 9, PtPKey , AddKey , 0 , 0,&mic );
     eStatusPtP status = OK_PTP ;
     uint16_t CheckMic = (fragment.buffer [9] << 8) + ( fragment.buffer [10] );
-    uint32_t mic;
-    LoRaMacComputeMic( &(fragment.buffer[0]), 9, PtPKey , AddKey , 0 , 0, &mic );
-    if ( CheckMic != (mic & 0xFFFF) ) {    
-        DEBUG_PRINTF ( " Receive a bad Mic %x calculted mix %x \n", CheckMic, mic);
+
+    if ( CheckMic != (uint16_t)(mic & 0x0000FFFF) ) {    
+        DEBUG_PRINTF ( " Receive a bad Mic %x calculted mix %x \n", CheckMic,  (uint16_t)(mic & 0x0000FFFF));
         return (ERROR_PTP);
     }
 
@@ -370,18 +372,18 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void) {
     relay.SetRssiStatus (ReceiveDevAddr, (RssiRxFragmentTask > (-20) ) ? (-20) : ( -20 - RssiRxFragmentTask ));
     if (relay.IsWhiteListedDevaddr(ReceiveDevAddr) == NO ) {
       relay.AddDevaddrInBlackList ( ReceiveDevAddr ) ;
-      DEBUG_PRINTF ( " Receive a bad WU dev_addr %x", ReceiveDevAddr);
+      DEBUG_PRINTF ( " Receive a bad WU dev_addr %x\n", ReceiveDevAddr);
       return (ERROR_PTP);
     }
     wake_up_id                   = fragment.buffer[5];
     if ( wake_up_id > WAKE_UP_SEQUENCE_LENGTH_MAX) {
-        DEBUG_PRINTF ( " Receive a bad Wake up id  %d", wake_up_id);
+        DEBUG_PRINTF ( " Receive a bad Wake up id  %d\n", wake_up_id);
         return (ERROR_PTP);
     }
     rx_data_task_param.Sf        = 12 - (fragment.buffer[8] & 0xF);
     RxBufferApp[1] = fragment.buffer[8];
     if ( ( rx_data_task_param.Sf < 7) ||  ( rx_data_task_param.Sf > 12 ) ) {
-        DEBUG_PRINTF ( " Receive a bad SF  %d", rx_data_task_param.Sf);
+        DEBUG_PRINTF ( " Receive a bad SF  %d \n", rx_data_task_param.Sf);
         return (ERROR_PTP);
     }
     rx_data_task_param.TimeOutMs = 40 * ( 1 << (rx_data_task_param.Sf - 7));

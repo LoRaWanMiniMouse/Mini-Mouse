@@ -87,7 +87,7 @@ private:
   uint8_t   CntDnw;
   uint16_t  Fcount;
   uint8_t   Channel_Dr;
-  uint16_t  Mic[WAKE_UP_SEQUENCE_LENGTH_MAX];
+  uint32_t  MicPtp[WAKE_UP_SEQUENCE_LENGTH_MAX+5];
   uint8_t  PtPKey[16];
   uint32_t AddKey ;
 };

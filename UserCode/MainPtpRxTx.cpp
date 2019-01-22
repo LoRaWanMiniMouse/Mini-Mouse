@@ -193,7 +193,7 @@ uint32_t next_start = mcu.RtcGetTimeMs();
 uint32_t CptDemo = 0;
 uint32_t RxAppTime = 0;
 
-//relay.AddDevaddrInWhiteList(0x26011D16);
+relay.AddDevaddrInWhiteList(0x26011D16);
 mcu.MMClearDebugBufferRadioPlaner ( );
 //ptpRx.Start(payload_received, &payload_received_size);
 next_start = mcu.RtcGetTimeMs();

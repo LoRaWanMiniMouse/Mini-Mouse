@@ -137,7 +137,7 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
     this->data_payload_length = data_payload_length;
     Fcount++;
     PointToPointTransmitter::GetNextSendSlotTimeAndChannel(
-        mcu.RtcGetTimeMs() + 1000,
+        mcu.RtcGetTimeMs() ,
         WakeUpSequenceDelay,
         last_ack_success_received_ms,
         &WakeUpSequenceLength,
@@ -146,27 +146,13 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
 
     this->fragment_index = WakeUpSequenceLength;
     PrepareNextWakeUpFragment(&this->fragment, this->fragment_index);
-    
-    uint8_t tmpbuffer[19];
-    memcpy (tmpbuffer, (this->fragment).buffer , 9 );
-    DEBUG_MSG ("[");
-    for (int j = 0 ; j < 9 ; j++) {
-        DEBUG_PRINTF ( "%x  ", tmpbuffer [j]);
-    }
-    DEBUG_MSG ("]\n");
     for (int i = fragment_index ; i >= 0 ; i --) {
         uint32_t mic;
-        memcpy (tmpbuffer, (this->fragment).buffer , 9 );
-        tmpbuffer[5] = i;
-        LoRaMacComputeMic(&tmpbuffer[0], 9, PtPKey , AddKey , 0 , 0,&mic );
-        Mic[i] = (mic & 0xFFFF) ;
-        DEBUG_MSG ("[");
-        for (int j = 0 ; j < 9 ; j++) {
-            DEBUG_PRINTF ( "%x  ", tmpbuffer [j]);
-        }
-    DEBUG_PRINTF (" %x %x  %x]\n",mic, Mic[i], PtPKey[3]);
+        (this->fragment).buffer[5] = i;
+        LoRaMacComputeMic((this->fragment).buffer, 9, PtPKey , AddKey , 0 , 0,&mic );
+        MicPtp[i] = mic;
     }
-
+    PrepareNextWakeUpFragment(&this->fragment, this->fragment_index); // to update mic for the first frag
 
 
     wakeup_fragment_task_param.Frequency = this->FrequencyList[ChannelIndex];
@@ -355,13 +341,6 @@ void PointToPointTransmitter::GetNextSendSlotTimeAndChannel(const uint32_t actua
 
 void PointToPointTransmitter::PrepareNextWakeUpFragment(WakeUpFragments_t *fragment, const uint8_t fragment_index)
 {
-    /*for (uint8_t index = 0; index < 10; index++)
-    {
-        fragment->blob[index] = 0;
-    }
-    fragment->index = fragment_index;
-    */
-
     fragment->buffer[0]  = Ftype;
     fragment->buffer[1]  = ( DevAddr >> 24 ) & 0xFF;
     fragment->buffer[2]  = ( DevAddr >> 16 ) & 0xFF;
@@ -371,9 +350,8 @@ void PointToPointTransmitter::PrepareNextWakeUpFragment(WakeUpFragments_t *fragm
     fragment->buffer[6]  = ( Fcount >> 8 ) & 0xFF ; 
     fragment->buffer[7]  = Fcount & 0xFF ;
     fragment->buffer[8]  = Channel_Dr ;
-    fragment->buffer[9]  = Mic[fragment_index] >> 8 ;
-    fragment->buffer[10] = Mic[fragment_index] & 0xFF ;
- 
+    fragment->buffer[9]  = (MicPtp[fragment_index] >> 8) & 0xFF ;
+    fragment->buffer[10] = MicPtp[fragment_index] & 0xFF ;
 }
 
 void PointToPointTransmitter::ComputeNextWakeUpLength(uint8_t *nextWakeUpLength, const uint32_t actual_time, const uint32_t last_ack_success_time)

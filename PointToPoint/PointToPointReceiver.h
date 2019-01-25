@@ -22,7 +22,7 @@ public:
   SRadioParam Tx4Rx3Param;
 protected:
   void ExecuteStateMachine();
-  eStatusPtP DecodeWakeUpSequence ( void ) ;
+  eStatusPtP DecodeWakeUpSequence () ;
   uint32_t GetNextCadStartMs(const uint32_t lastCadMs);
   uint32_t GetNextFreqency(const uint32_t nextCadMs);
   void ConfigureAndEnqueueNextCad();

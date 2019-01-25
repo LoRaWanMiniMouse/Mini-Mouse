@@ -631,9 +631,9 @@ void SX1276::SetModulationParamsTxLora( uint8_t SF, eBandWidth BW ) {
 
     /* Enable/disable Low datarate optimized */
     if( ( ( BW == 0 ) && ( ( SF == 11 ) || ( SF == 12 ) ) ) || ( ( BW == 1 ) && ( SF == 12 ) ) ) {
-         LowDatarateOptimize = 0x08;
+        LowDatarateOptimize = 0x08;
     } else {
-         LowDatarateOptimize = 0x00;
+        LowDatarateOptimize = 0x00;
     }
     Write( REG_LR_MODEMCONFIG3,LowDatarateOptimize + 4 ); // + 4 for internal AGC loop
 

@@ -24,7 +24,7 @@ public:
   void Abort();
   void GetStatistics(StatisticCounters_t *counters);
   static void Callback(void *);
-
+  void ClearDevEui(void);
 protected:
 
   void ExecuteStateMachine();

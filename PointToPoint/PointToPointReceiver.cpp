@@ -161,7 +161,7 @@ PointToPointReceiver::ExecuteStateMachine()
       if (this->rx_success) {
         this->rx_success = false;
         
-        eStatusPtP status = DecodeWakeUpSequence ();
+        eStatusPtP status = DecodeWakeUpSequence ( );
         if (status == ERROR_PTP) {
             this->ConfigureAndEnqueueNextCad();
             DEBUG_MSGRP("Receive a bad WU sequence\n");
@@ -171,8 +171,8 @@ PointToPointReceiver::ExecuteStateMachine()
                          (int)((wake_up_id - 1) * WAKE_UP_FRAGMENT_DURATION_MS) + 3;
             this->rx_data_task.StartTime = data_rx_ms;
             int16_t Rssi = *(this->rx_wakeup_fragment_task_param.Rssi);
-        if ( Rssi > (-20) ) {
-          Rssi = -20;
+        if ( Rssi < (-127) ) {
+          Rssi = -127;
         }
             this->radio_planner->EnqueueTask(this->rx_data_task, this->rx_buffer,
                                             &this->rx_buffer_length,
@@ -191,10 +191,10 @@ PointToPointReceiver::ExecuteStateMachine()
       if (this->rx_success) {
         RxBufferAppLength = this->rx_buffer_length ;
         int16_t Rssi = *(this->rx_data_task_param.Rssi);
-        if ( Rssi > (-20) ) {
-           Rssi = -20;
+        if ( Rssi < (-127) ) {
+           Rssi = -127;
         }
-        uint8_t RssiByte = (uint8_t) ( -20 - Rssi ) ;
+        uint8_t RssiByte = (uint8_t) (Rssi * (-1));
         RxBufferApp[0] = RssiByte;
         // RxBufferApp[1] is already updated when received the wake up sequence
         memcpy( &RxBufferApp[2], this->rx_buffer, RxBufferAppLength);
@@ -349,7 +349,7 @@ PointToPointReceiver::GetDelayIndicatorMs(
   return WakeUpSequenceDelay;
 }
 
-eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void) {
+eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( ) {
     // compute mic + insert check @tbd
     DEBUG_MSG ("\n");
     eStatusPtP status = OK_PTP ;
@@ -364,7 +364,11 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void) {
         DevEuiWakeUpSequence[6] = fragment.buffer[9] ;
         DevEuiWakeUpSequence[7] =fragment.buffer[10] ;
         DevLength = 8;
-        relay.AddDevEuiInJoinBlackList (DevEuiWakeUpSequence);
+         relay.updateCounter (DevEuiWakeUpSequence,fragment.buffer[5]);
+        if ( relay.IsJoinWhiteListedDevEui (DevEuiWakeUpSequence ) == NO) {
+            relay.AddDevEuiInJoinBlackList (DevEuiWakeUpSequence);
+            return (ERROR_PTP);
+        }
     } else {
         LoRaMacComputeMic( &(fragment.buffer[0]), 9, PtPKey , AddKey , 0 , 0,&mic );
         uint16_t CheckMic = (fragment.buffer [9] << 8) + ( fragment.buffer [10] );
@@ -373,10 +377,12 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void) {
             return (ERROR_PTP);
         }
         uint32_t ReceiveDevAddr = (fragment.buffer [1] << 24) + ( fragment.buffer [2] << 16 )+ ( fragment.buffer [3] << 8 )+  fragment.buffer [4] ;
-        relay.SetRssiStatus (ReceiveDevAddr, (RssiRxFragmentTask > (-20) ) ? (-20) : ( -20 - RssiRxFragmentTask ));
+        relay.SetRssiStatus (ReceiveDevAddr, (RssiRxFragmentTask < (-127) ) ? ( 127 ) : (uint8_t)( ( -1 ) * RssiRxFragmentTask ));
+        relay.updateCounter (ReceiveDevAddr,fragment.buffer[5]);
         if (relay.IsWhiteListedDevaddr(ReceiveDevAddr) == NO ) {
             relay.AddDevaddrInBlackList ( ReceiveDevAddr ) ;
             DEBUG_PRINTF ( " Receive a bad WU dev_addr %x\n", ReceiveDevAddr);
+      
             return (ERROR_PTP);
         } else {
           memcpy ( DevAddrWakeUpSequence , &fragment.buffer[1], 4) ;
@@ -423,8 +429,10 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( void) {
           break;
       default :
           DEBUG_PRINTF ( " Receive a bad Frequency  %d", fragment.buffer[8]);
-          return (ERROR_PTP);
+          rx_data_task_param.Frequency = 868100000;
           break;
+          //return (ERROR_PTP);
+          //break;
     }
 DEBUG_PRINTF ( "sf = %d , freq = %d\n",rx_data_task_param.Sf,rx_data_task_param.Frequency );
 Tx4Rx3Param.Frequency = rx_data_task_param.Frequency ;

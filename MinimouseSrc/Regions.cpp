@@ -289,7 +289,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             DistriDataRateInit[3]    = 0;
             DistriDataRateInit[2]    = 0; 
             DistriDataRateInit[1]    = 0; 
-            DistriDataRateInit[0]    = 1; 
+            DistriDataRateInit[0]    = 0; 
             this->MacNbTrans         = 1;
             break;
         case USER_DR_DISTRIBUTION: //in this example 1/3 dr5 1/3 dr4 and 1/3 dr0

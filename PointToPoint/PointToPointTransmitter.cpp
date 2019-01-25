@@ -76,7 +76,7 @@ PointToPointTransmitter::PointToPointTransmitter(RadioPLaner<SX1276> *radio_plan
     data_send_task_param.TimeOutMs = 50;
 
     data_send_task.HookId = this->hook_id;
-    data_send_task.TaskDuration = 40;
+    data_send_task.TaskDuration = 400;
     data_send_task.State = TASK_SCHEDULE;
     data_send_task.TaskType = TX_LORA;
 
@@ -131,6 +131,7 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
     if (this->state != STATE_INIT)
     {
         // DEBUG_PRINTF("Refuse to start: already running (in state 0x%x)\n", this->state);
+        this->state = STATE_INIT ;
         return (0);
     }
     DEBUG_PRINTFRP ("start and wk up length = %d\n",WakeUpSequenceLength );
@@ -373,7 +374,7 @@ void PointToPointTransmitter::PrepareNextWakeUpFragment(WakeUpFragments_t *fragm
 
 void PointToPointTransmitter::ComputeNextWakeUpLength(uint8_t *nextWakeUpLength, const uint32_t actual_time, const uint32_t last_ack_success_time)
 {
-    const uint8_t multiplicator_ppm =  9;
+    const uint8_t multiplicator_ppm =  8;
     uint8_t number_of_fragments = 1;
     uint16_t uncertainty_window = 24 + (number_of_fragments * WAKE_UP_FRAGMENT_DURATION_MS);
     while ((int)(((actual_time - last_ack_success_time) >> multiplicator_ppm) - uncertainty_window ) > 0 )
@@ -396,4 +397,10 @@ void PointToPointTransmitter::ComputeNextWakeUpLength(uint8_t *nextWakeUpLength,
 }
  void PointToPointTransmitter::SetDevAddr ( uint32_t addr){
     DevAddr = addr;
+}
+
+void PointToPointTransmitter::ClearDevEui(void) {
+    for (int i = 0 ; i < 8 ; i++) {
+            DevEUI[i] =  0xFF;
+        }
 }

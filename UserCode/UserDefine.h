@@ -23,10 +23,11 @@ Maintainer        : Fabien Holin (SEMTECH)
 /*                         Application     dependant                            */
 /********************************************************************************/
 #define DEBUG_TRACERP      0
+//
 #define BLOC 1
 
 #ifdef BLOC
-    #define DEBUG_TRACE        1     // Set to 1 to activate debug traces
+    #define DEBUG_TRACE        0     // Set to 1 to activate debug traces
 #else
     #define DEBUG_TRACE        0
 #endif

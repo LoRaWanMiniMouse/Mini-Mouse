@@ -218,7 +218,7 @@ void SysTick_Handler(void)
 
 void RTC_IRQHandler(void)
 {
-  mcu .WakeUpAfterDeepSleep ();
+  mcu.WakeUpAfterDeepSleep ();
   HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
 
 }

@@ -273,39 +273,43 @@ public:
         *Size = index;
         Payload[0] = NbElementJoinWhiteList + 0x80;
     };
-    BoolOkKo SetTxTimeForRx3 (  uint32_t  TxTimeForRx3In , uint32_t  DevaddrIn ) {
+    BoolOkKo SetConfigForRx3 (  uint32_t  TxTimeForRx3In , uint32_t  DevaddrIn, uint32_t FreqIn ) {
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( WhiteList[i].Devaddr == DevaddrIn) {
                 WhiteList[i].TxTimeForRx3 = TxTimeForRx3In;
                 WhiteList[i].Rx3Activated = RX3_ENABLE;
+                WhiteList[i].Rx3Frequency = FreqIn;
                 return (OK);
             }
         }
         return (KO);
     }
-    BoolOkKo SetTxTimeForRx3 (  uint32_t  TxTimeForRx3In , uint8_t  DevEuiIn[8] ) {
+    BoolOkKo SetConfigForRx3 (  uint32_t  TxTimeForRx3In , uint8_t  DevEuiIn[8] , uint32_t FreqIn) {
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( memcmp (DevEuiIn , JoinWhiteList[i].DevEui, 8 ) == 0 ){
                 JoinWhiteList[i].TxTimeForRx3 = TxTimeForRx3In;
                 JoinWhiteList[i].Rx3Activated = RX3_ENABLE;
+                JoinWhiteList[i].Rx3Frequency = FreqIn;
                 return (OK);
             }
         }
         return (KO);
     }
-    BoolOkKo GetTxTimeForRx3 (  uint32_t * TxTimeForRx3Out , uint32_t  DevaddrIn ) {
+    BoolOkKo GetConfigForRx3 (  uint32_t * TxTimeForRx3Out , uint32_t  DevaddrIn, uint32_t * FreqOut  ) {
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( WhiteList[i].Devaddr == DevaddrIn) {
                 *TxTimeForRx3Out = WhiteList[i].TxTimeForRx3 ;
+                *FreqOut         = WhiteList[i].Rx3Frequency;;
                 return (OK);
             }
         }
         return (KO);
     }
-    BoolOkKo GetTxTimeForRx3 (  uint32_t * TxTimeForRx3Out ,  uint8_t  DevEuiIn[8]  ) {
+    BoolOkKo GetConfigForRx3 (  uint32_t * TxTimeForRx3Out ,  uint8_t  DevEuiIn[8] ,  uint32_t * FreqOut  ) {
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( memcmp (DevEuiIn , JoinWhiteList[i].DevEui, 8 ) == 0 ){
                 *TxTimeForRx3Out = JoinWhiteList[i].TxTimeForRx3 ;
+                *FreqOut         = JoinWhiteList[i].Rx3Frequency;;
                 return (OK);
             }
         }
@@ -383,6 +387,7 @@ private :
 typedef struct SDevice{
     uint32_t        Devaddr;
     uint32_t        TxTimeForRx3;
+    uint32_t        Rx3Frequency;
     Rx3Activation   Rx3Activated;
     uint16_t        CptWakeUpSequence;
     uint8_t         LastFragNumbnerWakeUpSequence;
@@ -392,6 +397,7 @@ typedef struct SDevice{
 typedef struct SDeviceNotJoin{
     uint8_t         DevEui[8];
     uint32_t        TxTimeForRx3;
+    uint32_t        Rx3Frequency;
     Rx3Activation   Rx3Activated;
     uint16_t        CptWakeUpSequence;
     bool            ActiveNode;

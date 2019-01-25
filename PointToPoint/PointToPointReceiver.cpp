@@ -435,12 +435,12 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( ) {
           //break;
     }
 DEBUG_PRINTF ( "sf = %d , freq = %d\n",rx_data_task_param.Sf,rx_data_task_param.Frequency );
-Tx4Rx3Param.Frequency = rx_data_task_param.Frequency ;
+//Tx4Rx3Param.Frequency = rx_data_task_param.Frequency ;
 return (status);                         
 };
 
 
-void PointToPointReceiver::GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime, uint8_t * DevaddrOut, uint8_t * DevLengthOut  ) {
+void PointToPointReceiver::GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime, uint8_t * DevaddrOut, uint8_t * DevLengthOut , uint32_t *FreqOut ) {
     *PayloadLength = RxBufferAppLength;
     *RxTime        = RxBufferAppTime + ( MAC_RX3_DELAY * 1000 );
     if ( RxBufferAppLength > 0 ) {
@@ -449,4 +449,5 @@ void PointToPointReceiver::GetRxPayload ( uint8_t * RxPayload, uint8_t * Payload
     RxBufferAppLength = 0; // clear Rx buffer; 
     ( DevLength == 4 ) ? memcpy ( DevaddrOut , DevAddrWakeUpSequence , 4)  : memcpy ( DevaddrOut , DevEuiWakeUpSequence , 8) ;
     * DevLengthOut  = DevLength ;
+    *FreqOut        = rx_data_task_param.Frequency;
 };

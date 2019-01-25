@@ -17,7 +17,7 @@ public:
   void Start(uint8_t* data_payload, uint8_t* data_payload_length);
   void Abort();
   void GetStatistics(StatisticCounters_t* counters);
-  void GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime, uint8_t * DevaddrOut, uint8_t * DevLengthOut );
+  void GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime, uint8_t * DevaddrOut, uint8_t * DevLengthOut, uint32_t *FreqOut );
   static void Callback(void*);
   SRadioParam Tx4Rx3Param;
 protected:

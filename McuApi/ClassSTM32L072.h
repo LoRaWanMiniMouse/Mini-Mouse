@@ -232,7 +232,13 @@ public :
     */
     void     GotoSleepMSecond     ( int delay );
     void     WakeUpAfterDeepSleep ( void );
-    
+    void I2cInit(void);
+    void I2cDeInit(void);
+    HAL_StatusTypeDef I2cTransmit (uint16_t DevAddress, uint8_t *pData, uint16_t Size ) ;
+    HAL_StatusTypeDef I2cReceive  (uint16_t DevAddress, uint8_t *pData, uint16_t Size ) ;
+    HAL_StatusTypeDef I2cReadMem  (uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+    HAL_StatusTypeDef I2cWriteMem (uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+ 
 /******************************************************************************/
 /*                             Mcu WatchDog Api                               */
 /******************************************************************************/

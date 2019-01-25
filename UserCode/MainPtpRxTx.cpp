@@ -21,6 +21,7 @@
 #include "UserDefine.h"
 #include "ApiMcu.h"
 #include "RadioPlaner.h"
+#include "Sensor.h"
 
 #define MAX_PAYLOAD_RECEIVED 255
 #define TX_ON_RX3_ID              0
@@ -211,6 +212,37 @@ bool JoinOnGoing = false;
 uint8_t CurrentJoinDevEui[8];
 memset( CurrentJoinDevEui , 0 ,8);
 Lp.Init ();
+
+DEBUG_MSG (" Start accelero \n");
+SHT21       Sht21          ( PB_14 );
+LPS22HB     PressureSensor ( PB_6 );
+LSM303H_ACC Accelero       ( PA_3 );
+mcu.mwait_ms (200);
+//Accelero.InitConfig (); 
+Accelero.InitConfigMagneto (); 
+    /*!
+    * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes) + FW version. 
+    */
+    
+    //UserPayload [ 1 ]  = Sht21.readTemp ();
+    // UserPayload [ 2 ]  = Sht21.readHumidity ();
+    while (1) {
+      
+       // mcu.mwait_ms (200);
+     // Accelero.InitConfig (); 
+    //UserPayload [ 3 ]  = (PressureSensor.GetPressure () - 800 ) & 0xFF;
+    //  RadioUser.Reset();
+        DEBUG_PRINTF (" Start accelero1 \n  status accelero %x \n", Accelero.ReadStatusMagneto ()) ;
+    
+        DEBUG_PRINTF (" who i am magneto %x \n", Accelero.GetWhoAmIMagneto ()) ;
+        DEBUG_PRINTF (" who i am Accelero %x \n", Accelero.GetWhoAmI ()) ;
+        //DEBUG_PRINTF (" read temp  %x \n", Sht21.readTemp () );
+        RadioUser.Sleep( true );
+        mcu.GotoSleepMSecond ( 300 );
+    }
+    
+
+
 #ifdef BLOC
   //  Lp.RestoreContext  ( );
      
@@ -229,7 +261,8 @@ Lp.Init ();
     while(1){
         uint8_t DevOrDevEui[8];
         uint8_t DevAddrOrDevEUILength;
-        ptpRx.GetRxPayload ( UserPayloadClassA, &UserPayloadSizeClassA, &RxAppTime, &DevOrDevEui[0], &DevAddrOrDevEUILength );
+        uint32_t Freq4RX3;
+        ptpRx.GetRxPayload ( UserPayloadClassA, &UserPayloadSizeClassA, &RxAppTime, &DevOrDevEui[0], &DevAddrOrDevEUILength,&Freq4RX3 );
         if ( UserPayloadSizeClassA > 0 ) {
             DEBUG_PRINTF ( "Lengthdev  = %d \n",DevAddrOrDevEUILength );
             if (DevAddrOrDevEUILength == 4) { // CAse not a join 
@@ -238,14 +271,14 @@ Lp.Init ();
                 if ( relay.IsWhiteListedDevaddr(ReceiveDevaddr) == YES ) { 
                     DEBUG_PRINTF ( "devaddr = %x\n", ReceiveDevaddr);
                     LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
-                    relay.SetTxTimeForRx3 ( RxAppTime , ReceiveDevaddr );
+                    relay.SetConfigForRx3 ( RxAppTime , ReceiveDevaddr, Freq4RX3);
                     cpt = 110;
                     SendDevaddrStatus = false ;
                     SendDevEuiStatus = false;
                 }
             } else { // case join
                 LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, MsgTypeClassA , mcu.RtcGetTimeMs () + 200 );
-                relay.SetTxTimeForRx3 ( RxAppTime , DevOrDevEui );
+                relay.SetConfigForRx3 ( RxAppTime , DevOrDevEui, Freq4RX3);
                 cpt = 110;
                 SendDevaddrStatus = false ;
                 SendDevEuiStatus = false;
@@ -308,21 +341,19 @@ Lp.Init ();
                             DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
                         }
                         DEBUG_MSG ( "]\n");
-                    if ( ( relay.IsRx3Activated ( ReceiveDevaddr ) == YES ) && ( relay.GetTxTimeForRx3 ( &TargetTime, ReceiveDevaddr ) == OK ) ) {
+                    if ( ( relay.IsRx3Activated ( ReceiveDevaddr ) == YES ) && ( relay.GetConfigForRx3 ( &(Tx4Rx3Task.StartTime) , ReceiveDevaddr, &(ptpRx.Tx4Rx3Param.Frequency) ) == OK ) ) {
                         DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
                         for ( i = 0 ; i < UserRxPayloadSize ; i++){
                             DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
                         }
                         DEBUG_MSG ( "]\n");
-                        Tx4Rx3Task.StartTime = TargetTime;
                         RP.EnqueueTask (Tx4Rx3Task, UserRxPayload, &UserRxPayloadSize, ptpRx.Tx4Rx3Param ); //@tbd RadioPlaner  timeonair
                         relay.ClearRx3Activation (RX3_DISABLE, ReceiveDevaddr  ); 
                     } else if ( JoinOnGoing == true ){ // Have to be robustified with a token 
-                        if ( ( relay.IsRx3Activated ( CurrentJoinDevEui ) == YES ) && ( relay.GetTxTimeForRx3 ( &TargetTime, CurrentJoinDevEui ) == OK ) ) {
-                        Tx4Rx3Task.StartTime = TargetTime;
+                        if ( ( relay.IsRx3Activated ( CurrentJoinDevEui ) == YES ) && ( relay.GetConfigForRx3 ( &(Tx4Rx3Task.StartTime), CurrentJoinDevEui,&(ptpRx.Tx4Rx3Param.Frequency) ) == OK ) ) {
                         RP.EnqueueTask (Tx4Rx3Task, UserRxPayload, &UserRxPayloadSize, ptpRx.Tx4Rx3Param ); //@tbd RadioPlaner  timeonair
                         relay.ClearRx3Activation (RX3_DISABLE, CurrentJoinDevEui  );  
-                          JoinOnGoing = false;
+                        JoinOnGoing = false;
                         } 
                     }
                   

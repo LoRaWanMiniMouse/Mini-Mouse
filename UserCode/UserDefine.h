@@ -27,11 +27,11 @@ Maintainer        : Fabien Holin (SEMTECH)
 #define BLOC 1
 
 #ifdef BLOC
-    #define DEBUG_TRACE        1     // Set to 1 to activate debug traces
+    #define DEBUG_TRACE        0     // Set to 1 to activate debug traces
 #else
     #define DEBUG_TRACE        0
 #endif
-#define LOW_POWER_MODE     0    // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
+#define LOW_POWER_MODE     1    // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 #define DEBUG_TRACE_ENABLE 0  // Set to 1 to activate DebugTrace 
 
 #define LOW_SPEED_CLK    LSE    //
@@ -44,9 +44,12 @@ Maintainer        : Fabien Holin (SEMTECH)
         #define UART_TX                   PA_9
         #define UART_RX                   PA_10
     #else 
-        #define UART_NUM                  USART2
-        #define UART_TX                   PA_2
-        #define UART_RX                   PA_3
+        //#define UART_NUM                  USART2
+        //#define UART_TX                   PA_2
+        //#define UART_RX                   PA_3
+        #define UART_NUM                  USART1
+        #define UART_TX                   PA_9
+        #define UART_RX                   PA_10
     #endif
     #define LORA_SPIx                 SPI1   // select your spi number
     #define LORA_SPI_MOSI             PA_7

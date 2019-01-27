@@ -288,7 +288,7 @@ template < class R >void LoraRegionsEU<R>::RegionSetDataRateDistribution( uint8_
             DistriDataRateInit[4]    = 0; 
             DistriDataRateInit[3]    = 0;
             DistriDataRateInit[2]    = 0; 
-            DistriDataRateInit[1]    = 0; 
+            DistriDataRateInit[1]    = 1; 
             DistriDataRateInit[0]    = 0; 
             this->MacNbTrans         = 1;
             break;

@@ -37,6 +37,7 @@
 #include "ApiMcu.h"
 #include "Define.h"
 #include "UserDefine.h"
+#include "Sensor.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -242,9 +243,20 @@ void EXTI0_1_IRQHandler(void)
 void EXTI4_15_IRQHandler(void)
 {
   mcu.WakeUpAfterDeepSleep ();
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+  #ifndef BLOC
+  if ( Accelero.Running == 1 ){
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
+    DEBUG_MSG ("Debout accelero \n");
+  } else {
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
   /* USER CODE BEGIN EXTI4_15_IRQn 1 */
-  mcu.ExtISR();
+    mcu.ExtISR();
+  }
+  #else
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+  /* USER CODE BEGIN EXTI4_15_IRQn 1 */
+    mcu.ExtISR();
+  #endif 
   /* USER CODE END EXTI4_15_IRQn 1 */
 }
 

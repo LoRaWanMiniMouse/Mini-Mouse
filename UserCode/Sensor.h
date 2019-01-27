@@ -57,23 +57,25 @@ public:
 
     SHT21 ( PinName PowerOffOnIn ) {
         PowerOffOn = PowerOffOnIn;
+        PowerSht ( );
     };
     int8_t readTemp ( void ) {
         PowerSht ( );
+       //mcu.SetValueDigitalOutPin ( PowerOffOn, 1 );
         int res = 1 ;
-        while (res !=0) {
-            StartI2c ();
-            res = triggerTemp() ;
-            mcu.mwait_ms (10);  
+        //while (res !=0) {
+            triggerTemp() ;
+            mcu.mwait_ms (90);  
             res += requestTemp() ;  
-        }
-        mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
+      //  }
+       // mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
         float realtemp;
         realtemp = -46.85 + 175.72 * ( ((float) temperature) / 65536 );
         return ((int8_t)realtemp);
+        mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
     } ;
     uint8_t readHumidity ( void ) {
-        PowerSht ( );
+      //  PowerSht ( );
         int res = 1 ;
         while (res !=0) {
             StartI2c ();
@@ -87,16 +89,27 @@ public:
         return ((uint8_t) realhum ) ;
     } ;
 private:
-    int triggerTemp ( ) { return wr(SHT_TRIG_TEMP_HOLD);};  
+    int triggerTemp ( ) { 
+        uint8_t RegValue;
+       // mcu.I2cWriteMem (SHT_I2C_ADDR, SHT_SOFT_RESET, I2C_MEMADD_SIZE_8BIT , &RegValue, 0 , 1000 ); // One Shot Mesaue 0x11
+       // mcu.mwait_ms (30);
+       // RegValue = 0xC1;
+       // mcu.I2cWriteMem (SHT_I2C_ADDR, SHT_WRITE_REG, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
+      //  RegValue = 0;
+        mcu.I2cWriteMem (SHT_I2C_ADDR, SHT_TRIG_TEMP, I2C_MEMADD_SIZE_8BIT ,  &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
+        return (RegValue);
+        }; 
+        //return wr(SHT_TRIG_TEMP_HOLD);};  
     int requestTemp ( ) {
         int res;
         uint16_t rx_bytes = 3;
         uint8_t rx[rx_bytes];
-        res = mcu.I2cReceive (SHT_I2C_ADDR, rx, rx_bytes );
+        //res = mcu.I2cReceive (SHT_I2C_ADDR, rx, rx_bytes );
+        res = mcu.I2cReadMem (SHT_I2C_ADDR, SHT_TRIG_TEMP_HOLD, I2C_MEMADD_SIZE_8BIT , rx, 3 , 1000 );
         unsigned short msb = (rx[0] << 8);
-        unsigned short lsb = (rx[1] << 0);
-        temperature = msb + lsb;
-        res+= CheckCrc(rx,2,rx[2]);
+        unsigned short lsb = (( rx[1] & 0xFC) << 0);
+        temperature = (msb + lsb);
+        res= CheckCrc(rx,2,rx[2]);
         return res;
     };
     unsigned short temperature;
@@ -119,10 +132,14 @@ private:
     };
     void PowerSht ( void ) {
         mcu.InitGpioOut ( PowerOffOn ) ;
-        mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
-        mcu.mwait_ms (10);
+      //  mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
+      //  mcu.mwait_ms (10);
         mcu.SetValueDigitalOutPin ( PowerOffOn, 1 );
         mcu.mwait_ms (10);
+        mcu.I2cDeInit();
+        mcu.mwait_ms (10);
+        mcu.I2cInit ();
+        mcu.mwait_ms (20);
     }
     void StartI2c ( void ) {
         mcu.I2cDeInit();
@@ -252,12 +269,13 @@ private:
 /*                          Pressure Sensor                             */
 //////////////////////////////////////////////////////////////////////////
 
-#define LSM303H_ACC_ADDR   0x3BU  
-
+#define LSM303H_ACC_ADDR       0x3BU  
+#define LSM303H_MAGNETO_ADDR   0x3DU  
 /** Device Identification (Who am I) **/
 
 #define LSM303H_WHO_AM_I       0x0FU
 #define LSM303H_CTRL1A         0x20U
+#define LSM303H_OUT_TEMP_A     0x26U
 #define LSM303H_STATUS_A       0x27U
 #define LSM303H_OUT_X_L_A      0x28U
 #define LSM303H_OUT_X_H_A      0x29U
@@ -275,8 +293,9 @@ private:
 
 #define LSM303H_WAKE_UP_THS_A  0x33U
 #define LSM303H_WAKE_UP_DUR_A  0x34U
+#define LSM303H_WAKE_UP_SRC_A  0x37U
 #define LSM303H_CTRL4_A        0x23U
-
+#define LSM303H_CTRL3_A        0x23U
 #define LSM303H_MAGNETO_CTRLReg1A         0x60U
 
 class LSM303H_ACC
@@ -285,48 +304,42 @@ class LSM303H_ACC
 
     LSM303H_ACC ( PinName PowerOffOnIn ) {
         PowerOffOn = PowerOffOnIn;
-        PowerLSM303H_ACC ();
+      
     };
     uint8_t GetWhoAmI ( void ) {
         
         int res = 1 ;
         uint8_t WhoAmI = 0;
         while (res != 0) {
-            StartI2c ();
             res = mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_WHO_AM_I, I2C_MEMADD_SIZE_8BIT , &WhoAmI, 1 , 1000 );
         }
-        mcu.SetValueDigitalOutPin ( PB_14, 0 );
         return ( WhoAmI );
     };
-     uint8_t GetWhoAmIMagneto ( void ) {
-        
+    uint8_t GetWhoAmIMagneto ( void ) {
         int res = 1 ;
         uint8_t WhoAmI = 0;
         while (res != 0) {
-            StartI2c ();
-            res = mcu.I2cReadMem (LSM303H_ACC_ADDR, 0x4F, I2C_MEMADD_SIZE_8BIT , &WhoAmI, 1 , 1000 );
+            res = mcu.I2cReadMem (LSM303H_MAGNETO_ADDR, 0x4F, I2C_MEMADD_SIZE_8BIT , &WhoAmI, 1 , 1000 );
         }
-        mcu.SetValueDigitalOutPin ( PB_14, 0 );
         return ( WhoAmI );
     };
     void InitConfig ( void ) {
-       
+          PowerLSM303H_ACC ();
         int res = 1 ;
         while (res != 0) {
-            StartI2c ();
-            uint8_t RegValue = 0xE0;  // 400 HZ Low Power mode
+            uint8_t RegValue = 0xA0;  // 400 HZ Low Power mode
             res = mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_CTRL1A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
             RegValue = 0x0;  //// No duration For Wake up
-           // res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_WAKE_UP_DUR_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
-         //   RegValue = 0x7;  ////MAx For Wake up Threshold
-         //   res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_WAKE_UP_THS_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
-        //    RegValue = 0x20;  //// Wake up on interrput pin
-           // res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_CTRL4_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
-     
+            res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_WAKE_UP_DUR_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
+            RegValue = 0x3;  ////MAx For Wake up Threshold
+            res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_WAKE_UP_THS_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
+            RegValue = 0x04;  //// Latch the interrupt
+            res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_CTRL3_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
+            RegValue = 0x20;  //// Wake up on interrput pin
+            res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_CTRL4_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
         }
-        mcu.SetValueDigitalOutPin ( PB_14, 0 );
     };
-     uint8_t ReadStatusAccelero ( void ) {
+    uint8_t ReadStatusAccelero ( void ) {
         int res = 1 ;
         uint8_t Status = 0;
         uint8_t XaH = 0;
@@ -335,43 +348,36 @@ class LSM303H_ACC
         uint8_t YaL = 0;
         uint8_t ZaH = 0;
         uint8_t ZaL = 0;
+        uint8_t temp = 0;
+     
         while (res != 0) {
-            StartI2c ();
             res = mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_CTRL1A, I2C_MEMADD_SIZE_8BIT , &Status, 1 , 1000 );
             DEBUG_PRINTF ("ctrlA reg = %x\n",Status);
             Status = 0;
-            //while ((Status&0x1) == 0) {
+            while ((Status&0x1) == 0) {
                 res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_STATUS_A, I2C_MEMADD_SIZE_8BIT , &Status, 1 , 1000 );
-            //}
+            }
             res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_X_L_A, I2C_MEMADD_SIZE_8BIT , &XaL, 1 , 1000 );
             res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_X_H_A, I2C_MEMADD_SIZE_8BIT , &XaH, 1 , 1000 );
             res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_Y_L_A, I2C_MEMADD_SIZE_8BIT , &YaL, 1 , 1000 );
             res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_Y_H_A, I2C_MEMADD_SIZE_8BIT , &YaH, 1 , 1000 );
             res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_Z_L_A, I2C_MEMADD_SIZE_8BIT , &ZaL, 1 , 1000 );
             res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_Z_H_A, I2C_MEMADD_SIZE_8BIT , &ZaH, 1 , 1000 );
+            res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_TEMP_A, I2C_MEMADD_SIZE_8BIT ,&temp, 1 , 1000 );
+            Temperature = (uint8_t)(25 + (int8_t)temp) ;   
         }
         DEBUG_PRINTF ("Acceleration X  = %d\n",(int16_t)(( XaH<<8 ) + XaL));
         DEBUG_PRINTF ("Acceleration Y = %d\n",(int16_t)(( YaH<<8 ) + YaL));
         DEBUG_PRINTF ("Acceleration Z  = %d\n",(int16_t)(( ZaH<<8 ) + ZaL));
-        mcu.SetValueDigitalOutPin ( PB_14, 0 );
         return ( Status );
     };
   void InitConfigMagneto ( void ) {
        
         int res = 1 ;
         while (res != 0) {
-            StartI2c ();
-            uint8_t RegValue = 0x80;  // 10 HZ Low Power mode
-            res = mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_MAGNETO_CTRLReg1A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
-            RegValue = 0x0;  //// No duration For Wake up
-           // res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_WAKE_UP_DUR_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
-         //   RegValue = 0x7;  ////MAx For Wake up Threshold
-         //   res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_WAKE_UP_THS_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
-        //    RegValue = 0x20;  //// Wake up on interrput pin
-           // res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_CTRL4_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
-     
+            uint8_t RegValue = 0x81;  // 10 HZ Low Power mode
+            res = mcu.I2cWriteMem (LSM303H_MAGNETO_ADDR, LSM303H_MAGNETO_CTRLReg1A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
         }
-        mcu.SetValueDigitalOutPin ( PB_14, 0 );
     };
 
   uint8_t ReadStatusMagneto ( void ) {
@@ -383,29 +389,58 @@ class LSM303H_ACC
         uint8_t YaL = 0;
         uint8_t ZaH = 0;
         uint8_t ZaL = 0;
-        while (res != 0) {
-            StartI2c ();
-            res = mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_MAGNETO_CTRLReg1A, I2C_MEMADD_SIZE_8BIT , &Status, 1 , 1000 );
+       //   while (res != 0) {
+            res = mcu.I2cReadMem (LSM303H_MAGNETO_ADDR, LSM303H_MAGNETO_CTRLReg1A, I2C_MEMADD_SIZE_8BIT , &Status, 1 , 1000 );
             DEBUG_PRINTF ("LSM303H_MAGNETO_CTRLReg1A reg = %x\n",Status);
             Status = 0;
-            mcu.mwait_ms (200);
-            //while ((Status&0x1) == 0) {
-                //res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_STATUS_A, I2C_MEMADD_SIZE_8BIT , &Status, 1 , 1000 );
-            //}
-            res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_X_L_M, I2C_MEMADD_SIZE_8BIT , &XaL, 1 , 1000 );
-            res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_X_H_M, I2C_MEMADD_SIZE_8BIT , &XaH, 1 , 1000 );
-            res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_Y_L_M, I2C_MEMADD_SIZE_8BIT , &YaL, 1 , 1000 );
-            res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_Y_H_M, I2C_MEMADD_SIZE_8BIT , &YaH, 1 , 1000 );
-            res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_Z_L_M, I2C_MEMADD_SIZE_8BIT , &ZaL, 1 , 1000 );
-            res += mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_OUT_Z_H_M, I2C_MEMADD_SIZE_8BIT , &ZaH, 1 , 1000 );
-        }
+           // mcu.mwait_ms (200);
+            while ((Status & 0x8) == 0) {
+                res += mcu.I2cReadMem (LSM303H_MAGNETO_ADDR, 0x67, I2C_MEMADD_SIZE_8BIT , &Status, 1 , 1000 );
+            }
+            res += mcu.I2cReadMem (LSM303H_MAGNETO_ADDR, LSM303H_OUT_X_L_M, I2C_MEMADD_SIZE_8BIT , &XaL, 1 , 1000 );
+            res += mcu.I2cReadMem (LSM303H_MAGNETO_ADDR, LSM303H_OUT_X_H_M, I2C_MEMADD_SIZE_8BIT , &XaH, 1 , 1000 );
+            res += mcu.I2cReadMem (LSM303H_MAGNETO_ADDR, LSM303H_OUT_Y_L_M, I2C_MEMADD_SIZE_8BIT , &YaL, 1 , 1000 );
+            res += mcu.I2cReadMem (LSM303H_MAGNETO_ADDR, LSM303H_OUT_Y_H_M, I2C_MEMADD_SIZE_8BIT , &YaH, 1 , 1000 );
+            res += mcu.I2cReadMem (LSM303H_MAGNETO_ADDR, LSM303H_OUT_Z_L_M, I2C_MEMADD_SIZE_8BIT , &ZaL, 1 , 1000 );
+            res += mcu.I2cReadMem (LSM303H_MAGNETO_ADDR, LSM303H_OUT_Z_H_M, I2C_MEMADD_SIZE_8BIT , &ZaH, 1 , 1000 );
+      //  }
         DEBUG_PRINTF ("MAGNETO X  = %d\n",(int16_t)(( XaH<<8 ) + XaL));
         DEBUG_PRINTF ("MAGNETO Y = %d\n",(int16_t)(( YaH<<8 ) + YaL));
         DEBUG_PRINTF ("MAGNETO Z  = %d\n",(int16_t)(( ZaH<<8 ) + ZaL));
-        mcu.SetValueDigitalOutPin ( PB_14, 0 );
         return ( Status );
     };
-  
+uint8_t AcceleroWup (void) {
+    DEBUG_PRINTF ("irq accelero = %d\n",mcu.GetValueDigitalInPin(PA_8));
+    return (mcu.GetValueDigitalInPin(PA_8));
+}  
+void ClearIrqAccelero (void) {
+    int res = 1 ;
+    uint8_t Status = 0;
+    res = mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_WAKE_UP_SRC_A, I2C_MEMADD_SIZE_8BIT , &Status, 1 , 1000 );
+}
+uint8_t Running;
+uint8_t Temperature;
+  void PowerLSM303H_ACC ( void ) {
+        mcu.InitGpioOut ( PowerOffOn ) ;
+        mcu.InitGpioOut ( PB_14 ) ;
+        mcu.Init_Irq (PA_8);
+
+        mcu.SetValueDigitalOutPin ( PB_14, 1 );
+        mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
+        mcu.mwait_ms (10);
+        mcu.SetValueDigitalOutPin ( PowerOffOn, 1 );
+        mcu.mwait_ms (10);
+        mcu.I2cDeInit();
+        mcu.mwait_ms (5);
+        mcu.I2cInit ();
+        mcu.mwait_ms (5);
+    }
+    void PowerOffLSM303H_ACC ( void ) {
+
+        mcu.SetValueDigitalOutPin ( PB_14, 0 );
+        mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
+
+    }
 private:
     int wr(uint8_t cmd) {
         int res;
@@ -414,30 +449,9 @@ private:
         res = mcu.I2cTransmit (LSM303H_ACC_ADDR, command, 1 );   
         return res;
     };
-    void PowerLSM303H_ACC ( void ) {
-        mcu.InitGpioOut ( PowerOffOn ) ;
-        mcu.InitGpioOut ( PB_14 ) ;
-        mcu.SetValueDigitalOutPin ( PB_14, 1 );
-        mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
-        mcu.mwait_ms (10);
-        mcu.SetValueDigitalOutPin ( PowerOffOn, 1 );
-        mcu.mwait_ms (10);
-    }
-    void PowerOffLSM303H_ACC ( void ) {
-
-        mcu.SetValueDigitalOutPin ( PB_14, 0 );
-        mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
-
-    }
-    void StartI2c ( void ) {
-        mcu.SetValueDigitalOutPin ( PB_14, 1 ); 
-        mcu.I2cDeInit();
-        mcu.mwait_ms (5);
-        mcu.I2cInit ();
-        mcu.mwait_ms (5);
-    }
+  
     PinName PowerOffOn;
 };
-
+extern  LSM303H_ACC Accelero;   
 
 #endif

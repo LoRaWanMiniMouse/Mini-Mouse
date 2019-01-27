@@ -139,9 +139,12 @@ void SX1276::Reset( void ) {
     mcu.waitUnderIt( 10000 );
     this->ResetFakeIrq();
     lastPacketRssi = 0;
-    SetOpMode( RF_OPMODE_SLEEP );
-    mcu.waitUnderIt( 5000 );
-    Write(REG_OPMODE, RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_SLEEP); // todo
+    Write(REG_OPMODE, RFLR_OPMODE_SLEEP);
+    SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
+    while ( Read(REG_OPMODE) != (RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_SLEEP) ) {
+        SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
+    }
+     mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 0 );
 }
 
 void SX1276::TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, eHeaderMode headerMode,

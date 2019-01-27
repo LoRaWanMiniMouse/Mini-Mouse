@@ -81,6 +81,7 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
    
         default :
             DEBUG_PRINTF ("receive It RADIO error %d\n",PlanerStatus);
+            tCurrentMillisec =  mcu.RtcGetTimeMs( );
             break;
     }
     switch ( StateRadioProcess ) { 

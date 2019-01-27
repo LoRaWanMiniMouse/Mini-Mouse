@@ -187,6 +187,7 @@ void McuSTM32L072::InitMcu( void ) {
   LowPowerTimerLoRaInit ( );
   InitSpi () ;
   RtcInit ();
+  I2cInit ();
 
 }
 
@@ -790,7 +791,9 @@ void McuSTM32L072::MMPrintBuffer ( void ) {
 void sleepAndWakeUp (void) {
     HAL_SPI_DeInit (&hspi1);
     HAL_UART_DeInit (&huart2);
-    mcu.I2cDeInit ();
+     mcu.I2cDeInit ();
+   
+   // mcu.SetValueDigitalOutPin ( PB_14, 0 );
     HAL_PWR_EnterSTOPMode ( PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI );
   //  mcu.WakeUpAfterDeepSleep ();
 }
@@ -824,6 +827,8 @@ void McuSTM32L072::WakeUpAfterDeepSleep (void) {
   PeriphClkInit.I2c1ClockSelection   = RCC_I2C1CLKSOURCE_PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK){}
   CLEAR_BIT(SCB->SCR, SCB_SCR_SLEEPDEEP_Msk);
+  // mcu.SetValueDigitalOutPin ( PB_14, 1 );
+  //I2cInit ();
   UartInit();
   InitSpi();
   I2cInit ();

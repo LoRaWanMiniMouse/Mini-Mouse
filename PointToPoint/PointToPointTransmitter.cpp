@@ -130,7 +130,7 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
 {
     if (this->state != STATE_INIT)
     {
-        // DEBUG_PRINTF("Refuse to start: already running (in state 0x%x)\n", this->state);
+         DEBUG_PRINTF("Refuse to start: already running (in state 0x%x)\n", this->state);
         this->state = STATE_INIT ;
         return (0);
     }
@@ -206,7 +206,7 @@ void PointToPointTransmitter::ExecuteStateMachine()
         else
         {
             DEBUG_MSGRP("Send data \n");
-            data_send_task.StartTime = mcu.RtcGetTimeMs() + 16;
+            data_send_task.StartTime = mcu.RtcGetTimeMs() + 16 + 20;  // +20 to be sure that collide with TX from lorawan dedicated to relay implementation not point to point 
             eHookStatus hookStatus = this->radio_planner->EnqueueTask(data_send_task, this->data_payload, &this->data_payload_length, data_send_task_param);
             count_data_tx_attempt++;
             if (hookStatus == HOOK_ID_ERROR)
@@ -335,7 +335,7 @@ void PointToPointTransmitter::GetNextSendSlotTimeAndChannel(const uint32_t actua
         channel_index_temp = !channel_index_temp;
         t_cad_next += CAD_BEAT_MS;
     }
-    *next_send_slot = t_cad_next - next_wake_up_sequence_window / 2;
+    *next_send_slot = t_cad_next - next_wake_up_sequence_window / 2 + CAD_BEAT_MS;
     *wake_up_sequence_length = next_wake_up_sequence_length;
     
     *channel_index = channel_index_temp;

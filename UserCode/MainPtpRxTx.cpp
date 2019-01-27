@@ -31,8 +31,11 @@
 
 #define FW_VERSION 18
 #define PERIOD_STATUS 100
+#define WAKEUPDURATION 600 
 Relay relay;
-
+#ifndef BLOC
+LSM303H_ACC Accelero       ( PA_3 );
+#endif
 #define FileId 4
 int16_t RxcSnr ;
 int16_t RxcRssi ;
@@ -89,10 +92,10 @@ uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 
 uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
 uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x57 };    
 #if BLOC
-uint32_t LoRaDevAddrInit            = 0x26011632;
+uint32_t LoRaDevAddrInit            = 0x26011690;
 #else
 //uint32_t LoRaDevAddrInit          = 0x26011D16;
-uint32_t LoRaDevAddrInit          = 0x26011B67;
+uint32_t LoRaDevAddrInit          = 0x26011695;
 
 #endif
 int i;
@@ -103,14 +106,15 @@ uint8_t payload_received[MAX_PAYLOAD_RECEIVED] = { 0x00 };
 uint8_t payload_received_size = 0;
 uint8_t payload_send[MAX_PAYLOAD_RECEIVED] = { 0x00 };
 uint8_t payload_send_size = 15;
-uint8_t DevEuiInit2[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x56 };
+uint8_t DevEuiInit2[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x51 };
 // uint32_t wait_time_ms = 0;
 #ifdef BLOC
     sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE };
 #else
     
-    LoRaDevAddrInit = 0x26011695;    
-    sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit2, LoRaDevAddrInit,OTA_DEVICE };
+    LoRaDevAddrInit = 0x260115D7;
+;    
+    sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit2, LoRaDevAddrInit,APB_DEVICE };
 #endif
 
 mcu.InitMcu();
@@ -161,6 +165,7 @@ DEBUG_MSG("Init  Done\n");
 uint8_t AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
 eLoraWan_Process_States LpState = LWPSTATE_IDLE;  
 RadioUser.Reset();
+RadioUser.Sleep(true);
 mcu.GotoSleepMSecond ( 300 );
 uint32_t count_start = 0;
 const uint32_t wait_before_next_start_min = 1000;  // 1000
@@ -213,34 +218,11 @@ uint8_t CurrentJoinDevEui[8];
 memset( CurrentJoinDevEui , 0 ,8);
 Lp.Init ();
 
-DEBUG_MSG (" Start accelero \n");
-SHT21       Sht21          ( PB_14 );
-LPS22HB     PressureSensor ( PB_6 );
-LSM303H_ACC Accelero       ( PA_3 );
-mcu.mwait_ms (200);
-//Accelero.InitConfig (); 
-Accelero.InitConfigMagneto (); 
-    /*!
-    * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes) + FW version. 
-    */
-    
-    //UserPayload [ 1 ]  = Sht21.readTemp ();
-    // UserPayload [ 2 ]  = Sht21.readHumidity ();
-    while (1) {
-      
-       // mcu.mwait_ms (200);
-     // Accelero.InitConfig (); 
-    //UserPayload [ 3 ]  = (PressureSensor.GetPressure () - 800 ) & 0xFF;
-    //  RadioUser.Reset();
-        DEBUG_PRINTF (" Start accelero1 \n  status accelero %x \n", Accelero.ReadStatusMagneto ()) ;
-    
-        DEBUG_PRINTF (" who i am magneto %x \n", Accelero.GetWhoAmIMagneto ()) ;
-        DEBUG_PRINTF (" who i am Accelero %x \n", Accelero.GetWhoAmI ()) ;
-        //DEBUG_PRINTF (" read temp  %x \n", Sht21.readTemp () );
-        RadioUser.Sleep( true );
-        mcu.GotoSleepMSecond ( 300 );
-    }
-    
+//SHT21       Sht21          ( PB_14 );
+//LPS22HB     PressureSensor ( PB_6 );
+
+RadioUser.Sleep( true );
+mcu.GotoSleepMSecond ( 100 );
 
 
 #ifdef BLOC
@@ -376,56 +358,96 @@ Accelero.InitConfigMagneto ();
     }
 #else 
     Lp.Init ();
+    mcu.InitGpioOut (PA_5);
+    mcu.SetValueDigitalOutPin (PA_5, 1); // switch in iddle mode the TimeOf flight sensor
+    uint32_t RunningTime = 0 ;
+    Accelero.Running =1;
+    mcu.mwait_ms (200);
+    Accelero.InitConfig (); 
+    Accelero.ReadStatusAccelero();
     ptpTx.SetDevAddr ( DevEuiInit2,8 );
     uint8_t FirstJoin = 0;
-    uint32_t FrequencyPlan[3] = {863100000,863300000,863500000};
-    //Lp.SetDefaultChannel (FrequencyPlan , 3);
+    Accelero.ClearIrqAccelero();
+    UserPayloadClassA[0]  = 0x17 ;
+    UserPayloadSizeClassA = 6; 
     while (1) {
-        if ( start_tx ) {
-            start_tx = false;
-            count_start++;
-            ptpTx.SetChannelDr (  Lp.GetNextFrequency ( ), Lp.GetNextDataRate  ( ) );
-            uint32_t NextSendSlot = ptpTx.Start(payload_send, payload_send_size);
-            if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
-                LpState  = Lp.Join( NextSendSlot );
-                FirstJoin = 0;
-            } else {
-                if ( FirstJoin == 0 ) {
-                    ptpTx.SetDevAddr( Lp.GetDevAddr() );
-                    //ptpTx.SetDevAddr( LoRaDevAddrInit );
-                    ptpTx.ClearDevEui ();
-                    FirstJoin = 1;
-                }
-                if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
-                    AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
-                    sStatisticTest.ClassARxCpt ++;
-                    InsertTrace ( __COUNTER__, FileId );
-                    Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
-                    if ( UserRxPayloadSize > 0) {
-                        DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
-                        for ( i = 0 ; i < UserRxPayloadSize ; i++){
-                            DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
-                        }
-                    } else {
-                        DEBUG_MSG ("Receive Ack \n");
+       
+        if ( Accelero.Running == 1) {                                 // wake up in interrupt coming from accelero
+            if ( Accelero.AcceleroWup () )  {
+                Accelero.ClearIrqAccelero();
+                DEBUG_MSG ("Debout\n");
+                DEBUG_PRINTF("status accelero = %d\n",Accelero.ReadStatusAccelero());
+                UserPayloadClassA[5] = Accelero.Temperature ; 
+                DEBUG_PRINTF("status accelero Temp  = %d\n", UserPayloadClassA[5] );
+                Accelero.PowerOffLSM303H_ACC ();
+                Accelero.Running = 0;
+                RunningTime = mcu.RtcGetTimeSecond ();
+                start_tx = true;
+            }
+        } 
+        if   ( Accelero.Running == 0 ) {                                                        // Normal mode send payload in lora + relay 
+            if ( start_tx ) {
+                DEBUG_MSG ("lora\n");
+                start_tx = false;
+                count_start++;
+                ptpTx.SetChannelDr (  Lp.GetNextFrequency ( ), Lp.GetNextDataRate  ( ) );
+                uint32_t NextSendSlot = ptpTx.Start(payload_send, payload_send_size);
+                if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
+                    LpState  = Lp.Join( NextSendSlot );
+                    FirstJoin = 0;
+                } else {
+                    if ( FirstJoin == 0 ) {
+                        ptpTx.SetDevAddr( Lp.GetDevAddr() );
+                        UserPayloadClassA[1] =  ( Lp.GetDevAddr() >> 24 );
+                        UserPayloadClassA[2] =  ( Lp.GetDevAddr() >> 16 ) & 0xFF;   
+                        UserPayloadClassA[3] =  ( Lp.GetDevAddr() >> 8 ) & 0xFF;
+                        UserPayloadClassA[4] =  ( Lp.GetDevAddr() ) & 0xFF;
+                        //ptpTx.SetDevAddr( LoRaDevAddrInit );
+                        ptpTx.ClearDevEui ();
+                        FirstJoin = 1;
                     }
-                    LpState  = Lp.SendPayload( UserFport, UserRxPayload, UserRxPayloadSize, UNCONF_DATA_UP,NextSendSlot );
-                } else {   
-                    LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, UNCONF_DATA_UP,NextSendSlot );
+                    if ( AvailableRxPacket != NO_LORA_RXPACKET_AVAILABLE ) { 
+                        AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
+                        sStatisticTest.ClassARxCpt ++;
+                        InsertTrace ( __COUNTER__, FileId );
+                        Lp.ReceivePayload( &UserRxFport, UserRxPayload, &UserRxPayloadSize );
+                        if ( UserRxPayloadSize > 0) {
+                            DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
+                            for ( i = 0 ; i < UserRxPayloadSize ; i++){
+                                DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
+                            }
+                        } else {
+                            DEBUG_MSG ("Receive Ack \n");
+                        }
+                        LpState  = Lp.SendPayload( UserFport, UserRxPayload, UserRxPayloadSize, UNCONF_DATA_UP,NextSendSlot );
+                    } else {
+                        LpState  = Lp.SendPayload( UserFport, UserPayloadClassA, UserPayloadSizeClassA, UNCONF_DATA_UP,NextSendSlot );
+                    }
                 }
             }
+           
+            while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
+                LpState = Lp.LoraWanProcess( &AvailableRxPacket );
+                mcu.GotoSleepMSecond ( 200 );
+                mcu.WatchDogRelease  ( );
+            }
+            if ( ( (mcu.RtcGetTimeSecond () - RunningTime ) > WAKEUPDURATION ) &&  ( Accelero.Running == 0 )) { // Goto sleep and wait it from accelero
+                DEBUG_MSG ("Dodo\n");
+                Accelero.Running = 1;
+                Accelero.PowerLSM303H_ACC ();
+                Accelero.InitConfig (); 
+                Accelero.ReadStatusAccelero();
+            } else {
+                if((int32_t)(next_start - mcu.RtcGetTimeMs() ) <= 0){
+                    start_tx = true;
+                    next_start = mcu.RtcGetTimeMs() + 20000;
+                    ptpTx.GetStatistics(&ptp_stats);
+                //PrintPtpStatistics(&ptp_stats, count_start);
+                }
+            }
+
         }
-        if((int32_t)(next_start - mcu.RtcGetTimeMs() ) <= 0){
-            start_tx = true;
-            next_start = mcu.RtcGetTimeMs() + 20000;
-            ptpTx.GetStatistics(&ptp_stats);
-            //PrintPtpStatistics(&ptp_stats, count_start);
-        }
-        while ( ( LpState != LWPSTATE_IDLE ) && ( LpState != LWPSTATE_ERROR ) && ( LpState != LWPSTATE_INVALID ) ) {
-            LpState = Lp.LoraWanProcess( &AvailableRxPacket );
-            mcu.GotoSleepMSecond ( 200 );
-            mcu.WatchDogRelease  ( );
-        }
+       
     mcu.GotoSleepMSecond ( 5000 );
     }
 #endif

@@ -90,12 +90,13 @@ uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 
 uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
 uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
 uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
-uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x57 };    
+//uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x57 };    
+uint8_t DevEuiInit[]              = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x44, 0x33, 0x22 };    
 #if BLOC
-uint32_t LoRaDevAddrInit            = 0x26011690;
+uint32_t LoRaDevAddrInit            = 0x260114FC;
 #else
-//uint32_t LoRaDevAddrInit          = 0x26011D16;
-uint32_t LoRaDevAddrInit          = 0x26011695;
+uint32_t LoRaDevAddrInit          = 0x26011D16;
+
 
 #endif
 int i;
@@ -112,9 +113,9 @@ uint8_t DevEuiInit2[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37,
     sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE };
 #else
     
-    LoRaDevAddrInit = 0x260115D7;
-;    
-    sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit2, LoRaDevAddrInit,APB_DEVICE };
+   // LoRaDevAddrInit = 0x260115D7;
+    LoRaDevAddrInit = 0x260111E1;
+    sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit2, LoRaDevAddrInit,OTA_DEVICE };
 #endif
 
 mcu.InitMcu();
@@ -202,8 +203,8 @@ uint32_t CptDemo = 0;
 uint32_t RxAppTime = 0;
 
 //relay.AddDevaddrInWhiteList(0x26011D16);
-relay.AddDevaddrInWhiteList(0x26011695);
-relay.AddDevEuiInJoinWhiteList(DevEuiInit2);
+//relay.AddDevaddrInWhiteList(0x26011695);
+//relay.AddDevEuiInJoinWhiteList(DevEuiInit2);
 mcu.MMClearDebugBufferRadioPlaner ( );
 //ptpRx.Start(payload_received, &payload_received_size);
 next_start = mcu.RtcGetTimeMs();

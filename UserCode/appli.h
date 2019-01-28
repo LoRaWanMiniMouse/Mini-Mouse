@@ -176,7 +176,6 @@ public:
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( memcmp (JoinWhiteList[i].DevEui , VectTemp, 8 ) == 0 ) {
                 memcpy ( JoinWhiteList[i].DevEui, devEuiIn , 8 ) ;
-                AddDevEuiInJoinBlackList (devEuiIn);
                 return (OK);
             }
         }
@@ -190,6 +189,19 @@ public:
             }
             if ( BlackList[i].Devaddr == DevaddrIn) {
                 BlackList[i].Rssi = Rssi;
+                return (OK);
+            }
+        }
+        return (KO);
+    }
+    BoolOkKo SetRssiStatus (uint8_t devEuiIn[8] , uint8_t Rssi ){
+        for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
+            if ( memcmp (devEuiIn , JoinWhiteList[i].DevEui, 8 ) == 0 ) {
+                JoinWhiteList[i].Rssi = Rssi;
+                return (OK);
+            }
+            if ( memcmp (devEuiIn , JoinBlackList[i].DevEui, 8 ) == 0 ) {
+                JoinBlackList[i].Rssi = Rssi;
                 return (OK);
             }
         }
@@ -236,7 +248,7 @@ public:
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( memcmp ( JoinWhiteList[i].DevEui , VectTemp, 8 ) != 0 ) {
                 memcpy ( &Payload[index], JoinWhiteList[i].DevEui, 8 );    
-                Payload[index+8] = 13;
+                Payload[index+8] = JoinWhiteList[i].Rssi;;
                 Payload[index+9]  = ( JoinWhiteList[i].CptWakeUpSequence >> 8 ) & 0xFF;
                 Payload[index+10] = ( JoinWhiteList[i].CptWakeUpSequence      ) & 0xFF;
                 if (JoinWhiteList[i].ActiveNode == true) {
@@ -255,7 +267,7 @@ public:
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {
             if ( memcmp ( JoinBlackList[i].DevEui , VectTemp, 8 ) != 0 ) {
                 memcpy ( &Payload[index], JoinBlackList[i].DevEui, 8 );    
-                Payload[index+8] = 14;
+                Payload[index+8] = JoinBlackList[i].Rssi;
                 Payload[index+9]  = ( JoinBlackList[i].CptWakeUpSequence >> 8 ) & 0xFF;
                 Payload[index+10] = ( JoinBlackList[i].CptWakeUpSequence      ) & 0xFF;
                 if (JoinBlackList[i].ActiveNode == true) {

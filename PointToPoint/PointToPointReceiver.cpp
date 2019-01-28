@@ -364,7 +364,8 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( ) {
         DevEuiWakeUpSequence[6] = fragment.buffer[9] ;
         DevEuiWakeUpSequence[7] =fragment.buffer[10] ;
         DevLength = 8;
-         relay.updateCounter (DevEuiWakeUpSequence,fragment.buffer[5]);
+        relay.updateCounter (DevEuiWakeUpSequence,fragment.buffer[5]);
+        relay.SetRssiStatus (DevEuiWakeUpSequence, (RssiRxFragmentTask < (-127) ) ? ( 127 ) : (uint8_t)( ( -1 ) * RssiRxFragmentTask ));
         if ( relay.IsJoinWhiteListedDevEui (DevEuiWakeUpSequence ) == NO) {
             relay.AddDevEuiInJoinBlackList (DevEuiWakeUpSequence);
             return (ERROR_PTP);

@@ -335,7 +335,7 @@ void PointToPointTransmitter::GetNextSendSlotTimeAndChannel(const uint32_t actua
         channel_index_temp = !channel_index_temp;
         t_cad_next += CAD_BEAT_MS;
     }
-    *next_send_slot = t_cad_next - next_wake_up_sequence_window / 2 + CAD_BEAT_MS;
+    *next_send_slot = t_cad_next - ( next_wake_up_sequence_window / 2) + CAD_BEAT_MS + CAD_BEAT_MS;
     *wake_up_sequence_length = next_wake_up_sequence_length;
     
     *channel_index = channel_index_temp;

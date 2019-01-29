@@ -352,7 +352,8 @@ public :
         DevEui[0] =(uint8_t)((uid>>24)&0xFF);
     }
 
-
+    uint32_t PowerConsumptionTotal;
+    uint32_t PowerConsumption;
 private :
     /*!
     *  Low power timer

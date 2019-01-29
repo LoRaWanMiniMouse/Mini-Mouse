@@ -529,7 +529,7 @@ void  RadioPLaner<R>::LaunchCurrentTask ( void ) {
         case CAD    :
           
             Radio->StartCad(sRadioParam[Id].Frequency, sRadioParam[Id].Sf, sRadioParam[Id].Bw);
-            
+            sStatisticRP.StartRxCounter ( ); 
             break;
         default :
             DEBUG_MSGRP("Error Radio Planer\n");

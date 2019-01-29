@@ -188,6 +188,8 @@ void McuSTM32L072::InitMcu( void ) {
   InitSpi () ;
   RtcInit ();
   I2cInit ();
+  PowerConsumptionTotal = 0;
+  PowerConsumption = RtcGetTimeMs ();
 
 }
 
@@ -789,6 +791,7 @@ void McuSTM32L072::MMPrintBuffer ( void ) {
 #endif 
 };
 void sleepAndWakeUp (void) {
+    mcu.PowerConsumptionTotal +=  mcu.RtcGetTimeMs () - mcu.PowerConsumption ;
     HAL_SPI_DeInit (&hspi1);
     HAL_UART_DeInit (&huart2);
      mcu.I2cDeInit ();
@@ -832,6 +835,7 @@ void McuSTM32L072::WakeUpAfterDeepSleep (void) {
   UartInit();
   InitSpi();
   I2cInit ();
+  PowerConsumption = RtcGetTimeMs ();
 
 }
 

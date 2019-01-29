@@ -24,7 +24,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 /********************************************************************************/
 #define DEBUG_TRACERP      0
 //
-#define BLOC 1
+//#define BLOC 1
 
 #ifdef BLOC
     #define DEBUG_TRACE        0     // Set to 1 to activate debug traces
@@ -127,7 +127,7 @@ Maintainer        : Fabien Holin (SEMTECH)
     #endif 
 
 #define MAC_RX3_DELAY   20           // second 
-#define FLASH_UPDATE_PERIOD 32      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted
+#define FLASH_UPDATE_PERIOD 128      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted
 #if BLOC
 #define USER_NUMBER_OF_RETRANSMISSION   1// Only used in case of user defined darate distribution strategy
 #define USER_DR_DISTRIBUTION_PARAMETERS 0x0001000  

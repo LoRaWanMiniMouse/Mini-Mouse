@@ -57,7 +57,9 @@ public:
     eHookStatus  EnqueueTask      ( STask& staskIn, uint8_t *payload, uint8_t* payloadSize, SRadioParam& sRadioParamIn );
     eHookStatus  AbortTask        ( STask& staskIn );
     void         GetStatusPlaner  ( uint8_t HookIdIn, uint32_t& IrqTimestampMs, ePlanerStatus& PlanerStatus );
-    SStatisticRP GetStatistic     ( void ) { sStatisticRP.PrintStat ( ) ;  return ( sStatisticRP ) ; };
+    SStatisticRP GetStatistic     ( void ) { //sStatisticRP.PrintStat ( ) ;  
+        return ( sStatisticRP ) ; 
+    };
  
 private :
 

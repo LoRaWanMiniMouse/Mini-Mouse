@@ -1,5 +1,6 @@
  #include "stdint.h"
  #include "Define.h"
+ #include "DefineRadioPlaner.h"
 #ifndef APPLI__H
 #define APPLI__H
 
@@ -240,8 +241,11 @@ public:
         *Size = index;
         Payload[0] = NbElementWhiteList;
     };
-     void buildJoinStatus( uint8_t * Payload, uint8_t *Size ) {
-        int index = 1;
+     void buildJoinStatus( uint8_t * Payload, uint8_t *Size, SStatisticRP PowerStat ) {
+        memcpy (&Payload[0],(uint8_t *)(&(PowerStat.TotalTxConsumptionMs)),4);
+        memcpy (&Payload[4],(uint8_t *)(&(PowerStat.TotalRxConsumptionMs)),4);
+        memcpy (&Payload[8],(uint8_t *)(&(mcu.PowerConsumptionTotal)),4);
+        int index = 13;
         uint8_t NbElementJoinWhiteList = 0;
         uint8_t VectTemp[8];
         memset ( VectTemp, 0xFF, 8);
@@ -283,7 +287,8 @@ public:
             }
         }
         *Size = index;
-        Payload[0] = NbElementJoinWhiteList + 0x80;
+        Payload[12] = NbElementJoinWhiteList + 0x80;
+        
     };
     BoolOkKo SetConfigForRx3 (  uint32_t  TxTimeForRx3In , uint32_t  DevaddrIn, uint32_t FreqIn ) {
         for (int i =0; i < NB_NODE_IN_RELAY; i++ ) {

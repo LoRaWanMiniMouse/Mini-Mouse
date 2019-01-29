@@ -24,8 +24,8 @@ PointToPointTransmitter::PointToPointTransmitter(RadioPLaner<SX1276> *radio_plan
 
     fragment_length = WAKE_UP_FRAGMENT_LENGTH;
 
-    FrequencyList[0] = 868600000;
-    FrequencyList[1] = 868200000;
+    FrequencyList[0] = 863600000;
+    FrequencyList[1] = 864200000;
 
     wakeup_fragment_task_param.Bw = BW125;
     wakeup_fragment_task_param.Sf = 7;

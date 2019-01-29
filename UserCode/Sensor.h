@@ -327,7 +327,7 @@ class LSM303H_ACC
           PowerLSM303H_ACC ();
         int res = 1 ;
         while (res != 0) {
-            uint8_t RegValue = 0xA0;  // 400 HZ Low Power mode
+            uint8_t RegValue = 0xA0;  // 25 HZ Low Power mode
             res = mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_CTRL1A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
             RegValue = 0x0;  //// No duration For Wake up
             res += mcu.I2cWriteMem (LSM303H_ACC_ADDR, LSM303H_WAKE_UP_DUR_A, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11

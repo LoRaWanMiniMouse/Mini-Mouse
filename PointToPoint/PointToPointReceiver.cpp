@@ -19,8 +19,8 @@ PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
 
   memset(PtPKey, 1, 16) ;
   AddKey = 0x12345678; 
-  this->FrequencyList[0] = 868600000;
-  this->FrequencyList[1] = 868200000;
+  this->FrequencyList[0] = 863600000;
+  this->FrequencyList[1] = 864200000;
   this->channel = this->FrequencyList[0];
 
   cad_task_param.Bw = BW125;

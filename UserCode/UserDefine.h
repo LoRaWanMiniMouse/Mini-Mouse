@@ -23,33 +23,25 @@ Maintainer        : Fabien Holin (SEMTECH)
 /*                         Application     dependant                            */
 /********************************************************************************/
 #define DEBUG_TRACERP      0
-//
-#define BLOC 0
 
-#ifdef BLOC
+#ifdef RELAY
     #define DEBUG_TRACE        1     // Set to 1 to activate debug traces
 #else
     #define DEBUG_TRACE        0
 #endif
 #define LOW_POWER_MODE     1    // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 #define DEBUG_TRACE_ENABLE 0  // Set to 1 to activate DebugTrace 
-
-#define LOW_SPEED_CLK    LSE    //
-#define RX_INDICATOR_PIN PB_8
-#define TX_INDICATOR_PIN PB_8
+#define LOW_SPEED_CLK    LSE    
 
 #ifdef MURATA_BOARD
-    #ifdef BLOC
+    #ifdef BOARD_WITH_SENSOR
         #define UART_NUM                  USART1
         #define UART_TX                   PA_9
         #define UART_RX                   PA_10
     #else 
-        //#define UART_NUM                  USART2
-        //#define UART_TX                   PA_2
-        //#define UART_RX                   PA_3
-        #define UART_NUM                  USART1
-        #define UART_TX                   PA_9
-        #define UART_RX                   PA_10
+        #define UART_NUM                  USART2
+        #define UART_TX                   PA_2
+        #define UART_RX                   PA_3
     #endif
     #define LORA_SPIx                 SPI1   // select your spi number
     #define LORA_SPI_MOSI             PA_7
@@ -63,9 +55,9 @@ Maintainer        : Fabien Holin (SEMTECH)
     #define RADIO_ANT_SWITCH_TX_RF0   PC_2
     #define RADIO_ANT_SWITCH_TX_BOOST PC_1
     #define RADIO_TCX0_POWER          PA_12
-    #ifdef BLOC
+    #ifdef BOARD_WITH_SENSOR
         #define DEBUG                     PB_5   //D4
-        #define DEBUGRX                   PB_5 //D2
+        #define DEBUGRX                   PB_5   //D2
     #else
         #define DEBUG                     PB_5
         #define DEBUGRX                   PA_10
@@ -86,7 +78,6 @@ Maintainer        : Fabien Holin (SEMTECH)
         #define UART_NUM           USART2
         #define UART_TX            PA_2
         #define UART_RX            PA_3
-
         #define LORA_SPIx           SPI1   // select your spi number
         #define LORA_SPI_MOSI       D11
         #define LORA_SPI_MISO       D12
@@ -101,12 +92,10 @@ Maintainer        : Fabien Holin (SEMTECH)
         #define PA_BOOST_CONNECTED         1 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
         #define USERFLASHADRESS 0x807E000U   // start flash adress to store lorawan context 
         #define USERFLASHADRESS2 USERFLASHADRESS - 2000 
-
     #else
         #define UART_NUM           USART2
         #define UART_TX            PA_2
         #define UART_RX            PA_3
-
         #define LORA_SPIx           SPI1   // select your spi number
         #define LORA_SPI_MOSI       D11
         #define LORA_SPI_MISO       D12
@@ -128,7 +117,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 
 #define MAC_RX3_DELAY   20           // second 
 #define FLASH_UPDATE_PERIOD 128      // The Lorawan context is stored in memory with a period equal to FLASH_UPDATE_PERIOD packets transmitted
-#if BLOC
+#if RELAY
 #define USER_NUMBER_OF_RETRANSMISSION   1// Only used in case of user defined darate distribution strategy
 #define USER_DR_DISTRIBUTION_PARAMETERS 0x0001000  
 #else

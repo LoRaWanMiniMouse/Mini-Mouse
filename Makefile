@@ -16,6 +16,8 @@
 TARGET = MiniMouse
 
 BOARD_MURATA      = 1
+RELAY             = 1
+BOARD_WITH_SENSOR = 1
 BOARD_L4          = 0
 RADIO_SX1276      = 1
 RADIO_SX1272      = 0
@@ -205,6 +207,12 @@ ifeq ($(RADIO_SX1272), 1)
 endif
 ifeq ($(RADIO_SX126x), 1)
     C_DEFS += -DSX126x_BOARD  
+endif
+ifeq ($(RELAY), 1)
+    C_DEFS += -DRELAY
+endif
+ifeq ($(BOARD_WITH_SENSOR), 1)
+    C_DEFS += -BOARD_WITH_SENSOR
 endif
 ifeq ($(BOARD_L4), 1)
     C_DEFS += -DBOARD_L4  

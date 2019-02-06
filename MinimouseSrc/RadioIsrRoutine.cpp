@@ -27,16 +27,11 @@ Maintainer        : Fabien Holin (SEMTECH)
 template class RadioContainer<SX1276>;
 template class RadioContainer<SX1272>;
 template class RadioContainer<SX126x>;
-   
 template <class R> void RadioContainer <R>::IsrRadio( void ) {
-  
-
     int status = OKLORAWAN;
     uint32_t tCurrentMillisec;
     LastItTimeFailsafe = mcu.RtcGetTimeSecond ( );
     Radio->GetStatusPlaner ( MyHookId, tCurrentMillisec, PlanerStatus );
-   
-
     switch ( PlanerStatus ) {
         case PLANER_TX_DONE :
             break;
@@ -48,21 +43,6 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
             if ( status != OKLORAWAN ) { // Case receive a packet but it isn't a valid packet 
                 InsertTrace ( __COUNTER__, FileId );
                 tCurrentMillisec =  mcu.RtcGetTimeMs( );
-                uint32_t timeoutMs = LastTimeRxWindowsMs - tCurrentMillisec ;
-                if (( (int)( LastTimeRxWindowsMs - tCurrentMillisec - 5 * SymbolDuration ) > 0 ) || (StateRadioProcess == RADIOSTATE_RXC)) {
-                    if ( RxMod == LORA ) {
-                      if ( StateRadioProcess == RADIOSTATE_RXC ) {
-                          //Radio->RxLora( RxBw, RxSf, RxFrequency, 10000);  @tbdone RadioPlaner
-                      } else {
-                        //  Radio->RxLora( RxBw, RxSf, RxFrequency, timeoutMs );
-                      }
-                    } else {
-                       // Radio->RxFsk( RxFrequency, timeoutMs );
-                    }
-                    DEBUG_MSG( "Receive a packet But rejected\n");
-                    DEBUG_PRINTF( "tcurrent %u timeout = %d, end time %u \n ", tCurrentMillisec, timeoutMs, LastTimeRxWindowsMs);
-                    return;
-                }
                 DEBUG_MSG( "Receive a packet But rejected and too late to restart\n");
                 PlanerStatus = PLANER_RX_TIMEOUT;
             } 
@@ -70,36 +50,31 @@ template <class R> void RadioContainer <R>::IsrRadio( void ) {
 
         case PLANER_RX_TIMEOUT :
             if ( StateRadioProcess == RADIOSTATE_RXC ) {
-               // Radio->RxLora( RxBw, RxSf, RxFrequency, 10000);@tbdone RadioPlaner
+                // Radio->RxLora( RxBw, RxSf, RxFrequency, 10000);@tbdone RadioPlaner
                 DEBUG_MSG( "  **************************\n " );
                 DEBUG_MSG( " *      RXC  Timeout       *\n " );
                 DEBUG_MSG( " ***************************\n " );
                 return;
             }
             break;
-    
-   
         default :
             DEBUG_PRINTF ("receive It RADIO error %d\n",PlanerStatus);
             tCurrentMillisec =  mcu.RtcGetTimeMs( );
             break;
     }
     switch ( StateRadioProcess ) { 
-       
+
         case RADIOSTATE_TXON :
         
             InsertTrace ( __COUNTER__, FileId );
             TimestampRtcIsr = tCurrentMillisec; //@info Timestamp only on txdone it
             StateRadioProcess = RADIOSTATE_TXFINISHED;
-            break;
-           
+            break; 
         case RADIOSTATE_TXFINISHED :
             InsertTrace ( __COUNTER__, FileId );
             StateRadioProcess = RADIOSTATE_RX1FINISHED;
-            break;
-        
-        
-       case RADIOSTATE_RX1FINISHED :
+            break; 
+        case RADIOSTATE_RX1FINISHED :
             InsertTrace ( __COUNTER__, FileId );
             if ( Rx3Activated == RX3_ACTIVATED ) {
                 StateRadioProcess = RADIOSTATE_RX2FINISHED;

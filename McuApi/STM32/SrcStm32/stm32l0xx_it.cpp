@@ -243,7 +243,7 @@ void EXTI0_1_IRQHandler(void)
 void EXTI4_15_IRQHandler(void)
 {
   mcu.WakeUpAfterDeepSleep ();
-  #ifndef BLOC
+  #ifndef RELAY
   if ( Accelero.Running == 1 ){
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
     DEBUG_MSG ("Debout accelero \n");

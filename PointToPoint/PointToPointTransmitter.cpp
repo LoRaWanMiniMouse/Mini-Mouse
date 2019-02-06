@@ -16,12 +16,6 @@ PointToPointTransmitter::PointToPointTransmitter(RadioPLaner<SX1276> *radio_plan
     WakeUpSequenceDelay   = 0;
     memset(PtPKey, 1 , 16) ;
     AddKey = 0x12345678; 
-    mcu.InitGpioOut(RX_INDICATOR_PIN);
-    mcu.InitGpioOut(TX_INDICATOR_PIN);
-
-    mcu.SetValueDigitalOutPin(TX_INDICATOR_PIN, 0);
-    mcu.SetValueDigitalOutPin(RX_INDICATOR_PIN, 0);
-
     fragment_length = WAKE_UP_FRAGMENT_LENGTH;
 
     FrequencyList[0] = 863600000;

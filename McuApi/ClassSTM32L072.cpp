@@ -1074,7 +1074,7 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c) {
 
 void McuSTM32L072::I2cInit(void) {
     hi2c1.Instance              = I2C1;
-    hi2c1.Init.Timing           = 0x00506682;
+    hi2c1.Init.Timing           = 0x20602938;//0x00506682;
     hi2c1.Init.OwnAddress1      = 0;
     hi2c1.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
     hi2c1.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
@@ -1083,8 +1083,8 @@ void McuSTM32L072::I2cInit(void) {
     hi2c1.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
     hi2c1.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
     HAL_I2C_Init ( &hi2c1 ) ;
-    HAL_I2CEx_ConfigAnalogFilter( &hi2c1, I2C_ANALOGFILTER_ENABLE);
-    HAL_I2CEx_ConfigDigitalFilter( &hi2c1, 0) ;
+   // HAL_I2CEx_ConfigAnalogFilter( &hi2c1, I2C_ANALOGFILTER_ENABLE);
+  //  HAL_I2CEx_ConfigDigitalFilter( &hi2c1, 0) ;
 }
 void McuSTM32L072::I2cDeInit(void) {
     HAL_I2C_DeInit( &hi2c1); 

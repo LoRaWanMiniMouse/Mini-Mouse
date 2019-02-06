@@ -144,13 +144,7 @@ public:
 /* Objet RadioContainer*/
     RadioContainer<R>  Phy;
     
-/*  Timer */
 
-    void         IsrTimerRx1( void );
-    void         IsrTimerRx2( void );
-    static void  CallbackIsrTimerRx1 ( void * obj ) { ( reinterpret_cast<LoraWanContainer<NBCHANNEL, R>*>(obj) )->IsrTimerRx1(); };
-    static void  CallbackIsrTimerRx2 ( void * obj ) { ( reinterpret_cast<LoraWanContainer<NBCHANNEL, R>*>(obj) )->IsrTimerRx2(); };
-    int          StateTimer;
 /* Join Duty cycle management */
     uint32_t     RtcNextTimeJoinSecond ;
     uint32_t     RetryJoinCpt;

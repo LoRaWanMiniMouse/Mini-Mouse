@@ -10,7 +10,7 @@
 #include "PointToPointBase.h"
 #include "RadioPlaner.h"
 #include "sx1276.h"
-
+ 
 class PointToPointTransmitter
 {
 public:
@@ -26,32 +26,19 @@ public:
   static void Callback(void *);
   void ClearDevEui(void);
 protected:
-
   void ExecuteStateMachine();
   void PrepareNextWakeUpFragment(WakeUpFragments_t *fragment, const uint8_t fragment_index);
   static void ComputeNextWakeUpLength(uint8_t *nextWakeUpLength, const uint32_t actual_time, const uint32_t last_ack_success_time);
-
   static void GetNextSendSlotTimeAndChannel(const uint32_t actual_time, const int16_t delay_rx, const uint32_t last_ack_success_time, uint8_t *wake_up_sequence_length, uint32_t *next_send_slot, uint8_t *channel_index);
 
 private:
   RadioPLaner<SX1276> *radio_planner;
-  const uint8_t hook_id;
-
-  typedef enum
-  {
-    STATE_INIT,
-    STATE_SEND_WAKEUP_SEQUENCE_FRAGMENT,
-    STATE_WAIT_RELAY_ACK,
-    ACK_RECEIVED
-  } State_t;
-
+  uint8_t hook_id;
   State_t state;
-
   uint32_t SendWakeUpCount;
   volatile int16_t WakeUpSequenceDelay;
   volatile uint32_t last_ack_success_received_ms;
   volatile uint32_t irq_timestamp_ms;
-
   uint8_t WakeUpSequenceLength;
   uint32_t NextSendSlot;
   uint8_t ChannelIndex;

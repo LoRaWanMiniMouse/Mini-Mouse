@@ -487,10 +487,7 @@ void LoraWanObject <T,RADIOTYPE> ::CopyUserPayload( const uint8_t* dataIn, const
     memcpy( &packet.Phy.TxPhyPayload[ FHDROFFSET + packet.FoptsTxLengthCurrent ], dataIn, sizeIn );
 };
  
-template <template <class R> class T, class RADIOTYPE> 
-uint8_t LoraWanObject <T,RADIOTYPE> ::GetStateTimer(void) {
-    return (packet.StateTimer);
-}
+
 
 template <template <class R> class T, class RADIOTYPE> 
 uint8_t LoraWanObject <T,RADIOTYPE> ::GetRadioState ( void ) {

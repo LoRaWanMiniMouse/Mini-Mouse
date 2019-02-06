@@ -1,19 +1,19 @@
 
-
-#define TX_POWER (-5)
-
 #include "UserDefine.h"
 #include "PointToPointTransmitter.h"
 #include "LoRaMacCrypto.h"
-
-
-
-
-PointToPointTransmitter::PointToPointTransmitter(RadioPLaner<SX1276> *radio_planner, const uint8_t hook_id) : radio_planner(radio_planner), state(STATE_INIT), hook_id(hook_id), WakeUpSequenceDelay(0),
-                                                                                                              WakeUpSequenceLength(WAKE_UP_SEQUENCE_LENGTH_MAX),
-                                                                                                              ChannelIndex(0), count_wus_tx_attempt(0), count_wuf_tx_attempt(0), count_data_tx_attempt(0),
-                                                                                                              count_ack_rx_attempt(0), count_ack_rx_success(0), ack_length(2)
-{
+PointToPointTransmitter::PointToPointTransmitter(RadioPLaner<SX1276> *radio_planner,  uint8_t hook_id) : radio_planner(radio_planner){
+    state                 = STATE_INIT;
+    count_ack_rx_attempt  = 0;
+    count_ack_rx_success  = 0; 
+    ack_length            = 2; 
+    ChannelIndex          = 0;
+    count_wus_tx_attempt  = 0; 
+    count_wuf_tx_attempt  = 0;
+    count_data_tx_attempt = 0;
+    WakeUpSequenceLength  = WAKE_UP_SEQUENCE_LENGTH_MAX;
+    hook_id               = hook_id;
+    WakeUpSequenceDelay   = 0;
     memset(PtPKey, 1 , 16) ;
     AddKey = 0x12345678; 
     mcu.InitGpioOut(RX_INDICATOR_PIN);
@@ -162,8 +162,7 @@ uint32_t  PointToPointTransmitter::Start(uint8_t *data_payload, const uint8_t da
     ack_relay_rx_task_param.Frequency    = this->FrequencyList[ChannelIndex];
 
     wakeup_fragment_task.StartTime = NextSendSlot;
-
-    eHookStatus hookStatus = this->radio_planner->EnqueueTask(wakeup_fragment_task, (uint8_t *)&fragment, &this->fragment_length, wakeup_fragment_task_param);
+    this->radio_planner->EnqueueTask(wakeup_fragment_task, (uint8_t *)&fragment, &this->fragment_length, wakeup_fragment_task_param);
 
     DEBUG_PRINTFRP(
         "Go!\n"
@@ -199,7 +198,6 @@ void PointToPointTransmitter::ExecuteStateMachine()
             // DEBUG_PRINTF("Tx WuF: %i\n", this->fragment_index);
             PrepareNextWakeUpFragment(&this->fragment, this->fragment_index);
             wakeup_fragment_task.StartTime = mcu.RtcGetTimeMs() + 1;
-            uint8_t size_of_fragment = WAKE_UP_FRAGMENT_LENGTH;
             this->radio_planner->EnqueueTask(wakeup_fragment_task, (uint8_t *)&this->fragment, &this->fragment_length, wakeup_fragment_task_param);
             count_wuf_tx_attempt++;
         }

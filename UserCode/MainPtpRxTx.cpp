@@ -102,18 +102,14 @@ uint32_t LoRaDevAddrInit          = 0x26011D16;
 int i;
 uint8_t UserFport ;
 uint8_t UserRxFport ; 
-uint8_t AppTimeSleeping = 10;
 uint8_t payload_received[MAX_PAYLOAD_RECEIVED] = { 0x00 };
 uint8_t payload_received_size = 0;
-uint8_t payload_send[MAX_PAYLOAD_RECEIVED] = { 0x00 };
-uint8_t payload_send_size = 15;
-uint8_t DevEuiInit2[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x51 };
-// uint32_t wait_time_ms = 0;
+
 #ifdef BLOC
     sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE };
 #else
     
-   // LoRaDevAddrInit = 0x260115D7;
+    uint8_t DevEuiInit2[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x51 };
     LoRaDevAddrInit = 0x26011695;
     sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit2, LoRaDevAddrInit,OTA_DEVICE };
 #endif
@@ -168,13 +164,9 @@ eLoraWan_Process_States LpState = LWPSTATE_IDLE;
 RadioUser.Reset();
 RadioUser.Sleep(true);
 mcu.GotoSleepMSecond ( 300 );
-uint32_t count_start = 0;
-const uint32_t wait_before_next_start_min = 1000;  // 1000
-const uint32_t wait_before_next_start_max = 17000; // 10000
-uint16_t wait_before_next_start = wait_before_next_start_min;
-StatisticCounters_t ptp_stats;
-bool tx_loop_running = false;
-bool start_tx = false;
+
+
+
 
 mcu.MMClearDebugBufferRadioPlaner ( );
 
@@ -199,7 +191,7 @@ uint8_t MsgTypeClassA = UNCONF_DATA_UP;
 Lp.NewJoin();
 
 uint32_t next_start = mcu.RtcGetTimeMs();
-uint32_t CptDemo = 0;
+
 uint32_t RxAppTime = 0;
 
 //relay.AddDevaddrInWhiteList(0x26011D16);
@@ -208,8 +200,7 @@ relay.AddDevaddrInWhiteList(0x26011695);
 mcu.MMClearDebugBufferRadioPlaner ( );
 //ptpRx.Start(payload_received, &payload_received_size);
 next_start = mcu.RtcGetTimeMs();
-start_tx   = true;
-bool T3ACtivated = false;
+
 bool SendDevaddrStatus = true;
 bool SendDevEuiStatus  = false;
 int cpt = 200;
@@ -219,12 +210,17 @@ uint8_t CurrentJoinDevEui[8];
 memset( CurrentJoinDevEui , 0 ,8);
 Lp.Init ();
 
-//SHT21       Sht21          ( PB_14 );
+SHT21       Sht21          ( PB_14 );
 //LPS22HB     PressureSensor ( PB_6 );
-
-RadioUser.Sleep( true );
-mcu.GotoSleepMSecond ( 100 );
-
+Sht21.PowerSht();
+  mcu.mwait_ms(300);
+//RadioUser.Sleep( true );
+//mcu.GotoSleepMSecond ( 100 );
+DEBUG_PRINTF ( " temperature start = %d \n",1);
+while ( 1 ){
+    DEBUG_PRINTF ( " temperature = %d \n",Sht21.readTemp());
+    mcu.mwait_ms(300);
+}
 
 #ifdef BLOC
     SStatisticRP PowerStat;
@@ -319,7 +315,6 @@ mcu.GotoSleepMSecond ( 100 );
                 if ( UserRxPayloadSize > 9 )   {
                     uint32_t ReceiveDevaddr = relay.ExtractDevaddrDownLink(UserRxPayload);
                     DEBUG_PRINTF ( "ReceiveDevaddr = 0x%x\n", ReceiveDevaddr);
-                    uint32_t TargetTime ;
                     DEBUG_PRINTF("Receive on port %d  an Applicative Downlink \n DATA[%d] = [ ",UserRxFport,UserRxPayloadSize);
                         for ( i = 0 ; i < UserRxPayloadSize ; i++){
                             DEBUG_PRINTF( "0x%.2x ",UserRxPayload[i]);
@@ -358,7 +353,8 @@ mcu.GotoSleepMSecond ( 100 );
         }
         mcu.GotoSleepMSecond ( 2000 );
     }
-#else 
+#else
+    bool start_tx   = true; 
     Lp.Init ();
     mcu.InitGpioOut (PA_5);
     mcu.SetValueDigitalOutPin (PA_5, 1); // switch in iddle mode the TimeOf flight sensor

@@ -34,7 +34,6 @@ template class LoraWanContainer <72,SX1272>;
 template class LoraWanContainer <72,SX1276>;
 template class LoraWanContainer <72,SX126x>;
 template <int NBCHANNEL, class R> LoraWanContainer<NBCHANNEL, R>::LoraWanContainer(sLoRaWanKeys LoRaWanKeys, RadioPLaner<R>* RadioUser,uint32_t FlashAdress):Phy( RadioUser ) { 
-    StateTimer = TIMERSTATE_SLEEP;
     AvailableRxPacketForUser = NO_LORA_RXPACKET_AVAILABLE;
     memcpy( appSKey, LoRaWanKeys.LoRaMacAppSKey, 16 );
     memcpy( nwkSKey, LoRaWanKeys.LoRaMacNwkSKey, 16 );
@@ -983,24 +982,6 @@ template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::PrintMacC
     }
 }
 
-/**************************************TIMER PART**********************************************************/
-/**********************************************************************************************************/
-
-
- 
-/************************************************************************************/
-/*                                 Timer Isr Routine                             */
-/*                               Called when Alarm expires                          */
-/************************************************************************************/
-template <int NBCHANNEL, class R> void LoraWanContainer<NBCHANNEL, R>::SetAlarm (uint32_t alarmInMs, eRxWinType type ) {
-    InsertTrace ( __COUNTER__, FileId );
-    StateTimer = TIMERSTATE_RUNNING;
-    if ( type == RX1 ) {
-        mcu.StartTimerMsecond( &LoraWanContainer<NBCHANNEL, R>::CallbackIsrTimerRx1,this, alarmInMs);
-    } else {
-        mcu.StartTimerMsecond( &LoraWanContainer<NBCHANNEL, R>::CallbackIsrTimerRx2,this, alarmInMs);
-    }
-}
 
 
 /*********************************************************************************/

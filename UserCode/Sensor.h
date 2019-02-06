@@ -57,22 +57,24 @@ public:
 
     SHT21 ( PinName PowerOffOnIn ) {
         PowerOffOn = PowerOffOnIn;
-        PowerSht ( );
+       // PowerSht ( );
     };
     int8_t readTemp ( void ) {
-        PowerSht ( );
+        //PowerSht ( );
        //mcu.SetValueDigitalOutPin ( PowerOffOn, 1 );
         int res = 1 ;
-        //while (res !=0) {
-            triggerTemp() ;
-            mcu.mwait_ms (90);  
-            res += requestTemp() ;  
-      //  }
+        while (res !=0) {
+            StartI2c ();
+            res= triggerTemp() ;
+            mcu.mwait_ms (190);  
+             requestTemp() ;  
+        }
        // mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
         float realtemp;
         realtemp = -46.85 + 175.72 * ( ((float) temperature) / 65536 );
+        DEBUG_PRINTF ( "temp =%d\n",(int32_t)temperature);
         return ((int8_t)realtemp);
-        mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
+        //mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
     } ;
     uint8_t readHumidity ( void ) {
       //  PowerSht ( );
@@ -88,28 +90,28 @@ public:
         realhum = -6 + 125 * ( ((float) humidity) / 65536 );
         return ((uint8_t) realhum ) ;
     } ;
-private:
+//private:
     int triggerTemp ( ) { 
-        uint8_t RegValue;
+       // uint8_t RegValue;
        // mcu.I2cWriteMem (SHT_I2C_ADDR, SHT_SOFT_RESET, I2C_MEMADD_SIZE_8BIT , &RegValue, 0 , 1000 ); // One Shot Mesaue 0x11
        // mcu.mwait_ms (30);
        // RegValue = 0xC1;
        // mcu.I2cWriteMem (SHT_I2C_ADDR, SHT_WRITE_REG, I2C_MEMADD_SIZE_8BIT , &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
       //  RegValue = 0;
-        mcu.I2cWriteMem (SHT_I2C_ADDR, SHT_TRIG_TEMP, I2C_MEMADD_SIZE_8BIT ,  &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
-        return (RegValue);
-        }; 
-        //return wr(SHT_TRIG_TEMP_HOLD);};  
+      //  mcu.I2cWriteMem (SHT_I2C_ADDR, SHT_TRIG_TEMP, I2C_MEMADD_SIZE_8BIT ,  &RegValue, 1 , 1000 ); // One Shot Mesaue 0x11
+      //  return (RegValue);
+     //   }; 
+        return wr(SHT_TRIG_TEMP_HOLD);};  
     int requestTemp ( ) {
         int res;
         uint16_t rx_bytes = 3;
         uint8_t rx[rx_bytes];
-        //res = mcu.I2cReceive (SHT_I2C_ADDR, rx, rx_bytes );
-        res = mcu.I2cReadMem (SHT_I2C_ADDR, SHT_TRIG_TEMP_HOLD, I2C_MEMADD_SIZE_8BIT , rx, 3 , 1000 );
+        res = mcu.I2cReceive (SHT_I2C_ADDR, rx, rx_bytes );
+        //res = mcu.I2cReadMem (SHT_I2C_ADDR, SHT_TRIG_TEMP_HOLD, I2C_MEMADD_SIZE_8BIT , rx, 3 , 1000 );
         unsigned short msb = (rx[0] << 8);
         unsigned short lsb = (( rx[1] & 0xFC) << 0);
         temperature = (msb + lsb);
-        res= CheckCrc(rx,2,rx[2]);
+       // res= CheckCrc(rx,2,rx[2]);
         return res;
     };
     unsigned short temperature;
@@ -128,24 +130,21 @@ private:
         uint8_t command[1];
         command[0] = cmd;
         res = mcu.I2cTransmit (SHT_I2C_ADDR, command, 1 );   
+        DEBUG_PRINTF ("status wr cmd = %d\n",res);
         return res;
     };
     void PowerSht ( void ) {
         mcu.InitGpioOut ( PowerOffOn ) ;
-      //  mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
-      //  mcu.mwait_ms (10);
+        mcu.SetValueDigitalOutPin ( PowerOffOn, 0 );
+        mcu.mwait_ms (10);
         mcu.SetValueDigitalOutPin ( PowerOffOn, 1 );
         mcu.mwait_ms (10);
-        mcu.I2cDeInit();
-        mcu.mwait_ms (10);
-        mcu.I2cInit ();
-        mcu.mwait_ms (20);
     }
     void StartI2c ( void ) {
         mcu.I2cDeInit();
-        mcu.mwait_ms (10);
+        mcu.mwait_ms (100);
         mcu.I2cInit ();
-        mcu.mwait_ms (20);
+        mcu.mwait_ms (200);
     }
 
     PinName PowerOffOn;
@@ -414,9 +413,8 @@ uint8_t AcceleroWup (void) {
     return (mcu.GetValueDigitalInPin(PA_8));
 }  
 void ClearIrqAccelero (void) {
-    int res = 1 ;
     uint8_t Status = 0;
-    res = mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_WAKE_UP_SRC_A, I2C_MEMADD_SIZE_8BIT , &Status, 1 , 1000 );
+    mcu.I2cReadMem (LSM303H_ACC_ADDR, LSM303H_WAKE_UP_SRC_A, I2C_MEMADD_SIZE_8BIT , &Status, 1 , 1000 );
 }
 uint8_t Running;
 uint8_t Temperature;

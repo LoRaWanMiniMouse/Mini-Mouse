@@ -251,7 +251,6 @@ private :
     uint8_t                    ValidRxPacket; 
     uint32_t                   RtcTargetTimer;
     void CopyUserPayload          ( const uint8_t* dataIn, const uint8_t sizeIn );
-    uint8_t  GetStateTimer        ( void );
     uint32_t GetFailSafeTimestamp ( void ){return packet.Phy.LastItTimeFailsafe;};
     ePlanerStatus  GetPlanerStatus      ( void );
 

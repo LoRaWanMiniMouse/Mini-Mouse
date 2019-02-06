@@ -88,8 +88,8 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
         stask.StartTime      = mcu.RtcGetTimeMs()+200;
     }
     stask.TaskDuration   = 2000;//@tbd RadioPlaner  timeonair
-    stask.State    = TASK_SCHEDULE;
-    stask.TaskType = ( TxModulation == LORA ) ? TX_LORA : TX_FSK;
+    stask.State          = TASK_SCHEDULE;
+    stask.TaskType       = ( TxModulation == LORA ) ? TX_LORA : TX_FSK;
     if (stask.TaskType ==TX_LORA){
         DEBUG_MSG("TX_LORA");
     } else {

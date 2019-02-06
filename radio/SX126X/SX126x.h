@@ -22,6 +22,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #include "ApiMcu.h"
 #include "stdio.h"
 #include "math.h"
+#include "DefineRadioPlaner.h"
 /*!
  * \brief Provides the frequency of the chip running on the radio and the frequency step
  * \remark These defines are used for computing the frequency divider to set the RF frequency
@@ -101,15 +102,8 @@ class SX126x {
                     ){};
     void RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs, eIqMode IqMode ){};
     void StartCad(uint32_t channel, uint8_t SF, eBandWidth BW) {};
-    void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, eHeaderMode headerMode,
-                    uint8_t    SF, eBandWidth BW, uint32_t   channel,
-                    int8_t     power, uint16_t preamble_length, eIqMode iq_mode,
-                    RadioCodingRate_t coding_rate, eCrcMode crc_enable,
-                    uint8_t syncWord ) {};
-    void RxLoRaGeneric( eBandWidth BW, uint8_t SF, uint32_t channel,
-                    uint16_t TimeOutMs, eHeaderMode headerMode, uint8_t payload_size,
-                    uint16_t preamble_length, eIqMode iq_mode, RadioCodingRate_t coding_rate,
-                    eCrcMode crc_enable, uint8_t syncWord ){};
+    void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, SRadioParam RadioParam) {};
+    void RxLoRaGeneric( uint8_t payloadSize , SRadioParam RadioParam) {};
 
     //private:
         typedef enum {

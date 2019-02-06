@@ -43,22 +43,7 @@ template <class R> RadioContainer <R>::RadioContainer( RadioPLaner<R> * RadioUse
 template <class R> RadioContainer<R>::~RadioContainer( ) {
 };
 
-/*******************Isr Radio  ***************************************/
-/*          Timestamp isr with RTC                                   */
-/*          Read IrqFlags Register /clear Irq flag                   */
-/*          Update the StateRadioProcess                             */
-/*          Cpy data +meta data in case of reception & crc ok        */
-/*          Set Radio in Sleep Mode                                  */
-/*******************Isr Radio  ***************************************/
-/* template <class R> void RadioContainer <R>::AttachIsr ( void ) {
-    InsertTrace ( __COUNTER__, FileId );    
-   //  RadioGlobalIt.rise( callback ( this, &RadioContainer::IsrRadio ) );
-    mcu.AttachInterruptIn( &RadioContainer< R >::CallbackIsrRadio,this);
-}
-template <class R> void RadioContainer <R>::DetachIsr ( void ) {
-    InsertTrace ( __COUNTER__, FileId );
-}
- */
+
 /************************************************************************************************/
 /*                      Public  Methods                                                         */
 /************************************************************************************************/
@@ -69,7 +54,6 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     TxPayloadSize               = (uint8_t)TxPayloadSizeMac;
     sRadioParam.Frequency       = TxFrequencyMac;
     sRadioParam.Power           = TxPowerMac;
-    DEBUG_PRINTF ("Power MiniMouse = %d\n",TxPowerMac);
     sRadioParam.Sf              = TxSfMac;
     sRadioParam.Bw              = TxBwMac;
     sRadioParam.Modulation      = TxModulation;
@@ -95,8 +79,7 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
     } else {
           DEBUG_MSG("TX_FSK");
     }
-    Radio->EnqueueTask (stask, TxPhyPayload, &TxPayloadSize, sRadioParam ); //@tbd RadioPlaner  timeonair
-
+    Radio->EnqueueTask (stask, TxPhyPayload, &TxPayloadSize, sRadioParam );
     if ( TxModulation == LORA ) {
         InsertTrace    ( __COUNTER__, FileId );
         DEBUG_PRINTF    ( "  TxFrequency = %d, RxSf = %d , RxBw = %d PayloadSize = %d\n", TxFrequencyMac, TxSfMac,TxBwMac, TxPayloadSizeMac) ; 
@@ -108,11 +91,11 @@ template <class R> void RadioContainer <R>::Send(eModulationType TxModulation , 
 };
 
 template <class R> void RadioContainer <R>::SetRxConfig(uint32_t TimetoRadioPlaner , eModulationType RxModulation ,uint32_t RxFrequencyMac, uint8_t RxSfMac, eBandWidth RxBwMac ,uint32_t RxWindowMs) {
-    RxFrequency  = RxFrequencyMac;
-    RxBw         = RxBwMac;
-    RxSf         = RxSfMac;
-    RxMod        = RxModulation;
-    CurrentMod   = RxModulation;
+    RxFrequency                 = RxFrequencyMac;
+    RxBw                        = RxBwMac;
+    RxSf                        = RxSfMac;
+    RxMod                       = RxModulation;
+    CurrentMod                  = RxModulation;
     sRadioParam.Frequency       = RxFrequencyMac;
     sRadioParam.Sf              = RxSfMac;
     sRadioParam.Bw              = RxBwMac;

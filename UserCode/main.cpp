@@ -70,7 +70,7 @@ int main ( ) {
     uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
     uint8_t LoRaMacAppKeyInit[]       = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0xBB};
     uint8_t AppEuiInit[]              = { 0x70, 0xb3, 0xd5, 0x7e, 0xd0, 0x00, 0xff, 0x50 };
-    uint8_t DevEuiInit[]              = { 0x38, 0x35, 0x31, 0x31, 0x18, 0x47, 0x37, 0x56 };    
+    uint8_t DevEuiInit[]              = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x44, 0x33, 0x22 };    
     uint32_t LoRaDevAddrInit          = 0x26011920;
     int i;
     uint8_t UserPayloadSize ;
@@ -80,9 +80,8 @@ int main ( ) {
     uint8_t UserFport ;
     uint8_t UserRxFport ;
     uint8_t MsgType ;
-    uint8_t AppTimeSleeping = 10;
-    int StatusCertification = 0;
-    sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,APB_DEVICE };
+    uint32_t AppTimeSleeping = 10;
+    sLoRaWanKeys  LoraWanKeys  = { LoRaMacNwkSKeyInit, LoRaMacAppSKeyInit, LoRaMacAppKeyInit, AppEuiInit, DevEuiInit, LoRaDevAddrInit,OTA_DEVICE };
     mcu.InitMcu ( );
     #ifdef SX126x_BOARD
     #define FW_VERSION     0x18
@@ -100,9 +99,9 @@ int main ( ) {
         RadioPLaner < SX1272 > RP( &RadioUser );
     #endif
         mcu.WatchDogStart ( );
-        //uint8_t uid[8];
-        //mcu.GetUniqueId (uid); 
-        //memcpy(&LoraWanKeys.DevEui[0], uid , 8);
+        uint8_t uid[8];
+        mcu.GetUniqueId (uid); 
+        memcpy(&LoraWanKeys.DevEui[0], uid , 8);
         /*!
         * \brief   Lp<LoraRegionsEU>: A LoRaWan Object with Eu region's rules. 
         * \remark  The Current implementation  support radio SX1276 and sx1261
@@ -116,20 +115,17 @@ int main ( ) {
     #ifdef SX1272_BOARD
         LoraWanObject<LoraRegionsEU,SX1272> Lp ( LoraWanKeys,&RP,USERFLASHADRESS); 
     #endif
-        //SX126x  RadioUser( LORA_BUSY, LORA_CS, LORA_RESET,TX_RX_IT );
-        //LoraWanObject<LoraRegionsEU,SX126x> Lp( LoraWanKeys,&RadioUser,USERFLASHADRESS); 
         uint8_t AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
         eLoraWan_Process_States LpState = LWPSTATE_IDLE;  
-        /*!
-        * \brief Restore the LoraWan Context
-        */
-        //DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
-       
-       
+      
+        DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
         RP.InitHook ( 0 , &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
         RadioUser.Reset();
         mcu.GotoSleepMSecond ( 300 );
-        Lp.RestoreContext  ( );
+        /*!
+        * \brief Restore the LoraWan Context
+        */
+        //Lp.RestoreContext  ( );
         Lp.SetDataRateStrategy ( USER_DR_DISTRIBUTION );
         UserFport       = 3;
         UserPayloadSize = 14;
@@ -140,10 +136,6 @@ int main ( ) {
         MsgType = UNCONF_DATA_UP;
         Lp.NewJoin();   
         while(1) {
-            /*!
-            * \brief  For this example : send an un confirmed message on port 3 . The user payload is a ramp from 0 to 13 (14 bytes) + FW version. 
-            */
-            
             if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {       
                 LpState  = Lp.Join( mcu.RtcGetTimeMs () + 200 );
             } else {
@@ -184,7 +176,7 @@ int main ( ) {
 
         
     /*
-    * \brief Send a �Packet every 120 seconds in case of join 
+    * \brief Send a �Packet every 5 seconds in case of join 
     *        Send a packet every AppTimeSleeping seconds in normal mode
     */
             if ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) && ( LpState != LWPSTATE_INVALID)){
@@ -192,7 +184,7 @@ int main ( ) {
                 mcu.GotoSleepMSecond ( 5000 );
             } else {
                 InsertTrace ( __COUNTER__, FileId );
-                mcu.GotoSleepMSecond ( 5000 );
+                mcu.GotoSleepSecond ( AppTimeSleeping );
                 InsertTrace ( __COUNTER__, FileId );
             }
         }

@@ -22,7 +22,8 @@ BOARD_L4          = 0
 RADIO_SX1276      = 1
 RADIO_SX1272      = 0
 RADIO_SX126x      = 0
-DEVICE_UNDER_TEST = 1
+DEVICE_UNDER_TEST = 0
+RADIO_WITH_TCX0   = 1
 ####################SX126x_BOARD
 # building variablesSX126x_BOARD
 ######################################
@@ -211,8 +212,11 @@ endif
 ifeq ($(RELAY), 1)
     C_DEFS += -DRELAY
 endif
+ifeq ($(RADIO_WITH_TCX0), 1)
+   C_DEFS += -DRADIO_WITH_TCX0
+endif
 ifeq ($(BOARD_WITH_SENSOR), 1)
-    C_DEFS += -BOARD_WITH_SENSOR
+    C_DEFS += -DBOARD_WITH_SENSOR
 endif
 ifeq ($(BOARD_L4), 1)
     C_DEFS += -DBOARD_L4  

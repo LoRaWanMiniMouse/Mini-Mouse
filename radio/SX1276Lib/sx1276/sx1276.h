@@ -20,6 +20,7 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 #include <stdint.h>
 #include "Define.h"
 #include "ApiMcu.h"
+#include "DefineRadioPlaner.h"
 /*!
  * SX1276 definitions
  */
@@ -50,26 +51,10 @@ class SX1276 {
         void SendFsk( uint8_t *payload, uint8_t payloadSize, uint32_t channel, int8_t power);
         void RxFsk(uint32_t channel, uint16_t timeout);
         void Sleep(  bool coldStart );
-        void SendGen( uint8_t *payload, uint8_t payloadSize,
-                        uint8_t    SF,
-                        eBandWidth BW,
-                        uint32_t   channel,
-                        int8_t     power,
-                        eIqMode    IqMode,
-                        eCrcMode    CrcMode
-                    ){};
         uint32_t Channel;
         void StartCad(uint32_t channel, uint8_t SF, eBandWidth BW) ;
-        void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, eHeaderMode headerMode,
-                        uint8_t    SF, eBandWidth BW, uint32_t   channel,
-                        int8_t     power, uint16_t preamble_length, eIqMode iq_mode,
-                        RadioCodingRate_t coding_rate, eCrcMode crc_enable,
-                        uint8_t syncWord ) ;
-        void RxLoRaGeneric( eBandWidth BW, uint8_t SF, uint32_t channel,
-                        uint16_t TimeOutMs, eHeaderMode headerMode, uint8_t payload_size,
-                        uint16_t preamble_length, eIqMode iq_mode, RadioCodingRate_t coding_rate,
-                        eCrcMode crc_enable, uint8_t syncWord );
- 
+        void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, SRadioParam RadioParam) ;
+        void RxLoRaGeneric( uint8_t payloadSize , SRadioParam RadioParam) ;
     private:
         uint8_t rxBuffer[255];
         uint8_t rxPayloadSize;

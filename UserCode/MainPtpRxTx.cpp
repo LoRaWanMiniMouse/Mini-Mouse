@@ -30,7 +30,7 @@
 #define FW_VERSION 18
 #define PERIOD_STATUS 100
 #define WAKEUPDURATION 600 
-Relay relay;
+Relay         relay;
 #ifndef RELAY
 LSM303H_ACC Accelero       ( PA_3 );
 #endif
@@ -103,7 +103,6 @@ uint8_t AvailableRxPacket  = NO_LORA_RXPACKET_AVAILABLE ;
 eLoraWan_Process_States LpState = LWPSTATE_IDLE;  
 mcu.MMClearDebugBufferRadioPlaner ( );
 
-
 UserFport       = 3;
 uint8_t UserPayloadSizeClassA = 14;
 uint8_t UserPayloadClassA [ 250 ];
@@ -112,35 +111,31 @@ UserPayloadClassA [ 0 ]  = FW_VERSION ;
 mcu.MMClearDebugBufferRadioPlaner ( );
 
 
-
-
-
-
 #ifdef RELAY
+    SStatisticRP  PowerStat;
+    STask         Tx4Rx3Task;
     uint8_t payload_received[MAX_PAYLOAD_RECEIVED] = { 0x00 };
-    uint8_t payload_received_size = 0;
-    bool SendDevaddrStatus = true;
-    bool SendDevEuiStatus  = false;
-    STask       Tx4Rx3Task;
-    Tx4Rx3Task.HookId       = TX_ON_RX3_ID;
-    Tx4Rx3Task.TaskDuration = 200; // tbupdated with Timeonair
-    Tx4Rx3Task.State        = TASK_SCHEDULE;
-    Tx4Rx3Task.TaskType     = TX_LORA;
-    SStatisticRP PowerStat;
-    uint8_t StatusFport     = 4;
-    bool JoinOnGoing = false;
+    uint8_t payload_received_size                  = 0;
+    bool SendDevaddrStatus                         = true;
+    bool SendDevEuiStatus                          = false;
+    Tx4Rx3Task.HookId                              = TX_ON_RX3_ID;
+    Tx4Rx3Task.TaskDuration                        = 200; // tbupdated with Timeonair
+    Tx4Rx3Task.State                               = TASK_SCHEDULE;
+    Tx4Rx3Task.TaskType                            = TX_LORA;
+    uint8_t StatusFport                            = 4;
+    bool JoinOnGoing                               = false;
+    uint8_t toggle                                 = 1;
+    int cpt                                        = 200;
+    uint8_t MsgTypeClassA                          = UNCONF_DATA_UP;
+    uint32_t RxAppTime                             = 0;
     uint8_t CurrentJoinDevEui[8];
     memset( CurrentJoinDevEui , 0 ,8);
-    uint8_t toggle =1;
-    int cpt = 200;
-    uint8_t MsgTypeClassA = UNCONF_DATA_UP;
-    uint32_t RxAppTime = 0;
-  //  Lp.RestoreContext  ( );
     Lp.Init ();
     RadioUser.Sleep( true );
     mcu.GotoSleepMSecond ( 100 );
     Lp.SetDataRateStrategy ( MOBILE_LOWPER_DR_DISTRIBUTION );
     Lp.NewJoin();
+    //Lp.RestoreContext  ( ); // to ReStore lorawan context from flash  and so avoid rejoin
     relay.AddDevaddrInWhiteList(0x26011695); 
     //relay.AddDevEuiInJoinWhiteList(DevEuiInit2);   
     while ( ( Lp.IsJoined ( ) == NOT_JOINED ) && ( Lp.GetIsOtaDevice ( ) == OTA_DEVICE) ) {   
@@ -150,11 +145,12 @@ mcu.MMClearDebugBufferRadioPlaner ( );
             mcu.GotoSleepMSecond ( 400 );
             mcu.WatchDogRelease  ( );
         }
-         mcu.GotoSleepMSecond ( 3000 );
+        mcu.GotoSleepMSecond ( 3000 );
     } 
-    ptpRx.Start(payload_received, &payload_received_size);
+    // At this step Join is done
     DEBUG_MSG("Join Done\n");
-    while(1){
+    ptpRx.Start(payload_received, &payload_received_size); // Start Cad Reception
+    while(1) {
         uint8_t DevOrDevEui[8];
         uint8_t DevAddrOrDevEUILength;
         uint32_t Freq4RX3;

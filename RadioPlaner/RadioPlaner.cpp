@@ -500,28 +500,11 @@ void  RadioPLaner<R>::LaunchCurrentTask ( void ) {
     //PrintTask  ( sTask [ Id ] ); 
     switch ( sTask [ Id ].TaskType ) {
         case TX_LORA :
-                Radio->TxLoRaGeneric(
-                    Payload [ Id ], *PayloadSize [ Id ], sRadioParam[Id].HeaderMode, 
-                    sRadioParam[Id].Sf, sRadioParam[Id].Bw, sRadioParam[Id].Frequency,
-                    sRadioParam[ Id ].Power, sRadioParam[Id].PreambuleLength,
-                    sRadioParam[Id].IqMode, sRadioParam[Id].CodingRate, sRadioParam[Id].CrcMode,
-                    sRadioParam[Id].SyncWord
-                );   
+            Radio->TxLoRaGeneric( Payload [ Id ], *PayloadSize [ Id ], sRadioParam[Id]);   
             sStatisticRP.StartTxCounter ( ); 
             break;
         case RX_LORA :
-           // #ifdef SX1272_BOARD 
-                Radio->RxLoRaGeneric(
-                    sRadioParam[Id].Bw, sRadioParam[Id].Sf, sRadioParam[Id].Frequency,
-                    sRadioParam[Id].TimeOutMs, sRadioParam[Id].HeaderMode, *(PayloadSize[Id]),
-                    sRadioParam[Id].PreambuleLength, sRadioParam[Id].IqMode, sRadioParam[Id].CodingRate,
-                    sRadioParam[Id].CrcMode, sRadioParam[Id].SyncWord
-                );
-          
-            //#else
-             //   Radio->RxGen ( sRadioParam [ Id ].Bw, sRadioParam [ Id ].Sf, sRadioParam [ Id ].Frequency, sRadioParam [ Id ].TimeOutMs, sRadioParam [ Id ].IqMode );
-            //Radio->RxLora ( sRadioParam [ Id ].Bw, sRadioParam [ Id ].Sf, sRadioParam [ Id ].Frequency, sRadioParam [ Id ].TimeOutMs);
-            //#endif
+                Radio->RxLoRaGeneric(*(PayloadSize[Id]),sRadioParam[Id]);
             sStatisticRP.StartRxCounter ( ); 
             break;
         case TX_FSK :

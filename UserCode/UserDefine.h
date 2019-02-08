@@ -87,6 +87,7 @@ Maintainer        : Fabien Holin (SEMTECH)
         #define TX_RX_IT            D5     // Interrupt TX/RX Done
         #define LORA_BUSY           D3
         #define DEBUG               PA_10
+        #define DEBUGRX             PA_10//D5
         #define CRYSTAL_ERROR              20 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
         #define BOARD_DELAY_RX_SETTING_MS  4  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
         #define PA_BOOST_CONNECTED         1 //  Set to 1 to select Pa_boost outpin pin on the sx127x 

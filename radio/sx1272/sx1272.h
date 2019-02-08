@@ -58,32 +58,15 @@ public:
     void StartCad(uint32_t channel, uint8_t SF, eBandWidth BW);
 
 
-    void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, SRadioParam RadioParam) {};
-    void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, eHeaderMode headerMode,
-                        uint8_t    SF, eBandWidth BW, uint32_t   channel,
-                        int8_t     power, uint16_t preamble_length, eIqMode iq_mode,
-                        RadioCodingRate_t coding_rate, eCrcMode crc_enable,
-                        uint8_t syncWord );
-    void RxLoRaGeneric( eBandWidth BW, uint8_t SF, uint32_t channel,
-                        uint16_t TimeOutMs, eHeaderMode headerMode, uint8_t payload_size,
-                        uint16_t preamble_length, eIqMode iq_mode, RadioCodingRate_t coding_rate,
-                        eCrcMode crc_enable, uint8_t syncWord );
-    void RxLoRaGeneric( uint8_t payloadSize , SRadioParam RadioParam) {};
+    void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, SRadioParam RadioParam) ;
+    void RxLoRaGeneric( uint8_t payloadSize , SRadioParam RadioParam) ;
     
     void RxFsk(uint32_t channel, uint16_t timeout){};
     void Sleep(  bool coldStart );
     uint8_t Read( uint8_t addr ) ;
     void Write( uint8_t addr, uint8_t data );
     uint32_t Channel;
-    void SendGen( uint8_t *payload, uint8_t payloadSize,
-                        uint8_t    SF,
-                        eBandWidth BW,
-                        uint32_t   channel,
-                        int8_t     power,
-                        eIqMode    IqMode,
-                        eCrcMode    CrcMode
-                    );
-    void RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs, eIqMode IqMode );
+
 //private:
     typedef enum {
             IRQ_LR_RADIO_ALL                           = 0xFF,

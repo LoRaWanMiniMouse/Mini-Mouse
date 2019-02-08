@@ -144,7 +144,9 @@ void SX1276::Reset( void ) {
     while ( Read(REG_OPMODE) != (RFLR_OPMODE_LONGRANGEMODE_ON + RFLR_OPMODE_SLEEP) ) {
         SetOpModeLora( RFLR_OPMODE_ACCESSSHAREDREG_DISABLE, RFLR_OPMODE_LONGRANGEMODE_ON, RF_OPMODE_SLEEP );
     }
-    mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 0 );
+    #ifdef RADIO_WITH_TCX0
+        mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 0 );
+    #endif
 }
 
 void SX1276::TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, SRadioParam RadioParam ) {
@@ -161,7 +163,9 @@ void SX1276::TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, SRadioParam R
     } else {
         LowDatarateOptimize = 0x00;
     }
-    mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 1 );
+    #ifdef RADIO_WITH_TCX0
+        mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 1 );
+    #endif
     #ifdef RADIO_ANT_SWITCH_TX_RF0
         mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,1);
     #endif
@@ -370,7 +374,9 @@ void SX1276::StartCad(uint32_t channel, uint8_t SF, eBandWidth BW)
     } else {
         LowDatarateOptimize = 0x00;
     }
-    mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 1 );
+    #ifdef RADIO_WITH_TCX0
+        mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 1 );
+    #endif
     #ifdef RADIO_ANT_SWITCH_TX_RF0
         mcu.SetValueDigitalOutPin(RADIO_ANT_SWITCH_TX_RF0,0);
     #endif
@@ -493,7 +499,9 @@ void SX1276::RxFsk(uint32_t channel, uint16_t timeOutMs) {
 
 void SX1276::Sleep(  bool coldStart ) {
     SetOpMode( RF_OPMODE_SLEEP );
-    mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 0 );
+    #ifdef RADIO_WITH_TCX0
+        mcu.SetValueDigitalOutPin ( RADIO_TCX0_POWER , 0 );
+    #endif
 }
 
 /************************************************************************************************

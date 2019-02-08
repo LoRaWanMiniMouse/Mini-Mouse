@@ -437,7 +437,8 @@ void McuSTM32L4::InitMcu( void ) {
   LowPowerTimerLoRaInit ( );
   InitSpi () ;
   RtcInit ();
-
+  PowerConsumptionTotal = 0;
+  PowerConsumption = RtcGetTimeMs ();
     /*For dual boot */
     FLASH_If_WriteProtectionClear();
     /* Test from which bank the program runs */

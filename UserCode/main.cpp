@@ -25,13 +25,10 @@ Maintainer        : Fabien Holin (SEMTECH)
 #include "utilities.h"
 #include "UserDefine.h"
 #include "appli.h"
-#include "SX126x.h"
 #include "ApiMcu.h"
 #include "utilities.h"
 #include "main.h"
-#include "mainTest.h"
 #include "UserDefine.h"
-#include "ApiMcu.h"
 #include "RadioPlaner.h"
 
 #define FileId 4
@@ -64,7 +61,7 @@ int main ( ) {
     * \brief  RtcInit , WakeUpInit, LowPowerTimerLoRaInit() are Mcu dependant . 
     */
 #ifdef DEVICE_UNDER_TEST
-    mainPtPRxTx ( );
+    mainRelay ( );
 #else
     uint8_t LoRaMacNwkSKeyInit[]      = { 0x22, 0x33, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
     uint8_t LoRaMacAppSKeyInit[]      = { 0x11, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22};

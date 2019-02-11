@@ -13,7 +13,7 @@ Description       : RadioPlaner objets.
 
 License           : Revised BSD License, see LICENSE.TXT file include in the project
 
-Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
+Maintainer        : Fabien Holin  (SEMTECH)
  * \remark        : 
  * Each Tasks enqueued inside the radio planer should Provide :
  *              Task descriptor : 
@@ -39,7 +39,6 @@ Maintainer        : Matthieu Verdy - Fabien Holin (SEMTECH)
                 BufferParameter : *Buffer + BufferSize 
          
                                                                                                 
-
 */
 #ifndef RADIOPLANER_H
 #define RADIOPLANER_H

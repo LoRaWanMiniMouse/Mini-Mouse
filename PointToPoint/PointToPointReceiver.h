@@ -1,3 +1,18 @@
+
+/*
+ _____      _       _ _______    _____      _       _   
+|  __ \    (_)     | |__   __|  |  __ \    (_)     | |  
+| |__) |__  _ _ __ | |_ | | ___ | |__) |__  _ _ __ | |_ 
+|  ___/ _ \| | '_ \| __|| |/ _ \|  ___/ _ \| | '_ \| __|
+| |  | (_) | | | | | |_ | | (_) | |  | (_) | | | | | |_ 
+|_|   \___/|_|_| |_|\__||_|\___/|_|   \___/|_|_| |_|\__|
+                                                          
+Description       : PointToPoint objets.  
+
+License           : Revised BSD License, see LICENSE.TXT file include in the project
+
+Maintainer        : Mathieu Verdi - Fabien Holin  (SEMTECH)                                                    
+*/
 #ifndef __POINT_TO_POINT_RECEIVER_H__
 #define __POINT_TO_POINT_RECEIVER_H__
 
@@ -14,7 +29,7 @@ public:
                                 const uint8_t hook_id);
   ~PointToPointReceiver();
 
-  void Start(uint8_t* data_payload, uint8_t* data_payload_length);
+  void Start(void);
   void Abort();
   void GetStatistics(StatisticCounters_t* counters);
   void GetRxPayload ( uint8_t * RxPayload, uint8_t * PayloadLength, uint32_t *RxTime, uint8_t * DevaddrOut, uint8_t * DevLengthOut, uint32_t *FreqOut );
@@ -75,8 +90,6 @@ private:
   int16_t SnrRxDataTask;
   int16_t RssiRxFragmentTask;
   int16_t SnrRxFragmentTask;
-  uint8_t* data_received;
-  uint8_t* data_received_length;
   WakeUpFragments_t fragment;
   uint8_t fragment_length;
   Acknowledges_t ack;

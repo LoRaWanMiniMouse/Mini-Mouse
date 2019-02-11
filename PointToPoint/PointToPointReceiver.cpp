@@ -1,5 +1,21 @@
+
+/*
+ _____      _       _ _______    _____      _       _   
+|  __ \    (_)     | |__   __|  |  __ \    (_)     | |  
+| |__) |__  _ _ __ | |_ | | ___ | |__) |__  _ _ __ | |_ 
+|  ___/ _ \| | '_ \| __|| |/ _ \|  ___/ _ \| | '_ \| __|
+| |  | (_) | | | | | |_ | | (_) | |  | (_) | | | | | |_ 
+|_|   \___/|_|_| |_|\__||_|\___/|_|   \___/|_|_| |_|\__|
+                                                          
+Description       : PointToPoint objets.  
+
+License           : Revised BSD License, see LICENSE.TXT file include in the project
+
+Maintainer        : Mathieu Verdi - Fabien Holin  (SEMTECH)                                                    
+*/
+
 #include "PointToPointReceiver.h"
-#include "appli.h"
+#include "Relay.h"
 #include "LoRaMacCrypto.h"
 #define CAD_DURATION_MS 1
 #define ACK_LENGTH 2
@@ -118,12 +134,10 @@ PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
 PointToPointReceiver::~PointToPointReceiver() {}
 
 void
-PointToPointReceiver::Start(uint8_t* data_payload, uint8_t* data_payload_length)
+PointToPointReceiver::Start( void )
 {
   this->cad_success = false;
   this->state = STATE_WAIT_CAD_COMPLETION;
-  this->data_received = data_payload;
-  this->data_received_length = data_payload_length;
   this->last_cad_ms = mcu.RtcGetTimeMs();
   this->ConfigureAndEnqueueNextCad();
 }

@@ -61,14 +61,7 @@ class SX126x {
 
         void Reset( void );
 
-        void SendLora(
-            uint8_t    *payload,
-            uint8_t    payloadSize,
-            uint8_t    SF,
-            eBandWidth BW,
-            uint32_t   channel,
-            int8_t     power
-        );
+
 
         void SendFsk(
             uint8_t *payload,
@@ -92,18 +85,11 @@ class SX126x {
        void Sleep( bool coldStart );
        void SendCw(uint32_t frequency);
 
-    void SendGen( uint8_t *payload, uint8_t payloadSize,
-                        uint8_t    SF,
-                        eBandWidth BW,
-                        uint32_t   channel,
-                        int8_t     power,
-                        eIqMode    IqMode,
-                        eCrcMode    CrcMode
-                    ){};
+
     void RxGen(eBandWidth BW, uint8_t SF, uint32_t channel, uint16_t TimeOutMs, eIqMode IqMode ){};
     void StartCad(uint32_t channel, uint8_t SF, eBandWidth BW) {};
-    void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, SRadioParam RadioParam) {};
-    void RxLoRaGeneric( uint8_t payloadSize , SRadioParam RadioParam) {};
+    void TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, SRadioParam RadioParam);
+    void RxLoRaGeneric( uint8_t payloadSize , SRadioParam RadioParam);
 
     //private:
         typedef enum {

@@ -18,7 +18,6 @@ Maintainer        : Fabien Holin (SEMTECH)
 #ifndef USERDEFINE_H
 #define USERDEFINE_H
 
-//#define BOARD_L4 1
 /********************************************************************************/
 /*                         Application     dependant                            */
 /********************************************************************************/
@@ -29,7 +28,7 @@ Maintainer        : Fabien Holin (SEMTECH)
 #else
     #define DEBUG_TRACE        1
 #endif
-#define LOW_POWER_MODE     1    // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
+#define LOW_POWER_MODE     0    // Set to 1 to activate sleep mode , set to 0 to replace by wait functions (easier in debug mode) 
 #define DEBUG_TRACE_ENABLE 0  // Set to 1 to activate DebugTrace 
 #define LOW_SPEED_CLK    LSE    
 
@@ -85,7 +84,7 @@ Maintainer        : Fabien Holin (SEMTECH)
         #define LORA_CS             D7
         #define LORA_RESET          A0
         #define TX_RX_IT            D5     // Interrupt TX/RX Done
-        #define LORA_BUSY           D3
+        #define LORA_BUSY           PB_3
         #define DEBUG               PA_10
         #define DEBUGRX             PA_10//D5
         #define CRYSTAL_ERROR              20 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
@@ -108,7 +107,7 @@ Maintainer        : Fabien Holin (SEMTECH)
         #define TX_RX_IT            D2     //ValueTemp =  ( SF << 4 ) + (); Interrupt TX/RX Done
         #define CRYSTAL_ERROR              1 // Crystal error of the MCU to fine adjust the rx window for lorawan ( ex: set 3� for a crystal error = 0.3%)
         #define BOARD_DELAY_RX_SETTING_MS  5  // Delay introduce by the mcu Have to fine tune to adjust the window rx for lorawan
-        #define PA_BOOST_CONNECTED         1 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
+        #define PA_BOOST_CONNECTED         0 //  Set to 1 to select Pa_boost outpin pin on the sx127x 
         #define RX_TIMEOUT_IT       D3     // Interrupt RX TIME OUT 
         #define RADIO_TCX0_POWER    PA_4
         #define USERFLASHADRESS 0x807E000U   // start flash adress to store lorawan context

@@ -44,13 +44,13 @@ Maintainer        : Olivier Gimenez (SEMTECH)
 /************************************************************************************************
  *                                 Public  Methods                                              *
  ************************************************************************************************/
-const uint8_t SX126x::LoraSyncword[2] = {0x34, 0x44};
+
 
 SX126x::SX126x( PinName Busy, PinName nss, PinName reset, PinName Interrupt ):
 pinBusy( Busy ),
 pinReset( reset ),
 pinCS( nss ) {
-    mcu. InitGpioIn ( pinBusy );
+    mcu.InitGpioIn ( pinBusy );
     mcu.SetValueDigitalOutPin ( pinCS, 1);
     mcu.Init_Irq ( Interrupt ) ;
 }
@@ -120,13 +120,11 @@ IrqFlags_t SX126x::GetIrqFlagsFsk(  eCrcMode crc_mode ) {
 }
 
 void SX126x::Reset( void ) {
-    // Reset radio
+ 
     mcu.SetValueDigitalOutPin ( pinReset, 0);
-    //wait_us( 100 );
-    mcu.mwait_ms( 1 );
+    mcu.waitUnderIt( 5000 );
     mcu.SetValueDigitalOutPin ( pinReset, 1);
-    //wait_us( 200 );
-    mcu.mwait_ms( 1 );
+    mcu.waitUnderIt( 5000 );
     radioMode = AWAKE;
 }
 
@@ -139,27 +137,31 @@ void SX126x::SendCw(uint32_t frequency){
     SX126x::SetTxContinuousWave( );
 }
 
-void SX126x::SendLora(
-                        uint8_t    *payload,
-                        uint8_t    payloadSize,
-                        uint8_t    SF,
-                        eBandWidth BW,
-                        uint32_t   channel,
-                        int8_t     power
-                    ) {
-    // Init radio
+void SX126x::TxLoRaGeneric( uint8_t *payload, uint8_t payloadSize, SRadioParam RadioParam) {
+    uint8_t LoraSyncword[2];
+    if ( RadioParam.SyncWord == 0x34 ){
+        LoraSyncword[0] = 0x34;
+        LoraSyncword[1] = 0x44;
+    } else {
+        LoraSyncword[0] = 0x14;
+        LoraSyncword[1] = 0x24;
+    } 
+    InvertIQ_t IqMode = (RadioParam.IqMode ==IQ_NORMAL )? IQ_STANDARD: IQ_INVERTED;
+
     Reset( );
+
     SetRegulatorMode( USE_DCDC );
+  
     SetDio2AsRfSwitchCtrl( true );
     SetStandby( STDBY_XOSC );
     // Configure the radio
     SetPacketType( LORA );
     //CalibrateImage( channel );
-    SetRfFrequency( channel );
-    SetModulationParamsLora( SF, BW );
-    SetPacketParamsLora( payloadSize, IQ_STANDARD );
-    SetTxParams( power );
-    WriteRegisters( REG_LORA_SYNC_WORD_MSB, ( uint8_t * ) this->LoraSyncword, 2 );
+    SetRfFrequency( RadioParam.Frequency );
+    SetModulationParamsLora(  RadioParam.Sf,  RadioParam.Bw );
+    SetPacketParamsLora( payloadSize, IqMode );
+    SetTxParams( RadioParam.Power );
+    WriteRegisters( REG_LORA_SYNC_WORD_MSB, &LoraSyncword[0], 2 );
     // Send the payload to the radio
     SetBufferBaseAddress( 0, 0 );
     WriteBuffer( 0, payload, payloadSize );
@@ -175,6 +177,35 @@ void SX126x::SendLora(
     // Send ! No timeout here as it is already handled by the MAC
     SetTx( 0 );
 }
+
+void SX126x::RxLoRaGeneric( uint8_t payloadSize , SRadioParam RadioParam) {;
+    uint8_t LoraSyncword[2];
+    if ( RadioParam.SyncWord == 0x34 ){
+        LoraSyncword[0] = 0x34;
+        LoraSyncword[1] = 0x44;
+    } else {
+        LoraSyncword[0] = 0x14;
+        LoraSyncword[1] = 0x24;
+    }
+    InvertIQ_t IqMode = (RadioParam.IqMode ==IQ_NORMAL )? IQ_STANDARD: IQ_INVERTED; 
+    // Configure the radio
+    SetPacketType( LORA );
+    SetRfFrequency(  RadioParam.Frequency );
+    SetModulationParamsLora( RadioParam.Sf,  RadioParam.Bw  );
+    SetPacketParamsLora( 0, IqMode  );
+    StopTimerOnPreamble( false );
+    WriteRegisters( REG_LORA_SYNC_WORD_MSB,&LoraSyncword[0], 2 );
+    // Configure IRQ
+    SetDioIrqParams(
+                        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
+                        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
+                        IRQ_RADIO_NONE,
+                        IRQ_RADIO_NONE
+                    );
+    ClearIrqFlagsLora( );
+    SetRx(  RadioParam.TimeOutMs  << 6 );
+}
+
 
 void SX126x::SendFsk(
                         uint8_t    *payload,
@@ -210,31 +241,6 @@ void SX126x::SendFsk(
                    ); 
     // Send ! No timeout here as it is already handled by the MAC
     SetTx( 0 );
-}
-
-// @TODO: SetRxBoosted ?
-void SX126x::RxLora(
-                        eBandWidth   BW,
-                        uint8_t      SF,
-                        uint32_t     channel,
-                        uint32_t     rxTimeoutMs
-                    ) {
-    // Configure the radio
-    SetPacketType( LORA );
-    SetRfFrequency( channel );
-    SetModulationParamsLora( SF, BW );
-    SetPacketParamsLora( 0, IQ_INVERTED );
-    StopTimerOnPreamble( false );
-    WriteRegisters( REG_LORA_SYNC_WORD_MSB, ( uint8_t * ) this->LoraSyncword, 2 );
-    // Configure IRQ
-    SetDioIrqParams(
-                        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
-                        IRQ_RX_DONE | IRQ_CRC_ERROR | IRQ_RX_TX_TIMEOUT,
-                        IRQ_RADIO_NONE,
-                        IRQ_RADIO_NONE
-                   );
-    ClearIrqFlagsLora( );
-    SetRx( rxTimeoutMs << 6 );
 }
 
 void SX126x::RxFsk(
@@ -619,6 +625,7 @@ void SX126x::StopTimerOnPreamble( bool state ) {
 }
 
 void SX126x::waitOnBusy( void ) {
+    
     while( mcu.GetValueDigitalInPin ( pinBusy )  == 1 ) { };
 }
 

@@ -500,6 +500,7 @@ void  RadioPLaner<R>::LaunchCurrentTask ( void ) {
     //PrintTask  ( sTask [ Id ] ); 
     switch ( sTask [ Id ].TaskType ) {
         case TX_LORA :
+            //DEBUG_MSG ("start send in radio planer\n");
             Radio->TxLoRaGeneric( Payload [ Id ], *PayloadSize [ Id ], sRadioParam[Id]);   
             sStatisticRP.StartTxCounter ( ); 
             break;

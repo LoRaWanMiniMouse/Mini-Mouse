@@ -119,6 +119,7 @@ int main ( ) {
         eLoraWan_Process_States LpState = LWPSTATE_IDLE;  
       
         DEBUG_PRINTF("MM is starting ...{ %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x } \n",uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6],uid[7]);
+        
         RP.InitHook ( 0 , &(Lp.packet.Phy.CallbackIsrRadio), &(Lp.packet.Phy) );
         RadioUser.Reset();
         mcu.GotoSleepMSecond ( 300 );

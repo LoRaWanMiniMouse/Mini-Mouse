@@ -541,13 +541,16 @@ void McuSTM32L4::InitGpioIn( PinName Pin ){
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     switch (port) {
-        case 0 : 
+        case 0 :
+            HAL_GPIO_WritePin(GPIOA, (1 << ( Pin & 0x0F ) ), GPIO_PIN_RESET); 
             HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
             break;
-        case 1 : 
+        case 1 :
+            HAL_GPIO_WritePin(GPIOB, (1 << ( Pin & 0x0F ) ), GPIO_PIN_RESET);  
             HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
             break;
-        case 2 : 
+        case 2 :
+            HAL_GPIO_WritePin(GPIOC, (1 << ( Pin & 0x0F ) ), GPIO_PIN_RESET);   
             HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
             break;
         case 4 : 

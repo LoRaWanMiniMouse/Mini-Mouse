@@ -39,112 +39,111 @@ PointToPointReceiver::PointToPointReceiver(RadioPLaner<SX1276>* radio_planner,
   this->FrequencyList[1] = 864200000;
   this->channel = this->FrequencyList[0];
 
-  cad_task_param.Bw = BW125;
-  cad_task_param.Sf = 7;
-  cad_task_param.CodingRate = CR_4_5;
-  cad_task_param.CrcMode = CRC_YES;
-  cad_task_param.HeaderMode = IMPLICIT_HEADER;
-  cad_task_param.IqMode = IQ_NORMAL;
-  cad_task_param.Modulation = LORA;
-  cad_task_param.Power = 14;
+  cad_task_param.Bw              = BW125;
+  cad_task_param.Sf              = 7;
+  cad_task_param.CodingRate      = CR_4_5;
+  cad_task_param.CrcMode         = CRC_YES;
+  cad_task_param.HeaderMode      = IMPLICIT_HEADER;
+  cad_task_param.IqMode          = IQ_NORMAL;
+  cad_task_param.Modulation      =  LORA;
+  cad_task_param.Power           = 14;
   cad_task_param.PreambuleLength = 32;
-  cad_task_param.SyncWord = 0x34;
-  cad_task_param.TimeOutMs = 0;
+  cad_task_param.SyncWord        = 0x34;
+  cad_task_param.TimeOutMs       = 0;
 
-  cad_task.HookId = this->hook_id;
-  cad_task.TaskDuration = CAD_DURATION_MS;
-  cad_task.State = TASK_SCHEDULE;
-  cad_task.TaskType = CAD;
+  cad_task.HookId                = this->hook_id;
+  cad_task.TaskDuration          = CAD_DURATION_MS;
+  cad_task.State                 = TASK_SCHEDULE;
+  cad_task.TaskType              = CAD;
 
-  rx_wakeup_fragment_task_param.Bw = BW125;
-  rx_wakeup_fragment_task_param.Sf = 7;
-  rx_wakeup_fragment_task_param.CodingRate = CR_4_5;
-  rx_wakeup_fragment_task_param.CrcMode = CRC_YES;
-  rx_wakeup_fragment_task_param.HeaderMode = IMPLICIT_HEADER;
-  rx_wakeup_fragment_task_param.IqMode = IQ_NORMAL;
-  rx_wakeup_fragment_task_param.Modulation = LORA;
-  rx_wakeup_fragment_task_param.Power = 14;
-  rx_wakeup_fragment_task_param.PreambuleLength = 32;
-  rx_wakeup_fragment_task_param.SyncWord = 0x34;
-  rx_wakeup_fragment_task_param.TimeOutMs = 40;
-  rx_wakeup_fragment_task_param.Snr = &SnrRxFragmentTask;;
-  rx_wakeup_fragment_task_param.Rssi = &RssiRxFragmentTask;
 
-  rx_wakeup_fragment_task.HookId = this->hook_id;
-  rx_wakeup_fragment_task.TaskDuration = WAKE_UP_FRAGMENT_DURATION_MS;
-  rx_wakeup_fragment_task.State = TASK_SCHEDULE;
-  rx_wakeup_fragment_task.TaskType = RX_LORA;
+  rx_wakeup_fragment_task_param.Bw               = BW_PTP;
+  rx_wakeup_fragment_task_param.Sf               = SF_PTP;
+  rx_wakeup_fragment_task_param.CodingRate       = CR_4_5;
+  rx_wakeup_fragment_task_param.CrcMode          = CRC_YES;
+  rx_wakeup_fragment_task_param.HeaderMode       = IMPLICIT_HEADER;
+  rx_wakeup_fragment_task_param.IqMode           = IQ_NORMAL;
+  rx_wakeup_fragment_task_param.Modulation       = LORA;
+  rx_wakeup_fragment_task_param.Power            = 14;
+  rx_wakeup_fragment_task_param.PreambuleLength  = 976;
+  rx_wakeup_fragment_task_param.SyncWord         = 0x34;
+  rx_wakeup_fragment_task_param.TimeOutMs        = MAX_PREAMBLE_PTP + WAKE_UP_FRAGMENT_DURATION_MS + 100;
+  rx_wakeup_fragment_task_param.Snr              = &SnrRxFragmentTask;;
+  rx_wakeup_fragment_task_param.Rssi             = &RssiRxFragmentTask;
 
-  rx_data_task_param.Bw = BW125;
-  rx_data_task_param.Sf = 7;
-  rx_data_task_param.CodingRate = CR_4_5;
-  rx_data_task_param.CrcMode = CRC_YES;
-  rx_data_task_param.HeaderMode = EXPLICIT_HEADER;
-  rx_data_task_param.IqMode = IQ_NORMAL;
-  rx_data_task_param.Modulation = LORA;
-  rx_data_task_param.Power = 14;
+  rx_wakeup_fragment_task.HookId                 = this->hook_id;
+  rx_wakeup_fragment_task.TaskDuration           = MAX_PREAMBLE_PTP + WAKE_UP_FRAGMENT_DURATION_MS + 100;
+  rx_wakeup_fragment_task.State                  = TASK_SCHEDULE;
+  rx_wakeup_fragment_task.TaskType               = RX_LORA;
+
+
+  rx_data_task_param.Bw              = BW125;
+  rx_data_task_param.Sf              = 7;
+  rx_data_task_param.CodingRate      = CR_4_5;
+  rx_data_task_param.CrcMode         = CRC_YES;
+  rx_data_task_param.HeaderMode      = EXPLICIT_HEADER;
+  rx_data_task_param.IqMode          = IQ_NORMAL;
+  rx_data_task_param.Modulation      = LORA;
+  rx_data_task_param.Power           = 14;
   rx_data_task_param.PreambuleLength = 8;
-  rx_data_task_param.SyncWord = 0x34;
-  rx_data_task_param.TimeOutMs = 40;
-  rx_data_task_param.Snr = &SnrRxDataTask;
-  rx_data_task_param.Rssi = &RssiRxDataTask;
+  rx_data_task_param.SyncWord        = 0x34;
+  rx_data_task_param.TimeOutMs       = 40;
+  rx_data_task_param.Snr             = &SnrRxDataTask;
+  rx_data_task_param.Rssi            = &RssiRxDataTask;
 
-
-
-  Tx4Rx3Param.Bw = BW125;
-  Tx4Rx3Param.Sf = 7;
-  Tx4Rx3Param.CodingRate = CR_4_5;
-  Tx4Rx3Param.CrcMode = CRC_NO;
-  Tx4Rx3Param.HeaderMode = EXPLICIT_HEADER;
-  Tx4Rx3Param.IqMode = IQ_INVERTED;
-  Tx4Rx3Param.Modulation = LORA;
-  Tx4Rx3Param.Power = 14;
-  Tx4Rx3Param.PreambuleLength = 8;
-  Tx4Rx3Param.SyncWord = 0x34;
-  Tx4Rx3Param.TimeOutMs = 40;
-  Tx4Rx3Param.Snr = 0;
-  Tx4Rx3Param.Rssi = 0;
-
-  rx_data_task.HookId = this->hook_id;
-  rx_data_task.TaskDuration = 40;
-  rx_data_task.State = TASK_SCHEDULE;
-  rx_data_task.TaskType = RX_LORA;
+  rx_data_task.HookId                = this->hook_id;
+  rx_data_task.TaskDuration          = 40;
+  rx_data_task.State                 = TASK_SCHEDULE;
+  rx_data_task.TaskType              = RX_LORA;
  
-  tx_ack_relay_task_param.Bw = BW125;
-  tx_ack_relay_task_param.Sf = 7;
-  tx_ack_relay_task_param.CodingRate = CR_4_5;
-  tx_ack_relay_task_param.CrcMode = CRC_YES;
-  tx_ack_relay_task_param.HeaderMode = EXPLICIT_HEADER;
-  tx_ack_relay_task_param.IqMode = IQ_NORMAL;
-  tx_ack_relay_task_param.Modulation = LORA;
-  tx_ack_relay_task_param.Power = 14;
-  tx_ack_relay_task_param.PreambuleLength = 8;
-  tx_ack_relay_task_param.SyncWord = 0x34;
-  tx_ack_relay_task_param.TimeOutMs = 10;
-  tx_ack_relay_task_param.Rssi = 0;
-  tx_ack_relay_task_param.Snr = 0;
 
-  tx_ack_relay_task.HookId = this->hook_id;
-  tx_ack_relay_task.TaskDuration = 58;
-  tx_ack_relay_task.State = TASK_SCHEDULE;
-  tx_ack_relay_task.TaskType = TX_LORA;
-  RxBufferAppLength = 0;
+
+  Tx4Rx3Param.Bw              = BW125;
+  Tx4Rx3Param.Sf              = 7;
+  Tx4Rx3Param.CodingRate      = CR_4_5;
+  Tx4Rx3Param.CrcMode         = CRC_NO;
+  Tx4Rx3Param.HeaderMode      = EXPLICIT_HEADER;
+  Tx4Rx3Param.IqMode          = IQ_INVERTED;
+  Tx4Rx3Param.Modulation      = LORA;
+  Tx4Rx3Param.Power           = 14;
+  Tx4Rx3Param.PreambuleLength = 8;
+  Tx4Rx3Param.SyncWord        = 0x34;
+  Tx4Rx3Param.TimeOutMs       = 40;
+  Tx4Rx3Param.Snr             = 0;
+  Tx4Rx3Param.Rssi            = 0;
+
+  tx_ack_relay_task_param.Bw              = BW125;
+  tx_ack_relay_task_param.Sf              = 7;
+  tx_ack_relay_task_param.CodingRate      = CR_4_5;
+  tx_ack_relay_task_param.CrcMode         = CRC_YES;
+  tx_ack_relay_task_param.HeaderMode      = EXPLICIT_HEADER;
+  tx_ack_relay_task_param.IqMode          = IQ_NORMAL;
+  tx_ack_relay_task_param.Modulation      = LORA;
+  tx_ack_relay_task_param.Power           = 14;
+  tx_ack_relay_task_param.PreambuleLength = 8;
+  tx_ack_relay_task_param.SyncWord        = 0x34;
+  tx_ack_relay_task_param.TimeOutMs       = 10;
+  tx_ack_relay_task_param.Rssi            = 0;
+  tx_ack_relay_task_param.Snr             = 0;
+
+  tx_ack_relay_task.HookId                = this->hook_id;
+  tx_ack_relay_task.TaskDuration          = 58;
+  tx_ack_relay_task.State                 = TASK_SCHEDULE;
+  tx_ack_relay_task.TaskType              = TX_LORA;
+  
+  RxBufferAppLength                       = 0;
 }
 
 PointToPointReceiver::~PointToPointReceiver() {}
 
-void
-PointToPointReceiver::Start( void )
-{
+void PointToPointReceiver::Start( void ) {
   this->cad_success = false;
   this->state = STATE_WAIT_CAD_COMPLETION;
   this->last_cad_ms = mcu.RtcGetTimeMs();
   this->ConfigureAndEnqueueNextCad();
 }
 
-void
-PointToPointReceiver::ExecuteStateMachine()
-{
+void PointToPointReceiver::ExecuteStateMachine() {
   switch (this->state) {
     case STATE_INIT: {
       break;
@@ -157,14 +156,13 @@ PointToPointReceiver::ExecuteStateMachine()
 
     case STATE_WAIT_CAD_COMPLETION: {
       if (this->cad_success) {
-        this->state = STATE_WAIT_RX_WUF_COMPLETION;
-        this->rx_wakeup_fragment_task_param.Frequency = this->channel;
-        this->rx_success = false;
-        this->rx_wakeup_fragment_task.StartTime = mcu.RtcGetTimeMs() + 1;
-        this->radio_planner->EnqueueTask(
-          this->rx_wakeup_fragment_task, (uint8_t*)&this->fragment.buffer,
-          &this->fragment_length, this->rx_wakeup_fragment_task_param);
-          DEBUG_MSG("CAD SUCESS\n");
+       
+        state = STATE_WAIT_RX_WUF_COMPLETION;
+        rx_wakeup_fragment_task_param.Frequency = this->channel;
+        rx_success = false;
+        rx_wakeup_fragment_task.StartTime = mcu.RtcGetTimeMs() + 1;
+        radio_planner->EnqueueTask( rx_wakeup_fragment_task, (uint8_t*)&this->fragment.buffer,&this->fragment_length, rx_wakeup_fragment_task_param);
+        DEBUG_MSG("CAD SUCESS\n");
       } else {
         this->ConfigureAndEnqueueNextCad();
       }
@@ -174,60 +172,50 @@ PointToPointReceiver::ExecuteStateMachine()
     case STATE_WAIT_RX_WUF_COMPLETION: {
       if (this->rx_success) {
         this->rx_success = false;
-        
         eStatusPtP status = DecodeWakeUpSequence ( );
         if (status == ERROR_PTP) {
             this->ConfigureAndEnqueueNextCad();
             DEBUG_MSGRP("Receive a bad WU sequence\n");
         } else {
-        
-            data_rx_ms = rx_done_timestamp +
-                         (int)((wake_up_id - 1) * WAKE_UP_FRAGMENT_DURATION_MS) + 3;
-            this->rx_data_task.StartTime = data_rx_ms;
+            this->ack.delay = (rx_done_timestamp - cadTime) & 0xFFFF;
+            this->rx_data_task.StartTime = mcu.RtcGetTimeMs() + 1;
             int16_t Rssi = *(this->rx_wakeup_fragment_task_param.Rssi);
-        if ( Rssi < (-127) ) {
-          Rssi = -127;
-        }
-            this->radio_planner->EnqueueTask(this->rx_data_task, this->rx_buffer,
-                                            &this->rx_buffer_length,
-                                            this->rx_data_task_param);
-            this->state = STATE_WAIT_RX_DATA_COMPLETION;
-            DEBUG_PRINTF("Rx frag. #%i\n", wake_up_id);
+            if ( Rssi < (-127) ) {
+                Rssi = -127;
+            }
+            radio_planner->EnqueueTask(rx_data_task, rx_buffer,&rx_buffer_length,rx_data_task_param);
+            state = STATE_WAIT_RX_DATA_COMPLETION;
         }  
       } else {
-        this->ConfigureAndEnqueueNextCad();
-        DEBUG_MSGRP("Rx Wuf failed\n");
+          ConfigureAndEnqueueNextCad();
+          DEBUG_MSG("Rx Wuf failed\n");
       }
       break;
     }
 
     case STATE_WAIT_RX_DATA_COMPLETION: {
       if (this->rx_success) {
-        RxBufferAppLength = this->rx_buffer_length ;
-        int16_t Rssi = *(this->rx_data_task_param.Rssi);
-        if ( Rssi < (-127) ) {
-           Rssi = -127;
-        }
-        uint8_t RssiByte = (uint8_t) (Rssi * (-1));
-        RxBufferApp[0] = RssiByte;
-        // RxBufferApp[1] is already updated when received the wake up sequence
-        memcpy( &RxBufferApp[2], this->rx_buffer, RxBufferAppLength);
-        RxBufferAppLength = RxBufferAppLength + 2;
-        RxBufferAppTime   = mcu.RtcGetTimeMs ();        
-        this->rx_success  = false;
-        this->delay_indicator =
-          this->GetDelayIndicatorMs(last_cad_ms, data_rx_ms);
-        this->ack.delay = delay_indicator;
-        this->tx_ack_relay_task.StartTime = mcu.RtcGetTimeMs() + 1;
-        this->tx_ack_relay_task_param.Frequency = this->channel;
-        this->radio_planner->EnqueueTask(this->tx_ack_relay_task,
-                                        this->ack.buffer, &this->ack_length,
-                                        this->tx_ack_relay_task_param);
-        this->state = STATE_WAIT_TX_ACK_COMPLETION;
+          DEBUG_MSG ("rx sucess\n");
+          RxBufferAppLength = this->rx_buffer_length ;
+          int16_t Rssi = *(this->rx_data_task_param.Rssi);
+          if ( Rssi < (-127) ) {
+             Rssi = -127;
+          }
+          uint8_t RssiByte = (uint8_t) (Rssi * (-1));
+          RxBufferApp[0] = RssiByte;
+          // RxBufferApp[1] is already updated when received the wake up sequence
+          memcpy( &RxBufferApp[2], this->rx_buffer, RxBufferAppLength);
+          RxBufferAppLength = RxBufferAppLength + 2;
+          RxBufferAppTime   = rx_done_timestamp;//mcu.RtcGetTimeMs ();        
+          this->rx_success  = false;
+          this->tx_ack_relay_task.StartTime = mcu.RtcGetTimeMs() + 1;
+          this->tx_ack_relay_task_param.Frequency = this->channel;
+          this->radio_planner->EnqueueTask(this->tx_ack_relay_task,this->ack.buffer, &this->ack_length,this->tx_ack_relay_task_param);
+          this->state = STATE_WAIT_TX_ACK_COMPLETION;
       } else {
-        DEBUG_PRINTFRP("Wakeup id: %i\n", this->wake_up_id);
-        DEBUG_MSGRP("Missed data\n");
-        this->ConfigureAndEnqueueNextCad();
+          DEBUG_PRINTFRP("Wakeup id: %i\n", this->wake_up_id);
+          DEBUG_MSGRP("Missed data\n");
+          this->ConfigureAndEnqueueNextCad();
       }
       break;
     }
@@ -262,6 +250,7 @@ PointToPointReceiver::Callback(void* self)
   switch (planner_status) {
     case PLANER_CAD_POSITIVE: {
       me->cad_success = true;
+      me->cadTime = irq_timestamp_ms;
       break;
     }
 
@@ -365,7 +354,7 @@ PointToPointReceiver::GetDelayIndicatorMs(
 
 eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( ) {
     // compute mic + insert check @tbd
-    DEBUG_MSG ("\n");
+    DEBUG_MSGRP ("Decode Wake up sequence\n");
     eStatusPtP status = OK_PTP ;
     uint32_t mic;
     if (fragment.buffer[0] == WUS_WITH_DEVEUI){
@@ -449,7 +438,7 @@ eStatusPtP PointToPointReceiver::DecodeWakeUpSequence ( ) {
           //return (ERROR_PTP);
           //break;
     }
-DEBUG_PRINTF ( "sf = %d , freq = %d\n",rx_data_task_param.Sf,rx_data_task_param.Frequency );
+DEBUG_PRINTFRP ( "sf = %d , freq = %d\n",rx_data_task_param.Sf,rx_data_task_param.Frequency );
 //Tx4Rx3Param.Frequency = rx_data_task_param.Frequency ;
 return (status);                         
 };

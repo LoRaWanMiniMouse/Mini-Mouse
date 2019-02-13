@@ -102,6 +102,7 @@ private:
   void* Lp;
   uint8_t  PtPKey[16];
   uint32_t AddKey ;
+  uint32_t cadTime;
 };
 
 #endif // __POINT_TO_POINT_RECEIVER_H__

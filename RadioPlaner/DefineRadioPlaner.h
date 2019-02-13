@@ -28,7 +28,7 @@ typedef struct SRadioParam {
     eCrcMode             CrcMode;
     eIqMode              IqMode;
     eHeaderMode          HeaderMode;
-    uint8_t              PreambuleLength;
+    uint16_t             PreambuleLength;
     uint8_t              SyncWord;
     RadioCodingRate_t    CodingRate;
     eModulationType      Modulation;

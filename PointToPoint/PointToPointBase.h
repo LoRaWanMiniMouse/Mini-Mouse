@@ -20,13 +20,21 @@ Maintainer        : Mathieu Verdi - Fabien Holin  (SEMTECH)
 
 #include <stdint.h>
 
+#define SF_PTP     7
+#define BW_PTP     BW125
+#define POWER_PTP  14
+#define MAX_PREAMBLE_PTP 1000 //(ms)
+#define PPM_OFFSET       CRYSTAL_ERROR*10//ppm
+
 #define WAKE_UP_FRAGMENT_LENGTH 11
-#define WAKE_UP_FRAGMENT_DURATION_MS 62.17
+#define WAKE_UP_FRAGMENT_DURATION_MS 30*(SF_PTP-6)
+#define MAX_WUS_DURATION_MS       MAX_PREAMBLE_PTP + WAKE_UP_FRAGMENT_DURATION_MS 
+#define MIN_PREAMBULE_DURATION_MS ( 8 << SF_PTP ) / ((BW125+1)*125)
 #define CAD_BEAT_MS 500
 #define CAD_BEAT_PER_CHANNEL_MS (2 * CAD_BEAT_MS)
 #define NBR_FREQUENCIES 2
 #define WAKE_UP_SEQUENCE_LENGTH_MAX 40  //((CAD_BEAT_MS * 4 )  / WAKE_UP_FRAGMENT_DURATION_MS)
-
+#define MISSED_ACK_BEFORE_LONG_PREAMBLE 16
  typedef enum
   {
     STATE_INIT,

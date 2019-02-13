@@ -22,7 +22,7 @@ Maintainer        : Mathieu Verdi - Fabien Holin  (SEMTECH)
 class PointToPointTransmitter
 {
 public:
-  explicit PointToPointTransmitter(RadioPLaner<SX1276> *radio_planner, const uint8_t hook_id);
+  explicit PointToPointTransmitter(RadioPLaner<SX1276> *radio_planner, const uint8_t hook_id_in);
   ~PointToPointTransmitter();
 
   uint32_t Start(uint8_t *data_payload, const uint8_t data_payload_length);
@@ -36,8 +36,8 @@ public:
 protected:
   void ExecuteStateMachine();
   void PrepareNextWakeUpFragment(WakeUpFragments_t *fragment, const uint8_t fragment_index);
-  static void ComputeNextWakeUpLength(uint8_t *nextWakeUpLength, const uint32_t actual_time, const uint32_t last_ack_success_time);
-  static void GetNextSendSlotTimeAndChannel(const uint32_t actual_time, const int16_t delay_rx, const uint32_t last_ack_success_time, uint8_t *wake_up_sequence_length, uint32_t *next_send_slot, uint8_t *channel_index);
+  void ComputeNextWakeUpLength(uint16_t *nextWakeUpLength, const uint32_t actual_time, const uint32_t last_ack_success_time);
+  void GetNextSendSlotTimeAndChannel(const uint32_t actual_time, const int16_t delay_rx, const uint32_t last_ack_success_time, uint16_t *wake_up_sequence_length, uint32_t *next_send_slot, uint8_t *channel_index);
 
 private:
   RadioPLaner<SX1276> *radio_planner;
@@ -47,7 +47,7 @@ private:
   volatile int16_t WakeUpSequenceDelay;
   volatile uint32_t last_ack_success_received_ms;
   volatile uint32_t irq_timestamp_ms;
-  uint8_t WakeUpSequenceLength;
+  uint16_t WakeUpSequenceLength;
   uint32_t NextSendSlot;
   uint8_t ChannelIndex;
   uint32_t TxChannel;
@@ -77,7 +77,8 @@ private:
   uint32_t count_data_tx_attempt;
   uint32_t count_ack_rx_attempt;
   uint32_t count_ack_rx_success;
-
+  uint32_t CadTime;
+  uint32_t NbMissedAck;
   /* Buffer parameters of the Wake up sequences*/
   uint8_t   Ftype;
   uint32_t  DevAddr;

@@ -17,7 +17,7 @@ TARGET = MiniMouse
 
 BOARD_MURATA      = 1
 RELAY             = 1
-BOARD_WITH_SENSOR = 1
+BOARD_WITH_SENSOR = 0
 BOARD_L4          = 0
 RADIO_SX1276      = 1
 RADIO_SX1272      = 0

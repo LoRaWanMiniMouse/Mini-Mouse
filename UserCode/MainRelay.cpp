@@ -103,12 +103,13 @@ eLoraWan_Process_States LpState = LWPSTATE_IDLE;
 /*Just Useful for debug purpose of the RadioPlaner*/
 mcu.MMClearDebugBufferRadioPlaner ( );
 
-uint8_t FportRelay          = 3; 
+
 uint8_t UserPayloadSizeClassA ;
 uint8_t UserPayloadClassA [ 250 ];
 /* The following code is specific to the Relay Device*/
 
 #ifdef RELAY
+    uint8_t FportRelay          = 3; 
     SStatisticRP  PowerStat;
     STask         Tx4Rx3Task;
     Tx4Rx3Task.HookId                              = TX_ON_RX3_ID;
@@ -264,8 +265,10 @@ uint8_t UserPayloadClassA [ 250 ];
     }
 /* The following code is specific to the Sensor Device*/    
 #else
+#ifdef BOARD_WITH_SENSOR
     SHT21 Sht21 ( PB_14 );
     Sht21.PowerSht();
+#endif    
     bool start_tx        = true; 
     uint8_t DummyPayloadSend[10];
     uint8_t DummyPayloadSize = 10;
@@ -273,39 +276,39 @@ uint8_t UserPayloadClassA [ 250 ];
     RadioUser.Sleep( true );
     mcu.GotoSleepMSecond ( 100 );
     Lp.SetDataRateStrategy ( USER_DR_DISTRIBUTION );
-    Lp.ActivateRX3 (); 
+    Lp.ActivateRX3 ();
+    Accelero.Running =0;
+#ifdef BOARD_WITH_SENSOR     
     mcu.InitGpioOut (PA_5);
     mcu.SetValueDigitalOutPin (PA_5, 1); // switch in iddle mode the TimeOf flight sensor
-    uint32_t RunningTime = 0 ;
-    #ifdef BOARD_WITH_SENSOR
-        Accelero.Running =1;
-    #else
-        Accelero.Running =1;
-    #endif
+    Accelero.Running =1;
     mcu.mwait_ms (200);
     Accelero.InitConfig (); 
     Accelero.ReadStatusAccelero();
-    ptpTx.SetDevAddr ( DevEuiInit2,8 );
-    uint8_t FirstJoin = 0;
     Accelero.ClearIrqAccelero();
+#endif  
+    uint32_t RunningTime = 0 ;
+    ptpTx.SetDevAddr ( DevEuiInit2, 8 );
+    uint8_t FirstJoin = 0;
     UserPayloadClassA[0]  = 0x17 ;
     UserPayloadSizeClassA = 6; 
     uint32_t next_start = mcu.RtcGetTimeMs();
-
-    while (1) { 
-        if ( Accelero.Running == 1) {                                 // wake up in interrupt coming from accelero
-            if ( Accelero.AcceleroWup () )  {
-                Accelero.ClearIrqAccelero();
-                DEBUG_MSG ("Debout\n");
-                DEBUG_PRINTF("status accelero = %d\n",Accelero.ReadStatusAccelero());
-                UserPayloadClassA[5] = Accelero.Temperature ; 
-                DEBUG_PRINTF("status accelero Temp  = %d\n", UserPayloadClassA[5] );
-                Accelero.PowerOffLSM303H_ACC ();
-                Accelero.Running = 0;
-                RunningTime = mcu.RtcGetTimeSecond ();
-                start_tx = true;
-            }
-        } 
+    while (1) {
+        #ifdef BOARD_WITH_SENSOR   
+            if ( Accelero.Running == 1) {                                 // wake up in interrupt coming from accelero
+                if ( Accelero.AcceleroWup () )  {
+                    Accelero.ClearIrqAccelero();
+                    DEBUG_MSG ("Wake up\n");
+                    DEBUG_PRINTF("status accelero = %d\n",Accelero.ReadStatusAccelero());
+                    UserPayloadClassA[5] = Accelero.Temperature ; 
+                    DEBUG_PRINTF("status accelero Temp  = %d\n", UserPayloadClassA[5] );
+                    Accelero.PowerOffLSM303H_ACC ();
+                    Accelero.Running = 0;
+                    RunningTime = mcu.RtcGetTimeSecond ();
+                    start_tx = true;
+                }
+            } 
+        #endif
         if   ( Accelero.Running == 0 ) {                                                        // Normal mode send payload in lora + relay 
             if ( start_tx ) {
                 DEBUG_MSG ("lora\n");
@@ -364,9 +367,7 @@ uint8_t UserPayloadClassA [ 250 ];
                     next_start = mcu.RtcGetTimeMs() + 20000;
                 }
             }
-
         }
-       
     mcu.GotoSleepMSecond ( 5000 );
     }
 #endif

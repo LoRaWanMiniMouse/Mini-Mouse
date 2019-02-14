@@ -298,12 +298,9 @@ void PointToPointTransmitter::Callback(void *self)
 
 void PointToPointTransmitter::GetNextSendSlotTimeAndChannel(const uint32_t actual_time, const int16_t delay_rx, const uint32_t last_ack_success_time, uint16_t *wake_up_sequence_length, uint32_t *next_send_slot, uint8_t *channel_index)
 {
-    const uint16_t  previous_wake_up_sequence_length = *wake_up_sequence_length;
-    const uint32_t last_tx_time = (*next_send_slot);
     uint32_t t_cad_rx = this->CadTime ;
-    DEBUG_PRINTF("last time = %d \n tcad rx = %d \n Delay reported = : %d , preambule length = %d \n",last_tx_time, t_cad_rx,delay_rx,*wake_up_sequence_length);
+    DEBUG_PRINTF("last time = %d \n tcad rx = %d \n Delay reported = : %d , preambule length = %d \n",*next_send_slot, t_cad_rx,delay_rx,*wake_up_sequence_length);
     // Search next send opportunity
-    // const uint8_t next_wake_up_sequence_length = previous_wake_up_sequence_length%18 + 1;
     uint16_t next_wake_up_sequence_length;
     ComputeNextWakeUpLength(&next_wake_up_sequence_length, actual_time, last_ack_success_time);
     const uint32_t next_wake_up_sequence_window = (next_wake_up_sequence_length - (WAKE_UP_FRAGMENT_DURATION_MS + MIN_PREAMBULE_DURATION_MS) ) /2 ;
